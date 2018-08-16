@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            html {height: 100%;}
+            body {margin: 0; height: 100%;}
+            .wrapper {display: flex; align-items: center; justify-content: center; height: 100%;}
+            .theme {border-radius: 100%; transform: scale(.9, .9);}
+            .icon {transform: scale(.7, .7);}
+            .icon img {max-width: 100vw; max-height: 100vh}
+            button {position: fixed; right: 10px; bottom: 10px;}
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="theme" style="background-color: ___theme;">
+                <div class="icon">
+                    <img src="data:image/png;base64,___iconbase">
+                </div>
+            </div>
+        </div>
+        <button onclick="changeIcon()" type="button">Change icon</button>
+        <script>
+            const vscode = acquireVsCodeApi();
+            function changeIcon(){
+                vscode.postMessage({
+                    command: 'change-icon'
+                })
+            }
+        </script>
+    </body>
+</html>

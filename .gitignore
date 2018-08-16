@@ -1,0 +1,9 @@
+node_modules
+.vscode-test/
+*.vsix
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/vscode-apps-sdk.iml
+.idea/workspace.xml
+.idea/inspectionProfiles/Project_Default.xml

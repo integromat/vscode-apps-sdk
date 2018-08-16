@@ -1,0 +1,402 @@
+{
+  "name": "apps-sdk",
+  "displayName": "Integromat Apps SDK",
+  "description": "Integromat Apps SDK plugin for Visual Studio Code",
+  "version": "1.0.2",
+  "icon": "resources/extension-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/integromat/vscode-apps-sdk"
+  },
+  "publisher": "Integromat",
+  "engines": {
+    "vscode": "^1.24.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:apps-sdk.refresh",
+    "onCommand:apps-sdk.function.new",
+    "onCommand:apps-sdk.rpc.new",
+    "onCommand:apps-sdk.connection.new",
+    "onCommand:apps-sdk.webhook.new",
+    "onCommand:apps-sdk.module.new",
+    "onCommand:apps-sdk.app.new",
+    "onCommand:apps-sdk.delete",
+    "onCommand:apps-sdk.app.delete",
+    "onCommand:apps-sdk.load-source",
+    "onCommand:apps-sdk.load-open-source",
+    "onCommand:apps-sdk.login",
+    "onCommand:apps-sdk.logout",
+    "onCommand:apps-sdk.env.change",
+    "onCommand:apps-sdk.env.add",
+    "onCommand:apps-sdk.app.get-icon",
+    "onCommand:apps-sdk.app.edit-metadata",
+    "onCommand:apps-sdk.connection.edit-metadata",
+    "onCommand:apps-sdk.webhook.edit-metadata",
+    "onCommand:apps-sdk.module.edit-metadata",
+    "onCommand:apps-sdk.rpc.edit-metadata",
+    "onView:apps",
+    "onView:opensource"
+  ],
+  "main": "./extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "imljson",
+        "extensions": [
+          ".imljson"
+        ],
+        "aliases": [
+          "JSON with IML",
+          "imljson"
+        ],
+        "configuration": "./syntaxes/imljson/configuration.json"
+      },
+      {
+        "id": "iml",
+        "extensions": [
+          ".iml"
+        ],
+        "aliases": [
+          "IML",
+          "Integromat Markup Language"
+        ],
+        "configuration": "./syntaxes/iml/configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "imljson",
+        "scopeName": "source.imljson",
+        "path": "./syntaxes/imljson/imljson.tmLanguage"
+      },
+      {
+        "language": "iml",
+        "scopeName": "source.iml",
+        "path": "./syntaxes/iml/iml.tmLanguage"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "imljson",
+        "path": "./syntaxes/imljson/snippets.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "apps-sdk.refresh",
+        "title": "Refresh",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.function.new",
+        "title": "New function",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.rpc.new",
+        "title": "New RPC",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.connection.new",
+        "title": "New connection",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.webhook.new",
+        "title": "New webhook",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.module.new",
+        "title": "New module",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.new",
+        "title": "New app",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.delete",
+        "title": "Delete",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.delete",
+        "title": "Delete",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.login",
+        "title": "Login",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.logout",
+        "title": "Logout",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.get-icon",
+        "title": "Edit icon",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.edit-metadata",
+        "title": "Edit metadata",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.connection.edit-metadata",
+        "title": "Edit metadata",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.webhook.edit-metadata",
+        "title": "Edit metadata",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.webhook.change-connection",
+        "title": "Change connection",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.module.edit-metadata",
+        "title": "Edit metadata",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.module.change-connection-or-webhook",
+        "title": "Change connection or webhook",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.rpc.edit-metadata",
+        "title": "Edit metadata",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.rpc.change-connection",
+        "title": "Change connection",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.env.change",
+        "title": "Change SDK Environment",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.env.add",
+        "title": "Add SDK Environment",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.changes.show",
+        "title": "Show changes",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.changes.commit",
+        "title": "Commit all changes",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.changes.rollback",
+        "title": "Rollback all changes",
+        "category": "Integromat Apps"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "integromat-apps",
+          "title": "Integromat Apps",
+          "icon": "resources/imt-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "integromat-apps": [
+        {
+          "id": "apps",
+          "name": "My apps"
+        },
+        {
+          "id": "opensource",
+          "name": "Opensource apps"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "apps-sdk.refresh",
+          "when": "view == apps && config.apps-sdk.login == true"
+        },
+        {
+          "command": "apps-sdk.app.new",
+          "when": "view == apps && config.apps-sdk.login == true"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "apps-sdk.function.new",
+          "when": "viewItem == functions && view == apps"
+        },
+        {
+          "command": "apps-sdk.rpc.new",
+          "when": "viewItem == rpcs && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.new",
+          "when": "viewItem == modules && view == apps"
+        },
+        {
+          "command": "apps-sdk.webhook.new",
+          "when": "viewItem == webhooks && view == apps"
+        },
+        {
+          "command": "apps-sdk.connection.new",
+          "when": "viewItem == connections && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == function && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == rpc && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == module && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == webhook && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == connection && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.connection.edit-metadata",
+          "when": "viewItem == connection && view == apps"
+        },
+        {
+          "command": "apps-sdk.webhook.edit-metadata",
+          "when": "viewItem == webhook && view == apps"
+        },
+        {
+          "command": "apps-sdk.webhook.change-connection",
+          "when": "viewItem == webhook && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.edit-metadata",
+          "when": "viewItem == module && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.change-connection-or-webhook",
+          "when": "viewItem == module && view == apps"
+        },
+        {
+          "command": "apps-sdk.rpc.edit-metadata",
+          "when": "viewItem == rpc && view == apps"
+        },
+        {
+          "command": "apps-sdk.rpc.change-connection",
+          "when": "viewItem == rpc && view == apps"
+        },
+        {
+          "command": "apps-sdk.changes.show",
+          "when": "viewItem == changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.changes.commit",
+          "when": "viewItem == app_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.changes.rollback",
+          "when": "viewItem == app_changed && view == apps"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Apps SDK",
+      "properties": {
+        "apps-sdk.login": {
+          "type": "boolean",
+          "default": false,
+          "description": "Holds an information about user login state. May not be changed manually. Please use apps-sdk.login command to log into Apps SDK."
+        },
+        "apps-sdk.apikey": {
+          "type": "string",
+          "description": "Your Integromat API key which will be used for access to your apps."
+        },
+        "apps-sdk.environment": {
+          "type": "string",
+          "description": "Current environment URL.",
+          "default": ""
+        },
+        "apps-sdk.environments": {
+          "type": "object",
+          "description": "Integromat SDK API environment",
+          "default": {}
+        }
+      }
+    }
+  },
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^7.0.67",
+    "eslint": "^4.19.1",
+    "typescript": "^2.9.2",
+    "vscode": "^1.1.6"
+  },
+  "dependencies": {
+    "async-file": "^2.0.2",
+    "image-downloader": "^3.4.1",
+    "jimp": "^0.2.28",
+    "lodash.camelcase": "^4.3.0",
+    "mkdirp": "^0.5.1",
+    "path": "^0.12.7",
+    "pngjs": "^3.3.3",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "tempy": "^0.2.1",
+    "universal-analytics": "^0.4.17"
+  }
+}

@@ -1,0 +1,113 @@
+{
+    "parameter": {
+        "prefix": "parameter",
+        "description": "Inserts a parameter skeleton.",
+        "body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"${3|array,boolean,buffer,cert,collection,color,date,email,filename,filter,folder,hidden,integer,number,password,path,pkey,port,select,text,time,timestamp,timezone,uinteger,url|}\",\n    \"help\": \"${4:help}\",\n    \"default\": \"${5:default}\",\n    \"advanced\": ${6|false,true|},\n    \"required\": ${7|false,true|}\n}"
+    },
+    "parameter-text": {
+        "prefix": "text",
+        "body": [
+            "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"text\"\n}"
+        ],
+        "description": "Inserts a text type parameter."
+    },
+    "parameter-numuber": {
+        "prefix": "number",
+        "body": [
+            "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"number\"\n}"
+        ],
+        "description": "Inserts a number type parameter."
+    },
+    "parameter-boolean": {
+        "prefix": "boolean",
+        "body": [
+            "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"boolean\"\n}"
+        ],
+        "description": "Inserts a boolean type parameter."
+    },
+    "parameter-select": {
+        "prefix": "select",
+        "body": [
+            "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"select\",\n    \"options\": [\n        \n    ],\n    \"editable\": ${3|true,false|}\n}"
+        ],
+        "description": "Inserts a select type parameter."
+    },
+    "parameter-array": {
+        "prefix": "array",
+        "description": "Inserts an array type parameter.",
+        "body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"array\",\n    \"spec\": [\n        \n    ]\n}"
+    },
+    "parameter-collection": {
+        "prefix": "collection",
+        "description": "Inserts a collection type parameter.",
+        "body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"collection\",\n    \"spec\": [\n        \n    ]\n}"
+    },
+    "parameter-file": {
+        "prefix": "file",
+        "description": "Inserts a file type parameter.",
+        "body": "{\r\n    \"name\": \"${1:filename}\",\r\n    \"type\": \"filename\",\r\n    \"label\": \"${2:label}\",\r\n    \"semantic\": \"file:name\"\r\n},\r\n{\r\n    \"name\": \"${3:data}\",\r\n    \"type\": \"buffer\",\r\n    \"label\": \"${4:label}\",\r\n    \"semantic\": \"file:data\"\r\n}"
+    },
+    "parameter-date": {
+        "prefix": "date",
+        "description": "Inserts a date type parameter.",
+        "body": "{\r\n    \"name\": \"${1:name}\",\r\n    \"label\": \"${2:label}\",\r\n    \"type\": \"date\",\r\n    \"time\": ${3|true,false|}\r\n}"
+    },
+    "attribute-nested": {
+        "prefix": "nested",
+        "description": "Inserts a nested attribute.",
+        "body": "\"nested\": [\r\n    \r\n]"
+    },
+    "attribute-store": {
+        "prefix": "store",
+        "description": "Inserts a store attribute.",
+        "body": "\"store\": [\r\n    \r\n]"
+    },
+    "attribute-editable": {
+        "prefix": "editable",
+        "description": "Inserts an editable attribute.",
+        "body": "\"editable\": ${1|true,false|}"
+    },
+    "attribute-required": {
+        "prefix": "required",
+        "description": "Inserts a required attribute.",
+        "body": "\"required\": ${1|true,false|}"
+    },
+    "attribute-validate": {
+        "prefix": "validate",
+        "description": "Inserts a validate attribute.",
+        "body": "\"validate\": {\n    \"min\": ${1:value},\n    \"max\": ${2:value}\n}"
+    },
+    "attribute-help": {
+        "prefix": "help",
+        "description": "Inserts a help attribute.",
+        "body": "\"help\": \"\""
+    },
+    "attribute-options": {
+        "prefix": "options",
+        "description": "Insert an options attribute.",
+        "body": "\"options\": [\n    \n]"
+    },
+    "item-option": {
+        "prefix": "option",
+        "description": "Inserts a new option for a select.",
+        "body": "{\n    \"label\": \"${1:label}\",\n    \"value\": \"${2:value}\"\n}"
+    },
+    "snippet-qs": {
+        "prefix": "qs",
+        "body": "\"qs\": {\n    \n}",
+        "description": "Inserts query string parameter."
+    },
+    "snippet-url": {
+        "prefix": "url",
+        "body": "\"url\": \"\"",
+        "description": "Inserts URL parameter."
+    },
+    "snippet-method": {
+        "prefix": "method",
+        "body": "\"method\": \"${1|GET,POST,PUT,DELETE,PATCH|}\""
+    },
+    "snippet-response": {
+        "prefix": "response",
+        "body": "\"response\": {\n    \n}"
+    }
+}
