@@ -12,6 +12,16 @@
   "engines": {
     "vscode": "^1.24.0"
   },
+  "keywords": [
+    "Integromat",
+    "IMT",
+    "Apps",
+    "SDK",
+    "Coding",
+    "Development",
+    "Cloud",
+    "Platform"
+  ],
   "categories": [
     "Extension Packs"
   ],
