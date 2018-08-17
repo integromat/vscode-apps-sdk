@@ -1,5 +1,21 @@
 # Change Log
 
+## 1.0.3
+
+### Added
+
+- Readme
+- KebabCase for App ID
+- Icons for refresh and add app command
+
+### Fixed
+
+- Check mark symbol displaying correctly on UNIX-based systems
+
+### Removed
+
+- Google Analytics tracker
+
 ## 1.0.2
 
 ### Added
