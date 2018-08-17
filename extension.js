@@ -22,6 +22,7 @@ const asyncfile = require('async-file')
 
 const vscode = require('vscode');
 
+var version = require('./package.json').version
 var _configuration
 var _authorization
 var _environment
@@ -32,7 +33,6 @@ var currentImlProvider
 async function activate() {
     _DIR = path.join(tempy.directory(), "apps-sdk")
     _configuration = vscode.workspace.getConfiguration('apps-sdk')
-    //trackEvent()
     console.log('Apps SDK active.');
 
     //#region ENV COMMANDS AND HANDLING
@@ -90,7 +90,6 @@ async function activate() {
             _configuration.update('environments', envs, 1),
             _configuration.update('environment', url, 1)
         ]).then(() => {
-            //trackEvent()
             vscode.commands.executeCommand("workbench.action.reloadWindow")
         })
     })
@@ -118,7 +117,6 @@ async function activate() {
 
         // Update envChanger in statusbar and reload the window
         envChanger.text = `$(server) ${environment.label}`
-        //trackEvent()
         vscode.commands.executeCommand("workbench.action.reloadWindow")
     })
 
@@ -176,7 +174,7 @@ async function activate() {
                 _configuration.update('login', true, 1),
                 _configuration.update('environments', environments, 1),
             ]).then(() => {
-                //trackEvent()
+                trackEvent('Logged in', version)
                 vscode.commands.executeCommand("workbench.action.reloadWindow")
             })
         })
@@ -202,7 +200,7 @@ async function activate() {
                     _configuration.update('login', false, 1),
                     _configuration.update('environments', environments, 1)
                 ]).then(() => {
-                    //trackEvent()
+                    trackEvent('Logged out', version)
                     vscode.commands.executeCommand("workbench.action.reloadWindow")
                 })
             }
@@ -392,7 +390,6 @@ async function activate() {
                             return vscode.window.showErrorMessage(err.message);
                         }
 
-                        //trackEvent()
                         // Open the downloaded code in the editor
                         vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
                             preview: false
@@ -492,7 +489,6 @@ async function activate() {
                             return vscode.window.showErrorMessage(err.message);
                         }
 
-                        //trackEvent()
                         // Open the downloaded code in the editor
                         vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, "opensource", filepath)), {
                             preview: false
@@ -556,7 +552,6 @@ async function activate() {
                 // Get the response from server
                 let response = JSON.parse(await rp(options))
 
-                //trackEvent()
                 // If there's no change to be displayed, end
                 if(!response.change){ return }
 
@@ -721,7 +716,6 @@ async function activate() {
                 await asyncfile.writeFile(cur, cur_data)
             ]).then(() => {
 
-                //trackEvent()
                 // Display diff between the files
                 vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(old), vscode.Uri.file(cur), `Changes of ${code.name} in ${code.parent.name}`).catch(err => {
                     vscode.window.showErrorMessage(err)
@@ -760,7 +754,6 @@ async function activate() {
                 buff = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg=="
             }
 
-            //trackEvent()
             // Inject the theme color and the icon to the generated HTML
             panel.webview.html = Core.getIconHtml(buff, app.theme, __dirname)
 
@@ -806,7 +799,6 @@ async function activate() {
 
                         // If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
                         else {
-                            //trackEvent()
                             vscode.commands.executeCommand('apps-sdk.refresh')
                             panel.dispose()
                         }
@@ -846,7 +838,6 @@ async function activate() {
             // Add the new entity. Refresh the tree or show the error
             try{
                 await Core.addEntity(_authorization, { "name": name }, `${_environment}/app/${app.name}/${app.version}/function`)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -890,7 +881,6 @@ async function activate() {
                     "label": label,
                     "connection": connection
                 }, uri)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -955,7 +945,6 @@ async function activate() {
             // Send the request
             try{
                 await Core.addEntity(_authorization, body, uri)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1005,7 +994,6 @@ async function activate() {
                     "connection": connection
                 }, uri)
                 appsProvider.refresh()
-                //trackEvent()
             }
             catch(err){
                 vscode.window.showErrorMessage(err.error.message || err)
@@ -1038,7 +1026,6 @@ async function activate() {
                     "label": label,
                     "type": type.description
                 }, uri)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1099,7 +1086,6 @@ async function activate() {
                     "private": true,
                     "countries": countries
                 }, uri)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1148,7 +1134,6 @@ async function activate() {
                             },
                             json: true
                         })
-                        //trackEvent()
                         appsProvider.refresh()
                     }
                     catch(err){
@@ -1192,7 +1177,6 @@ async function activate() {
                             },
                             json: true
                         })
-                        //trackEvent()
                         appsProvider.refresh()
                     }
                     catch(err){
@@ -1271,7 +1255,6 @@ async function activate() {
                     language: language.description,
                     countries: countries
                 }, uri)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1300,7 +1283,6 @@ async function activate() {
             // Send the request
             try{
                 await Core.editEntityPlain(_authorization, label, uri)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1326,7 +1308,6 @@ async function activate() {
             // Send the request
             try{
                 await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/label`)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1363,7 +1344,6 @@ async function activate() {
                 if (connection.description !== "keep") {
                     connection = connection.label === "--- Without connection ---" ? "" : connection.description
                     await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
-                    //trackEvent()
                     appsProvider.refresh()
                 }
             }
@@ -1390,7 +1370,6 @@ async function activate() {
             // Send the request
             try{
                 await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1419,7 +1398,6 @@ async function activate() {
                         connection = connection.label === "--- Without connection ---" ? "" : connection.description
                         try{
                             await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-                            //trackEvent()
                             appsProvider.refresh()
                         }
                         catch(err){
@@ -1463,7 +1441,6 @@ async function activate() {
             // Send the request
             try{
                 await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/label`)
-                //trackEvent()
                 appsProvider.refresh()
             }
             catch(err){
@@ -1490,7 +1467,6 @@ async function activate() {
                 if (connection.description !== "keep") {
                     connection = connection.label === "--- Without connection ---" ? "" : connection.description
                     await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
-                    //trackEvent()
                     appsProvider.refresh()
                 }
             }
@@ -1540,7 +1516,6 @@ async function activate() {
                             },
                             json: true
                         })
-                        //trackEvent()
                         appsProvider.refresh()
                     }
                     catch(err){
@@ -1583,7 +1558,6 @@ async function activate() {
                             },
                             json: true
                         })
-                        //trackEvent()
                         appsProvider.refresh()
                     }
                     catch(err){
@@ -1625,7 +1599,6 @@ async function activate() {
          * This command refreshes the left menu tree
          */
         vscode.commands.registerCommand('apps-sdk.refresh', function () {
-            //trackEvent()
             appsProvider.refresh();
         })
     }

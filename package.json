@@ -13,7 +13,7 @@
     "vscode": "^1.24.0"
   },
   "categories": [
-    "Other"
+    "Extension Packs"
   ],
   "activationEvents": [
     "onCommand:apps-sdk.refresh",
@@ -371,6 +371,11 @@
           "type": "object",
           "description": "Integromat SDK API environment",
           "default": {}
+        },
+        "apps-sdk.telemetry": {
+          "type": "boolean",
+          "default": true,
+          "description": "Help us to improve the Apps SDK extension by sending anonymous usage data."
         }
       }
     }
