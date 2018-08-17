@@ -9,7 +9,6 @@ const Core = require('./src/Core')
 const QuickPick = require('./src/QuickPick')
 const Validator = require('./src/Validator')
 const Enum = require('./src/Enum')
-const { trackEvent } = require('./src/Tracker')
 
 const request = require('request');
 const tempy = require('tempy');
@@ -17,12 +16,12 @@ const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const camelCase = require('lodash.camelcase');
+const kebabCase = require('lodash.kebabcase')
 const rp = require('request-promise');
 const asyncfile = require('async-file')
 
 const vscode = require('vscode');
 
-var version = require('./package.json').version
 var _configuration
 var _authorization
 var _environment
@@ -174,7 +173,6 @@ async function activate() {
                 _configuration.update('login', true, 1),
                 _configuration.update('environments', environments, 1),
             ]).then(() => {
-                trackEvent('Logged in', version)
                 vscode.commands.executeCommand("workbench.action.reloadWindow")
             })
         })
@@ -200,7 +198,6 @@ async function activate() {
                     _configuration.update('login', false, 1),
                     _configuration.update('environments', environments, 1)
                 ]).then(() => {
-                    trackEvent('Logged out', version)
                     vscode.commands.executeCommand("workbench.action.reloadWindow")
                 })
             }
@@ -1045,7 +1042,7 @@ async function activate() {
             // Id prompt
             let id = await vscode.window.showInputBox({
                 prompt: "Enter app Id",
-                value: camelCase(label),
+                value: kebabCase(label),
                 validateInput: Validator.appName
             })
             if(!Core.isFilled("id", "app", id, "An")){ return }

@@ -19,7 +19,7 @@ class EnhancedTreeItem extends vscode.TreeItem{
     static get changedSymbol() { return "*"}
     static get privateSymbol() { return "" }
     static get publicSymbol() { return "∴" }
-    static get approvedSymbol(){ return "🗸"}
+    static get approvedSymbol(){ return "✔"}
 }
 
 module.exports = EnhancedTreeItem
