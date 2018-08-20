@@ -502,6 +502,9 @@ async function activate() {
          */
         vscode.workspace.onDidSaveTextDocument(async (editor) => {
 
+            // It it's not an APPS SDK file, don't do anything
+            if(!editor.fileName.includes('apps-sdk')){ return }
+
             // Load the content of the file that has just been saved
             let file = fs.readFileSync(editor.fileName, "utf8");
 
@@ -515,6 +518,7 @@ async function activate() {
             if(right.startsWith("/opensource/")){
                 vscode.window.showWarningMessage("Opensource Apps can not be modified.")
             }
+
 
             // Build the URL
             let url = (path.join(path.dirname(right), path.basename(right, path.extname(right)))).replace(/\\/g, "/")
@@ -1470,6 +1474,29 @@ async function activate() {
             catch(err){
                 vscode.window.showErrorMessage(err.error.message || err)
             }
+        })
+
+        /**
+         * Test RPC
+         */
+        vscode.commands.registerCommand('apps-sdk.rpc.test', async function (context){
+
+            // Context check
+            if (!Core.contextGuard(context)){ return }
+
+            // Create a new WebviewPanel object
+            const panel = vscode.window.createWebviewPanel(
+                `${context.name}_test`,
+                `${context.label} test`,
+                vscode.ViewColumn.One,
+                {
+                    enableScripts: true
+                }
+            )
+            
+            // Inject the RPC name and set the HTML code
+            panel.webview.html = Core.getRpcTestHtml(context.label, __dirname)
+
         })
         //#endregion
 

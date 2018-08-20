@@ -115,6 +115,10 @@ module.exports = {
         return (fs.readFileSync(path.join(dir, 'static', 'icon.html'), "utf8")).replace("___iconbase", uri).replace("___theme", color)
     },
 
+    getRpcTestHtml: function(name, dir){
+        return (fs.readFileSync(path.join(dir, 'static', 'rpc-test.html'), "utf8")).replace("___rpcName", name)
+    },
+
     compareCountries: function(a,b){
         // Sort by PICK
         if(a.picked && !b.picked) return -1;

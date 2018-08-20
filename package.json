@@ -204,6 +204,11 @@
         "category": "Integromat Apps"
       },
       {
+        "command": "apps-sdk.rpc.test",
+        "title": "Test",
+        "category": "Integromat Apps"
+      },
+      {
         "command": "apps-sdk.env.change",
         "title": "Change SDK Environment",
         "category": "Integromat Apps"
@@ -342,6 +347,10 @@
         },
         {
           "command": "apps-sdk.rpc.change-connection",
+          "when": "viewItem == rpc && view == apps"
+        },
+        {
+          "command": "apps-sdk.rpc.test",
           "when": "viewItem == rpc && view == apps"
         },
         {

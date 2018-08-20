@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- Source Uploader catches only Apps SDK files
 - Check mark symbol displaying correctly on UNIX-based systems
 
 ### Removed
