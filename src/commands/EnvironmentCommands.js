@@ -78,6 +78,11 @@ class EnvironmentCommands{
             // Check if filled 
             if(!environment){ return }
 
+            if(environment.description === "add"){
+                vscode.commands.executeCommand('apps-sdk.env.add')
+                return
+            }
+
             // Update active environment in _configuration
             await _configuration.update('environment', environment.description, 1)
 
