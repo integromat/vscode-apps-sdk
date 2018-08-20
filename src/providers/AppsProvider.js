@@ -162,11 +162,11 @@ class AppsProvider {
             switch(element.supertype){
                 case "connection":
                     return [
-                        [`api`, "Communication"],
-                        [`common`, "Common data"],
-                        [`scopes`, "Scope list"],
-                        [`scope`, "Default scope"],
-                        [`parameters`, "Parameters"]
+                        [`api`, "Communication", "Specifies the account validation process. This specification does not inherit from base."],
+                        [`common`, "Common data", "Collection of common data accessible through common.variable expression. Contains sensitive information like API keys or API secrets."],
+                        [`scopes`, "Scope list", "Collection of available scopes. (key = scope name, value = human readable scope description)"],
+                        [`scope`, "Default scope", "Default scope for every new connection. Array of strings."],
+                        [`parameters`, "Parameters", "Array of parameters user should fill while creating a new connection."]
                     ].map(code => {
                         let change
                         if(element.changes){
@@ -176,15 +176,15 @@ class AppsProvider {
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "imljson", "connection", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "imljson", "connection", false, change ? change.id : null, code[2])
                     })
                 case "webhook":
                     return [
-                        [`api`, "Communication"],
-                        [`parameters`, "Parameters"],
-                        [`attach`, "Attach"],
-                        [`detach`, "Detach"],
-                        [`scope`, "Required scope"]
+                        [`api`, "Communication", "Specification of incoming data processing. This specification does not inherit from base and does not have access to connection."],
+                        [`parameters`, "Parameters", "Array of parameters user should fill while creating a new webhook."],
+                        [`attach`, "Attach", "Describes how to register this webhook automatically via API. Leave empty if user needs to register webhook manually. This specification does inherit from base."],
+                        [`detach`, "Detach", "Describes how to unregister this webhook automatically via API. Leave empty if user needs to unregister webhook manually. This specification does inherit from base."],
+                        [`scope`, "Required scope", "Scope required by this webhook. Array of strings."]
                     ].map(code => {
                         let change
                         if(element.changes){
@@ -194,7 +194,7 @@ class AppsProvider {
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "imljson", "webhook", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "imljson", "webhook", false, change ? change.id : null, code[2])
                     })
                 case "module":
                     switch(element.type){
@@ -202,12 +202,12 @@ class AppsProvider {
                         case 4:
                         case 9:
                             return [
-                                [`api`, "Communication"],
-                                [`parameters`, "Static parameters"],
-                                [`expect`, "Mappable parameters"],
-                                [`interface`, "Interface"],
-                                [`samples`, "Samples"],
-                                [`scope`, "Scope"]
+                                [`api`, "Communication", "This specification does inherit from base."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`expect`, "Mappable parameters", "Array of mappable parameters user can fill while configuring the module. Mappable parameters can contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`interface`, "Interface", "Array of output variables. Same syntax as used for parameters."],
+                                [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"],
+                                [`scope`, "Scope", "Scope required by this module. Array of strings."]
                             ].map(code => {
                                 let change
                                 if(element.changes){
@@ -217,17 +217,17 @@ class AppsProvider {
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                         // Trigger
                         case 1:
                             return [
-                                [`api`, "Communication"],
-                                [`epoch`, "Epoch"],
-                                [`parameters`, "Static parameters"],
-                                [`interface`, "Interface"],
-                                [`samples`, "Samples"],
-                                [`scope`, "Scope"]
+                                [`api`, "Communication", "This specification does inherit from base."],
+                                [`epoch`, "Epoch", "Describes how user can choose the point in the past where the trigger should start to process data from."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`interface`, "Interface", "Array of output variables. Same syntax as used for parameters."],
+                                [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"],
+                                [`scope`, "Scope", "Scope required by this module. Array of strings."]
                             ].map(code => {
                                 let change
                                 if(element.changes){
@@ -237,15 +237,15 @@ class AppsProvider {
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                         // Instant trigger
                         case 10:
                             return [
-                                [`api`, "Communication"],
-                                [`parameters`, "Static parameters"],
-                                [`interface`, "Interface"],
-                                [`samples`, "Samples"]
+                                [`api`, "Communication", "Optional, only use when you need to make additional request for an incoming webhook. This specification does inherit from base."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`interface`, "Interface", "Array of output variables. Same syntax as used for parameters."],
+                                [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"]
                             ].map(code => {
                                 let change
                                 if(element.changes){
@@ -255,14 +255,14 @@ class AppsProvider {
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                         // Responder
                         case 11:
                             return [
-                                [`api`, "Communication"],
-                                [`parameters`, "Static parameters"],
-                                [`expect`, "Mappable parameters"]
+                                [`api`, "Communication", "This specification does inherit from base."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`expect`, "Mappable parameters", "Array of mappable parameters user can fill while configuring the module. Mappable parameters can contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."]
                             ].map(code => {
                                 let change
                                 if(element.changes){
@@ -272,12 +272,12 @@ class AppsProvider {
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                     }
                 case "rpc": 
                     return [
-                        [`api`, "Communication"],
+                        [`api`, "Communication", "This specification does inherit from base."],
                         [`parameters`, "Parameters"]
                     ].map(code => {
                         let change
@@ -288,7 +288,7 @@ class AppsProvider {
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "imljson", "rpc", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "imljson", "rpc", false, change ? change.id : null, code[2])
                     })
                 case "function":
                     return [
@@ -302,7 +302,7 @@ class AppsProvider {
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "js", "function", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "js", "function", false, change ? change.id : null, code[2])
                     })
             }
         }
