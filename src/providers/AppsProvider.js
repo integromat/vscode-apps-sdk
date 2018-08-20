@@ -114,15 +114,15 @@ class AppsProvider {
             // General
             if (element.id.includes("general")) {
                 return [
-                    [`base`, "Base"],
-                    [`common`, "Common"]
+                    [`base`, "Base", "Base structure all modules and remote procedures inherits from."],
+                    [`common`, "Common", "Collection of common data accessible through common.variable expression. Contains sensitive information like API keys or API secrets. This collection is shared across all modules."]
                 ].map(code => {
                     let change = element.changes.find(change => {
                         if(change.code == code[0]){
                             return change
                         }
                     })
-                    return new Code(code[0], code[1], element, "imljson", "app", false,  change ? change.id : null)
+                    return new Code(code[0], code[1], element, "imljson", "app", false,  change ? change.id : null, code[2])
                 })
             }
 

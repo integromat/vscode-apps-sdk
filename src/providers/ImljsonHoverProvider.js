@@ -51,6 +51,8 @@ class ImljsonHoverProvider{
             case 'multiline':
                 ans = new vscode.MarkdownString('## multiline\r\n___\r\n- Type: `Boolean`\r\n- If `true`, user will be able to insert new lines in GUI.\r\n- Default: `false`')
                 break
+            case 'baseUrl':
+                ans = new vscode.MarkdownString('## baseUrl\r\n___\r\n- Type: `URL`\r\n- Base structure all modules and remote procedures inherits from.')
         }
         return ans ? new vscode.Hover(ans) : undefined
     }

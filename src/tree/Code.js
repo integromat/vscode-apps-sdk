@@ -1,7 +1,7 @@
 const EnhancedTreeItem = require('./EnhancedTreeItem');
 
 class Code extends EnhancedTreeItem{
-    constructor(id, label, parent, language, apiPath, readonly, change){
+    constructor(id, label, parent, language, apiPath, readonly, change, tooltip){
         super(label + (change ? ` ${EnhancedTreeItem.changedSymbol}` : ""), 0)
         this.id = parent.id+"_"+id
         this.name = id
@@ -9,6 +9,7 @@ class Code extends EnhancedTreeItem{
         this.parent = parent
         this.language = language
         this.change = change
+        this.tooltip = tooltip
         if(change){
             this.contextValue = "changed"
         }

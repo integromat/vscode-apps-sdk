@@ -7,11 +7,16 @@
 - Readme
 - KebabCase for App ID
 - Icons for refresh and add app command
+- Better tooltips
 
 ### Fixed
 
 - Source Uploader catches only Apps SDK files
 - Check mark symbol displaying correctly on UNIX-based systems
+
+### Modified
+
+- Validator messages contains examples
 
 ### Removed
 
