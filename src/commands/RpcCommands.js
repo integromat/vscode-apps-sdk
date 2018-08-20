@@ -5,6 +5,7 @@ const Validator = require('../Validator')
 const QuickPick = require('../QuickPick')
 
 const camelCase = require('lodash.camelcase');
+const path = require('path')
 
 class RpcCommands {
     static async register(appsProvider, _authorization, _environment){
@@ -123,7 +124,7 @@ class RpcCommands {
             )
             
             // Inject the RPC name and set the HTML code
-            panel.webview.html = Core.getRpcTestHtml(context.label, __dirname)
+            panel.webview.html = Core.getRpcTestHtml(context.label, path.join(__dirname, '..', '..'))
 
         })
     }
