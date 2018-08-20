@@ -124,7 +124,7 @@ class RpcCommands {
             )
             
             // Inject the RPC name and set the HTML code
-            panel.webview.html = Core.getRpcTestHtml(context.label, path.join(__dirname, '..', '..'))
+            panel.webview.html = Core.getRpcTestHtml(context.name, context.parent.parent.name, context.parent.parent.version, path.join(__dirname, '..', '..'))
 
         })
     }
