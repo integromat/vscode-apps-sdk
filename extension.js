@@ -19,6 +19,7 @@ const EnvironmentCommands = require('./src/commands/EnvironmentCommands')
 
 const tempy = require('tempy')
 const path = require('path')
+const jsoncParser = require('jsonc-parser')
 
 var _configuration
 var _authorization
@@ -110,6 +111,22 @@ async function activate() {
          */
         vscode.workspace.onDidSaveTextDocument(editor => coreCommands.sourceUpload(editor))
         vscode.window.onDidChangeActiveTextEditor(editor => coreCommands.keepProviders(editor))
+
+
+        /**
+         * Registering JSONC formatter
+         */
+        vscode.languages.registerDocumentFormattingEditProvider({language:'imljson', scheme:'file'}, {
+            provideDocumentFormattingEdits(document) {
+                let text = document.getText()
+                let edits = jsoncParser.format(text, undefined, {insertSpaces: 4})
+                return edits.map(edit => {
+                    let start = document.positionAt(edit.offset)
+                    let end = document.positionAt(edit.offset + edit.length)
+                    return vscode.TextEdit.replace(new vscode.Range(start, end), edit.content)
+                })
+            }
+        });
     }
 
 }
