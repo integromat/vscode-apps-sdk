@@ -36,10 +36,10 @@ async function activate() {
     // Environment commands and envChanger
     const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10)
     envChanger.tooltip = "Click to change your working environment"
-    if(_configuration.environment){
+    if (_configuration.environment) {
         envChanger.text = `$(server) ${_configuration.environments[_configuration.environment].name}`
     }
-    else{
+    else {
         envChanger.text = `$(server) ENVIRONMENT NOT SET`
     }
     envChanger.command = "apps-sdk.env.change"
@@ -50,27 +50,27 @@ async function activate() {
     /**
      * First launch -> there are no environments
      */
-    if(Object.keys(_configuration.environments).length === 0){
+    if (Object.keys(_configuration.environments).length === 0) {
         let input = await vscode.window.showWarningMessage("You have no environments set up yet. If you want to start using Apps SDK, you have to add a new one.", "Add environment")
-        if(input === "Add environment"){
+        if (input === "Add environment") {
             vscode.commands.executeCommand('apps-sdk.env.add')
         }
     }
 
-    if(_configuration.environment != ""){
-        
+    if (_configuration.environment != "") {
+
         await AccountCommands.register(_configuration)
 
         // If environment is set, but there's no API key in the configuration
         if (_configuration.environments[_configuration.environment].apikey === "") {
             let input = await vscode.window.showWarningMessage("Your API key for this environment is not set. Please login first.", "Login")
-            if(input === "Login"){
+            if (input === "Login") {
                 vscode.commands.executeCommand("apps-sdk.login")
             }
         }
 
         // Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
-        else{
+        else {
             _authorization = "Token " + _configuration.environments[_configuration.environment].apikey
             _environment = `https://${_configuration.environment}/v1`
         }
@@ -86,7 +86,7 @@ async function activate() {
          * Registering providers
          */
         vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'imljson' }, new KeywordProvider())
-        vscode.languages.registerHoverProvider({language: 'imljson', scheme: 'file'}, new ImljsonHoverProvider())
+        vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider())
         vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment))
 
         let appsProvider = new AppsProvider(_authorization, _environment);
@@ -116,10 +116,10 @@ async function activate() {
         /**
          * Registering JSONC formatter
          */
-        vscode.languages.registerDocumentFormattingEditProvider({language:'imljson', scheme:'file'}, {
+        vscode.languages.registerDocumentFormattingEditProvider({ language: 'imljson', scheme: 'file' }, {
             provideDocumentFormattingEdits(document) {
                 let text = document.getText()
-                let edits = jsoncParser.format(text, undefined, {insertSpaces: 4})
+                let edits = jsoncParser.format(text, undefined, { insertSpaces: 4 })
                 return edits.map(edit => {
                     let start = document.positionAt(edit.offset)
                     let end = document.positionAt(edit.offset + edit.length)

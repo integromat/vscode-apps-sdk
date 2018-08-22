@@ -8,6 +8,7 @@
 - KebabCase for App ID
 - Icons for refresh and add app command
 - Better tooltips
+- JSONC formatter
 
 ### Fixed
 
