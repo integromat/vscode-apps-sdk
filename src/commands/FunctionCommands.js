@@ -8,6 +8,8 @@ const { NodeVM } = require('vm2')
 class FunctionCommands {
     static async register(appsProvider, _authorization, _environment) {
 
+        var outputChannel = vscode.window.createOutputChannel("IML tests")
+
         /**
          * New function
          */
@@ -73,12 +75,13 @@ class FunctionCommands {
                 }
             })
 
+            outputChannel.show()
             try {
-                let testFunction = vm.run(codeToRun)
-                console.log("SUCCESS")
+                vm.run(codeToRun)
+                outputChannel.appendLine("Test OK")
             }
             catch (err) {
-                console.warn("FAILURE")
+                outputChannel.appendLine(err)
             }
         })
     }
