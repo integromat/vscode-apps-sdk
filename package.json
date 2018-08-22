@@ -110,6 +110,11 @@
         "category": "Integromat Apps"
       },
       {
+        "command": "apps-sdk.function.test",
+        "title": "Run test",
+        "category": "Integromat Apps "
+      },
+      {
         "command": "apps-sdk.rpc.new",
         "title": "New RPC",
         "category": "Integromat Apps"
@@ -274,6 +279,10 @@
           "when": "viewItem == functions && view == apps"
         },
         {
+          "command": "apps-sdk.function.test",
+          "when": "viewItem == function && view == apps"
+        },
+        {
           "command": "apps-sdk.rpc.new",
           "when": "viewItem == rpcs && view == apps"
         },
@@ -428,6 +437,7 @@
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "tempy": "^0.2.1",
-    "universal-analytics": "^0.4.17"
+    "universal-analytics": "^0.4.17",
+    "vm2": "^3.6.3"
   }
 }

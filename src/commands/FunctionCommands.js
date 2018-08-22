@@ -3,16 +3,18 @@ const vscode = require('vscode')
 const Core = require('../Core')
 const Validator = require('../Validator')
 
+const { NodeVM } = require('vm2')
+
 class FunctionCommands {
-    static async register(appsProvider, _authorization, _environment){
-        
+    static async register(appsProvider, _authorization, _environment) {
+
         /**
          * New function
          */
         vscode.commands.registerCommand('apps-sdk.function.new', async function (context) {
 
             // If called out of context -> die
-            if(!Core.contextGuard(context)){ return }
+            if (!Core.contextGuard(context)) { return }
 
             // Get the source app
             let app = context.parent
@@ -25,15 +27,52 @@ class FunctionCommands {
             })
 
             // If not filled -> die
-            if(!Core.isFilled("name", "function", name)){ return }
+            if (!Core.isFilled("name", "function", name)) { return }
 
             // Add the new entity. Refresh the tree or show the error
-            try{
+            try {
                 await Core.addEntity(_authorization, { "name": name }, `${_environment}/app/${app.name}/${app.version}/function`)
                 appsProvider.refresh()
             }
-            catch(err){
+            catch (err) {
                 vscode.window.showErrorMessage(err.error.message || err)
+            }
+        })
+
+        /**
+         * Run function test
+         */
+        vscode.commands.registerCommand('apps-sdk.function.test', async function (context) {
+
+            // If called out of context -> die
+            if (!Core.contextGuard(context)) { return }
+
+            // Common path for code and test
+            let urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.name}`
+
+            // Get current function code
+            let code = await Core.rpGet(`${urn}/code`, _authorization)
+
+            // Get current test code
+            let test = await Core.rpGet(`${urn}/test`, _authorization)
+
+            // Merge codes
+            let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
+
+            // Prepare VM2 and run
+            const vm = new NodeVM({
+                wrapper: "none",
+                require: {
+                    builtin: ['assert']
+                }
+            })
+
+            try {
+                let testFunction = vm.run(codeToRun)
+                console.log("SUCCESS")
+            }
+            catch (err) {
+                console.warn("FAILURE")
             }
         })
     }

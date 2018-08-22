@@ -11,8 +11,8 @@ const rp = require('request-promise')
 const mkdirp = require('mkdirp')
 const request = require('request')
 
-class CoreCommands{
-    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider){
+class CoreCommands {
+    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider) {
         this.appsProvider = appsProvider
         this._authorization = _authorization
         this._environment = _environment
@@ -23,10 +23,10 @@ class CoreCommands{
     /**
      * Source Uploader
      */
-    async sourceUpload(editor){
+    async sourceUpload(editor) {
 
         // It it's not an APPS SDK file, don't do anything
-        if(!editor.fileName.includes('apps-sdk')){ return }
+        if (!editor.fileName.includes('apps-sdk')) { return }
 
         // Load the content of the file that has just been saved
         let file = fs.readFileSync(editor.fileName, "utf8");
@@ -38,14 +38,14 @@ class CoreCommands{
         right = right.replace(/\\/g, "/")
 
         // If it's an open-source app, don't try to save anything
-        if(right.startsWith("/opensource/")){
+        if (right.startsWith("/opensource/")) {
             vscode.window.showWarningMessage("Opensource Apps can not be modified.")
             return
         }
 
         // Build the URL
         let url = (path.join(path.dirname(right), path.basename(right, path.extname(right)))).replace(/\\/g, "/")
-        
+
         // And compose the URI
         let uri = this._environment + url
 
@@ -72,36 +72,36 @@ class CoreCommands{
          * CODE-UPLOADER
          * Those lines are directly responsible for the code being uploaded
          */
-        try{
+        try {
             // Get the response from server
             let response = JSON.parse(await rp(options))
 
             // If there's no change to be displayed, end
-            if(!response.change){ return }
+            if (!response.change) { return }
 
             // Else refresh the tree, because there's a new change to be displayed
             this.appsProvider.refresh()
         }
-        catch(err){
+        catch (err) {
             let e = JSON.parse(err.error)
-            vscode.window.showErrorMessage(`${e.name}: ${e.message}`)                
+            vscode.window.showErrorMessage(`${e.name}: ${e.message}`)
         }
     }
 
     /**
      * Provider Keeper
      */
-    async keepProviders(editor){
+    async keepProviders(editor) {
         {
 
             //If undefined, don't do anything
-            if(!editor){ return }
+            if (!editor) { return }
 
             // Get the URN path of files URI (the right path)
             let right = editor.document.fileName.split("apps-sdk")[1]
 
             // No right, no apps-sdk, don't do anything
-            if(!right){ return }
+            if (!right) { return }
 
             // If on DOS-base, replace backslashes with forward slashes (on Unix-base it's done already)
             right = right.replace(/\\/g, "/")
@@ -111,16 +111,16 @@ class CoreCommands{
 
             // If versionable, stash the version
             let version
-            if(!isNaN(crumbs[3])){
+            if (!isNaN(crumbs[3])) {
                 version = crumbs[3]
-                crumbs.splice(3,1)
+                crumbs.splice(3, 1)
             }
 
             // If no version, set 1
             version = version === undefined ? 1 : version;
 
             // If not enough crumbs (=> base/docs) -> remove existing providers and exit.
-            if(crumbs.length < 5){ 
+            if (crumbs.length < 5) {
 
                 // Remove existing RpcProvider
                 if (this.currentRpcProvider !== null && this.currentRpcProvider !== undefined) {
@@ -131,14 +131,14 @@ class CoreCommands{
                 if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
                     this.currentImlProvider.dispose()
                 }
-                
+
                 return
             }
 
             let apiPath = crumbs[3]
             let name = crumbs[5].split(".")[0]
             let app = crumbs[2]
-            
+
 
             /**
              * RPC-LOADER
@@ -150,7 +150,7 @@ class CoreCommands{
                 (apiPath === "webhook" && name === "parameters") ||
                 (apiPath === "module" && (name === "parameters" || name === "expect" || name === "interface" || name === "samples")) ||
                 (apiPath === "rpc" && name === "api")
-            ){
+            ) {
                 // Remove existing RpcProvider
                 if (this.currentRpcProvider !== null && this.currentRpcProvider !== undefined) {
                     this.currentRpcProvider.dispose()
@@ -217,7 +217,7 @@ class CoreCommands{
         }
     }
 
-    static async register(_DIR, _authorization, _environment){
+    static async register(_DIR, _authorization, _environment) {
 
         /**
          * OpenSource Loader
@@ -245,7 +245,7 @@ class CoreCommands{
                     break
                 case "app":
                     // Prepared for more app-level codes
-                    switch(item.name){
+                    switch (item.name) {
                         case "content":
                             urn += `/docs`
                             break
@@ -273,7 +273,7 @@ class CoreCommands{
                     vscode.window.showErrorMessage(err.message)
                     return
                 }
-                
+
                 // Compose a download URL
                 let url = _environment + urn
 
@@ -305,14 +305,14 @@ class CoreCommands{
                         })
                     });
                 });
-                
+
             })
         })
 
         /**
          * Source Loader
          */
-        vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {            
+        vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {
 
             // Compose directory structure
             let urn = `/app/${Core.getApp(item).name}`
@@ -325,7 +325,7 @@ class CoreCommands{
             // Complete the URN by the type of item
             switch (item.apiPath) {
                 case "function":
-                    urn += `/${item.apiPath}/${item.parent.name}/code`
+                    urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
                     break
                 case "rpc":
                 case "module":
@@ -335,7 +335,7 @@ class CoreCommands{
                     break
                 case "app":
                     // Prepared for more app-level codes
-                    switch(item.name){
+                    switch (item.name) {
                         case "content":
                             urn += `/docs`
                             break
@@ -363,7 +363,7 @@ class CoreCommands{
                     vscode.window.showErrorMessage(err.message)
                     return
                 }
-                
+
                 // Compose a download URL
                 let url = _environment + urn
 
@@ -395,7 +395,7 @@ class CoreCommands{
                         })
                     });
                 });
-                
+
             })
         })
     }

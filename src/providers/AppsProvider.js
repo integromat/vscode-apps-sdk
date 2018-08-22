@@ -26,36 +26,36 @@ class AppsProvider {
     getParent(element) {
         return element.parent
     }
-    
+
     getTreeItem(element) {
         return element
     }
-    
+
     async getChildren(element) {
         /*
          * LEVEL 0 - APPS
          */
         if (element === undefined) {
             let response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization)
-            if (response === undefined){ return }
+            if (response === undefined) { return }
             let iconDir = path.join(tempy.directory(), "icons")
             mkdirp(iconDir)
             let apps = response.map(async (app) => {
                 let dest = path.join(iconDir, `${app.name}.png`)
-                try{
+                try {
                     await download.image({
-                    headers: {
-                        "Authorization": this._authorization
-                    },
-                    url: `${this._baseUrl}/app/${app.name}/icon/512`,
-                    dest: dest
+                        headers: {
+                            "Authorization": this._authorization
+                        },
+                        url: `${this._baseUrl}/app/${app.name}/icon/512`,
+                        dest: dest
                     })
                     await Core.invertPngAsync(dest);
                 }
-                catch(err){
+                catch (err) {
                     // Icon doesn't exist -> it has not been set yet
                 }
-                finally{
+                finally {
                     apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes))
                 }
             })
@@ -83,7 +83,7 @@ class AppsProvider {
 
                 // Determine the name of group
                 let groupItem
-                switch(group[0]){
+                switch (group[0]) {
                     case `general`:
                         groupItem = "app"
                         break
@@ -97,7 +97,7 @@ class AppsProvider {
 
                 // Look for changes of the group
                 let groupChanges = element.changes.filter(change => {
-                    if (change.group === groupItem){
+                    if (change.group === groupItem) {
                         return change
                     }
                 })
@@ -118,11 +118,11 @@ class AppsProvider {
                     [`common`, "Common", "Collection of common data accessible through common.variable expression. Contains sensitive information like API keys or API secrets. This collection is shared across all modules."]
                 ].map(code => {
                     let change = element.changes.find(change => {
-                        if(change.code == code[0]){
+                        if (change.code == code[0]) {
                             return change
                         }
                     })
-                    return new Code(code[0], code[1], element, "imljson", "app", false,  change ? change.id : null, code[2])
+                    return new Code(code[0], code[1], element, "imljson", "app", false, change ? change.id : null, code[2])
                 })
             }
 
@@ -133,11 +133,11 @@ class AppsProvider {
                     //new Code(`images`, "Images", element, "img")
                 ]
             }
-            
+
             // REST
-            else{
-                for(let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]){
-                    if(element.id.includes(needle)){
+            else {
+                for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+                    if (element.id.includes(needle)) {
                         let name = needle.slice(0, -1);
                         let uri = ["connection", "webhook"].includes(name) ?
                             `${this._baseUrl}/app/${element.parent.name}/${name}` :
@@ -145,7 +145,7 @@ class AppsProvider {
                         let connections = await Core.rpGet(uri, this._authorization)
                         return connections.map(item => {
                             let changes = element.changes.filter(change => {
-                                if(change.item === item.name){
+                                if (change.item === item.name) {
                                     return change
                                 }
                             })
@@ -159,7 +159,7 @@ class AppsProvider {
          * LEVEL 3 - CODE
          */
         else if (element.level === 2) {
-            switch(element.supertype){
+            switch (element.supertype) {
                 case "connection":
                     return [
                         [`api`, "Communication", "Specifies the account validation process. This specification does not inherit from base."],
@@ -169,9 +169,9 @@ class AppsProvider {
                         [`parameters`, "Parameters", "Array of parameters user should fill while creating a new connection."]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
@@ -187,9 +187,9 @@ class AppsProvider {
                         [`scope`, "Required scope", "Scope required by this webhook. Array of strings."]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
@@ -197,7 +197,7 @@ class AppsProvider {
                         return new Code(code[0], code[1], element, "imljson", "webhook", false, change ? change.id : null, code[2])
                     })
                 case "module":
-                    switch(element.type){
+                    switch (element.type) {
                         // Action or search
                         case 4:
                         case 9:
@@ -210,9 +210,9 @@ class AppsProvider {
                                 [`scope`, "Scope", "Scope required by this module. Array of strings."]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
@@ -230,9 +230,9 @@ class AppsProvider {
                                 [`scope`, "Scope", "Scope required by this module. Array of strings."]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
@@ -248,9 +248,9 @@ class AppsProvider {
                                 [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
@@ -265,9 +265,9 @@ class AppsProvider {
                                 [`expect`, "Mappable parameters", "Array of mappable parameters user can fill while configuring the module. Mappable parameters can contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
@@ -275,15 +275,15 @@ class AppsProvider {
                                 return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                     }
-                case "rpc": 
+                case "rpc":
                     return [
                         [`api`, "Communication", "This specification does inherit from base."],
                         [`parameters`, "Parameters"]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
@@ -292,12 +292,13 @@ class AppsProvider {
                     })
                 case "function":
                     return [
-                        [`code`, "Code"]
+                        [`code`, "Code"],
+                        [`test`, "Test"]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
