@@ -47,8 +47,14 @@ class FunctionCommands {
             // If called out of context -> die
             if (!Core.contextGuard(context)) { return }
 
-            // Common path for code and test
-            let urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.name}`
+            // Set correct URN (if called from function or core or test)
+            let urn
+            if (context.supertype === "function") {
+                urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.name}`
+            }
+            else if (context.name === "code" || context.name === "test") {
+                urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.parent.name}`
+            }
 
             // Get current function code
             let code = await Core.rpGet(`${urn}/code`, _authorization)

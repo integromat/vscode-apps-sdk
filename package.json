@@ -283,6 +283,14 @@
           "when": "viewItem == function && view == apps"
         },
         {
+          "command": "apps-sdk.function.test",
+          "when": "viewItem == code && view == apps"
+        },
+        {
+          "command": "apps-sdk.function.test",
+          "when": "viewItem == test && view == apps"
+        },
+        {
           "command": "apps-sdk.rpc.new",
           "when": "viewItem == rpcs && view == apps"
         },
