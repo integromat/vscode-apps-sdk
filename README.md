@@ -170,3 +170,10 @@ You can either commit or rollback changes in the app. To do so, right click the 
 ![Commit or rollback](./resources/readme/changes_04.png)
 
 *Commiting or rolling back only one change is currently not supported on our side, but we're planning to add this feature as soon as possible.*
+
+## VS Code tips
+
+Here are some tips for better performance and experience:
+
+- Set `editor.formatOnSave` to `true` in VS Code settings. Source codes will be formated automatically when you save them.
+- Set `editor.quickSuggetions.strings` to `true` in VS Code settings. Keyword recommendations will automatically show up while you're typing in IML strings too.
