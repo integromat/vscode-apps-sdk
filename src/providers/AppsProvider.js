@@ -12,11 +12,12 @@ const mkdirp = require('mkdirp')
 const download = require('image-downloader')
 
 class AppsProvider {
-    constructor(_authorization, _baseUrl) {
+    constructor(_authorization, _baseUrl, _DIR) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this._authorization = _authorization
         this._baseUrl = _baseUrl
+        this._DIR = _DIR
     }
 
     refresh() {
@@ -38,10 +39,12 @@ class AppsProvider {
         if (element === undefined) {
             let response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization)
             if (response === undefined) { return }
-            let iconDir = path.join(tempy.directory(), "icons")
+            let iconDir = path.join(this._DIR, "icons")
             mkdirp(iconDir)
+            //TODO Implement GLOB condition to prevent downloading an existing icon
             let apps = response.map(async (app) => {
-                let dest = path.join(iconDir, `${app.name}.png`)
+                let rand = new Date().getTime()
+                let dest = path.join(iconDir, `${app.name}_${rand}.png`)
                 try {
                     await download.image({
                         headers: {
@@ -56,7 +59,7 @@ class AppsProvider {
                     // Icon doesn't exist -> it has not been set yet
                 }
                 finally {
-                    apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes))
+                    apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, rand))
                 }
             })
             return Promise.all(apps).then(() => {

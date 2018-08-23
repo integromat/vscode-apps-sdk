@@ -10,9 +10,10 @@ const fs = require('fs')
 const request = require('request')
 const path = require('path')
 const rp = require('request-promise')
+const asyncfile = require('async-file')
 
 class AppCommands {
-    static async register(appsProvider, _authorization, _environment){
+    static async register(appsProvider, _authorization, _environment) {
 
         /**
          * New APP
@@ -21,7 +22,7 @@ class AppCommands {
 
             // Label prompt
             let label = await vscode.window.showInputBox({ prompt: "Enter app label" })
-            if(!Core.isFilled("label", "app", label)){ return }
+            if (!Core.isFilled("label", "app", label)) { return }
 
             // Id prompt
             let id = await vscode.window.showInputBox({
@@ -29,36 +30,36 @@ class AppCommands {
                 value: kebabCase(label),
                 validateInput: Validator.appName
             })
-            if(!Core.isFilled("id", "app", id, "An")){ return }
+            if (!Core.isFilled("id", "app", id, "An")) { return }
 
             // Color theme prompt and check
             let theme = await vscode.window.showInputBox({
                 prompt: "Pick a color theme",
                 value: "#000000"
             })
-            if(!Core.isFilled("theme", "app", theme)){ return }
-            if(!(/^#[0-9A-F]{6}$/i.test(theme))){ 
+            if (!Core.isFilled("theme", "app", theme)) { return }
+            if (!(/^#[0-9A-F]{6}$/i.test(theme))) {
                 vscode.window.showErrorMessage("Entered color was invalid.")
                 return
             }
 
             // Language prompt
             let language = await vscode.window.showQuickPick(QuickPick.languages(_environment, _authorization), { placeHolder: "Choose app language." })
-            if(!Core.isFilled("language", "app", language)){ return }
+            if (!Core.isFilled("language", "app", language)) { return }
 
             // Countries prompt
             let countries = await vscode.window.showQuickPick(QuickPick.countries(_environment, _authorization), {
                 canPickMany: true,
                 placeHolder: "Choose app countries. If left blank, app will be considered as global."
             })
-            if (!Core.isFilled("country", "app", countries)){ return }
+            if (!Core.isFilled("country", "app", countries)) { return }
 
             // Build URI and prepare countries list
             let uri = `${_environment}/app`
             countries = countries.map(item => { return item.description })
 
             // Send the request
-            try{
+            try {
                 await Core.addEntity(_authorization, {
                     "name": id,
                     "label": label,
@@ -69,7 +70,7 @@ class AppCommands {
                 }, uri)
                 appsProvider.refresh()
             }
-            catch(err){
+            catch (err) {
                 vscode.window.showErrorMessage(err.error.message || err)
             }
         })
@@ -80,7 +81,7 @@ class AppCommands {
         vscode.commands.registerCommand('apps-sdk.app.edit-metadata', async function (context) {
 
             // Context check
-            if(!Core.contextGuard(context)){ return }
+            if (!Core.contextGuard(context)) { return }
 
             // Get the app from the API (will be used in future)
             let app = await Core.getAppObject(_environment, _authorization, context)
@@ -90,7 +91,7 @@ class AppCommands {
                 prompt: "Customize app label",
                 value: context.bareLabel
             })
-            if(!Core.isFilled("label", "app", label)){ return }
+            if (!Core.isFilled("label", "app", label)) { return }
 
             // Theme prompt with prefilled value
             let theme = await vscode.window.showInputBox({
@@ -98,19 +99,19 @@ class AppCommands {
                 value: context.theme,
                 validateInput: Validator.appTheme
             })
-            if(!Core.isFilled("theme", "app", theme)){ return }
+            if (!Core.isFilled("theme", "app", theme)) { return }
 
             // Prepare languages -> place current language to the top, then prompt
             let languages = await QuickPick.languages(_environment, _authorization)
-            languages.unshift({label: "Keep current", description: app.language})
+            languages.unshift({ label: "Keep current", description: app.language })
             let language = await vscode.window.showQuickPick(languages, { placeHolder: "Choose app language" })
-            if(!Core.isFilled("language", "app", language)){ return }
+            if (!Core.isFilled("language", "app", language)) { return }
 
             // Prepare countries -> get current coutries and precheck them, sort by check and alphabet, then prompt
             let countries = await QuickPick.countries(_environment, _authorization)
-            if(app.countries !== null){
+            if (app.countries !== null) {
                 countries = countries.map(country => {
-                    if(app.countries.includes(country.description)){
+                    if (app.countries.includes(country.description)) {
                         country.picked = true
                     }
                     return country
@@ -129,8 +130,8 @@ class AppCommands {
             countries = countries.length > 0 ? countries : undefined
 
             // Send the request
-            try{
-                await Core.editEntity(_authorization,{
+            try {
+                await Core.editEntity(_authorization, {
                     label: label,
                     theme: theme,
                     language: language.description,
@@ -138,10 +139,10 @@ class AppCommands {
                 }, uri)
                 appsProvider.refresh()
             }
-            catch(err){
+            catch (err) {
                 vscode.window.showErrorMessage(err.error.message || err)
-            }          
-        })        
+            }
+        })
 
         /**
          * Delete app
@@ -149,18 +150,18 @@ class AppCommands {
         vscode.commands.registerCommand('apps-sdk.app.delete', async function (context) {
 
             // Context check
-            if(!Core.contextGuard(context)){ return }
+            if (!Core.contextGuard(context)) { return }
             let app = context
 
             // Wait for confirmation
             let answer = await vscode.window.showQuickPick(Enum.delete, { placeHolder: `Do you really want to delete this app?` })
-            if(answer === undefined || answer === null) {
+            if (answer === undefined || answer === null) {
                 vscode.window.showWarningMessage("No answer has been recognized.")
                 return
             }
 
             // If was confirmed or not
-            switch(answer.label){
+            switch (answer.label) {
                 case "No":
                     vscode.window.showInformationMessage(`Stopped. No apps were deleted.`)
                     break
@@ -168,7 +169,7 @@ class AppCommands {
                     // Set URI and send the request
                     context.apiPath = context.apiPath === undefined ? context.supertype : context.apiPath
                     let uri = `${_environment}/app/${app.name}/${app.version}`
-                    try{
+                    try {
                         await rp({
                             method: 'DELETE',
                             uri: uri,
@@ -179,7 +180,7 @@ class AppCommands {
                         })
                         appsProvider.refresh()
                     }
-                    catch(err){
+                    catch (err) {
                         vscode.window.showErrorMessage(err.error.message || err)
                     }
                     break
@@ -203,7 +204,7 @@ class AppCommands {
                     enableScripts: true
                 }
             )
-            
+
             // Prepare variable for storing the base64
             let buff
 
@@ -250,7 +251,7 @@ class AppCommands {
                     }
 
                     // Read the new file and fire the request
-                    fs.createReadStream(uri[0].fsPath).pipe(request.post(options, function (err, response) {
+                    fs.createReadStream(uri[0].fsPath).pipe(request.post(options, async function (err, response) {
 
                         // Parse the response
                         response = JSON.parse(response.body)
@@ -262,6 +263,10 @@ class AppCommands {
 
                         // If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
                         else {
+
+                            await asyncfile.unlink(app.iconPath.dark)
+                            await asyncfile.unlink(app.iconPath.light)
+
                             vscode.commands.executeCommand('apps-sdk.refresh')
                             panel.dispose()
                         }
