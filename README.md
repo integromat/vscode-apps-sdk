@@ -8,7 +8,7 @@
 - Apps control (CRUD modules, RPCs, connections, ...)
 - Documentation editor
 - Faster and more comfortable than the web interface
-- Everything at one place
+- Everything in one place
 
 ## First launch guide
 
@@ -24,11 +24,11 @@ You can launch the environment setup by clicking the `Add environment` button di
 
 ![Environment add command palette](./resources/readme/firstLaunch_envAdd_02.png)
 
-A text input prompt will appear with prefilled Integromat API URL `api.integromat.com`. If you don't want to connect to a private Integromat Cloud Service, just confirm this URL by pressing the Enter key.
+A text input prompt will appear with the prefilled Integromat API URL `api.integromat.com`. If you don't want to connect to the private Integromat Cloud Service, just confirm this URL by pressing the Enter key.
 
 ![Base URL prompt](./resources/readme/firstLaunch_envAdd_03.png)
 
-In the next dialog you'll be asked to name the environment. For the Integromat API URL the name defaults to `Integromat: Production`, but you can use any name you want. Confirm the name by pressing the Enter key.
+In the next dialog you'll be asked to name the environment. For the Integromat API URL the name defaults to `Integromat: Production`, but you can use any name you want. Confirm this name or confirm its new name by pressing the Enter key.
 
 ![Environment name prompt](./resources/readme/firstLaunch_envAdd_04.png)
 
@@ -37,11 +37,11 @@ The last dialog will ask you for your Integromat API key. You can get your API k
 ![API key prompt](./resources/readme/firstLaunch_envAdd_05.png)
 
 
-And that's it. You're all set. The extension will restart with the configuration you've just entered and will connect to the Integromat.
+And that's it. You're all set. The extension will restart with the configuration you've just entered and will connect to Integromat.
 
 ### Opensource Apps
 
-Once you're logged in, you have an access to Opensource apps. They are read only and they are here to help you learning how the Apps platform work and how to write the sources.
+Once you're logged in, you have an access to Opensource apps. They are read only and they are here to help you learn how the Apps' platform works and how to write the sources.
 
 ![OpenSource view](./resources/readme/firstLaunch_openSource_01.png)
 
@@ -69,15 +69,15 @@ At first, you'll be asked to fill in a label. That's how the app will be display
 
 ![App label](./resources/readme/firstApp_02.png)
 
-Next, the app id will be generated for you. It will be used in URL paths and so. You can change it, however it should be clear to which app does it lead. It has to match `(^[a-z][0-9a-z-]+[0-9a-z]$)` regular expression.
+Next, the app id will be generated for you. It will be used in URL paths and so on. You can change it, however it should be clear to which app it leads to. It has to match `(^[a-z][0-9a-z-]+[0-9a-z]$)` regular expression.
 
 ![App ID](./resources/readme/firstApp_03.png)
 
-Then you'll be asked to enter a color theme of your app. That's the color of app modules used in scenarios.
+Then you'll be asked to enter a color theme of your app. That's the color the app's modules will be seen as in scenarios.
 
 ![App color](./resources/readme/firstApp_04.png)
 
-The next prompt will ask for app language. That's the language of the interface of the app. Most of the apps in the Integromat are currently in English.
+The next prompt will ask for app language. That's the language of the interface of the app. Most of the apps in Integromat are currently in English.
 
 ![App language](./resources/readme/firstApp_05.png)
 
@@ -95,31 +95,31 @@ To view, set or change the icon of app click the right mouse button on the app n
 
 ![Edit icon context](./resources/readme/iconChange_01.png)
 
-A new view will appear and you'll see the preview of the current app icon as the app module.
+A new view will appear and you'll see the preview of the current app's icon as the app module.
 
 ![Icon preview](./resources/readme/iconChange_02.png)
 
-You can change the icon by clicking the `Change icon` button. The icon has to be in PNG format, exactly 512x512 pixel sized. The file upload dialog will appear and after you confirm the chosen icon, it will be uploaded to the Integromat. The change icon view will close and the new icon will appear in the left tree.
+You can change the icon by clicking the `Change icon` button. The icon has to be in PNG format, exactly 512x512 pixel sized. The file upload dialog will appear and after you confirm the chosen icon, it will be uploaded back to Integromat. The change icon view will close and the new icon will appear in the left tree.
 
 ## General controls of the Apps SDK
 
 ### Editing the source code
 
-To start editing the source code, simply find the item you want to edit in the left menu and click it. A new editor will appear and the current source will be downloaded from the Integromat.
+To start editing the source code, simply find the item you want to edit in the left menu and click it. A new editor will appear and the current source will be downloaded from Integromat.
 
 You can edit it as a normal file. If your app contains some RPCs or IML functions, they'll be provided to you, if it's possible in the currently edited code.
 
 ![Source editor with hint](./resources/readme/ctrl_src_01.png)
 
-After pressing `CTRL+S`, the source code will be automatically uploaded back to the Integromat.
+After pressing `CTRL+S`, the source code will be automatically uploaded back to Integromat.
 
 ### Adding a new item
 
-To add a new item, such a module, connection, webhook or anything else, right click the corresponding folder and click the `New <item>` option.
+To add a new item, such as a module, connection, webhook or anything else, right click the corresponding folder and click the `New <item>` option.
 
 ![New item](./resources/readme/ctrl_new_01.png)
 
-Each time the prompt will appear and you'll be asked to fill in some information about the newly created item. Just goo through it. Your new items will always appear under the corresponding folder.
+Each time the prompt will appear, you'll be asked to fill in some information about the newly created item. Just go through it. Your new items will always appear under the corresponding folder.
 
 ![New item created](./resources/readme/ctrl_new_02.png)
 
@@ -129,11 +129,11 @@ To edit metadata (for example to change the label of the module) right click the
 
 ![Edit metadata option](./resources/readme/ctrl_meta_01.png)
 
-The prompt will appear and you'll be able to change allowed values. If you don't want to change some value, just skip the field by pressing the Enter key.
+The prompt will appear and you'll be able to change allowed values. If you don't want to change any values, just skip the field by pressing the Enter key.
 
 ### Changing the connection or webhook
 
-To change attached connection or webhook of an item right click the item and choose the `Change connection (or webhook)` option.
+To change the attached connection or webhook of an item right click the item and choose the `Change connection (or webhook)` option.
 
 ![Change connection](./resources/readme/ctrl_conn_01.png)
 
@@ -153,7 +153,7 @@ You will be asked to confirm the deletion. If you answer `Yes`, the item will be
 
 ## Changes and versioning
 
-When your app becomes approved by the Integromat (that means it's publicly visible and it's shown in the scenario builder as well), it starts to be versioned. From this moment, every change made to the app is visible only for you unless you commit it. You can safely add and test new functions and when they are stable, you can release them for users. The changes are marked with `*` next to the name of the app or changed item.
+When your app becomes approved by Integromat (that means it's publicly visible and it's shown in the scenario builder as well), it starts to be versioned. From this moment, every change made to the app is visible only to you unless you commit it. You can safely add and test new functions and when they are stable, you can release them for users. The changes are marked with `*` next to the name of the app or changed item.
 
 ![Changed item](./resources/readme/changes_01.png)
 
@@ -165,7 +165,7 @@ A compare view will appear and you'll see the changes that have been made.
 
 ![Changes view](./resources/readme/changes_03.png)
 
-You can either commit or rollback changes in the app. To do so, right click the app and choose the corresponding option. Then confirm that you know what you're doing and it's done. Remember, all commited changes are immediatelly effective and visible to users of your app.
+You can either commit or rollback changes in the app. To do so, right click the app and choose the corresponding option. Then confirm that you know what you're doing and it's done. Remember, all commited changes are immediately effective and visible to users of your app.
 
 ![Commit or rollback](./resources/readme/changes_04.png)
 
