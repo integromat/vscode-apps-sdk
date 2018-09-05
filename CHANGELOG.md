@@ -14,6 +14,7 @@
 
 - Source Uploader catches only Apps SDK files
 - Check mark symbol displaying correctly on UNIX-based systems
+- Annoying icon flickering when the app tree is refreshed
 
 ### Modified
 

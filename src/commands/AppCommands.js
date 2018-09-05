@@ -264,8 +264,12 @@ class AppCommands {
                         // If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
                         else {
 
-                            await asyncfile.unlink(app.iconPath.dark)
-                            await asyncfile.unlink(app.iconPath.light)
+                            if (await asyncfile.exists(app.iconPath.dark)) {
+                                await asyncfile.rename(app.iconPath.dark, `${app.iconPath.dark}.old`)
+                            }
+                            if (await asyncfile.exists(app.iconPath.light)) {
+                                await asyncfile.rename(app.iconPath.light, `${app.iconPath.light}.old`)
+                            }
 
                             vscode.commands.executeCommand('apps-sdk.refresh')
                             panel.dispose()

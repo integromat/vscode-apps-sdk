@@ -6,10 +6,10 @@ const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
 
-const tempy = require('tempy')
 const path = require('path')
 const mkdirp = require('mkdirp')
 const download = require('image-downloader')
+const asyncfile = require('async-file')
 
 class AppsProvider {
     constructor(_authorization, _baseUrl, _DIR) {
@@ -41,32 +41,35 @@ class AppsProvider {
             if (response === undefined) { return }
             let iconDir = path.join(this._DIR, "icons")
             mkdirp(iconDir)
-            //TODO Implement GLOB condition to prevent downloading an existing icon
-            let apps = response.map(async (app) => {
-                let rand = new Date().getTime()
-                let dest = path.join(iconDir, `${app.name}_${rand}.png`)
-                try {
-                    await download.image({
-                        headers: {
-                            "Authorization": this._authorization
-                        },
-                        url: `${this._baseUrl}/app/${app.name}/icon/512`,
-                        dest: dest
-                    })
-                    await Core.invertPngAsync(dest);
+            let apps = []
+            for (let app of response) {
+                let iconVersion = 1
+                let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
+                while (await asyncfile.exists(`${dest}.old`)) {
+                    iconVersion++
+                    dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
                 }
-                catch (err) {
-                    // Icon doesn't exist -> it has not been set yet
+                if (!await asyncfile.exists(dest)) {
+                    try {
+                        await download.image({
+                            headers: {
+                                "Authorization": this._authorization
+                            },
+                            url: `${this._baseUrl}/app/${app.name}/icon/512`,
+                            dest: dest
+                        })
+                        await Core.invertPngAsync(dest);
+                    }
+                    catch (err) {
+                        if (err != undefined) {
+                            iconVersion = 0
+                        }
+                    }
                 }
-                finally {
-                    apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, rand))
-                }
-            })
-            return Promise.all(apps).then(() => {
-                apps = apps.splice(apps.length / 2, apps.length);
-                apps.sort(Core.compareApps)
-                return apps;
-            })
+                apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion))
+            }
+            apps.sort(Core.compareApps)
+            return apps
         }
         /*
          * LEVEL 1 - GROUP
