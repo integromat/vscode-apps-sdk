@@ -41,8 +41,7 @@ class AppsProvider {
             if (response === undefined) { return }
             let iconDir = path.join(this._DIR, "icons")
             mkdirp(iconDir)
-            let apps = []
-            for (let app of response) {
+            let apps = response.map(async (app) => {
                 let iconVersion = 1
                 let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
                 while (await asyncfile.exists(`${dest}.old`)) {
@@ -66,8 +65,9 @@ class AppsProvider {
                         }
                     }
                 }
-                apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion))
-            }
+                return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
+            })
+            apps = await Promise.all(apps)
             apps.sort(Core.compareApps)
             return apps
         }
