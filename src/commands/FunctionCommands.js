@@ -3,7 +3,7 @@ const vscode = require('vscode')
 const Core = require('../Core')
 const Validator = require('../Validator')
 
-const { NodeVM } = require('vm2')
+const { VM } = require('vm2')
 
 class FunctionCommands {
     static async register(appsProvider, _authorization, _environment) {
@@ -67,14 +67,15 @@ class FunctionCommands {
             // Merge codes
             let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
 
-            // Prepare VM2 and run
-            const vm = new NodeVM({
-                wrapper: "none",
-                require: {
-                    builtin: ['assert']
+            // Prepare VM2, set timeout and pass assert
+            const vm = new VM({
+                timeout: 5000,
+                sandbox: {
+                    assert: require('assert')
                 }
             })
 
+            // Show output channel IML tests and try running the test code
             outputChannel.show()
             try {
                 vm.run(codeToRun)
