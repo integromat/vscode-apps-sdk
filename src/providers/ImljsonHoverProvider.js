@@ -1,12 +1,13 @@
 const vscode = require('vscode');
 
-class ImljsonHoverProvider{
-    provideHover(document, position){
-        let range = document.getWordRangeAtPosition(position)
-        let text = document.getText(range)
+class ImljsonHoverProvider {
+    provideHover(document, position) {
+        let range = document.getWordRangeAtPosition(position, new RegExp(`"([a-z])+":`))
+        let text = document.getText(range).slice(1, -2)
+
         let ans
-        switch(text){
-            case 'name': 
+        switch (text) {
+            case 'name':
                 ans = new vscode.MarkdownString('## name\r\n___\r\n- Type: `String`\r\n- **Required**\r\n- Internal parameter name. This is they key in the resulting object.')
                 break
             case 'type':
@@ -21,19 +22,19 @@ class ImljsonHoverProvider{
             case 'default':
                 ans = new vscode.MarkdownString('## default\r\n___\r\n- Type: `Any`\r\n- Specifies the default value of the parameter.')
                 break
-            case 'advanced': 
+            case 'advanced':
                 ans = new vscode.MarkdownString('## advanced\r\n___\r\n- Type: `Boolean`\r\n- Specifies if the parameter is advanced or not. Advanced parameters are hidden behind a checkbox in GUI.\r\n- Default: `false`')
                 break
-            case 'required': 
+            case 'required':
                 ans = new vscode.MarkdownString('## required\r\n___\r\n- Type: `Boolean`\r\n- Specifies if the parameter is required.\r\n- Default: `false`')
                 break
             case 'editable':
                 ans = new vscode.MarkdownString('## editable\r\n___\r\n- Type: `Boolean`\r\n- If `true`, the user can manually edit the value of this parameter (or use mappings)\r\n- Default: `false`')
                 break
-            case 'spec': 
+            case 'spec':
                 ans = new vscode.MarkdownString('## spec\r\n___\r\n- Type: `Array/Object`\r\n- Description of items in the array or collection.')
                 break
-            case 'time': 
+            case 'time':
                 ans = new vscode.MarkdownString('## time\r\n___\r\n- Type: `Boolean`\r\n- If `false` the GUI will only display date selection.\r\n- Default: `true`')
                 break
             case 'extension':
@@ -45,7 +46,7 @@ class ImljsonHoverProvider{
             case 'mode':
                 ans = new vscode.MarkdownString('## mode\r\n___\r\n- Type: `String`\r\n- Specifies the initial **editing mode** when editable set to `true`. Can be set to `edit` to start in **mapping mode** or to `choose` to start in **select mode**\r\n- Default: `choose`')
                 break
-            case 'grouped': 
+            case 'grouped':
                 ans = new vscode.MarkdownString('## grouped\r\n___\r\n- Type: `Boolean`\r\n- If `true`, options can be grouped. Replace value with options to change the option to a group.')
                 break
             case 'multiline':
