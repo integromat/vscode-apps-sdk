@@ -2,9 +2,11 @@ const vscode = require('vscode');
 
 class ImljsonHoverProvider {
     provideHover(document, position) {
-        let range = document.getWordRangeAtPosition(position, new RegExp(`"([a-z])+":`))
-        let text = document.getText(range).slice(1, -2)
+        let text = document.getText(document.getWordRangeAtPosition(position, new RegExp(`"([a-z])+":`))).slice(1, -2)
+        if (text) { return this.provideKeyHover(text) }
+    }
 
+    provideKeyHover(text) {
         let ans
         switch (text) {
             case 'name':
@@ -58,5 +60,4 @@ class ImljsonHoverProvider {
         return ans ? new vscode.Hover(ans) : undefined
     }
 }
-
 module.exports = ImljsonHoverProvider
