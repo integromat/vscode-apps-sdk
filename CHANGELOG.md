@@ -9,6 +9,8 @@
 - Icons for refresh and add app command
 - Better tooltips
 - JSONC formatter
+- Hover provider for parameter types
+- Links from hover provider to new docs
 
 ### Fixed
 
@@ -19,6 +21,7 @@
 ### Modified
 
 - Validator messages contains examples
+- Added options, validate, nested and value to key hover provider
 
 ### Removed
 
