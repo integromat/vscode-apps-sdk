@@ -4,6 +4,7 @@ const Core = require('../Core')
 const Validator = require('../Validator')
 
 const { VM } = require('vm2')
+const { IML } = require('@integromat/iml')
 
 class FunctionCommands {
     static async register(appsProvider, _authorization, _environment) {
@@ -67,12 +68,21 @@ class FunctionCommands {
             // Merge codes
             let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
 
+            /**
+             *  Sandbox cookbook
+             *  - Assert for assertions
+             *  - IML for internal IML functions
+             */
+            let sandbox = { assert: require('assert'), iml: {} };
+
+            Object.keys(IML.FUNCTIONS).forEach(name => {
+                sandbox.iml[name] = IML.FUNCTIONS[name].value;
+            });
+
             // Prepare VM2, set timeout and pass assert
             const vm = new VM({
                 timeout: 5000,
-                sandbox: {
-                    assert: require('assert')
-                }
+                sandbox: sandbox
             })
 
             // Show output channel IML tests and try running the test code
