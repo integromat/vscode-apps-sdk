@@ -73,7 +73,11 @@ class FunctionCommands {
              *  - Assert for assertions
              *  - IML for internal IML functions
              */
-            let sandbox = { assert: require('assert'), iml: {} };
+            let sandbox = {
+                assert: require('assert'), iml: {}/*, it: (name, test) => {
+                    outputChannel.append(`- ${name} ... `)
+                }*/
+            };
 
             Object.keys(IML.FUNCTIONS).forEach(name => {
                 sandbox.iml[name] = IML.FUNCTIONS[name].value;
