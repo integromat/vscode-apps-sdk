@@ -171,6 +171,33 @@ You can either commit or rollback changes in the app. To do so, right click the 
 
 *Commiting or rolling back only one change is currently not supported on our side, but we're planning to add this feature as soon as possible.*
 
+## IML tests
+
+### Writing a test
+
+It's possible to write tests for your custom IML functions.
+You can use `it` function and `asserts` as you may already know them from Mocha and other testing frameworks.
+
+Our example function will have the following code:
+
+![Example function code](./resources/readme/tests_code.png)
+
+So, let's write a test for this function. We'll create two blocks.
+
+![Example function tests](./resources/readme/tests_test.png)
+
+As you can see, the `it` function accepts exactly two parameters. The name of the test and code to run. In this code we can verify expected outputs using `assert.ok()` function.
+
+### Running a test
+
+To run a test on a specific function, right click the function name in the tree and pick the `Run test` option.
+
+![Run test option](./resources/readme/tests_run.png)
+
+The test will start and you'll see the output in the `IML tests` output channel.
+
+![Test result](./resources/readme/tests_result.png)
+
 ## VS Code tips
 
 Here are some tips for better performance and experience:

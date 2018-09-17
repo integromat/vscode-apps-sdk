@@ -52,11 +52,14 @@ class FunctionCommands {
 
             // Set correct URN (if called from function or core or test)
             let urn
+            let functionLabel
             if (context.supertype === "function") {
                 urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.name}`
+                functionLabel = context.label
             }
             else if (context.name === "code" || context.name === "test") {
                 urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.parent.name}`
+                functionLabel = context.parent.label
             }
 
             // Get current function code
@@ -73,29 +76,55 @@ class FunctionCommands {
              *  - Assert for assertions
              *  - IML for internal IML functions
              */
+            let success = 0
+            let fail = 0
+            let total = 0
             let sandbox = {
-                assert: require('assert'), iml: {}/*, it: (name, test) => {
+                assert: require('assert'), iml: {}, it: (name, test) => {
+                    total++
                     outputChannel.append(`- ${name} ... `)
-                }*/
+                    try {
+                        test()
+                        outputChannel.appendLine(`✔`)
+                        success++
+                    }
+                    catch (err) {
+                        outputChannel.appendLine(`✘ => ${err}`)
+                        fail++
+                    }
+                }
             };
 
             Object.keys(IML.FUNCTIONS).forEach(name => {
                 sandbox.iml[name] = IML.FUNCTIONS[name].value;
             });
 
-            // Prepare VM2, set timeout and pass assert
+            outputChannel.clear()
+            outputChannel.appendLine(`======= STARTING IML TEST =======\r\nFunction: ${functionLabel}\r\n---------- IN PROGRESS ----------`)
+
+            // Prepare VM2, set timeout and pass sandbox
             const vm = new VM({
                 timeout: 5000,
                 sandbox: sandbox
             })
-
+            functionLabel = context.label
             // Show output channel IML tests and try running the test code
             outputChannel.show()
             try {
                 vm.run(codeToRun)
-                outputChannel.appendLine("Test OK")
+                outputChannel.appendLine(`----------- COMPLETED -----------`)
+                outputChannel.appendLine(`Total test blocks: ${total}`)
+                outputChannel.appendLine(`Passed blocks: ${success}`)
+                outputChannel.appendLine(`Failed blocks: ${fail}`)
+                if (fail === 0) {
+                    outputChannel.appendLine(`========== TEST PASSED ==========`)
+                }
+                else {
+                    outputChannel.appendLine(`========== TEST FAILED ==========`)
+                }
             }
             catch (err) {
+                outputChannel.appendLine(`========= CRITICAL FAIL =========`)
                 outputChannel.appendLine(err)
             }
         })

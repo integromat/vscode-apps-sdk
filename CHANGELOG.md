@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.0.4
+
+### Added
+
+- it function support in IML tests
+
+### Fixed
+
+- OpenSource apps icons
+
+### Modified
+
+- Test output channel
+
 ## 1.0.3
 
 ### Added
