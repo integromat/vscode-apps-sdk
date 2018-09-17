@@ -5,25 +5,25 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = {
-    invertPngAsync: async function(uri){
+    invertPngAsync: async function (uri) {
         return new Promise((reject, resolve) => {
             Jimp
-            .read(uri)
-            .then(icon => {
-                icon
-                    .invert()
-                    .write(`${uri.slice(0, -4)}_d.png`, () => {
-                        resolve()
-                    })
-            })
-            .catch(err => {
-                console.error(err);
-                reject()
-            });
+                .read(uri)
+                .then(icon => {
+                    icon
+                        .invert()
+                        .write(`${uri.slice(0, -4)}.dark.png`, () => {
+                            resolve()
+                        })
+                })
+                .catch(err => {
+                    console.error(err);
+                    reject()
+                });
         })
     },
 
-    rpGet: async function(uri, authorization, qs){
+    rpGet: async function (uri, authorization, qs) {
         return rp({
             url: uri,
             json: true,
@@ -36,15 +36,15 @@ module.exports = {
         })
     },
 
-    getApp: function(item) {
+    getApp: function (item) {
         return item.parent === undefined ? item : this.getApp(item.parent)
     },
 
-    isVersionable: function(item) {
+    isVersionable: function (item) {
         return !(["connection", "webhook"].includes(item))
     },
 
-    contextGuard: function(context) {
+    contextGuard: function (context) {
         if (context === undefined || context === null) {
             vscode.window.showErrorMessage("This command should not be called directly. Please use it from application context menu.")
             return false
@@ -52,7 +52,7 @@ module.exports = {
         return true
     },
 
-    isFilled: function(subject, object, thing, article, the) {
+    isFilled: function (subject, object, thing, article, the) {
         if (thing === undefined || thing === "" || thing === null) {
             vscode.window.showWarningMessage(`${article || "A"} ${subject} for ${the === false ? "" : "the"} ${object} has not been specified.`)
             return false
@@ -60,7 +60,7 @@ module.exports = {
         return true
     },
 
-    addEntity: function(authorization, body, uri) {
+    addEntity: function (authorization, body, uri) {
         return rp({
             method: 'PUT',
             uri: uri,
@@ -73,8 +73,8 @@ module.exports = {
             vscode.window.showErrorMessage(err.error.message)
         })
     },
-    
-    editEntity: function(authorization, body, uri) {
+
+    editEntity: function (authorization, body, uri) {
         return rp({
             method: 'POST',
             uri: uri,
@@ -88,7 +88,7 @@ module.exports = {
         })
     },
 
-    editEntityPlain: function(authorization, value, uri) {
+    editEntityPlain: function (authorization, value, uri) {
         return rp({
             method: 'POST',
             uri: uri,
@@ -102,29 +102,33 @@ module.exports = {
         })
     },
 
-    getAppObject: async function(environment, authorization, app) {
-        try{
+    getAppObject: async function (environment, authorization, app) {
+        try {
             return await this.rpGet(`${environment}/app/${app.name}/${app.version}`, authorization)
         }
-        catch(err){
+        catch (err) {
             vscode.window.showErrorMessage(err.error.message)
         }
     },
 
-    getIconHtml: function(uri, color, dir) {
+    getIconHtml: function (uri, color, dir) {
         return (fs.readFileSync(path.join(dir, 'static', 'icon.html'), "utf8")).replace("___iconbase", uri).replace("___theme", color)
     },
 
-    compareCountries: function(a,b){
+    getRpcTestHtml: function (name, app, version, dir) {
+        return (fs.readFileSync(path.join(dir, 'static', 'rpc-test.html'), "utf8")).replace("___rpcName", name).replace("___appName", app).replace("___version", version)
+    },
+
+    compareCountries: function (a, b) {
         // Sort by PICK
-        if(a.picked && !b.picked) return -1;
-        if(b.picked && !a.picked) return  1;
-    
+        if (a.picked && !b.picked) return -1;
+        if (b.picked && !a.picked) return 1;
+
         // Sort by NAME
         return a.label.localeCompare(b.label)
     },
 
-    compareApps: function(a,b){
+    compareApps: function (a, b) {
         return a.bareLabel.localeCompare(b.bareLabel)
     }
 }

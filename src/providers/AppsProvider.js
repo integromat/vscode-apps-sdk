@@ -6,17 +6,18 @@ const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
 
-const tempy = require('tempy')
 const path = require('path')
 const mkdirp = require('mkdirp')
 const download = require('image-downloader')
+const asyncfile = require('async-file')
 
 class AppsProvider {
-    constructor(_authorization, _baseUrl) {
+    constructor(_authorization, _baseUrl, _DIR) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this._authorization = _authorization
         this._baseUrl = _baseUrl
+        this._DIR = _DIR
     }
 
     refresh() {
@@ -26,44 +27,49 @@ class AppsProvider {
     getParent(element) {
         return element.parent
     }
-    
+
     getTreeItem(element) {
         return element
     }
-    
+
     async getChildren(element) {
         /*
          * LEVEL 0 - APPS
          */
         if (element === undefined) {
             let response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization)
-            if (response === undefined){ return }
-            let iconDir = path.join(tempy.directory(), "icons")
+            if (response === undefined) { return }
+            let iconDir = path.join(this._DIR, "icons")
             mkdirp(iconDir)
             let apps = response.map(async (app) => {
-                let dest = path.join(iconDir, `${app.name}.png`)
-                try{
-                    await download.image({
-                    headers: {
-                        "Authorization": this._authorization
-                    },
-                    url: `${this._baseUrl}/app/${app.name}/icon/512`,
-                    dest: dest
-                    })
-                    await Core.invertPngAsync(dest);
+                let iconVersion = 1
+                let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
+                while (await asyncfile.exists(`${dest}.old`)) {
+                    iconVersion++
+                    dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
                 }
-                catch(err){
-                    // Icon doesn't exist -> it has not been set yet
+                if (!await asyncfile.exists(dest)) {
+                    try {
+                        await download.image({
+                            headers: {
+                                "Authorization": this._authorization
+                            },
+                            url: `${this._baseUrl}/app/${app.name}/icon/512`,
+                            dest: dest
+                        })
+                        await Core.invertPngAsync(dest);
+                    }
+                    catch (err) {
+                        if (err != undefined) {
+                            iconVersion = 0
+                        }
+                    }
                 }
-                finally{
-                    apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes))
-                }
+                return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
             })
-            return Promise.all(apps).then(() => {
-                apps = apps.splice(apps.length / 2, apps.length);
-                apps.sort(Core.compareApps)
-                return apps;
-            })
+            apps = await Promise.all(apps)
+            apps.sort(Core.compareApps)
+            return apps
         }
         /*
          * LEVEL 1 - GROUP
@@ -83,7 +89,7 @@ class AppsProvider {
 
                 // Determine the name of group
                 let groupItem
-                switch(group[0]){
+                switch (group[0]) {
                     case `general`:
                         groupItem = "app"
                         break
@@ -97,7 +103,7 @@ class AppsProvider {
 
                 // Look for changes of the group
                 let groupChanges = element.changes.filter(change => {
-                    if (change.group === groupItem){
+                    if (change.group === groupItem) {
                         return change
                     }
                 })
@@ -114,15 +120,15 @@ class AppsProvider {
             // General
             if (element.id.includes("general")) {
                 return [
-                    [`base`, "Base"],
-                    [`common`, "Common"]
+                    [`base`, "Base", "Base structure all modules and remote procedures inherits from."],
+                    [`common`, "Common", "Collection of common data accessible through common.variable expression. Contains sensitive information like API keys or API secrets. This collection is shared across all modules."]
                 ].map(code => {
                     let change = element.changes.find(change => {
-                        if(change.code == code[0]){
+                        if (change.code == code[0]) {
                             return change
                         }
                     })
-                    return new Code(code[0], code[1], element, "imljson", "app", false,  change ? change.id : null)
+                    return new Code(code[0], code[1], element, "imljson", "app", false, change ? change.id : null, code[2])
                 })
             }
 
@@ -133,11 +139,11 @@ class AppsProvider {
                     //new Code(`images`, "Images", element, "img")
                 ]
             }
-            
+
             // REST
-            else{
-                for(let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]){
-                    if(element.id.includes(needle)){
+            else {
+                for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+                    if (element.id.includes(needle)) {
                         let name = needle.slice(0, -1);
                         let uri = ["connection", "webhook"].includes(name) ?
                             `${this._baseUrl}/app/${element.parent.name}/${name}` :
@@ -145,7 +151,7 @@ class AppsProvider {
                         let connections = await Core.rpGet(uri, this._authorization)
                         return connections.map(item => {
                             let changes = element.changes.filter(change => {
-                                if(change.item === item.name){
+                                if (change.item === item.name) {
                                     return change
                                 }
                             })
@@ -159,150 +165,151 @@ class AppsProvider {
          * LEVEL 3 - CODE
          */
         else if (element.level === 2) {
-            switch(element.supertype){
+            switch (element.supertype) {
                 case "connection":
                     return [
-                        [`api`, "Communication"],
-                        [`common`, "Common data"],
-                        [`scopes`, "Scope list"],
-                        [`scope`, "Default scope"],
-                        [`parameters`, "Parameters"]
+                        [`api`, "Communication", "Specifies the account validation process. This specification does not inherit from base."],
+                        [`common`, "Common data", "Collection of common data accessible through common.variable expression. Contains sensitive information like API keys or API secrets."],
+                        [`scopes`, "Scope list", "Collection of available scopes. (key = scope name, value = human readable scope description)"],
+                        [`scope`, "Default scope", "Default scope for every new connection. Array of strings."],
+                        [`parameters`, "Parameters", "Array of parameters user should fill while creating a new connection."]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "imljson", "connection", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "imljson", "connection", false, change ? change.id : null, code[2])
                     })
                 case "webhook":
                     return [
-                        [`api`, "Communication"],
-                        [`parameters`, "Parameters"],
-                        [`attach`, "Attach"],
-                        [`detach`, "Detach"],
-                        [`scope`, "Required scope"]
+                        [`api`, "Communication", "Specification of incoming data processing. This specification does not inherit from base and does not have access to connection."],
+                        [`parameters`, "Parameters", "Array of parameters user should fill while creating a new webhook."],
+                        [`attach`, "Attach", "Describes how to register this webhook automatically via API. Leave empty if user needs to register webhook manually. This specification does inherit from base."],
+                        [`detach`, "Detach", "Describes how to unregister this webhook automatically via API. Leave empty if user needs to unregister webhook manually. This specification does inherit from base."],
+                        [`scope`, "Required scope", "Scope required by this webhook. Array of strings."]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "imljson", "webhook", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "imljson", "webhook", false, change ? change.id : null, code[2])
                     })
                 case "module":
-                    switch(element.type){
+                    switch (element.type) {
                         // Action or search
                         case 4:
                         case 9:
                             return [
-                                [`api`, "Communication"],
-                                [`parameters`, "Static parameters"],
-                                [`expect`, "Mappable parameters"],
-                                [`interface`, "Interface"],
-                                [`samples`, "Samples"],
-                                [`scope`, "Scope"]
+                                [`api`, "Communication", "This specification does inherit from base."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`expect`, "Mappable parameters", "Array of mappable parameters user can fill while configuring the module. Mappable parameters can contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`interface`, "Interface", "Array of output variables. Same syntax as used for parameters."],
+                                [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"],
+                                [`scope`, "Scope", "Scope required by this module. Array of strings."]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                         // Trigger
                         case 1:
                             return [
-                                [`api`, "Communication"],
-                                [`epoch`, "Epoch"],
-                                [`parameters`, "Static parameters"],
-                                [`interface`, "Interface"],
-                                [`samples`, "Samples"],
-                                [`scope`, "Scope"]
+                                [`api`, "Communication", "This specification does inherit from base."],
+                                [`epoch`, "Epoch", "Describes how user can choose the point in the past where the trigger should start to process data from."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`interface`, "Interface", "Array of output variables. Same syntax as used for parameters."],
+                                [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"],
+                                [`scope`, "Scope", "Scope required by this module. Array of strings."]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                         // Instant trigger
                         case 10:
                             return [
-                                [`api`, "Communication"],
-                                [`parameters`, "Static parameters"],
-                                [`interface`, "Interface"],
-                                [`samples`, "Samples"]
+                                [`api`, "Communication", "Optional, only use when you need to make additional request for an incoming webhook. This specification does inherit from base."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`interface`, "Interface", "Array of output variables. Same syntax as used for parameters."],
+                                [`samples`, "Samples", "Collection of sample values. (key = variable name, value = sample value)"]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                         // Responder
                         case 11:
                             return [
-                                [`api`, "Communication"],
-                                [`parameters`, "Static parameters"],
-                                [`expect`, "Mappable parameters"]
+                                [`api`, "Communication", "This specification does inherit from base."],
+                                [`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
+                                [`expect`, "Mappable parameters", "Array of mappable parameters user can fill while configuring the module. Mappable parameters can contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."]
                             ].map(code => {
                                 let change
-                                if(element.changes){
+                                if (element.changes) {
                                     change = element.changes.find(change => {
-                                        if(change.code == code[0]){
+                                        if (change.code == code[0]) {
                                             return change
                                         }
                                     })
                                 }
-                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null)
+                                return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
                             })
                     }
-                case "rpc": 
+                case "rpc":
                     return [
-                        [`api`, "Communication"],
+                        [`api`, "Communication", "This specification does inherit from base."],
                         [`parameters`, "Parameters"]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "imljson", "rpc", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "imljson", "rpc", false, change ? change.id : null, code[2])
                     })
                 case "function":
                     return [
-                        [`code`, "Code"]
+                        [`code`, "Code"],
+                        [`test`, "Test"]
                     ].map(code => {
                         let change
-                        if(element.changes){
+                        if (element.changes) {
                             change = element.changes.find(change => {
-                                if(change.code == code[0]){
+                                if (change.code == code[0]) {
                                     return change
                                 }
                             })
                         }
-                        return new Code(code[0], code[1], element, "js", "function", false, change ? change.id : null)
+                        return new Code(code[0], code[1], element, "js", "function", false, change ? change.id : null, code[2])
                     })
             }
         }

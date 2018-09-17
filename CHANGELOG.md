@@ -1,5 +1,32 @@
 # Change Log
 
+## 1.0.3
+
+### Added
+
+- Readme
+- KebabCase for App ID
+- Icons for refresh and add app command
+- Better tooltips
+- JSONC formatter
+- Hover provider for parameter types
+- Links from hover provider to new docs
+
+### Fixed
+
+- Source Uploader catches only Apps SDK files
+- Check mark symbol displaying correctly on UNIX-based systems
+- Annoying icon flickering when the app tree is refreshed
+
+### Modified
+
+- Validator messages contains examples
+- Added options, validate, nested and value to key hover provider
+
+### Removed
+
+- Google Analytics tracker
+
 ## 1.0.2
 
 ### Added
