@@ -87,7 +87,7 @@ async function activate() {
          */
         vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'imljson' }, new KeywordProvider())
         vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider())
-        vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment))
+        vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, _DIR))
 
         let appsProvider = new AppsProvider(_authorization, _environment, _DIR);
         vscode.window.registerTreeDataProvider('apps', appsProvider);

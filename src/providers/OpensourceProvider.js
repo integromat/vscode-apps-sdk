@@ -6,17 +6,18 @@ const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
 
-const tempy = require('tempy')
 const path = require('path')
 const mkdirp = require('mkdirp')
 const download = require('image-downloader')
+const asyncfile = require('async-file')
 
 class AppsProvider {
-    constructor(_authorization, _baseUrl) {
+    constructor(_authorization, _baseUrl, _DIR) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this._authorization = _authorization
         this._baseUrl = _baseUrl
+        this._DIR = _DIR
     }
 
     refresh() {
@@ -26,44 +27,49 @@ class AppsProvider {
     getParent(element) {
         return element.parent
     }
-    
+
     getTreeItem(element) {
         return element
     }
-    
+
     async getChildren(element) {
         /*
          * LEVEL 0 - APPS
          */
         if (element === undefined) {
             let response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization, { opensource: true })
-            if (response === undefined){ return }
-            let iconDir = path.join(tempy.directory(), "icons")
+            if (response === undefined) { return }
+            let iconDir = path.join(this._DIR, "icons")
             mkdirp(iconDir)
             let apps = response.map(async (app) => {
-                let dest = path.join(iconDir, `${app.name}.png`)
-                try{
-                    await download.image({
-                    headers: {
-                        "Authorization": this._authorization
-                    },
-                    url: `${this._baseUrl}/app/${app.name}/icon/512`,
-                    dest: dest
-                    })
-                    await Core.invertPngAsync(dest);
+                let iconVersion = 1
+                let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
+                while (await asyncfile.exists(`${dest}.old`)) {
+                    iconVersion++
+                    dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
                 }
-                catch(err){
-                    // Icon doesn't exist -> it has not been set yet
+                if (!await asyncfile.exists(dest)) {
+                    try {
+                        await download.image({
+                            headers: {
+                                "Authorization": this._authorization
+                            },
+                            url: `${this._baseUrl}/app/${app.name}/icon/512`,
+                            dest: dest
+                        })
+                        await Core.invertPngAsync(dest);
+                    }
+                    catch (err) {
+                        if (err != undefined) {
+                            iconVersion = 0
+                        }
+                    }
                 }
-                finally{
-                    apps.push(new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme))
-                }
+                return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
             })
-            return Promise.all(apps).then(() => {
-                apps = apps.splice(apps.length / 2, apps.length);
-                apps.sort(Core.compareApps)
-                return apps;
-            })
+            apps = await Promise.all(apps)
+            apps.sort(Core.compareApps)
+            return apps
         }
         /*
          * LEVEL 1 - GROUP
@@ -98,9 +104,9 @@ class AppsProvider {
                 ]
             }
             // REST
-            else{
-                for(let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]){
-                    if(element.id.includes(needle)){
+            else {
+                for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+                    if (element.id.includes(needle)) {
                         let name = needle.slice(0, -1);
                         let uri = ["connection", "webhook"].includes(name) ?
                             `${this._baseUrl}/app/${element.parent.name}/${name}` :
@@ -115,7 +121,7 @@ class AppsProvider {
          * LEVEL 3 - CODE
          */
         else if (element.level === 2) {
-            switch(element.supertype){
+            switch (element.supertype) {
                 case "connection":
                     return [
                         new Code(`api`, "Communication", element, "imljson", "connection", true),
@@ -133,7 +139,7 @@ class AppsProvider {
                         new Code(`scope`, "Required scope", element, "imljson", "webhook", true),
                     ]
                 case "module":
-                    switch(element.type){
+                    switch (element.type) {
                         // Action or search
                         case 4:
                         case 9:
@@ -171,7 +177,7 @@ class AppsProvider {
                                 new Code(`expect`, "Mappable parameters", element, "imljson", "module", true)
                             ]
                     }
-                case "rpc": 
+                case "rpc":
                     return [
                         new Code(`api`, "Communication", element, "imljson", "rpc", true),
                         new Code(`parameters`, "Parameters", element, "imljson", "rpc", true)
