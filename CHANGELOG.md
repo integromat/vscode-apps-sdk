@@ -9,6 +9,7 @@
 ### Fixed
 
 - OpenSource apps icons
+- Webhook connection picker placeholder
 
 ### Modified
 
