@@ -16,6 +16,7 @@ const ChangesCommands = require('./src/commands/ChangesCommands')
 const AccountCommands = require('./src/commands/AccountCommands')
 const CoreCommands = require('./src/commands/CoreCommands')
 const EnvironmentCommands = require('./src/commands/EnvironmentCommands')
+const PublicCommands = require('./src/commands/PublicCommands')
 
 const tempy = require('tempy')
 const path = require('path')
@@ -46,6 +47,7 @@ async function activate() {
     envChanger.show()
 
     await EnvironmentCommands.register(envChanger, _configuration)
+    await PublicCommands.register()
 
     /**
      * First launch -> there are no environments

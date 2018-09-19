@@ -46,6 +46,7 @@
     "onCommand:apps-sdk.rpc.edit-metadata",
     "onCommand:apps-sdk.app.visibility.public",
     "onCommand:apps-sdk.app.visibility.private",
+    "onCommand:apps-sdk.help",
     "onView:apps",
     "onView:opensource"
   ],
@@ -255,6 +256,11 @@
       {
         "command": "apps-sdk.app.visibility.public",
         "title": "Mark an app as public",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.help",
+        "title": "Help",
         "category": "Integromat Apps"
       }
     ],
