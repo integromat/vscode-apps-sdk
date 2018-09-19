@@ -111,7 +111,7 @@
       },
       {
         "command": "apps-sdk.function.test",
-        "title": "Run test",
+        "title": "Run IML test",
         "category": "Integromat Apps "
       },
       {
@@ -485,6 +485,14 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "apps-sdk.function.test",
+        "key": "f6",
+        "mac": "f6",
+        "when": "editorTextFocus"
+      }
+    ],
     "configuration": {
       "title": "Apps SDK",
       "properties": {

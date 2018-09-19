@@ -47,29 +47,64 @@ class FunctionCommands {
          */
         vscode.commands.registerCommand('apps-sdk.function.test', async function (context) {
 
-            // If called out of context -> die
-            if (!Core.contextGuard(context)) { return }
-
-            // Set correct URN (if called from function or core or test)
             let urn
-            let functionLabel
-            if (context.supertype === "function") {
-                urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.name}`
-                functionLabel = context.label
+            let functionName
+
+            // If called out of context -> gather the required information
+            if (context === undefined || context === null) {
+                let crumbs
+                // If a window is open
+                if (!vscode.window.activeTextEditor) {
+                    vscode.window.showErrorMessage("Active text editor not found.")
+                    return
+                }
+                // If an apps file is open
+                if (!vscode.window.activeTextEditor.document.uri.fsPath.split('apps-sdk')[1]) {
+                    vscode.window.showErrorMessage("Opened file doesn't belong to Apps SDK.")
+                    return
+                }
+                // Parse the path
+                crumbs = vscode.window.activeTextEditor.document.uri.fsPath.split('apps-sdk')[1].split('/').reverse()
+                // If crumbs were parsed
+                if (!crumbs) {
+                    vscode.window.showErrorMessage("The path was not parsed successfully.")
+                    return
+                }
+                // If the path hasn't 7 crumbs it's definitely not a function
+                if (crumbs.length !== 7) {
+                    vscode.window.showErrorMessage("The parsed path doesn't lead to function.")
+                    return
+                }
+                // If the path doesn't contain required crumbs
+                if (!((crumbs[0] === "test.js" || crumbs[0] === "code.js") && crumbs[2] === "function" && crumbs[5] === "app")) {
+                    vscode.window.showErrorMessage("The parsed path doesn't correspond to the function test schema.")
+                    return
+                }
+                // If all checks passed, set URN
+                urn = `${_environment}/app/${crumbs[4]}/${crumbs[3]}/function`
+                functionName = `${crumbs[1]}`
             }
-            else if (context.name === "code" || context.name === "test") {
-                urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function/${context.parent.name}`
-                functionLabel = context.parent.label
+
+            // Else parse from context
+            else {
+                // Set correct URN (if called from function or core or test)
+                urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function`
+                if (context.supertype === "function") {
+                    functionName = `${context.name}`
+                }
+                else if (context.name === "code" || context.name === "test") {
+                    functionName = `${context.parent.name}`
+                }
             }
 
             // Get current function code
-            let code = await Core.rpGet(`${urn}/code`, _authorization)
+            let code = await Core.rpGet(`${urn}/${functionName}/code`, _authorization)
 
             // Get current test code
-            let test = await Core.rpGet(`${urn}/test`, _authorization)
+            let test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
 
             // Get users' functions
-            let userFunctions = await Core.rpGet(`${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function`, _authorization, { code: true })
+            let userFunctions = await Core.rpGet(`${urn}`, _authorization, { code: true })
 
             // Merge codes
             let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
@@ -109,7 +144,7 @@ class FunctionCommands {
             });
 
             outputChannel.clear()
-            outputChannel.appendLine(`======= STARTING IML TEST =======\r\nFunction: ${functionLabel}\r\n---------- IN PROGRESS ----------`)
+            outputChannel.appendLine(`======= STARTING IML TEST =======\r\nFunction: ${functionName}\r\n---------- IN PROGRESS ----------`)
 
             // Prepare VM2, set timeout and pass sandbox
             const vm = new VM({
@@ -127,7 +162,6 @@ class FunctionCommands {
                 };
             });
 
-            functionLabel = context.label
             // Show output channel IML tests and try running the test code
             outputChannel.show()
             try {
