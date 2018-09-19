@@ -7,7 +7,7 @@ const { VM, VMScript } = require('vm2')
 const { IML } = require('@integromat/iml')
 
 class FunctionCommands {
-    static async register(appsProvider, _authorization, _environment) {
+    static async register(appsProvider, _authorization, _environment, _timezone) {
 
         var outputChannel = vscode.window.createOutputChannel("IML tests")
 
@@ -100,9 +100,7 @@ class FunctionCommands {
                     }
                 },
                 environment: {
-
-                    // TODO: Link to conifg var
-                    timezone: "UTC"
+                    timezone: _timezone
                 }
             };
 

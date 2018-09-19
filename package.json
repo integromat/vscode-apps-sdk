@@ -506,6 +506,11 @@
           "type": "object",
           "description": "Integromat SDK API environment",
           "default": {}
+        },
+        "apps-sdk.timezone": {
+          "type": "string",
+          "description": "Timezone which is used for IML functions which work with date and time. Eg: Europe/Prague",
+          "default": "UTC"
         }
       }
     }

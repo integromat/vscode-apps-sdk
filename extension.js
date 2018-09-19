@@ -104,7 +104,7 @@ async function activate() {
         await WebhookCommands.register(appsProvider, _authorization, _environment)
         await ModuleCommands.register(appsProvider, _authorization, _environment)
         await RpcCommands.register(appsProvider, _authorization, _environment)
-        await FunctionCommands.register(appsProvider, _authorization, _environment)
+        await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone)
         await CommonCommands.register(appsProvider, _authorization, _environment)
         await ChangesCommands.register(appsProvider, _authorization, _environment)
 
