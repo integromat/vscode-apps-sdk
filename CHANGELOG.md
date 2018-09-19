@@ -5,6 +5,8 @@
 ### Added
 
 - it function support in IML tests
+- Integromat Help command
+- Publish / Hide App or Module
 
 ### Fixed
 

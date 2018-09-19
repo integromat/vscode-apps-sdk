@@ -3,7 +3,7 @@ const vscode = require('vscode')
 const Core = require('../Core')
 const Validator = require('../Validator')
 
-const { VM } = require('vm2')
+const { VM, VMScript } = require('vm2')
 const { IML } = require('@integromat/iml')
 
 class FunctionCommands {
@@ -68,6 +68,7 @@ class FunctionCommands {
             // Get current test code
             let test = await Core.rpGet(`${urn}/test`, _authorization)
 
+            // Get users' functions
             let userFunctions = await Core.rpGet(`${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function`, _authorization, { code: true })
 
             // Merge codes
@@ -83,7 +84,9 @@ class FunctionCommands {
             let fail = 0
             let total = 0
             let sandbox = {
-                assert: require('assert'), iml: {}, it: (name, test) => {
+                assert: require('assert'),
+                iml: {},
+                it: (name, test) => {
                     total++
                     outputChannel.append(`- ${name} ... `)
                     try {
@@ -95,16 +98,17 @@ class FunctionCommands {
                         outputChannel.appendLine(`✘ => ${err}`)
                         fail++
                     }
+                },
+                environment: {
+
+                    // TODO: Link to conifg var
+                    timezone: "UTC"
                 }
             };
 
             Object.keys(IML.FUNCTIONS).forEach(name => {
-                sandbox.iml[name] = IML.FUNCTIONS[name].value;
+                sandbox.iml[name] = IML.FUNCTIONS[name].value.bind({ timezone: sandbox.environment.timezone });
             });
-
-            userFunctions.map(userFunction => {
-                sandbox.iml[userFunction.name] = new Function(`return ${userFunction.code}`)()
-            })
 
             outputChannel.clear()
             outputChannel.appendLine(`======= STARTING IML TEST =======\r\nFunction: ${functionLabel}\r\n---------- IN PROGRESS ----------`)
@@ -114,6 +118,17 @@ class FunctionCommands {
                 timeout: 5000,
                 sandbox: sandbox
             })
+
+            vm.prepare = vm.run('(function(args) { global.__arguments__ = args })');
+
+            userFunctions.forEach(func => {
+                const preCompiled = new VMScript(`(${func.code}).apply({timezone: environment.timezone}, __arguments__)`, func.name);
+                sandbox.iml[func.name] = (...args) => {
+                    vm.prepare(args);
+                    return vm.run(preCompiled);
+                };
+            });
+
             functionLabel = context.label
             // Show output channel IML tests and try running the test code
             outputChannel.show()
