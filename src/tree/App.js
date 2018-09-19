@@ -11,7 +11,7 @@ class App extends EnhancedTreeItem {
         this.public = isPublic
         this.approved = isApproved
         this.level = 0
-        this.contextValue = "app" + (changes !== undefined ? (changes.length !== 0 ? "_changed" : "") : "")
+        this.contextValue = "app" + (this.approved ? "_approved" : this.public ? "_public" : "") + (changes !== undefined ? (changes.length !== 0 ? "_changed" : "") : "")
         this.theme = theme
         this.iconVersion = iconVersion
         this.changes = changes

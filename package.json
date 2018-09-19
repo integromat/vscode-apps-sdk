@@ -44,6 +44,8 @@
     "onCommand:apps-sdk.webhook.edit-metadata",
     "onCommand:apps-sdk.module.edit-metadata",
     "onCommand:apps-sdk.rpc.edit-metadata",
+    "onCommand:apps-sdk.app.visibility.public",
+    "onCommand:apps-sdk.app.visibility.private",
     "onView:apps",
     "onView:opensource"
   ],
@@ -234,6 +236,16 @@
         "command": "apps-sdk.changes.rollback",
         "title": "Rollback all changes",
         "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.visibility.private",
+        "title": "Mark an app as private",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.visibility.public",
+        "title": "Mark an app as public",
+        "category": "Integromat Apps"
       }
     ],
     "viewsContainers": {
@@ -324,18 +336,6 @@
           "when": "viewItem == connection && view == apps"
         },
         {
-          "command": "apps-sdk.app.delete",
-          "when": "viewItem == app && view == apps"
-        },
-        {
-          "command": "apps-sdk.app.get-icon",
-          "when": "viewItem == app && view == apps"
-        },
-        {
-          "command": "apps-sdk.app.edit-metadata",
-          "when": "viewItem == app && view == apps"
-        },
-        {
           "command": "apps-sdk.connection.edit-metadata",
           "when": "viewItem == connection && view == apps"
         },
@@ -373,23 +373,67 @@
         },
         {
           "command": "apps-sdk.app.delete",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app && view == apps"
         },
         {
           "command": "apps-sdk.app.get-icon",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app && view == apps"
         },
         {
           "command": "apps-sdk.app.edit-metadata",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.visibility.public",
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.visibility.private",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_approved_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_approved_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_approved_changed && view == apps"
         },
         {
           "command": "apps-sdk.changes.commit",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app_approved_changed && view == apps"
         },
         {
           "command": "apps-sdk.changes.rollback",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app_approved_changed && view == apps"
         }
       ]
     },

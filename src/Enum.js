@@ -108,5 +108,25 @@ module.exports = {
             "label": "Yes",
             "description": "All changes will be rolled back."
         }
+    ],
+    hide: [
+        {
+            "label": "No",
+            "description": "Keep this app public."
+        },
+        {
+            "label": "Yes",
+            "description": "Mark this app as private."
+        }
+    ],
+    publish: [
+        {
+            "label": "No",
+            "description": "Keep this app private."
+        },
+        {
+            "label": "Yes",
+            "description": "Mark this app public."
+        }
     ]
 }
