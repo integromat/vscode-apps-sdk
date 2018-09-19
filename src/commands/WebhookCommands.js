@@ -5,7 +5,7 @@ const QuickPick = require('../QuickPick')
 const Enum = require('../Enum')
 
 class WebhookCommands {
-    static async register(appsProvider, _authorization, _environment){
+    static async register(appsProvider, _authorization, _environment) {
 
         /**
          * New webhook
@@ -13,16 +13,16 @@ class WebhookCommands {
         vscode.commands.registerCommand('apps-sdk.webhook.new', async function (context) {
 
             // Context check
-            if(!Core.contextGuard(context)){ return }
+            if (!Core.contextGuard(context)) { return }
             let app = context.parent
 
             // Label prompt
             let label = await vscode.window.showInputBox({ prompt: "Enter webhook label" })
-            if(!Core.isFilled("label", "webhook", label)){ return }
+            if (!Core.isFilled("label", "webhook", label)) { return }
 
             // Type prompt
             let type = await vscode.window.showQuickPick(Enum.webhookTypes)
-            if(!Core.isFilled("type", "webhook", type)){ return }
+            if (!Core.isFilled("type", "webhook", type)) { return }
 
             // Connections prompt (decide if compulsory or not)
             let connections
@@ -34,15 +34,15 @@ class WebhookCommands {
                     connections = QuickPick.connections(_environment, _authorization, app, false)
                     break
             }
-            let connection = await vscode.window.showQuickPick(connections)
-            if(!Core.isFilled("connection", "webhook", connection)){ return }
+            let connection = await vscode.window.showQuickPick(connections, { placeHolder: "Choose a connection for the new webhook." })
+            if (!Core.isFilled("connection", "webhook", connection)) { return }
 
             // Build URI and prepare connection value
             let uri = `${_environment}/app/${app.name}/webhook`
             connection = connection.label === "--- Without connection ---" ? "" : connection.description
 
             // Send the request
-            try{
+            try {
                 await Core.addEntity(_authorization, {
                     "label": label,
                     "type": type.description,
@@ -50,7 +50,7 @@ class WebhookCommands {
                 }, uri)
                 appsProvider.refresh()
             }
-            catch(err){
+            catch (err) {
                 vscode.window.showErrorMessage(err.error.message || err)
             }
         })
@@ -61,21 +61,21 @@ class WebhookCommands {
         vscode.commands.registerCommand('apps-sdk.webhook.edit-metadata', async function (context) {
 
             // Context check
-            if(!Core.contextGuard(context)){ return }
+            if (!Core.contextGuard(context)) { return }
 
             // Label prompt with prefilled value
             let label = await vscode.window.showInputBox({
                 prompt: "Customize webhook label",
                 value: context.label
             })
-            if(!Core.isFilled("label", "webhook", label)){ return }
+            if (!Core.isFilled("label", "webhook", label)) { return }
 
             // Send the request
-            try{
+            try {
                 await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/label`)
                 appsProvider.refresh()
             }
-            catch(err){
+            catch (err) {
                 vscode.window.showErrorMessage(err.error.message || err)
             }
         })
@@ -83,10 +83,10 @@ class WebhookCommands {
         /**
          * Change webhook connection
          */
-        vscode.commands.registerCommand('apps-sdk.webhook.change-connection', async function (context){
+        vscode.commands.registerCommand('apps-sdk.webhook.change-connection', async function (context) {
 
             //Context check
-            if(!Core.contextGuard(context)){ return }
+            if (!Core.contextGuard(context)) { return }
 
             // Prepare connections -> determine if required or not
             let connections
@@ -102,17 +102,17 @@ class WebhookCommands {
 
             // Prompt for connection
             let connection = await vscode.window.showQuickPick(connections, { placeHolder: "Change connection or keep existing." })
-            if(!Core.isFilled("connection", "webhook", connection)){ return }
+            if (!Core.isFilled("connection", "webhook", connection)) { return }
 
             // Send the request
-            try{
+            try {
                 if (connection.description !== "keep") {
                     connection = connection.label === "--- Without connection ---" ? "" : connection.description
                     await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
                     appsProvider.refresh()
                 }
             }
-            catch(err){
+            catch (err) {
                 vscode.window.showErrorMessage(err.error.message || err)
             }
         })

@@ -108,5 +108,25 @@ module.exports = {
             "label": "Yes",
             "description": "All changes will be rolled back."
         }
+    ],
+    hide: [
+        {
+            "label": "No",
+            "description": "Keep public."
+        },
+        {
+            "label": "Yes",
+            "description": "Mark as private."
+        }
+    ],
+    publish: [
+        {
+            "label": "No",
+            "description": "Keep private."
+        },
+        {
+            "label": "Yes",
+            "description": "Mark as public."
+        }
     ]
 }

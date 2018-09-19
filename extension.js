@@ -16,6 +16,7 @@ const ChangesCommands = require('./src/commands/ChangesCommands')
 const AccountCommands = require('./src/commands/AccountCommands')
 const CoreCommands = require('./src/commands/CoreCommands')
 const EnvironmentCommands = require('./src/commands/EnvironmentCommands')
+const PublicCommands = require('./src/commands/PublicCommands')
 
 const tempy = require('tempy')
 const path = require('path')
@@ -46,6 +47,7 @@ async function activate() {
     envChanger.show()
 
     await EnvironmentCommands.register(envChanger, _configuration)
+    await PublicCommands.register()
 
     /**
      * First launch -> there are no environments
@@ -87,7 +89,7 @@ async function activate() {
          */
         vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'imljson' }, new KeywordProvider())
         vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider())
-        vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment))
+        vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, _DIR))
 
         let appsProvider = new AppsProvider(_authorization, _environment, _DIR);
         vscode.window.registerTreeDataProvider('apps', appsProvider);
@@ -102,7 +104,7 @@ async function activate() {
         await WebhookCommands.register(appsProvider, _authorization, _environment)
         await ModuleCommands.register(appsProvider, _authorization, _environment)
         await RpcCommands.register(appsProvider, _authorization, _environment)
-        await FunctionCommands.register(appsProvider, _authorization, _environment)
+        await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone)
         await CommonCommands.register(appsProvider, _authorization, _environment)
         await ChangesCommands.register(appsProvider, _authorization, _environment)
 

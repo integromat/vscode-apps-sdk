@@ -2,7 +2,7 @@
   "name": "apps-sdk",
   "displayName": "Integromat Apps SDK",
   "description": "Integromat Apps SDK plugin for Visual Studio Code",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "icon": "resources/extension-icon.png",
   "repository": {
     "type": "git",
@@ -44,6 +44,9 @@
     "onCommand:apps-sdk.webhook.edit-metadata",
     "onCommand:apps-sdk.module.edit-metadata",
     "onCommand:apps-sdk.rpc.edit-metadata",
+    "onCommand:apps-sdk.app.visibility.public",
+    "onCommand:apps-sdk.app.visibility.private",
+    "onCommand:apps-sdk.help",
     "onView:apps",
     "onView:opensource"
   ],
@@ -108,7 +111,7 @@
       },
       {
         "command": "apps-sdk.function.test",
-        "title": "Run test",
+        "title": "Run IML test",
         "category": "Integromat Apps "
       },
       {
@@ -191,6 +194,16 @@
         "category": "Integromat Apps"
       },
       {
+        "command": "apps-sdk.module.visibility.public",
+        "title": "Mark module as public",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.module.visibility.private",
+        "title": "Mark module as private",
+        "category": "Integromat Apps"
+      },
+      {
         "command": "apps-sdk.module.change-connection-or-webhook",
         "title": "Change connection or webhook",
         "category": "Integromat Apps"
@@ -233,6 +246,21 @@
       {
         "command": "apps-sdk.changes.rollback",
         "title": "Rollback all changes",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.visibility.private",
+        "title": "Mark an app as private",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.app.visibility.public",
+        "title": "Mark an app as public",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.help",
+        "title": "Help",
         "category": "Integromat Apps"
       }
     ],
@@ -317,23 +345,19 @@
         },
         {
           "command": "apps-sdk.delete",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == module_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
           "when": "viewItem == webhook && view == apps"
         },
         {
           "command": "apps-sdk.delete",
           "when": "viewItem == connection && view == apps"
-        },
-        {
-          "command": "apps-sdk.app.delete",
-          "when": "viewItem == app && view == apps"
-        },
-        {
-          "command": "apps-sdk.app.get-icon",
-          "when": "viewItem == app && view == apps"
-        },
-        {
-          "command": "apps-sdk.app.edit-metadata",
-          "when": "viewItem == app && view == apps"
         },
         {
           "command": "apps-sdk.connection.edit-metadata",
@@ -356,6 +380,30 @@
           "when": "viewItem == module && view == apps"
         },
         {
+          "command": "apps-sdk.module.visibility.public",
+          "when": "viewItem == module && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.edit-metadata",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.change-connection-or-webhook",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.visibility.private",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.edit-metadata",
+          "when": "viewItem == module_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.change-connection-or-webhook",
+          "when": "viewItem == module_approved && view == apps"
+        },
+        {
           "command": "apps-sdk.rpc.edit-metadata",
           "when": "viewItem == rpc && view == apps"
         },
@@ -373,26 +421,78 @@
         },
         {
           "command": "apps-sdk.app.delete",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app && view == apps"
         },
         {
           "command": "apps-sdk.app.get-icon",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app && view == apps"
         },
         {
           "command": "apps-sdk.app.edit-metadata",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.visibility.public",
+          "when": "viewItem == app && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.visibility.private",
+          "when": "viewItem == app_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.delete",
+          "when": "viewItem == app_approved_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.get-icon",
+          "when": "viewItem == app_approved_changed && view == apps"
+        },
+        {
+          "command": "apps-sdk.app.edit-metadata",
+          "when": "viewItem == app_approved_changed && view == apps"
         },
         {
           "command": "apps-sdk.changes.commit",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app_approved_changed && view == apps"
         },
         {
           "command": "apps-sdk.changes.rollback",
-          "when": "viewItem == app_changed && view == apps"
+          "when": "viewItem == app_approved_changed && view == apps"
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "apps-sdk.function.test",
+        "key": "f6",
+        "mac": "f6",
+        "when": "editorTextFocus"
+      }
+    ],
     "configuration": {
       "title": "Apps SDK",
       "properties": {
@@ -414,6 +514,11 @@
           "type": "object",
           "description": "Integromat SDK API environment",
           "default": {}
+        },
+        "apps-sdk.timezone": {
+          "type": "string",
+          "description": "Timezone which is used for IML functions which work with date and time. Eg: Europe/Prague",
+          "default": "UTC"
         }
       }
     }

@@ -167,7 +167,6 @@ class AppCommands {
                     break
                 case "Yes":
                     // Set URI and send the request
-                    context.apiPath = context.apiPath === undefined ? context.supertype : context.apiPath
                     let uri = `${_environment}/app/${app.name}/${app.version}`
                     try {
                         await rp({
@@ -277,6 +276,77 @@ class AppCommands {
                     }))
                 }
             }, undefined)
+        })
+
+        /**
+         * Mark app as private
+         */
+        vscode.commands.registerCommand('apps-sdk.app.visibility.private', async function (context) {
+
+            // Context check
+            if (!Core.contextGuard(context)) { return }
+            let app = context
+
+            // Wait for confirmation
+            let answer = await vscode.window.showQuickPick(Enum.hide, { placeHolder: `Do you really want to mark this app as private?` })
+            if (answer === undefined || answer === null) {
+                vscode.window.showWarningMessage("No answer has been recognized.")
+                return
+            }
+
+            // If was confirmed or not
+            switch (answer.label) {
+                case "No":
+                    vscode.window.showInformationMessage(`The app has been kept as public.`)
+                    break
+                case "Yes":
+                    // Set URI and send the request
+                    let uri = `${_environment}/app/${app.name}/${app.version}/private`
+                    try {
+                        await Core.editEntityPlain(_authorization, "", uri)
+                        appsProvider.refresh()
+                    }
+                    catch (err) {
+                        vscode.window.showErrorMessage(err.error.message || err)
+                    }
+                    break
+            }
+
+        })
+
+        /**
+         * Mark app as public
+         */
+        vscode.commands.registerCommand('apps-sdk.app.visibility.public', async function (context) {
+
+            // Context check
+            if (!Core.contextGuard(context)) { return }
+            let app = context
+
+            // Wait for confirmation
+            let answer = await vscode.window.showQuickPick(Enum.publish, { placeHolder: `Do you really want to mark this app as public?` })
+            if (answer === undefined || answer === null) {
+                vscode.window.showWarningMessage("No answer has been recognized.")
+                return
+            }
+
+            // If was confirmed or not
+            switch (answer.label) {
+                case "No":
+                    vscode.window.showInformationMessage(`The app has been kept as private.`)
+                    break
+                case "Yes":
+                    // Set URI and send the request
+                    let uri = `${_environment}/app/${app.name}/${app.version}/public`
+                    try {
+                        await Core.editEntityPlain(_authorization, "", uri)
+                        appsProvider.refresh()
+                    }
+                    catch (err) {
+                        vscode.window.showErrorMessage(err.error.message || err)
+                    }
+                    break
+            }
         })
     }
 }
