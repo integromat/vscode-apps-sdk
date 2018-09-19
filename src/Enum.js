@@ -112,21 +112,21 @@ module.exports = {
     hide: [
         {
             "label": "No",
-            "description": "Keep this app public."
+            "description": "Keep public."
         },
         {
             "label": "Yes",
-            "description": "Mark this app as private."
+            "description": "Mark as private."
         }
     ],
     publish: [
         {
             "label": "No",
-            "description": "Keep this app private."
+            "description": "Keep private."
         },
         {
             "label": "Yes",
-            "description": "Mark this app public."
+            "description": "Mark as public."
         }
     ]
 }

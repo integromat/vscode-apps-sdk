@@ -193,6 +193,16 @@
         "category": "Integromat Apps"
       },
       {
+        "command": "apps-sdk.module.visibility.public",
+        "title": "Mark module as public",
+        "category": "Integromat Apps"
+      },
+      {
+        "command": "apps-sdk.module.visibility.private",
+        "title": "Mark module as private",
+        "category": "Integromat Apps"
+      },
+      {
         "command": "apps-sdk.module.change-connection-or-webhook",
         "title": "Change connection or webhook",
         "category": "Integromat Apps"
@@ -329,6 +339,14 @@
         },
         {
           "command": "apps-sdk.delete",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
+          "when": "viewItem == module_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.delete",
           "when": "viewItem == webhook && view == apps"
         },
         {
@@ -354,6 +372,30 @@
         {
           "command": "apps-sdk.module.change-connection-or-webhook",
           "when": "viewItem == module && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.visibility.public",
+          "when": "viewItem == module && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.edit-metadata",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.change-connection-or-webhook",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.visibility.private",
+          "when": "viewItem == module_public && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.edit-metadata",
+          "when": "viewItem == module_approved && view == apps"
+        },
+        {
+          "command": "apps-sdk.module.change-connection-or-webhook",
+          "when": "viewItem == module_approved && view == apps"
         },
         {
           "command": "apps-sdk.rpc.edit-metadata",

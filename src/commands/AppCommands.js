@@ -278,6 +278,9 @@ class AppCommands {
             }, undefined)
         })
 
+        /**
+         * Mark app as private
+         */
         vscode.commands.registerCommand('apps-sdk.app.visibility.private', async function (context) {
 
             // Context check
@@ -311,6 +314,9 @@ class AppCommands {
 
         })
 
+        /**
+         * Mark app as public
+         */
         vscode.commands.registerCommand('apps-sdk.app.visibility.public', async function (context) {
 
             // Context check
