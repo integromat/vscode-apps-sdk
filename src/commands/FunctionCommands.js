@@ -68,6 +68,8 @@ class FunctionCommands {
             // Get current test code
             let test = await Core.rpGet(`${urn}/test`, _authorization)
 
+            let userFunctions = await Core.rpGet(`${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function`, _authorization, { code: true })
+
             // Merge codes
             let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
 
@@ -75,6 +77,7 @@ class FunctionCommands {
              *  Sandbox cookbook
              *  - Assert for assertions
              *  - IML for internal IML functions
+             *  - Users' IML functions
              */
             let success = 0
             let fail = 0
@@ -98,6 +101,10 @@ class FunctionCommands {
             Object.keys(IML.FUNCTIONS).forEach(name => {
                 sandbox.iml[name] = IML.FUNCTIONS[name].value;
             });
+
+            userFunctions.map(userFunction => {
+                sandbox.iml[userFunction.name] = new Function(`return ${userFunction.code}`)()
+            })
 
             outputChannel.clear()
             outputChannel.appendLine(`======= STARTING IML TEST =======\r\nFunction: ${functionLabel}\r\n---------- IN PROGRESS ----------`)
