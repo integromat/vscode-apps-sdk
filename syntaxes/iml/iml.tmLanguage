@@ -125,7 +125,7 @@
       <key>moustache-keywords-alone</key>
       <dict>
         <key>match</key>
-        <string>(item|body|connection|parameters|response|headers|temp)</string>
+        <string>(item|body|connection|parameters|response|headers|temp|undefined)</string>
         <key>captures</key>
         <dict>
           <key>0</key>

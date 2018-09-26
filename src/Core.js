@@ -74,6 +74,20 @@ module.exports = {
         })
     },
 
+    deleteEntity: function (authorization, body, uri) {
+        return rp({
+            method: 'DELETE',
+            uri: uri,
+            body: body,
+            headers: {
+                Authorization: authorization
+            },
+            json: true
+        }).catch(err => {
+            vscode.window.showErrorMessage(err.error.message)
+        })
+    },
+
     editEntity: function (authorization, body, uri) {
         return rp({
             method: 'POST',
