@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.0.5
+
+### Added
+
+- Module connection/webhook picker placeholder
+
+### Fixed
+
+- Undefined keyword
+
+### Modified
+
+- Delete Core method
+
 ## 1.0.4
 
 ### Added

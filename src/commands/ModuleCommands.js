@@ -53,12 +53,12 @@ class ModuleCommands {
                 case "1":
                 case "4":
                 case "9":
-                    let connection = await vscode.window.showQuickPick(QuickPick.connections(_environment, _authorization, app, true))
+                    let connection = await vscode.window.showQuickPick(QuickPick.connections(_environment, _authorization, app, true), { placeHolder: "Pick a connection for the module" })
                     if (!Core.isFilled("connection", "module", connection)) { return }
                     body.connection = connection.label === "--- Without connection ---" ? "" : connection.description
                     break
                 case "10":
-                    let webhook = await vscode.window.showQuickPick(QuickPick.webhooks(_environment, _authorization, app, false))
+                    let webhook = await vscode.window.showQuickPick(QuickPick.webhooks(_environment, _authorization, app, false), { placeHolder: "Pick a webhook for the module" })
                     if (!Core.isFilled("webhook", "module", webhook)) { return }
                     body.webhook = webhook.label === "--- Without webhook ---" ? "" : webhook.description
                     break

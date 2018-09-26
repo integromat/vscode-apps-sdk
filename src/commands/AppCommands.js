@@ -13,67 +13,141 @@ const rp = require('request-promise')
 const asyncfile = require('async-file')
 
 class AppCommands {
-    static async register(appsProvider, _authorization, _environment) {
+    static async register(appsProvider, _authorization, _environment, _admin) {
 
-        /**
-         * New APP
-         */
-        vscode.commands.registerCommand('apps-sdk.app.new', async function () {
+        // IF ADMIN, remap new app to favadd
+        if (_admin === true) {
+            /**
+             * NEW APP - ADMIN MODE
+             */
+            vscode.commands.registerCommand('apps-sdk.app.new', async function () {
 
-            // Label prompt
-            let label = await vscode.window.showInputBox({ prompt: "Enter app label" })
-            if (!Core.isFilled("label", "app", label)) { return }
+                // Get list of all apps
+                let allApps = await QuickPick.allApps(_environment, _authorization)
 
-            // Id prompt
-            let id = await vscode.window.showInputBox({
-                prompt: "Enter app Id",
-                value: kebabCase(label),
-                validateInput: Validator.appName
+                if(!allApps){
+                    return vscode.window.showErrorMessage('No apps available.')
+                }
+
+                // Get list of favorite apps
+                let favApps = await QuickPick.favApps(_environment, _authorization)
+
+                // Precheck current favorite apps
+                favApps.forEach(favApp => {
+                    allApps.find(function (app) {
+                        if (app.description === favApp.description) {
+                            app.picked = true
+                            return true
+                        }
+                        return false
+                    })
+                });
+
+                // Show the quickpick and wait for response
+                let newFavs = await vscode.window.showQuickPick(allApps, {
+                    canPickMany: true,
+                    placeHolder: "Choose favorite apps to be displayed in the sidebar."
+                })
+
+                if(newFavs === undefined){
+                    return vscode.window.showWarningMessage("Selection canceled.")
+                }
+
+                // No need of labels anymore, get only names of old favs and new favs
+                favApps = favApps.map(favApp => { return favApp.description })
+                newFavs = newFavs.map(newFav => { return newFav.description })
+
+                // Filter apps to be added
+                let appsToAdd = newFavs.filter(newFav => {
+                    return !favApps.includes(newFav)
+                })
+
+                // Filter apps to be removed
+                let appsToRemove = favApps.filter(favApp => {
+                    return !newFavs.includes(favApp)
+                })
+
+                let changes = false
+
+                // If there are some apps to be added
+                if (appsToAdd.length > 0) {
+                    await Core.addEntity(_authorization, {name: appsToAdd} , `${_environment}/favorite`)
+                    changes = true
+                }
+
+                // If there are some apps to be removed
+                if (appsToRemove.length > 0) {
+                    await Core.deleteEntity(_authorization, {name: appsToRemove}, `${_environment}/favorite`)
+                    changes = true
+                }
+
+                // If there were some changes, refresh the app tree
+                if (changes === true) {
+                    appsProvider.refresh()
+                }
             })
-            if (!Core.isFilled("id", "app", id, "An")) { return }
+        }
+        else {
+            /**
+             * New APP - NORMAL MODE
+             */
+            vscode.commands.registerCommand('apps-sdk.app.new', async function () {
 
-            // Color theme prompt and check
-            let theme = await vscode.window.showInputBox({
-                prompt: "Pick a color theme",
-                value: "#000000"
+                // Label prompt
+                let label = await vscode.window.showInputBox({ prompt: "Enter app label" })
+                if (!Core.isFilled("label", "app", label)) { return }
+
+                // Id prompt
+                let id = await vscode.window.showInputBox({
+                    prompt: "Enter app Id",
+                    value: kebabCase(label),
+                    validateInput: Validator.appName
+                })
+                if (!Core.isFilled("id", "app", id, "An")) { return }
+
+                // Color theme prompt and check
+                let theme = await vscode.window.showInputBox({
+                    prompt: "Pick a color theme",
+                    value: "#000000"
+                })
+                if (!Core.isFilled("theme", "app", theme)) { return }
+                if (!(/^#[0-9A-F]{6}$/i.test(theme))) {
+                    vscode.window.showErrorMessage("Entered color was invalid.")
+                    return
+                }
+
+                // Language prompt
+                let language = await vscode.window.showQuickPick(QuickPick.languages(_environment, _authorization), { placeHolder: "Choose app language." })
+                if (!Core.isFilled("language", "app", language)) { return }
+
+                // Countries prompt
+                let countries = await vscode.window.showQuickPick(QuickPick.countries(_environment, _authorization), {
+                    canPickMany: true,
+                    placeHolder: "Choose app countries. If left blank, app will be considered as global."
+                })
+                if (!Core.isFilled("country", "app", countries)) { return }
+
+                // Build URI and prepare countries list
+                let uri = `${_environment}/app`
+                countries = countries.map(item => { return item.description })
+
+                // Send the request
+                try {
+                    await Core.addEntity(_authorization, {
+                        "name": id,
+                        "label": label,
+                        "theme": theme,
+                        "language": language.description,
+                        "private": true,
+                        "countries": countries
+                    }, uri)
+                    appsProvider.refresh()
+                }
+                catch (err) {
+                    vscode.window.showErrorMessage(err.error.message || err)
+                }
             })
-            if (!Core.isFilled("theme", "app", theme)) { return }
-            if (!(/^#[0-9A-F]{6}$/i.test(theme))) {
-                vscode.window.showErrorMessage("Entered color was invalid.")
-                return
-            }
-
-            // Language prompt
-            let language = await vscode.window.showQuickPick(QuickPick.languages(_environment, _authorization), { placeHolder: "Choose app language." })
-            if (!Core.isFilled("language", "app", language)) { return }
-
-            // Countries prompt
-            let countries = await vscode.window.showQuickPick(QuickPick.countries(_environment, _authorization), {
-                canPickMany: true,
-                placeHolder: "Choose app countries. If left blank, app will be considered as global."
-            })
-            if (!Core.isFilled("country", "app", countries)) { return }
-
-            // Build URI and prepare countries list
-            let uri = `${_environment}/app`
-            countries = countries.map(item => { return item.description })
-
-            // Send the request
-            try {
-                await Core.addEntity(_authorization, {
-                    "name": id,
-                    "label": label,
-                    "theme": theme,
-                    "language": language.description,
-                    "private": true,
-                    "countries": countries
-                }, uri)
-                appsProvider.refresh()
-            }
-            catch (err) {
-                vscode.window.showErrorMessage(err.error.message || err)
-            }
-        })
+        }
 
         /**
          * Edit app

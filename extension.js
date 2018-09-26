@@ -25,6 +25,7 @@ const jsoncParser = require('jsonc-parser')
 var _configuration
 var _authorization
 var _environment
+var _admin
 var _DIR
 var currentRpcProvider
 var currentImlProvider
@@ -75,6 +76,7 @@ async function activate() {
         else {
             _authorization = "Token " + _configuration.environments[_configuration.environment].apikey
             _environment = `https://${_configuration.environment}/v1`
+            _admin = _configuration.environments[_configuration.environment].admin === true ? true : false
         }
     }
 
@@ -99,7 +101,7 @@ async function activate() {
          */
         let coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider)
         await CoreCommands.register(_DIR, _authorization, _environment)
-        await AppCommands.register(appsProvider, _authorization, _environment)
+        await AppCommands.register(appsProvider, _authorization, _environment, _admin)
         await ConnectionCommands.register(appsProvider, _authorization, _environment)
         await WebhookCommands.register(appsProvider, _authorization, _environment)
         await ModuleCommands.register(appsProvider, _authorization, _environment)
