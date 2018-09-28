@@ -55,7 +55,7 @@ class CoreCommands {
             method: 'POST',
             body: file,
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/jsonc",
                 "Authorization": this._authorization
             }
         };
@@ -289,7 +289,7 @@ class CoreCommands {
                 }, function (error, response, body) {
 
                     // Prepare a stream to be saved
-                    let write = (item.language === "js" || item.language === "md") ? body : JSON.stringify(JSON.parse(body), null, 4)
+                    let write = (item.language === "js" || item.language === "md") ? body : Core.formatJsonc(body)
 
                     // Save the received code to the temp directory
                     fs.writeFile(path.join(_DIR, "opensource", filepath), write, { mode: 440 }, function (err) {
@@ -379,7 +379,7 @@ class CoreCommands {
                 }, function (error, response, body) {
 
                     // Prepare a stream to be saved
-                    let write = (item.language === "js" || item.language === "md") ? body : JSON.stringify(JSON.parse(body), null, 4)
+                    let write = (item.language === "js" || item.language === "md") ? body : Core.formatJsonc(body)
 
                     // Save the received code to the temp directory
                     fs.writeFile(path.join(_DIR, filepath), write, function (err) {

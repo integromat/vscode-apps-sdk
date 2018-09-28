@@ -3,6 +3,7 @@ const rp = require('request-promise');
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const jsoncParser = require('jsonc-parser');
 
 module.exports = {
     invertPngAsync: async function (uri) {
@@ -144,5 +145,11 @@ module.exports = {
 
     compareApps: function (a, b) {
         return a.bareLabel.localeCompare(b.bareLabel)
+    },
+
+    formatJsonc: function(text){
+        let edits = jsoncParser.format(text, undefined, { insertSpaces: 4 })
+        let formatted = jsoncParser.applyEdits(text, edits)
+        return formatted
     }
 }
