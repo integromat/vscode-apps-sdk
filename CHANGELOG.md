@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.6
+
+### Added
+
+- JSONC comments support
+
 ## 1.0.5
 
 ### Added
