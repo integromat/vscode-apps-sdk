@@ -7,3 +7,4 @@ node_modules
 .idea/vscode-apps-sdk.iml
 .idea/workspace.xml
 .idea/inspectionProfiles/Project_Default.xml
+.DS_Store
