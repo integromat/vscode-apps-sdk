@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.7
+
+### Fixed
+
+- When saving to the server fails, file is marked as unsaved
+
 ## 1.0.6
 
 ### Added

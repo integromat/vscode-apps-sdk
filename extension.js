@@ -113,7 +113,7 @@ async function activate() {
         /**
          * Registering events
          */
-        vscode.workspace.onDidSaveTextDocument(editor => coreCommands.sourceUpload(editor))
+        vscode.workspace.onWillSaveTextDocument(event => coreCommands.sourceUpload(event))
         vscode.window.onDidChangeActiveTextEditor(editor => coreCommands.keepProviders(editor))
 
 

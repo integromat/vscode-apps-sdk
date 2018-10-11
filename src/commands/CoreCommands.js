@@ -23,16 +23,16 @@ class CoreCommands {
     /**
      * Source Uploader
      */
-    async sourceUpload(editor) {
+    async sourceUpload(event) {
 
         // It it's not an APPS SDK file, don't do anything
-        if (!editor.fileName.includes('apps-sdk')) { return }
+        if (!event.document.fileName.includes('apps-sdk')) { return }
 
-        // Load the content of the file that has just been saved
-        let file = fs.readFileSync(editor.fileName, "utf8");
+        // Load the content of the file that's about to be saved
+        let file = event.document.getText()
 
         // Get the URN path of files URI (the right path)
-        let right = editor.fileName.split("apps-sdk")[1]
+        let right = event.document.fileName.split("apps-sdk")[1]
 
         // If on DOS-base, replace backslashes with forward slashes (on Unix-base it's done already)
         right = right.replace(/\\/g, "/")
@@ -83,8 +83,15 @@ class CoreCommands {
             this.appsProvider.refresh()
         }
         catch (err) {
+            // Parse the error and display it
             let e = JSON.parse(err.error)
             vscode.window.showErrorMessage(`${e.name}: ${e.message}`)
+
+            // Get active text editor, if exists, insert zero-space char -> mark changed
+            let editor = vscode.window.activeTextEditor
+            if (editor !== undefined) {
+                editor.insertSnippet(new vscode.SnippetString('\u200B'), editor.selection.anchor)
+            }
         }
     }
 
