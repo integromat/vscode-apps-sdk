@@ -91,6 +91,10 @@ class CoreCommands {
             let editor = vscode.window.activeTextEditor
             if (editor !== undefined) {
                 editor.insertSnippet(new vscode.SnippetString('\u200B'), editor.selection.anchor)
+                // If the code should be formatted, remove the zero-char again
+                if (vscode.workspace.getConfiguration('editor', 'formatOnSave').get('formatOnSave')) {
+                    vscode.commands.executeCommand('editor.action.formatDocument')
+                }
             }
         }
     }
