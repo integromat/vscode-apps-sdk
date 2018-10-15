@@ -15,28 +15,33 @@ var keywords = [
     "aws",
     "response",
     "pagination",
-    "type",
     "iterate",
     "trigger",
     "output",
     "wrapper",
     "valid",
     "error",
-    "container"
+    "container",
+    "label",
+    "name",
+    "value",
+    "options",
+    "spec",
+    "validate"
 ]
 
-class KeywordProvider{
-    constructor(){
+class KeywordProvider {
+    constructor() {
         this.items = keywords.map(item => {
             return new vscode.CompletionItem(item, vscode.CompletionItemKind.Keyword)
         })
     }
 
-    resolveCompletionItem(item){
+    resolveCompletionItem(item) {
         return item
     }
 
-    provideCompletionItems(){
+    provideCompletionItems() {
         return this.items
     }
 }
