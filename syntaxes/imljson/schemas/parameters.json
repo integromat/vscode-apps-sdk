@@ -1,6 +1,107 @@
 {
-	"$schema": "https://www.integromat.com/schema/parameters.json#",
+	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "array",
+	"definitions": {
+		"groups": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"label": {
+						"type": "string",
+						"maxLength": 256,
+						"minLength": 1
+					},
+					"options": {
+						"$ref": "#options"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"label",
+					"options"
+				]
+			}
+		},
+		"options": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"label": {
+						"type": "string",
+						"maxLength": 256,
+						"minLength": 1
+					},
+					"value": {
+						"type": [
+							"array",
+							"boolean",
+							"integer",
+							"null",
+							"number",
+							"object",
+							"string"
+						]
+					},
+					"nested": {
+						"$ref": "#nested"
+					},
+					"default": {
+						"type": "boolean"
+					},
+					"short": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"label",
+					"value"
+				]
+			}
+		},
+		"nested": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"$ref": "#parameters"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"store": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$ref": "#parameters"
+								}
+							]
+						},
+						"domain": {
+							"type": "string"
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"store"
+					]
+				}
+			]
+		},
+		"parameters": {
+			"type": "array",
+			"items": {
+				"type": [
+					"string"
+				]
+			}
+		}
+	},
 	"items": {
 		"id": "#parameter",
 		"type": [
@@ -32,7 +133,15 @@
 				"minLength": 1
 			},
 			"default": {
-				"type": "any"
+				"type": [
+					"array",
+					"boolean",
+					"integer",
+					"null",
+					"number",
+					"object",
+					"string"
+				]
 			},
 			"advanced": {
 				"type": "boolean"
@@ -144,95 +253,12 @@
 				"type": "string"
 			},
 			"nested": {
-				"id": "#nested",
-				"oneOf": [
-					{
-						"type": "string"
-					},
-					{
-						"$ref": "#parameters"
-					},
-					{
-						"type": "object",
-						"properties": {
-							"store": {
-								"oneOf": [
-									{
-										"type": "string"
-									},
-									{
-										"$ref": "#parameters"
-									}
-								]
-							},
-							"domain": {
-								"type": "string"
-							}
-						},
-						"additionalProperties": false,
-						"required": [
-							"store"
-						]
-					}
-				]
+				"$ref": "#nested"
 			},
 			"options": {
 				"oneOf": [
 					{
 						"type": "string"
-					},
-					{
-						"id": "#options",
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"label": {
-									"type": "string",
-									"maxLength": 256,
-									"minLength": 1
-								},
-								"value": {
-									"type": "any"
-								},
-								"nested": {
-									"$ref": "#nested"
-								},
-								"default": {
-									"type": "boolean"
-								},
-								"short": {
-									"type": "string"
-								}
-							},
-							"additionalProperties": false,
-							"required": [
-								"label",
-								"value"
-							]
-						}
-					},
-					{
-						"id": "#groups",
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"label": {
-									"type": "string",
-									"maxLength": 256,
-									"minLength": 1
-								},
-								"options": {
-									"$ref": "#options"
-								}
-							},
-							"additionalProperties": false,
-							"required": [
-								"label",
-								"options"
-							]
-						}
 					},
 					{
 						"type": "object",
