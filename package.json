@@ -52,6 +52,20 @@
   ],
   "main": "./extension",
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "parameters.imljson",
+        "url": "./syntaxes/imljson/schemas/parameters.json"
+      },
+      {
+        "fileMatch": "expect.imljson",
+        "url": "./syntaxes/imljson/schemas/parameters.json"
+      },
+      {
+        "fileMatch": "interface.imljson",
+        "url": "./syntaxes/imljson/schemas/parameters.json"
+      }
+    ],
     "languages": [
       {
         "id": "imljson",
@@ -80,12 +94,18 @@
       {
         "language": "imljson",
         "scopeName": "source.imljson",
-        "path": "./syntaxes/imljson/imljson.tmLanguage"
+        "path": "./syntaxes/imljson/imljson.tmLanguage",
+        "injectTo": [
+          ""
+        ]
       },
       {
         "language": "iml",
         "scopeName": "source.iml",
-        "path": "./syntaxes/iml/iml.tmLanguage"
+        "path": "./syntaxes/iml/iml.tmLanguage",
+        "injectTo": [
+          "string.quoted.double.json"
+        ]
       }
     ],
     "snippets": [
@@ -546,9 +566,13 @@
     "path": "^0.12.7",
     "pngjs": "^3.3.3",
     "request": "^2.87.0",
+    "request-light": "^0.2.4",
     "request-promise": "^4.2.2",
     "tempy": "^0.2.1",
     "universal-analytics": "^0.4.17",
-    "vm2": "^3.6.3"
+    "vm2": "^3.6.3",
+    "vscode-json-languageservice": "^3.2.0",
+    "vscode-languageclient": "^5.1.1",
+    "vscode-languageserver": "^5.1.0"
   }
 }

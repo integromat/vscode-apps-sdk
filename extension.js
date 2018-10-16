@@ -1,4 +1,5 @@
 const vscode = require('vscode')
+const vscode_languageclient = require("vscode-languageclient");
 
 const AppsProvider = require('./src/providers/AppsProvider')
 const KeywordProvider = require('./src/providers/KeywordProvider')
@@ -18,6 +19,8 @@ const CoreCommands = require('./src/commands/CoreCommands')
 const EnvironmentCommands = require('./src/commands/EnvironmentCommands')
 const PublicCommands = require('./src/commands/PublicCommands')
 
+const LanguageServersSettings = require('./src/LanguageServersSettings')
+
 const tempy = require('tempy')
 const path = require('path')
 const jsoncParser = require('jsonc-parser')
@@ -29,11 +32,28 @@ var _admin
 var _DIR
 var currentRpcProvider
 var currentImlProvider
+var client
 
-async function activate() {
+async function activate(context) {
     _DIR = path.join(tempy.directory(), "apps-sdk")
     _configuration = vscode.workspace.getConfiguration('apps-sdk')
     console.log('Apps SDK active.');
+
+    /**
+     * IMLJSON language server
+     */
+
+    // Prepare the server module and create a new language client
+    let serverModule = context.asAbsolutePath(path.join('syntaxes', 'languageServers', 'imlJsonServerMain.js'));
+    client = new vscode_languageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
+
+    // Start the client. This will also launch the server
+    client.start();
+
+    // When the client is ready, send IMLJSON schemas to the server
+    client.onReady().then(() => {
+        client.sendNotification(new vscode_languageclient.NotificationType('imljson/schemaAssociations'), LanguageServersSettings.getJsonSchemas());
+    })
 
     // Environment commands and envChanger
     const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10)
@@ -136,5 +156,11 @@ async function activate() {
 }
 exports.activate = activate;
 
-function deactivate() { }
+function deactivate() {
+    //Stop the language server client
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
+}
 exports.deactivate = deactivate;

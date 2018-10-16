@@ -1,0 +1,373 @@
+{
+	"$schema": "https://www.integromat.com/schema/parameters.json#",
+	"type": "array",
+	"items": {
+		"id": "#parameter",
+		"type": [
+			"object",
+			"string"
+		],
+		"properties": {
+			"name": {
+				"type": "string",
+				"maxLength": 128,
+				"minLength": 1
+			},
+			"label": {
+				"type": "string",
+				"maxLength": 256,
+				"minLength": 1
+			},
+			"help": {
+				"type": "string",
+				"minLength": 1
+			},
+			"type": {
+				"type": "string",
+				"maxLength": 32,
+				"minLength": 1
+			},
+			"semantic": {
+				"type": "string",
+				"minLength": 1
+			},
+			"default": {
+				"type": "any"
+			},
+			"advanced": {
+				"type": "boolean"
+			},
+			"required": {
+				"type": "boolean"
+			},
+			"grouped": {
+				"type": "boolean"
+			},
+			"dynamic": {
+				"type": "boolean"
+			},
+			"multiline": {
+				"type": "boolean"
+			},
+			"sort": {
+				"type": "string"
+			},
+			"sequence": {
+				"type": "boolean"
+			},
+			"tags": {
+				"type": "string",
+				"enum": [
+					"strip",
+					"stripall",
+					"escape"
+				]
+			},
+			"coder": {
+				"type": "boolean"
+			},
+			"multiple": {
+				"type": "boolean"
+			},
+			"visible": {
+				"type": "string"
+			},
+			"editable": {
+				"oneOf": [
+					{
+						"type": "boolean"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"enabled": {
+								"type": "boolean"
+							},
+							"help": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"additionalProperties": false,
+						"required": [
+							"enabled"
+						]
+					}
+				]
+			},
+			"time": {
+				"type": "boolean"
+			},
+			"rpc": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"parameters": {
+						"$ref": "#parameters"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"url",
+					"label"
+				]
+			},
+			"mode": {
+				"type": "string",
+				"enum": [
+					"edit",
+					"chose"
+				]
+			},
+			"labels": {
+				"type": "object"
+			},
+			"spec": {
+				"oneOf": [
+					{
+						"$ref": "#parameter"
+					},
+					{
+						"$ref": "#parameters"
+					}
+				]
+			},
+			"codepage": {
+				"type": "string"
+			},
+			"pattern": {
+				"type": "string"
+			},
+			"nested": {
+				"id": "#nested",
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"$ref": "#parameters"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"store": {
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"$ref": "#parameters"
+									}
+								]
+							},
+							"domain": {
+								"type": "string"
+							}
+						},
+						"additionalProperties": false,
+						"required": [
+							"store"
+						]
+					}
+				]
+			},
+			"options": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"id": "#options",
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"label": {
+									"type": "string",
+									"maxLength": 256,
+									"minLength": 1
+								},
+								"value": {
+									"type": "any"
+								},
+								"nested": {
+									"$ref": "#nested"
+								},
+								"default": {
+									"type": "boolean"
+								},
+								"short": {
+									"type": "string"
+								}
+							},
+							"additionalProperties": false,
+							"required": [
+								"label",
+								"value"
+							]
+						}
+					},
+					{
+						"id": "#groups",
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"label": {
+									"type": "string",
+									"maxLength": 256,
+									"minLength": 1
+								},
+								"options": {
+									"$ref": "#options"
+								}
+							},
+							"additionalProperties": false,
+							"required": [
+								"label",
+								"options"
+							]
+						}
+					},
+					{
+						"type": "object",
+						"properties": {
+							"store": {
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"$ref": "#options"
+									},
+									{
+										"$ref": "#groups"
+									}
+								]
+							},
+							"label": {
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							},
+							"default": {
+								"type": "string"
+							},
+							"learning": {
+								"type": "boolean"
+							},
+							"placeholder": {
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"type": "object",
+										"properties": {
+											"label": {
+												"type": "string"
+											},
+											"nested": {
+												"$ref": "#nested"
+											}
+										},
+										"additionalProperties": false
+									}
+								]
+							},
+							"nested": {
+								"$ref": "#nested"
+							},
+							"operators": {
+								"$ref": "#groups"
+							},
+							"logic": {
+								"type": "string"
+							},
+							"scope": {
+								"oneOf": [
+									{
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									},
+									{
+										"type": "object",
+										"additionalProperties": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									}
+								]
+							},
+							"ids": {
+								"type": "boolean"
+							},
+							"showRoot": {
+								"type": "boolean"
+							},
+							"singleLevel": {
+								"type": "boolean"
+							}
+						},
+						"additionalProperties": false
+					}
+				]
+			},
+			"extension": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"validate": {
+				"oneOf": [
+					{
+						"type": "boolean"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"max": {
+								"type": "number"
+							},
+							"min": {
+								"type": "number"
+							},
+							"pattern": {
+								"type": "string"
+							},
+							"minItems": {
+								"type": "integer"
+							},
+							"maxItems": {
+								"type": "integer"
+							}
+						},
+						"additionalProperties": false
+					}
+				]
+			}
+		},
+		"additionalProperties": false,
+		"required": [
+			"type"
+		]
+	}
+}
