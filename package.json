@@ -64,6 +64,14 @@
       {
         "fileMatch": "interface.imljson",
         "url": "./syntaxes/imljson/schemas/parameters.json"
+      },
+      {
+        "fileMatch": "common.imljson",
+        "url": "./syntaxes/imljson/schemas/common.json"
+      },
+      {
+        "fileMatch": "api.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
       }
     ],
     "languages": [

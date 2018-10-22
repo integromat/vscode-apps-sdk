@@ -1,0 +1,340 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "temp": {
+            "$id": "#temp",
+            "type": "object",
+            "description": "The temp directive specifies an object, which can be used to create custom temporary variables. It also creates a temp variable in IML, through which you then access your variables. The temp collection is not persisted and will be lost after the module is done executing."
+        },
+        "response-type": {
+            "$id": "#response-type",
+            "type": "string",
+            "default": "automatic",
+            "enum": [
+                "automatic",
+                "json",
+                "urlencoded",
+                "text",
+                "raw",
+                "string",
+                "binary",
+                "xml"
+            ]
+        },
+        "request": {
+            "$id": "#request",
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "This directive specifies the request URL."
+                },
+                "encodeUrl": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "This directive controls the encoding of URLs. It is on by default, so if you have any special characters in your URL, they will be automatically encoded. But there might be situations where you don’t want your URL to be encoded automatically, or you want to control what parts of the URL are encoded. To do this, set this flag to false."
+                },
+                "method": {
+                    "type": "string",
+                    "default": "GET",
+                    "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE"
+                    ],
+                    "description": "This directive specifies the HTTP method that will be used to issue the request."
+                },
+                "headers": {
+                    "type": "object",
+                    "description": "This directive specifies headers that will be sent with the request."
+                },
+                "qs": {
+                    "type": "object",
+                    "description": "This directive specifies the query string to use when making the request."
+                },
+                "ca": {
+                    "type": "string",
+                    "description": "Custom Certificate Authority"
+                },
+                "body": {
+                    "type": [
+                        "array",
+                        "boolean",
+                        "integer",
+                        "null",
+                        "number",
+                        "object",
+                        "string"
+                    ],
+                    "description": "This directive specifies the request body."
+                },
+                "type": {
+                    "type": "string",
+                    "default": "json",
+                    "description": "This directive specifies how the request body will be encoded and send with the request.",
+                    "enum": [
+                        "json",
+                        "urlencoded",
+                        "multipart/form-data",
+                        "text",
+                        "string",
+                        "raw",
+                        "binary"
+                    ]
+                },
+                "temp": {
+                    "$ref": "#/definitions/temp"
+                },
+                "condition": {
+                    "default": true,
+                    "description": "This directive specifies whether to execute the request or not.",
+                    "oneOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "condition": {
+                                    "type": "string"
+                                },
+                                "default": {
+                                    "type": [
+                                        "array",
+                                        "boolean",
+                                        "integer",
+                                        "null",
+                                        "number",
+                                        "object",
+                                        "string"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "aws": {
+                    "description": "Amazon Web Services signature",
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "secret": {
+                            "type": "string"
+                        },
+                        "session": {
+                            "type": "string"
+                        },
+                        "bucket": {
+                            "type": "string"
+                        },
+                        "sign_version": {
+                            "type": "string",
+                            "default": "2",
+                            "enum": [
+                                "2",
+                                "4"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "followRedirects": {
+                    "description": "This directive specifies whether to follow GET HTTP 3xx responses as redirects or never.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "followAllRedirects": {
+                    "description": "This directive specifies whether to follow non-GET HTTP 3xx responses as redirects or never.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "pagination": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "mergeWithParent": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "method": {
+                            "type": "string"
+                        },
+                        "headers": {
+                            "type": "object"
+                        },
+                        "qs": {
+                            "type": "object"
+                        },
+                        "body": {
+                            "type": [
+                                "array",
+                                "boolean",
+                                "integer",
+                                "null",
+                                "number",
+                                "object",
+                                "string"
+                            ]
+                        },
+                        "condition": {
+                            "type": [
+                                "boolean",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "response": {
+                    "description": "This directive specifies how to parse the data received from the server.",
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/definitions/response-type"
+                                },
+                                {
+                                    "type": "object",
+                                    "patternProperties": {
+                                        "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
+                                            "$ref": "#/definitions/response-type"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "valid": {
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "default": true
+                        },
+                        "limit": {
+                            "type": [
+                                "number",
+                                "string"
+                            ]
+                        },
+                        "error": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "default": "RuntimeError",
+                                            "enum": [
+                                                "RuntimeError",
+                                                "DataError",
+                                                "RateLimitError",
+                                                "OutOfSpaceError",
+                                                "ConnectionError",
+                                                "InvalidConfigurationError",
+                                                "InvalidAccessTokenError",
+                                                "IncompleteDataError",
+                                                "DuplicateDataError"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "iterate": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "container": {
+                                            "type": "string"
+                                        },
+                                        "condition": {
+                                            "type": [
+                                                "string",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "container"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "temp": {
+                            "$ref": "#/definitions/temp"
+                        },
+                        "output": {
+                            "type": [
+                                "array",
+                                "boolean",
+                                "integer",
+                                "null",
+                                "number",
+                                "object",
+                                "string"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "if": {
+                "properties": {
+                    "method": {
+                        "enum": [
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "body"
+                ]
+            },
+            "required": [
+                "url"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "oneOf": [
+        {
+            "$ref": "#/definitions/request"
+        },
+        {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/request"
+            }
+        }
+    ]
+}
