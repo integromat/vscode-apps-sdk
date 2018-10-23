@@ -88,6 +88,18 @@
       {
         "fileMatch": "epoch.imljson",
         "url": "./syntaxes/imljson/schemas/epoch.json"
+      },
+      {
+        "fileMatch": "attach.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
+      },
+      {
+        "fileMatch": "detach.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
+      },
+      {
+        "fileMatch": "base.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
       }
     ],
     "languages": [
