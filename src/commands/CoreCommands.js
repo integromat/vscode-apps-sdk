@@ -62,10 +62,16 @@ class CoreCommands {
 
         // Change the Content-Type header if needed
         if (path.extname(right) === ".js") {
+            // JavaScript header for JS files
             options.headers["Content-Type"] = "application/javascript"
         }
         if (path.extname(right) === ".md") {
+            // Markdown header for MD files
             options.headers["Content-Type"] = "text/markdown"
+        }
+        if (path.basename(right) === "common.imljson") {
+            // Comments are not allowd in encrypted common data, so only JSON is accepted
+            options.headers["Content-Type"] = "application/json"
         }
 
         /**

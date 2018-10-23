@@ -21,14 +21,97 @@
                 "xml"
             ]
         },
+        "error-type": {
+            "$id": "#error-type",
+            "type": "string",
+            "default": "RuntimeError",
+            "enum": [
+                "RuntimeError",
+                "DataError",
+                "RateLimitError",
+                "OutOfSpaceError",
+                "ConnectionError",
+                "InvalidConfigurationError",
+                "InvalidAccessTokenError",
+                "IncompleteDataError",
+                "DuplicateDataError"
+            ]
+        },
+        "headers": {
+            "$id": "#headers",
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "type": [
+                        "boolean",
+                        "integer",
+                        "null",
+                        "number",
+                        "string",
+                        "array"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "description": "This directive specifies headers that will be sent with the request."
+        },
+        "qs": {
+            "$id": "#qs",
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "type": [
+                        "boolean",
+                        "integer",
+                        "null",
+                        "number",
+                        "string",
+                        "array"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "description": "This directive specifies the query string to use when making the request."
+        },
+        "url": {
+            "$id": "#url",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "This directive specifies the request URL."
+        },
+        "method": {
+            "$id": "#method",
+            "type": "string",
+            "default": "GET",
+            "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+            ],
+            "description": "This directive specifies the HTTP method that will be used to issue the request."
+        },
+        "body": {
+            "$id": "#body",
+            "type": [
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "object",
+                "string"
+            ],
+            "description": "This directive specifies the request body."
+        },
         "request": {
             "$id": "#request",
             "type": "object",
             "properties": {
                 "url": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "This directive specifies the request URL."
+                    "$ref": "#/definitions/url"
                 },
                 "encodeUrl": {
                     "type": "boolean",
@@ -36,40 +119,20 @@
                     "description": "This directive controls the encoding of URLs. It is on by default, so if you have any special characters in your URL, they will be automatically encoded. But there might be situations where you don’t want your URL to be encoded automatically, or you want to control what parts of the URL are encoded. To do this, set this flag to false."
                 },
                 "method": {
-                    "type": "string",
-                    "default": "GET",
-                    "enum": [
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "PATCH",
-                        "DELETE"
-                    ],
-                    "description": "This directive specifies the HTTP method that will be used to issue the request."
+                    "$ref": "#/definitions/method"
                 },
                 "headers": {
-                    "type": "object",
-                    "description": "This directive specifies headers that will be sent with the request."
+                    "$ref": "#/definitions/headers"
                 },
                 "qs": {
-                    "type": "object",
-                    "description": "This directive specifies the query string to use when making the request."
+                    "$ref": "#/definitions/qs"
                 },
                 "ca": {
                     "type": "string",
                     "description": "Custom Certificate Authority"
                 },
                 "body": {
-                    "type": [
-                        "array",
-                        "boolean",
-                        "integer",
-                        "null",
-                        "number",
-                        "object",
-                        "string"
-                    ],
-                    "description": "This directive specifies the request body."
+                    "$ref": "#/definitions/body"
                 },
                 "type": {
                     "type": "string",
@@ -93,7 +156,10 @@
                     "description": "This directive specifies whether to execute the request or not.",
                     "oneOf": [
                         {
-                            "type": "boolean"
+                            "type": [
+                                "boolean",
+                                "string"
+                            ]
                         },
                         {
                             "type": "object",
@@ -163,27 +229,19 @@
                             "default": true
                         },
                         "url": {
-                            "type": "string"
+                            "$ref": "#/definitions/url"
                         },
                         "method": {
-                            "type": "string"
+                            "$ref": "#/definitions/method"
                         },
                         "headers": {
-                            "type": "object"
+                            "$ref": "#/definitions/headers"
                         },
                         "qs": {
-                            "type": "object"
+                            "$ref": "#/definitions/qs"
                         },
                         "body": {
-                            "type": [
-                                "array",
-                                "boolean",
-                                "integer",
-                                "null",
-                                "number",
-                                "object",
-                                "string"
-                            ]
+                            "$ref": "#/definitions/body"
                         },
                         "condition": {
                             "type": [
@@ -200,9 +258,6 @@
                         "type": {
                             "oneOf": [
                                 {
-                                    "$ref": "#/definitions/response-type"
-                                },
-                                {
                                     "type": "object",
                                     "patternProperties": {
                                         "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
@@ -210,6 +265,9 @@
                                         }
                                     },
                                     "additionalProperties": false
+                                },
+                                {
+                                    "$ref": "#/definitions/response-type"
                                 }
                             ]
                         },
@@ -238,19 +296,24 @@
                                             "type": "string"
                                         },
                                         "type": {
-                                            "type": "string",
-                                            "default": "RuntimeError",
-                                            "enum": [
-                                                "RuntimeError",
-                                                "DataError",
-                                                "RateLimitError",
-                                                "OutOfSpaceError",
-                                                "ConnectionError",
-                                                "InvalidConfigurationError",
-                                                "InvalidAccessTokenError",
-                                                "IncompleteDataError",
-                                                "DuplicateDataError"
-                                            ]
+                                            "$ref": "#/definitions/error-type"
+                                        }
+                                    },
+                                    "patternProperties": {
+                                        "^([0-9][0-9][0-9])$": {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "$ref": "#/definitions/error-type"
+                                                }
+                                            },
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "additionalProperties": false
                                         }
                                     },
                                     "required": [
