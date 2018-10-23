@@ -6,7 +6,7 @@
             "type": "object",
             "properties": {
                 "url": {
-                    "$ref": "api.json#/definitions/url"
+                    "$ref": "sources.json#/definitions/url"
                 },
                 "encodeUrl": {
                     "type": "boolean",
@@ -14,37 +14,26 @@
                     "description": "This directive controls the encoding of URLs. It is on by default, so if you have any special characters in your URL, they will be automatically encoded. But there might be situations where you don’t want your URL to be encoded automatically, or you want to control what parts of the URL are encoded. To do this, set this flag to false."
                 },
                 "method": {
-                    "$ref": "api.json#/definitions/method"
+                    "$ref": "sources.json#/definitions/method"
                 },
                 "headers": {
-                    "$ref": "api.json#/definitions/headers"
+                    "$ref": "sources.json#/definitions/headers"
                 },
                 "qs": {
-                    "$ref": "api.json#/definitions/qs"
+                    "$ref": "sources.json#/definitions/qs"
                 },
                 "ca": {
                     "type": "string",
                     "description": "Custom Certificate Authority"
                 },
                 "body": {
-                    "$ref": "api.json#/definitions/body"
+                    "$ref": "sources.json#/definitions/body"
                 },
                 "type": {
-                    "type": "string",
-                    "default": "json",
-                    "description": "This directive specifies how the request body will be encoded and send with the request.",
-                    "enum": [
-                        "json",
-                        "urlencoded",
-                        "multipart/form-data",
-                        "text",
-                        "string",
-                        "raw",
-                        "binary"
-                    ]
+                    "$ref": "sources.json#/definitions/request-type"
                 },
                 "temp": {
-                    "$ref": "api.json#/definitions/temp"
+                    "$ref": "sources.json#/definitions/temp"
                 },
                 "condition": {
                     "default": true,
@@ -124,19 +113,19 @@
                             "default": true
                         },
                         "url": {
-                            "$ref": "api.json#/definitions/url"
+                            "$ref": "sources.json#/definitions/url"
                         },
                         "method": {
-                            "$ref": "api.json#/definitions/method"
+                            "$ref": "sources.json#/definitions/method"
                         },
                         "headers": {
-                            "$ref": "api.json#/definitions/headers"
+                            "$ref": "sources.json#/definitions/headers"
                         },
                         "qs": {
-                            "$ref": "api.json#/definitions/qs"
+                            "$ref": "sources.json#/definitions/qs"
                         },
                         "body": {
-                            "$ref": "api.json#/definitions/body"
+                            "$ref": "sources.json#/definitions/body"
                         },
                         "condition": {
                             "type": [
@@ -156,13 +145,13 @@
                                     "type": "object",
                                     "patternProperties": {
                                         "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
-                                            "$ref": "api.json#/definitions/response-type"
+                                            "$ref": "sources.json#/definitions/response-type"
                                         }
                                     },
                                     "additionalProperties": false
                                 },
                                 {
-                                    "$ref": "api.json#/definitions/response-type"
+                                    "$ref": "sources.json#/definitions/response-type"
                                 }
                             ]
                         },
@@ -191,7 +180,7 @@
                                             "type": "string"
                                         },
                                         "type": {
-                                            "$ref": "api.json#/definitions/error-type"
+                                            "$ref": "sources.json#/definitions/error-type"
                                         }
                                     },
                                     "patternProperties": {
@@ -202,7 +191,7 @@
                                                     "type": "string"
                                                 },
                                                 "type": {
-                                                    "$ref": "api.json#/definitions/error-type"
+                                                    "$ref": "sources.json#/definitions/error-type"
                                                 }
                                             },
                                             "required": [
@@ -244,7 +233,7 @@
                             ]
                         },
                         "temp": {
-                            "$ref": "api.json#/definitions/temp"
+                            "$ref": "sources.json#/definitions/temp"
                         },
                         "output": {
                             "type": "object",
@@ -283,5 +272,5 @@
             "additionalProperties": false
         }
     },
-    "$ref": "api.json#/definitions/request"
+    "$ref": "#/definitions/request"
 }

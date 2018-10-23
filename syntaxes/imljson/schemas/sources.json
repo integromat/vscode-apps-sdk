@@ -1,0 +1,125 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "temp": {
+            "$id": "#temp",
+            "type": "object",
+            "description": "The temp directive specifies an object, which can be used to create custom temporary variables. It also creates a temp variable in IML, through which you then access your variables. The temp collection is not persisted and will be lost after the module is done executing."
+        },
+        "response-type": {
+            "$id": "#response-type",
+            "type": "string",
+            "default": "automatic",
+            "enum": [
+                "automatic",
+                "json",
+                "urlencoded",
+                "text",
+                "raw",
+                "string",
+                "binary",
+                "xml"
+            ]
+        },
+        "error-type": {
+            "$id": "#error-type",
+            "type": "string",
+            "default": "RuntimeError",
+            "enum": [
+                "RuntimeError",
+                "DataError",
+                "RateLimitError",
+                "OutOfSpaceError",
+                "ConnectionError",
+                "InvalidConfigurationError",
+                "InvalidAccessTokenError",
+                "IncompleteDataError",
+                "DuplicateDataError"
+            ]
+        },
+        "headers": {
+            "$id": "#headers",
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "type": [
+                        "boolean",
+                        "integer",
+                        "null",
+                        "number",
+                        "string",
+                        "array"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "description": "This directive specifies headers that will be sent with the request."
+        },
+        "qs": {
+            "$id": "#qs",
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "type": [
+                        "boolean",
+                        "integer",
+                        "null",
+                        "number",
+                        "string",
+                        "array"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "description": "This directive specifies the query string to use when making the request."
+        },
+        "url": {
+            "$id": "#url",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "This directive specifies the request URL."
+        },
+        "method": {
+            "$id": "#method",
+            "type": "string",
+            "default": "GET",
+            "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+            ],
+            "description": "This directive specifies the HTTP method that will be used to issue the request."
+        },
+        "body": {
+            "$id": "#body",
+            "type": [
+                "object",
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "string"
+            ],
+            "description": "This directive specifies the request body."
+        },
+        "request-type": {
+            "$id": "#request-type",
+            "type": "string",
+            "default": "json",
+            "description": "This directive specifies how the request body will be encoded and send with the request.",
+            "enum": [
+                "json",
+                "urlencoded",
+                "multipart/form-data",
+                "text",
+                "string",
+                "raw",
+                "binary"
+            ]
+        }
+    }
+}
