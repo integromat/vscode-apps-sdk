@@ -3,7 +3,9 @@
     "type": "object",
     "patternProperties": {
         "^(.+)$": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1
         }
     },
     "additionalProperties": true

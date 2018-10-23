@@ -80,6 +80,10 @@
       {
         "fileMatch": "scopes.imljson",
         "url": "./syntaxes/imljson/schemas/scopes.json"
+      },
+      {
+        "fileMatch": "scope.imljson",
+        "url": "./syntaxes/imljson/schemas/scope.json"
       }
     ],
     "languages": [
