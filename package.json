@@ -76,6 +76,10 @@
       {
         "fileMatch": "samples.imljson",
         "url": "./syntaxes/imljson/schemas/samples.json"
+      },
+      {
+        "fileMatch": "scopes.imljson",
+        "url": "./syntaxes/imljson/schemas/scopes.json"
       }
     ],
     "languages": [
