@@ -99,7 +99,7 @@
       },
       {
         "fileMatch": "base.imljson",
-        "url": "./syntaxes/imljson/schemas/api.json"
+        "url": "./syntaxes/imljson/schemas/base.json"
       },
       {
         "fileMatch": "api-oauth.json",

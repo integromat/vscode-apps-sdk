@@ -8,6 +8,9 @@
                 "url": {
                     "$ref": "sources.json#/definitions/url"
                 },
+                "baseUrl": {
+                    "$ref": "sources.json#/definitions/baseUrl"
+                },
                 "encodeUrl": {
                     "$ref": "sources.json#/definitions/encodeUrl"
                 },
@@ -86,15 +89,13 @@
                         "error": {
                             "oneOf": [
                                 {
-                                    "type": "string",
-                                    "maxLength": 1024
+                                    "type": "string"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "message": {
-                                            "type": "string",
-                                            "maxLength": 1024
+                                            "type": "string"
                                         },
                                         "type": {
                                             "$ref": "enums.json#/definitions/error-type"
@@ -105,8 +106,7 @@
                                             "type": "object",
                                             "properties": {
                                                 "message": {
-                                                    "type": "string",
-                                                    "maxLength": 1024
+                                                    "type": "string"
                                                 },
                                                 "type": {
                                                     "$ref": "enums.json#/definitions/error-type"
@@ -128,15 +128,13 @@
                         "iterate": {
                             "oneOf": [
                                 {
-                                    "type": "string",
-                                    "maxLength": 512
+                                    "type": "string"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "container": {
-                                            "type": "string",
-                                            "maxLength": 512
+                                            "type": "string"
                                         },
                                         "condition": {
                                             "type": [
@@ -184,12 +182,10 @@
                                     ]
                                 },
                                 "id": {
-                                    "type": "string",
-                                    "maxLength": 512
+                                    "type": "string"
                                 },
                                 "date": {
-                                    "type": "string",
-                                    "maxLength": 512
+                                    "type": "string"
                                 }
                             },
                             "required": [
@@ -256,9 +252,6 @@
                     "body"
                 ]
             },
-            "required": [
-                "url"
-            ],
             "additionalProperties": false
         }
     },

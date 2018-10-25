@@ -3,9 +3,7 @@
     "type": "object",
     "patternProperties": {
         "^(.+)$": {
-            "type": "string",
-            "maxLength": 512,
-            "minLength": 1
+            "$ref": "sources.json#/definitions/plainString512"
         }
     },
     "additionalProperties": true

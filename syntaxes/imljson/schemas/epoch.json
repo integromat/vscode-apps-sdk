@@ -9,9 +9,7 @@
                     "$ref": "sources.json#/definitions/url"
                 },
                 "encodeUrl": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "This directive controls the encoding of URLs. It is on by default, so if you have any special characters in your URL, they will be automatically encoded. But there might be situations where you don’t want your URL to be encoded automatically, or you want to control what parts of the URL are encoded. To do this, set this flag to false."
+                    "$ref": "sources.json#/definitions/encodeUrl"
                 },
                 "method": {
                     "$ref": "sources.json#/definitions/method"
@@ -23,117 +21,34 @@
                     "$ref": "sources.json#/definitions/qs"
                 },
                 "ca": {
-                    "type": "string",
-                    "description": "Custom Certificate Authority"
+                    "$ref": "sources.json#/definitions/ca"
                 },
                 "body": {
                     "$ref": "sources.json#/definitions/body"
                 },
                 "type": {
-                    "$ref": "sources.json#/definitions/request-type"
+                    "$ref": "enums.json#/definitions/request-type"
                 },
                 "temp": {
                     "$ref": "sources.json#/definitions/temp"
                 },
                 "condition": {
-                    "default": true,
-                    "description": "This directive specifies whether to execute the request or not.",
-                    "oneOf": [
-                        {
-                            "type": [
-                                "boolean",
-                                "string"
-                            ]
-                        },
-                        {
-                            "type": "object",
-                            "properties": {
-                                "condition": {
-                                    "type": "string"
-                                },
-                                "default": {
-                                    "type": [
-                                        "array",
-                                        "boolean",
-                                        "integer",
-                                        "null",
-                                        "number",
-                                        "object",
-                                        "string"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    ]
+                    "$ref": "sources.json#/definitions/condition"
                 },
                 "aws": {
-                    "description": "Amazon Web Services signature",
-                    "type": "object",
-                    "properties": {
-                        "key": {
-                            "type": "string"
-                        },
-                        "secret": {
-                            "type": "string"
-                        },
-                        "session": {
-                            "type": "string"
-                        },
-                        "bucket": {
-                            "type": "string"
-                        },
-                        "sign_version": {
-                            "type": "string",
-                            "default": "2",
-                            "enum": [
-                                "2",
-                                "4"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false
+                    "$ref": "sources.json#/definitions/aws"
+                },
+                "oauth": {
+                    "$ref": "sources.json#/definitions/oauth-1"
                 },
                 "followRedirects": {
-                    "description": "This directive specifies whether to follow GET HTTP 3xx responses as redirects or never.",
-                    "type": "boolean",
-                    "default": true
+                    "$ref": "sources.json#/definitions/followRedirects"
                 },
                 "followAllRedirects": {
-                    "description": "This directive specifies whether to follow non-GET HTTP 3xx responses as redirects or never.",
-                    "type": "boolean",
-                    "default": true
+                    "$ref": "sources.json#/definitions/followAllRedirects"
                 },
                 "pagination": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "mergeWithParent": {
-                            "type": "boolean",
-                            "default": true
-                        },
-                        "url": {
-                            "$ref": "sources.json#/definitions/url"
-                        },
-                        "method": {
-                            "$ref": "sources.json#/definitions/method"
-                        },
-                        "headers": {
-                            "$ref": "sources.json#/definitions/headers"
-                        },
-                        "qs": {
-                            "$ref": "sources.json#/definitions/qs"
-                        },
-                        "body": {
-                            "$ref": "sources.json#/definitions/body"
-                        },
-                        "condition": {
-                            "type": [
-                                "boolean",
-                                "string"
-                            ]
-                        }
-                    }
+                    "$ref": "sources.json#/definitions/pagination"
                 },
                 "response": {
                     "description": "This directive specifies how to parse the data received from the server.",
@@ -145,13 +60,13 @@
                                     "type": "object",
                                     "patternProperties": {
                                         "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
-                                            "$ref": "sources.json#/definitions/response-type"
+                                            "$ref": "enums.json#/definitions/response-type"
                                         }
                                     },
                                     "additionalProperties": false
                                 },
                                 {
-                                    "$ref": "sources.json#/definitions/response-type"
+                                    "$ref": "enums.json#/definitions/response-type"
                                 }
                             ]
                         },
@@ -180,7 +95,7 @@
                                             "type": "string"
                                         },
                                         "type": {
-                                            "$ref": "sources.json#/definitions/error-type"
+                                            "$ref": "enums.json#/definitions/error-type"
                                         }
                                     },
                                     "patternProperties": {
@@ -191,7 +106,7 @@
                                                     "type": "string"
                                                 },
                                                 "type": {
-                                                    "$ref": "sources.json#/definitions/error-type"
+                                                    "$ref": "enums.json#/definitions/error-type"
                                                 }
                                             },
                                             "required": [
@@ -241,6 +156,9 @@
                                 "date",
                                 "label"
                             ]
+                        },
+                        "oauth": {
+                            "$ref": "sources.json#/definitions/oauth-1"
                         }
                     },
                     "additionalProperties": false,

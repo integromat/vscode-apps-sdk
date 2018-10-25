@@ -1,41 +1,17 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
+        "plainString512": {
+            "$id": "#plainString512",
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1
+        },
         "temp": {
             "$id": "#temp",
             "type": "object",
-            "description": "The temp directive specifies an object, which can be used to create custom temporary variables. It also creates a temp variable in IML, through which you then access your variables. The temp collection is not persisted and will be lost after the module is done executing."
-        },
-        "response-type": {
-            "$id": "#response-type",
-            "type": "string",
-            "default": "automatic",
-            "enum": [
-                "automatic",
-                "json",
-                "urlencoded",
-                "text",
-                "raw",
-                "string",
-                "binary",
-                "xml"
-            ]
-        },
-        "error-type": {
-            "$id": "#error-type",
-            "type": "string",
-            "default": "RuntimeError",
-            "enum": [
-                "RuntimeError",
-                "DataError",
-                "RateLimitError",
-                "OutOfSpaceError",
-                "ConnectionError",
-                "InvalidConfigurationError",
-                "InvalidAccessTokenError",
-                "IncompleteDataError",
-                "DuplicateDataError"
-            ]
+            "description": "The temp directive specifies an object, which can be used to create custom temporary variables. It also creates a temp variable in IML, through which you then access your variables. The temp collection is not persisted and will be lost after the module is done executing.",
+            "additionalProperties": true
         },
         "headers": {
             "$id": "#headers",
@@ -113,21 +89,6 @@
             ],
             "description": "This directive specifies the request body."
         },
-        "request-type": {
-            "$id": "#request-type",
-            "type": "string",
-            "default": "json",
-            "description": "This directive specifies how the request body will be encoded and send with the request.",
-            "enum": [
-                "json",
-                "urlencoded",
-                "multipart/form-data",
-                "text",
-                "string",
-                "raw",
-                "binary"
-            ]
-        },
         "oauth-1": {
             "$id": "#oauth-1",
             "type": "object",
@@ -181,6 +142,130 @@
                         "boolean"
                     ],
                     "default": true
+                }
+            }
+        },
+        "encodeUrl": {
+            "$id": "#encodeUrl",
+            "type": "boolean",
+            "default": true,
+            "description": "This directive controls the encoding of URLs. It is on by default, so if you have any special characters in your URL, they will be automatically encoded. But there might be situations where you don’t want your URL to be encoded automatically, or you want to control what parts of the URL are encoded. To do this, set this flag to false."
+        },
+        "ca": {
+            "$id": "#ca",
+            "type": "string",
+            "description": "Custom Certificate Authority",
+            "maxLength": 512
+        },
+        "condition": {
+            "$id": "#condition",
+            "default": true,
+            "description": "This directive specifies whether to execute the request or not.",
+            "oneOf": [
+                {
+                    "type": [
+                        "boolean",
+                        "string"
+                    ]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "condition": {
+                            "type": [
+                                "boolean",
+                                "string"
+                            ]
+                        },
+                        "default": {
+                            "type": [
+                                "array",
+                                "boolean",
+                                "integer",
+                                "null",
+                                "number",
+                                "object",
+                                "string"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "aws": {
+            "$id": "#aws",
+            "description": "Amazon Web Services signature",
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "secret": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "session": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "bucket": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "sign_version": {
+                    "type": "string",
+                    "default": "2",
+                    "enum": [
+                        "2",
+                        "4"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "followRedirects": {
+            "$id": "#followRedirects",
+            "description": "This directive specifies whether to follow GET HTTP 3xx responses as redirects or never.",
+            "type": "boolean",
+            "default": true
+        },
+        "followAllRedirects": {
+            "$id": "#followAllRedirects",
+            "description": "This directive specifies whether to follow non-GET HTTP 3xx responses as redirects or never.",
+            "type": "boolean",
+            "default": true
+        },
+        "pagination": {
+            "$id": "#pagination",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "mergeWithParent": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "url": {
+                    "$ref": "sources.json#/definitions/url"
+                },
+                "method": {
+                    "$ref": "sources.json#/definitions/method"
+                },
+                "headers": {
+                    "$ref": "sources.json#/definitions/headers"
+                },
+                "qs": {
+                    "$ref": "sources.json#/definitions/qs"
+                },
+                "body": {
+                    "$ref": "sources.json#/definitions/body"
+                },
+                "condition": {
+                    "type": [
+                        "boolean",
+                        "string"
+                    ]
                 }
             }
         }
