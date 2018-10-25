@@ -44,7 +44,12 @@ class CoreCommands {
         }
 
         // Build the URL
-        let url = (path.join(path.dirname(right), path.basename(right, path.extname(right)))).replace(/\\/g, "/")
+        let basename = path.basename(right, path.extname(right));
+        // Revert api-oauth filename to api
+        if (basename === "api-oauth") {
+            basename = "api"
+        }
+        let url = (path.join(path.dirname(right), basename)).replace(/\\/g, "/")
 
         // And compose the URI
         let uri = this._environment + url
@@ -202,7 +207,7 @@ class CoreCommands {
              * Following condition specifies where are IML functions allowed
              */
             if (
-                (name === "api" || name === "epoch" || name === "attach" || name === "detach")
+                (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
             ) {
                 // Remove existing ImlProvider
                 if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
@@ -366,6 +371,11 @@ class CoreCommands {
             // Prepare filepath and dirname for the code
             let filepath = `${urn}.${item.language}`
             let dirname = path.dirname(filepath)
+
+            // Special case: OAuth connection API
+            if (item.parent.supertype === "connection" && item.parent.type === "oauth" && item.name === "api") {
+                filepath = `${urn}-oauth.${item.language}`
+            }
 
             /**
              * CODE-LOADER
