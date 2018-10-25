@@ -8,6 +8,9 @@
                 "url": {
                     "$ref": "sources.json#/definitions/url"
                 },
+                "baseUrl": {
+                    "$ref": "sources.json#/definitions/baseUrl"
+                },
                 "encodeUrl": {
                     "type": "boolean",
                     "default": true,
@@ -103,6 +106,9 @@
                     "description": "This directive specifies whether to follow non-GET HTTP 3xx responses as redirects or never.",
                     "type": "boolean",
                     "default": true
+                },
+                "oauth": {
+                    "$ref": "sources.json#/definitions/oauth-1"
                 },
                 "pagination": {
                     "type": "object",
@@ -277,6 +283,36 @@
                                 "date"
                             ],
                             "additionalProperties": false
+                        },
+                        "data": {
+                            "type": "object",
+                            "description": "The data directive saves data to the connection so that it can be later accessed from a module through the connection variable."
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "maxLength": 512
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "text",
+                                        "email"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "uid": {
+                            "type": [
+                                "string",
+                                "number"
+                            ]
+                        },
+                        "oauth": {
+                            "$ref": "sources.json#/definitions/oauth-1"
                         }
                     },
                     "additionalProperties": false

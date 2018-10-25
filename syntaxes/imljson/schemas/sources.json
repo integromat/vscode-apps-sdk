@@ -80,6 +80,13 @@
             "maxLength": 512,
             "description": "This directive specifies the request URL."
         },
+        "baseUrl": {
+            "$id": "#baseUrl",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "If you want to use this base URL in a request, you need to start the URL of an endpoint with `/` character."
+        },
         "method": {
             "$id": "#method",
             "type": "string",
@@ -120,6 +127,62 @@
                 "raw",
                 "binary"
             ]
+        },
+        "oauth-1": {
+            "$id": "#oauth-1",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "consumer_key": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "consumer_secret": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "private_key": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "token": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "token_secret": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "verifier": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "signature_method": {
+                    "type": "string",
+                    "enum": [
+                        "HMAC-SHA1",
+                        "RSA-SHA1",
+                        "PLAINTEXT"
+                    ],
+                    "default": "HMAC-SHA1"
+                },
+                "transport_method": {
+                    "type": "string",
+                    "enum": [
+                        "query",
+                        "body",
+                        "header"
+                    ],
+                    "default": "header"
+                },
+                "body_hash": {
+                    "type": [
+                        "string",
+                        "boolean"
+                    ],
+                    "default": true
+                }
+            }
         }
     }
 }
