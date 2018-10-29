@@ -4,6 +4,7 @@ const Core = require('../Core')
 
 const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
+const VariablesProvider = require('../providers/VariablesProviers')
 
 const path = require('path')
 const fs = require('fs')
@@ -12,12 +13,13 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider) {
+    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, variablesProvider) {
         this.appsProvider = appsProvider
         this._authorization = _authorization
         this._environment = _environment
         this.currentRpcProvider = rpcProvider
         this.currentImlProvider = imlProvider
+        this.currentVariablesProvider = variablesProvider
     }
 
     /**
@@ -154,6 +156,11 @@ class CoreCommands {
                     this.currentImlProvider.dispose()
                 }
 
+                // Remove existing VariablesProvider
+                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
+                    this.currentVariablesProvider.dispose()
+                }
+
                 return
             }
 
@@ -234,6 +241,34 @@ class CoreCommands {
                 // If out of scope, remove existing ImlProvider
                 if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
                     this.currentImlProvider.dispose()
+                }
+            }
+
+            /**
+             * VARIABLES-LOADER
+             * VariablesLoader will load all context-related and available IML variables
+             * Following condition specifies where and how should be the variables provided
+             */
+
+            if (
+                (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+            ) {
+                // Remove existing VariablesProvider
+                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
+                    this.currentVariablesProvider.dispose()
+                }
+
+                this.currentVariablesProvider = vscode.languages.registerCompletionItemProvider({
+                    scheme: 'file',
+                    language: 'imljson'
+                }, new VariablesProvider())
+            }
+
+            else {
+
+                // If out of scope, remove existing VariablesProvider
+                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
+                    this.currentVariablesProvider.dispose()
                 }
             }
         }

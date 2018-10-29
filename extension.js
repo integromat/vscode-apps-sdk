@@ -31,6 +31,7 @@ var _admin
 var _DIR
 var currentRpcProvider
 var currentImlProvider
+var currentVarialbesProvider
 var client
 
 async function activate(context) {
@@ -117,7 +118,7 @@ async function activate(context) {
         /**
          * Registering commands
          */
-        let coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider)
+        let coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentVarialbesProvider)
         await CoreCommands.register(_DIR, _authorization, _environment)
         await AppCommands.register(appsProvider, _authorization, _environment, _admin)
         await ConnectionCommands.register(appsProvider, _authorization, _environment)
