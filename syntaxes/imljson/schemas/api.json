@@ -1,0 +1,138 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "request": {
+            "$id": "#request",
+            "type": "object",
+            "properties": {
+                "url": {
+                    "$ref": "sources.json#/definitions/url"
+                },
+                "encodeUrl": {
+                    "$ref": "sources.json#/definitions/encodeUrl"
+                },
+                "method": {
+                    "$ref": "sources.json#/definitions/method"
+                },
+                "headers": {
+                    "$ref": "sources.json#/definitions/headers"
+                },
+                "qs": {
+                    "$ref": "sources.json#/definitions/qs"
+                },
+                "ca": {
+                    "$ref": "sources.json#/definitions/ca"
+                },
+                "body": {
+                    "$ref": "sources.json#/definitions/body"
+                },
+                "type": {
+                    "$ref": "enums.json#/definitions/request-type"
+                },
+                "temp": {
+                    "$ref": "sources.json#/definitions/temp"
+                },
+                "condition": {
+                    "$ref": "sources.json#/definitions/condition"
+                },
+                "aws": {
+                    "$ref": "sources.json#/definitions/aws"
+                },
+                "followRedirects": {
+                    "$ref": "sources.json#/definitions/followRedirects"
+                },
+                "followAllRedirects": {
+                    "$ref": "sources.json#/definitions/followAllRedirects"
+                },
+                "oauth": {
+                    "$ref": "sources.json#/definitions/oauth-1"
+                },
+                "pagination": {
+                    "$ref": "sources.json#/definitions/pagination"
+                },
+                "response": {
+                    "description": "This directive specifies how to parse the data received from the server.",
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "$ref": "response.json#/definitions/type"
+                        },
+                        "valid": {
+                            "$ref": "response.json#/definitions/valid"
+                        },
+                        "limit": {
+                            "$ref": "response.json#/definitions/limit"
+                        },
+                        "error": {
+                            "$ref": "response.json#/definitions/error"
+                        },
+                        "iterate": {
+                            "$ref": "response.json#/definitions/iterate"
+                        },
+                        "temp": {
+                            "$ref": "sources.json#/definitions/temp"
+                        },
+                        "output": {
+                            "$ref": "response.json#/definitions/output"
+                        },
+                        "trigger": {
+                            "$ref": "response.json#/definitions/trigger"
+                        },
+                        "data": {
+                            "$ref": "response.json#/definitions/data"
+                        },
+                        "metadata": {
+                            "$ref": "response.json#/definitions/metadata"
+                        },
+                        "uid": {
+                            "$ref": "response.json#/definitions/uid"
+                        },
+                        "oauth": {
+                            "$ref": "sources.json#/definitions/oauth-1"
+                        },
+                        "wrapper": {
+                            "$ref": "response.json#/definitions/wrapper"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "if": {
+                "required": [
+                    "method"
+                ],
+                "properties": {
+                    "method": {
+                        "enum": [
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "required": [
+                    "url",
+                    "body"
+                ]
+            },
+            "required": [
+                "url"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "oneOf": [
+        {
+            "$ref": "#/definitions/request"
+        },
+        {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/request"
+            }
+        }
+    ]
+}

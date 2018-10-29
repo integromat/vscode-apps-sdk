@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "response-type": {
+            "description": "Specifies how data are parsed from body.",
+            "$id": "#response-type",
+            "type": "string",
+            "default": "automatic",
+            "enum": [
+                "automatic",
+                "json",
+                "urlencoded",
+                "text",
+                "raw",
+                "string",
+                "binary",
+                "xml"
+            ]
+        },
+        "error-type": {
+            "description": "An expression that specifies the error type.",
+            "$id": "#error-type",
+            "type": "string",
+            "default": "RuntimeError",
+            "enum": [
+                "RuntimeError",
+                "DataError",
+                "RateLimitError",
+                "OutOfSpaceError",
+                "ConnectionError",
+                "InvalidConfigurationError",
+                "InvalidAccessTokenError",
+                "IncompleteDataError",
+                "DuplicateDataError"
+            ]
+        },
+        "request-type": {
+            "$id": "#request-type",
+            "type": "string",
+            "default": "json",
+            "description": "This directive specifies how the request body will be encoded and send with the request.",
+            "enum": [
+                "json",
+                "urlencoded",
+                "multipart/form-data",
+                "text",
+                "string",
+                "raw",
+                "binary"
+            ]
+        }
+    }
+}

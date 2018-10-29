@@ -2,7 +2,7 @@
   "name": "apps-sdk",
   "displayName": "Integromat Apps SDK",
   "description": "Integromat Apps SDK plugin for Visual Studio Code",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "icon": "resources/extension-icon.png",
   "repository": {
     "type": "git",
@@ -52,6 +52,60 @@
   ],
   "main": "./extension",
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "parameters.imljson",
+        "url": "./syntaxes/imljson/schemas/parameters.json"
+      },
+      {
+        "fileMatch": "expect.imljson",
+        "url": "./syntaxes/imljson/schemas/parameters.json"
+      },
+      {
+        "fileMatch": "interface.imljson",
+        "url": "./syntaxes/imljson/schemas/parameters.json"
+      },
+      {
+        "fileMatch": "common.imljson",
+        "url": "./syntaxes/imljson/schemas/common.json"
+      },
+      {
+        "fileMatch": "api.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
+      },
+      {
+        "fileMatch": "samples.imljson",
+        "url": "./syntaxes/imljson/schemas/samples.json"
+      },
+      {
+        "fileMatch": "scopes.imljson",
+        "url": "./syntaxes/imljson/schemas/scopes.json"
+      },
+      {
+        "fileMatch": "scope.imljson",
+        "url": "./syntaxes/imljson/schemas/scope.json"
+      },
+      {
+        "fileMatch": "epoch.imljson",
+        "url": "./syntaxes/imljson/schemas/epoch.json"
+      },
+      {
+        "fileMatch": "attach.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
+      },
+      {
+        "fileMatch": "detach.imljson",
+        "url": "./syntaxes/imljson/schemas/api.json"
+      },
+      {
+        "fileMatch": "base.imljson",
+        "url": "./syntaxes/imljson/schemas/base.json"
+      },
+      {
+        "fileMatch": "api-oauth.json",
+        "url": "./syntaxes/imljson/schemas/api-oauth.json"
+      }
+    ],
     "languages": [
       {
         "id": "imljson",
@@ -80,12 +134,18 @@
       {
         "language": "imljson",
         "scopeName": "source.imljson",
-        "path": "./syntaxes/imljson/imljson.tmLanguage"
+        "path": "./syntaxes/imljson/imljson.tmLanguage",
+        "injectTo": [
+          ""
+        ]
       },
       {
         "language": "iml",
         "scopeName": "source.iml",
-        "path": "./syntaxes/iml/iml.tmLanguage"
+        "path": "./syntaxes/iml/iml.tmLanguage",
+        "injectTo": [
+          "string.quoted.double.json"
+        ]
       }
     ],
     "snippets": [
@@ -546,9 +606,13 @@
     "path": "^0.12.7",
     "pngjs": "^3.3.3",
     "request": "^2.87.0",
+    "request-light": "^0.2.4",
     "request-promise": "^4.2.2",
     "tempy": "^0.2.1",
     "universal-analytics": "^0.4.17",
-    "vm2": "^3.6.3"
+    "vm2": "^3.6.3",
+    "vscode-json-languageservice": "^3.2.0",
+    "vscode-languageclient": "^5.1.1",
+    "vscode-languageserver": "^5.1.0"
   }
 }

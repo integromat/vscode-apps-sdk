@@ -4,6 +4,7 @@ const Core = require('../Core')
 
 const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
+const VariablesProvider = require('../providers/VariablesProviers')
 
 const path = require('path')
 const fs = require('fs')
@@ -12,27 +13,28 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider) {
+    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, variablesProvider) {
         this.appsProvider = appsProvider
         this._authorization = _authorization
         this._environment = _environment
         this.currentRpcProvider = rpcProvider
         this.currentImlProvider = imlProvider
+        this.currentVariablesProvider = variablesProvider
     }
 
     /**
      * Source Uploader
      */
-    async sourceUpload(editor) {
+    async sourceUpload(event) {
 
         // It it's not an APPS SDK file, don't do anything
-        if (!editor.fileName.includes('apps-sdk')) { return }
+        if (!event.document.fileName.includes('apps-sdk')) { return }
 
-        // Load the content of the file that has just been saved
-        let file = fs.readFileSync(editor.fileName, "utf8");
+        // Load the content of the file that's about to be saved
+        let file = event.document.getText()
 
         // Get the URN path of files URI (the right path)
-        let right = editor.fileName.split("apps-sdk")[1]
+        let right = event.document.fileName.split("apps-sdk")[1]
 
         // If on DOS-base, replace backslashes with forward slashes (on Unix-base it's done already)
         right = right.replace(/\\/g, "/")
@@ -44,7 +46,12 @@ class CoreCommands {
         }
 
         // Build the URL
-        let url = (path.join(path.dirname(right), path.basename(right, path.extname(right)))).replace(/\\/g, "/")
+        let basename = path.basename(right, path.extname(right));
+        // Revert api-oauth filename to api
+        if (basename === "api-oauth") {
+            basename = "api"
+        }
+        let url = (path.join(path.dirname(right), basename)).replace(/\\/g, "/")
 
         // And compose the URI
         let uri = this._environment + url
@@ -62,10 +69,16 @@ class CoreCommands {
 
         // Change the Content-Type header if needed
         if (path.extname(right) === ".js") {
+            // JavaScript header for JS files
             options.headers["Content-Type"] = "application/javascript"
         }
         if (path.extname(right) === ".md") {
+            // Markdown header for MD files
             options.headers["Content-Type"] = "text/markdown"
+        }
+        if (path.basename(right) === "common.imljson") {
+            // Comments are not allowd in encrypted common data, so only JSON is accepted
+            options.headers["Content-Type"] = "application/json"
         }
 
         /**
@@ -83,8 +96,19 @@ class CoreCommands {
             this.appsProvider.refresh()
         }
         catch (err) {
+            // Parse the error and display it
             let e = JSON.parse(err.error)
             vscode.window.showErrorMessage(`${e.name}: ${e.message}`)
+
+            // Get active text editor, if exists, insert zero-space char -> mark changed
+            let editor = vscode.window.activeTextEditor
+            if (editor !== undefined) {
+                editor.insertSnippet(new vscode.SnippetString('\u200B'), editor.selection.anchor)
+                // If the code should be formatted, remove the zero-char again
+                if (vscode.workspace.getConfiguration('editor', 'formatOnSave').get('formatOnSave')) {
+                    vscode.commands.executeCommand('editor.action.formatDocument')
+                }
+            }
         }
     }
 
@@ -130,6 +154,11 @@ class CoreCommands {
                 // Remove existing ImlProvider
                 if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
                     this.currentImlProvider.dispose()
+                }
+
+                // Remove existing VariablesProvider
+                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
+                    this.currentVariablesProvider.dispose()
                 }
 
                 return
@@ -185,7 +214,7 @@ class CoreCommands {
              * Following condition specifies where are IML functions allowed
              */
             if (
-                (name === "api" || name === "epoch" || name === "attach" || name === "detach")
+                (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
             ) {
                 // Remove existing ImlProvider
                 if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
@@ -212,6 +241,34 @@ class CoreCommands {
                 // If out of scope, remove existing ImlProvider
                 if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
                     this.currentImlProvider.dispose()
+                }
+            }
+
+            /**
+             * VARIABLES-LOADER
+             * VariablesLoader will load all context-related and available IML variables
+             * Following condition specifies where and how should be the variables provided
+             */
+
+            if (
+                (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+            ) {
+                // Remove existing VariablesProvider
+                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
+                    this.currentVariablesProvider.dispose()
+                }
+
+                this.currentVariablesProvider = vscode.languages.registerCompletionItemProvider({
+                    scheme: 'file',
+                    language: 'imljson'
+                }, new VariablesProvider())
+            }
+
+            else {
+
+                // If out of scope, remove existing VariablesProvider
+                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
+                    this.currentVariablesProvider.dispose()
                 }
             }
         }
@@ -349,6 +406,11 @@ class CoreCommands {
             // Prepare filepath and dirname for the code
             let filepath = `${urn}.${item.language}`
             let dirname = path.dirname(filepath)
+
+            // Special case: OAuth connection API
+            if (item.parent.supertype === "connection" && item.parent.type === "oauth" && item.name === "api") {
+                filepath = `${urn}-oauth.${item.language}`
+            }
 
             /**
              * CODE-LOADER
