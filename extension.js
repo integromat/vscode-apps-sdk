@@ -2,7 +2,6 @@ const vscode = require('vscode')
 const vscode_languageclient = require("vscode-languageclient");
 
 const AppsProvider = require('./src/providers/AppsProvider')
-const KeywordProvider = require('./src/providers/KeywordProvider')
 const OpensourceProvider = require('./src/providers/OpensourceProvider')
 const ImljsonHoverProvider = require('./src/providers/ImljsonHoverProvider')
 
@@ -109,7 +108,6 @@ async function activate(context) {
         /**
          * Registering providers
          */
-        vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'imljson' }, new KeywordProvider())
         vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider())
         vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, _DIR))
 
