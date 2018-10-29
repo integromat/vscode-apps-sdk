@@ -2,9 +2,19 @@
 
 ## 1.0.7
 
+### Added
+
+- Complex IMLJSON validation
+- IMLJSON language server
+- IMLJSON keys IntelliSense
+
 ### Fixed
 
 - When saving to the server fails, file is marked as unsaved
+
+### Modified
+
+- Disabled old KeywordProvider as it's now replaced with IMLJSON IntelliSense
 
 ## 1.0.6
 
