@@ -55,107 +55,25 @@
                     "type": "object",
                     "properties": {
                         "type": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "patternProperties": {
-                                        "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
-                                            "$ref": "enums.json#/definitions/response-type"
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                },
-                                {
-                                    "$ref": "enums.json#/definitions/response-type"
-                                }
-                            ]
+                            "$ref": "response.json#/definitions/type"
                         },
                         "valid": {
-                            "type": [
-                                "boolean",
-                                "string"
-                            ],
-                            "default": true
+                            "$ref": "response.json#/definitions/valid"
                         },
                         "limit": {
-                            "type": [
-                                "number",
-                                "string"
-                            ]
+                            "$ref": "response.json#/definitions/limit"
                         },
                         "error": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "$ref": "enums.json#/definitions/error-type"
-                                        }
-                                    },
-                                    "patternProperties": {
-                                        "^([0-9][0-9][0-9])$": {
-                                            "type": "object",
-                                            "properties": {
-                                                "message": {
-                                                    "type": "string"
-                                                },
-                                                "type": {
-                                                    "$ref": "enums.json#/definitions/error-type"
-                                                }
-                                            },
-                                            "required": [
-                                                "message"
-                                            ],
-                                            "additionalProperties": false
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ],
-                                    "additionalProperties": false
-                                }
-                            ]
+                            "$ref": "response.json#/definitions/error"
                         },
                         "iterate": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "container": {
-                                            "type": "string"
-                                        },
-                                        "condition": {
-                                            "type": [
-                                                "string",
-                                                "boolean"
-                                            ]
-                                        }
-                                    },
-                                    "required": [
-                                        "container"
-                                    ],
-                                    "additionalProperties": false
-                                }
-                            ]
+                            "$ref": "response.json#/definitions/iterate"
                         },
                         "temp": {
                             "$ref": "sources.json#/definitions/temp"
                         },
                         "output": {
-                            "type": "object",
-                            "required": [
-                                "date",
-                                "label"
-                            ]
+                            "$ref": "response.json#/definitions/epoch-output"
                         },
                         "oauth": {
                             "$ref": "sources.json#/definitions/oauth-1"

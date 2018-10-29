@@ -1,0 +1,194 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "type": {
+            "$id": "#type",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "patternProperties": {
+                        "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
+                            "$ref": "enums.json#/definitions/response-type"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "$ref": "enums.json#/definitions/response-type"
+                }
+            ]
+        },
+        "valid": {
+            "$id": "#valid",
+            "type": [
+                "boolean",
+                "string"
+            ],
+            "default": true
+        },
+        "limit": {
+            "$id": "#limit",
+            "type": [
+                "number",
+                "string"
+            ]
+        },
+        "error": {
+            "$id": "#error",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "maxLength": 1024
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "maxLength": 1024
+                        },
+                        "type": {
+                            "$ref": "enums.json#/definitions/error-type"
+                        }
+                    },
+                    "patternProperties": {
+                        "^([0-9][0-9][0-9])$": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "maxLength": 1024
+                                },
+                                "type": {
+                                    "$ref": "enums.json#/definitions/error-type"
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": [
+                        "message"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "iterate": {
+            "$id": "#iterate",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "container": {
+                            "type": "string",
+                            "maxLength": 512
+                        },
+                        "condition": {
+                            "type": [
+                                "string",
+                                "boolean"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "container"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "epoch-output": {
+            "$id": "#epoch-output",
+            "type": "object",
+            "required": [
+                "date",
+                "label"
+            ]
+        },
+        "output": {
+            "$id": "#output",
+            "type": [
+                "object",
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "string"
+            ]
+        },
+        "trigger": {
+            "$id": "#trigger",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "date",
+                        "id"
+                    ]
+                },
+                "order": {
+                    "type": "string",
+                    "enum": [
+                        "asc",
+                        "desc"
+                    ]
+                },
+                "id": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "date": {
+                    "type": "string",
+                    "maxLength": 512
+                }
+            },
+            "required": [
+                "type",
+                "order",
+                "id",
+                "date"
+            ],
+            "additionalProperties": false
+        },
+        "data": {
+            "$id": "#data",
+            "type": "object",
+            "description": "The data directive saves data to the connection so that it can be later accessed from a module through the connection variable.",
+            "additionalProperties": true
+        },
+        "metadata": {
+            "$id": "#metadata",
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "email"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "uid": {
+            "$id": "#uid",
+            "type": [
+                "string",
+                "number"
+            ]
+        }
+    }
+}

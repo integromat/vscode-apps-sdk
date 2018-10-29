@@ -55,178 +55,37 @@
                     "type": "object",
                     "properties": {
                         "type": {
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "patternProperties": {
-                                        "^(\\*|[0-9][0-9][0-9]\\-[0-9][0-9][0-9]|[0-9][0-9][0-9])$": {
-                                            "$ref": "enums.json#/definitions/response-type"
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                },
-                                {
-                                    "$ref": "enums.json#/definitions/response-type"
-                                }
-                            ]
+                            "$ref": "response.json#/definitions/type"
                         },
                         "valid": {
-                            "type": [
-                                "boolean",
-                                "string"
-                            ],
-                            "default": true
+                            "$ref": "response.json#/definitions/valid"
                         },
                         "limit": {
-                            "type": [
-                                "number",
-                                "string"
-                            ]
+                            "$ref": "response.json#/definitions/limit"
                         },
                         "error": {
-                            "oneOf": [
-                                {
-                                    "type": "string",
-                                    "maxLength": 1024
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "maxLength": 1024
-                                        },
-                                        "type": {
-                                            "$ref": "enums.json#/definitions/error-type"
-                                        }
-                                    },
-                                    "patternProperties": {
-                                        "^([0-9][0-9][0-9])$": {
-                                            "type": "object",
-                                            "properties": {
-                                                "message": {
-                                                    "type": "string",
-                                                    "maxLength": 1024
-                                                },
-                                                "type": {
-                                                    "$ref": "enums.json#/definitions/error-type"
-                                                }
-                                            },
-                                            "required": [
-                                                "message"
-                                            ],
-                                            "additionalProperties": false
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ],
-                                    "additionalProperties": false
-                                }
-                            ]
+                            "$ref": "response.json#/definitions/error"
                         },
                         "iterate": {
-                            "oneOf": [
-                                {
-                                    "type": "string",
-                                    "maxLength": 512
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "container": {
-                                            "type": "string",
-                                            "maxLength": 512
-                                        },
-                                        "condition": {
-                                            "type": [
-                                                "string",
-                                                "boolean"
-                                            ]
-                                        }
-                                    },
-                                    "required": [
-                                        "container"
-                                    ],
-                                    "additionalProperties": false
-                                }
-                            ]
+                            "$ref": "response.json#/definitions/iterate"
                         },
                         "temp": {
                             "$ref": "sources.json#/definitions/temp"
                         },
                         "output": {
-                            "type": [
-                                "object",
-                                "array",
-                                "boolean",
-                                "integer",
-                                "null",
-                                "number",
-                                "string"
-                            ]
+                            "$ref": "response.json#/definitions/output"
                         },
                         "trigger": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "enum": [
-                                        "date",
-                                        "id"
-                                    ]
-                                },
-                                "order": {
-                                    "type": "string",
-                                    "enum": [
-                                        "asc",
-                                        "desc"
-                                    ]
-                                },
-                                "id": {
-                                    "type": "string",
-                                    "maxLength": 512
-                                },
-                                "date": {
-                                    "type": "string",
-                                    "maxLength": 512
-                                }
-                            },
-                            "required": [
-                                "type",
-                                "order",
-                                "id",
-                                "date"
-                            ],
-                            "additionalProperties": false
+                            "$ref": "response.json#/definitions/trigger"
                         },
                         "data": {
-                            "type": "object",
-                            "description": "The data directive saves data to the connection so that it can be later accessed from a module through the connection variable.",
-                            "additionalProperties": true
+                            "$ref": "response.json#/definitions/data"
                         },
                         "metadata": {
-                            "type": "object",
-                            "properties": {
-                                "value": {
-                                    "type": "string",
-                                    "maxLength": 512
-                                },
-                                "type": {
-                                    "type": "string",
-                                    "enum": [
-                                        "text",
-                                        "email"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "response.json#/definitions/metadata"
                         },
                         "uid": {
-                            "type": [
-                                "string",
-                                "number"
-                            ]
+                            "$ref": "response.json#/definitions/uid"
                         },
                         "oauth": {
                             "$ref": "sources.json#/definitions/oauth-1"
