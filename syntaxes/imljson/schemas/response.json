@@ -2,6 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "type": {
+            "description": "This directive specifies how to parse the data received from the server.",
             "$id": "#type",
             "oneOf": [
                 {
@@ -19,6 +20,7 @@
             ]
         },
         "valid": {
+            "description": "This directive lets you decide if the response returned by a service is valid or not.",
             "$id": "#valid",
             "type": [
                 "boolean",
@@ -28,12 +30,14 @@
         },
         "limit": {
             "$id": "#limit",
+            "description": "This directive specifies the maximum items that will be returned by the module.",
             "type": [
                 "number",
                 "string"
             ]
         },
         "error": {
+            "description": "The error directive specifies the error type and the error message to show the user.",
             "$id": "#error",
             "oneOf": [
                 {
@@ -44,22 +48,27 @@
                     "type": "object",
                     "properties": {
                         "message": {
+                            "description": "An expression that parses an error message from response body.",
                             "type": "string",
                             "maxLength": 1024
                         },
                         "type": {
+                            "description": "An expression that specifies the error type.",
                             "$ref": "enums.json#/definitions/error-type"
                         }
                     },
                     "patternProperties": {
                         "^([0-9][0-9][0-9])$": {
+                            "description": "You are able to specify custom errors for different status codes by specifying the status code as the key in the error directive object, and using the same error specification as a value.",
                             "type": "object",
                             "properties": {
                                 "message": {
+                                    "description": "An expression that parses an error message from response body.",
                                     "type": "string",
                                     "maxLength": 1024
                                 },
                                 "type": {
+                                    "description": "An expression that specifies the error type.",
                                     "$ref": "enums.json#/definitions/error-type"
                                 }
                             },
@@ -78,6 +87,7 @@
         },
         "iterate": {
             "$id": "#iterate",
+            "description": "This directive specifies the container of an array of items that the module must process and output.",
             "oneOf": [
                 {
                     "type": "string",
@@ -87,10 +97,12 @@
                     "type": "object",
                     "properties": {
                         "container": {
+                            "description": "Specifies the array with the data you want to process.",
                             "type": "string",
                             "maxLength": 512
                         },
                         "condition": {
+                            "description": "Specifies a filter that can be used to filter out unwanted items.",
                             "type": [
                                 "string",
                                 "boolean"
@@ -105,6 +117,7 @@
             ]
         },
         "epoch-output": {
+            "description": "With the output directive you can specify how you want your module output to look.",
             "$id": "#epoch-output",
             "type": "object",
             "required": [
@@ -113,6 +126,7 @@
             ]
         },
         "output": {
+            "description": "With the output directive you can specify how you want your module output to look.",
             "$id": "#output",
             "type": [
                 "object",
@@ -125,10 +139,12 @@
             ]
         },
         "trigger": {
+            "description": "The trigger collection specifies directives that will control how the trigger will work and how your data will be processed.",
             "$id": "#trigger",
             "type": "object",
             "properties": {
                 "type": {
+                    "description": "Specifies how the trigger will behave and sort items.",
                     "type": "string",
                     "enum": [
                         "date",
@@ -136,6 +152,7 @@
                     ]
                 },
                 "order": {
+                    "description": "Specifies in what order the remote API returns items.",
                     "type": "string",
                     "enum": [
                         "asc",
@@ -143,10 +160,12 @@
                     ]
                 },
                 "id": {
+                    "description": "Must return current item’s Id.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "date": {
+                    "description": "When used, must return current item’s create/update timestamp.",
                     "type": "string",
                     "maxLength": 512
                 }
@@ -166,6 +185,7 @@
             "additionalProperties": true
         },
         "metadata": {
+            "description": "The metadata directive allows you to save user’s name or username (or any other text field) so that multiple connections of the same type could be easily recognized.",
             "$id": "#metadata",
             "type": "object",
             "properties": {
@@ -184,6 +204,7 @@
             "additionalProperties": false
         },
         "uid": {
+            "description": "This directive allows you to save the user’s remote service Id. This is required when using Shared Webhooks.",
             "$id": "#uid",
             "type": [
                 "string",
