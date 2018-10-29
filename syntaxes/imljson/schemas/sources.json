@@ -92,33 +92,41 @@
         "oauth-1": {
             "$id": "#oauth-1",
             "type": "object",
+            "description": "Helper directive, that will simplify generating an OAuth1 Authorization headers.",
             "additionalProperties": false,
             "properties": {
                 "consumer_key": {
+                    "description": "Your consumer key.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "consumer_secret": {
+                    "description": "Your consumer secret.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "private_key": {
+                    "description": "Instead of consumer_secret you can specify a private_key string in PEM format.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "token": {
+                    "description": "An expression that parses the oauth_token string.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "token_secret": {
+                    "description": "An expression that parses the oauth_token_secret string.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "verifier": {
+                    "description": "An expression that parses the oauth_verifier string.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "signature_method": {
+                    "description": "Specifies the desired method to use when calculating the signature.",
                     "type": "string",
                     "enum": [
                         "HMAC-SHA1",
@@ -128,6 +136,7 @@
                     "default": "HMAC-SHA1"
                 },
                 "transport_method": {
+                    "description": "Specifies how OAuth parameters are sent: via query params, header or in a POST body.",
                     "type": "string",
                     "enum": [
                         "query",
@@ -137,6 +146,7 @@
                     "default": "header"
                 },
                 "body_hash": {
+                    "description": "To use Request Body Hash, you can either manually generate it, or you can set this directive to true and the body hash will be generated automatically.",
                     "type": [
                         "string",
                         "boolean"
@@ -172,12 +182,14 @@
                     "type": "object",
                     "properties": {
                         "condition": {
+                            "description": "Specifies if to execute the request or not.",
                             "type": [
                                 "boolean",
                                 "string"
                             ]
                         },
                         "default": {
+                            "description": "Specifies the module output when the condition is false.",
                             "type": [
                                 "array",
                                 "boolean",
@@ -195,26 +207,31 @@
         },
         "aws": {
             "$id": "#aws",
-            "description": "Amazon Web Services signature",
+            "description": "Helper directive, that will simplify generating AWS signatures.",
             "type": "object",
             "properties": {
                 "key": {
+                    "description": "AWS key",
                     "type": "string",
                     "maxLength": 512
                 },
                 "secret": {
+                    "description": "AWS secret",
                     "type": "string",
                     "maxLength": 512
                 },
                 "session": {
+                    "description": "AWS session. Note that this only works for services that require session as part of the canonical string.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "bucket": {
+                    "description": "AWS bucket, unless you’re specifying your bucket as part of the path, or the request doesn’t use a bucket.",
                     "type": "string",
                     "maxLength": 512
                 },
                 "sign_version": {
+                    "description": "AWS sign version",
                     "type": "string",
                     "default": "2",
                     "enum": [
@@ -239,29 +256,37 @@
         },
         "pagination": {
             "$id": "#pagination",
+            "description": "Directive to specify how to process paginated responses.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "mergeWithParent": {
+                    "description": "This directive specifies if to merge pagination parameters with the original request parameters, or not.",
                     "type": "boolean",
                     "default": true
                 },
                 "url": {
+                    "description": "This directive specifies the URL that will be called when the pagination request is executed.",
                     "$ref": "sources.json#/definitions/url"
                 },
                 "method": {
+                    "description": "This directive specifies the HTTP method to be used when executing the pagination request.",
                     "$ref": "sources.json#/definitions/method"
                 },
                 "headers": {
+                    "description": "This directive specifies the request headers to be used when executing the pagination request.",
                     "$ref": "sources.json#/definitions/headers"
                 },
                 "qs": {
+                    "description": "This directive specifies the request query string parameters to be used when executing the pagination request.",
                     "$ref": "sources.json#/definitions/qs"
                 },
                 "body": {
+                    "description": "This directive specifies the request body when the request method is anything but GET to be used when executing the pagination request.",
                     "$ref": "sources.json#/definitions/body"
                 },
                 "condition": {
+                    "description": "This directive specifies whether to execute the pagination request or not.",
                     "type": [
                         "boolean",
                         "string"
