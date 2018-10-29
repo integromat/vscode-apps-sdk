@@ -112,21 +112,25 @@
 				"name": {
 					"type": "string",
 					"maxLength": 128,
-					"minLength": 1
+					"minLength": 1,
+					"description": "Internal parameter name. This is the key in the resulting object. Can contain arbitary characters."
 				},
 				"label": {
 					"type": "string",
 					"maxLength": 256,
-					"minLength": 1
+					"minLength": 1,
+					"description": "Parameter label for the user which is displayed in GUI."
 				},
 				"help": {
 					"type": "string",
-					"minLength": 1
+					"minLength": 1,
+					"description": "Parameter description for the user which is displayed in GUI"
 				},
 				"type": {
 					"type": "string",
 					"maxLength": 32,
 					"minLength": 1,
+					"description": "A type of the parameter. Each type has its own documentation page.",
 					"enum": [
 						"array",
 						"boolean",
@@ -158,7 +162,8 @@
 				},
 				"semantic": {
 					"type": "string",
-					"minLength": 1
+					"minLength": 1,
+					"description": "Specification of a semantic type"
 				},
 				"default": {
 					"type": [
@@ -169,31 +174,39 @@
 						"number",
 						"object",
 						"string"
-					]
+					],
+					"description": "Specifies the default value of the parameter"
 				},
 				"advanced": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "Specifies if the parameter is advanced or not. Advanced parameters are hidden behind a checkbox in GUI."
 				},
 				"required": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "Specifies if the parameter is required."
 				},
 				"grouped": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "If true, options can be grouped by using grouped options syntax."
 				},
 				"dynamic": {
 					"type": "boolean"
 				},
 				"multiline": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "If true, user will be able to insert new lines in GUI (a textarea will be displayed instead of text field)"
 				},
 				"sort": {
-					"type": "string"
+					"type": "string",
+					"description": "Items are unsorted by default, however you can sort them by using this option."
 				},
 				"sequence": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "If set to true , all properties of the object will be in the same order as they are defined in the spec."
 				},
 				"tags": {
 					"type": "string",
+					"description": "Specifies how to treat HTML tags.",
 					"enum": [
 						"strip",
 						"stripall",
@@ -204,12 +217,14 @@
 					"type": "boolean"
 				},
 				"multiple": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "If true, multiple selection is allowed."
 				},
 				"visible": {
 					"type": "string"
 				},
 				"editable": {
+					"description": "If set to true , the user can map the value.",
 					"oneOf": [
 						{
 							"type": "boolean"
@@ -218,11 +233,13 @@
 							"type": "object",
 							"properties": {
 								"enabled": {
-									"type": "boolean"
+									"type": "boolean",
+									"description": "If set to true , the value of select can be edited (or mapped) manually."
 								},
 								"help": {
 									"type": "string",
-									"minLength": 1
+									"minLength": 1,
+									"description": "Alternative help text which is shown only when the editation is turned on."
 								}
 							},
 							"additionalProperties": false,
@@ -233,18 +250,22 @@
 					]
 				},
 				"time": {
-					"type": "boolean"
+					"type": "boolean",
+					"description": "If false , the GUI will only display date selection."
 				},
 				"rpc": {
 					"type": "object",
 					"properties": {
 						"url": {
-							"type": "string"
+							"type": "string",
+							"description": "The URL of the RPC to be called."
 						},
 						"label": {
-							"type": "string"
+							"type": "string",
+							"description": "The text which is displayed on the button."
 						},
 						"parameters": {
+							"description": "An array of parameters of the extra form. Uses regular parameters syntax.",
 							"$ref": "#/definitions/parameters"
 						}
 					},
@@ -256,15 +277,18 @@
 				},
 				"mode": {
 					"type": "string",
+					"description": "Specifies the initial mode, when editable is true.",
 					"enum": [
 						"edit",
 						"chose"
 					]
 				},
 				"labels": {
-					"type": "object"
+					"type": "object",
+					"description": "Custom labels of the buttons. You can find more about this feature in the docs."
 				},
 				"spec": {
+					"description": "Describes the data structure of the parameter.",
 					"oneOf": [
 						{
 							"$ref": "#/definitions/parameter"
@@ -275,15 +299,19 @@
 					]
 				},
 				"codepage": {
-					"type": "string"
+					"type": "string",
+					"description": "The codepage of the buffer."
 				},
 				"pattern": {
-					"type": "string"
+					"type": "string",
+					"description": "Specifies a RegExp pattern that a text parameter should conform to."
 				},
 				"nested": {
+					"description": "Specifies an array of nested parameters.",
 					"$ref": "#/definitions/nested"
 				},
 				"options": {
+					"description": "Specifies options for the select.",
 					"oneOf": [
 						{
 							"type": "string"
@@ -292,6 +320,7 @@
 							"type": "object",
 							"properties": {
 								"store": {
+									"description": "Specifies options.",
 									"oneOf": [
 										{
 											"type": "string"
@@ -305,18 +334,22 @@
 									]
 								},
 								"label": {
-									"type": "string"
+									"type": "string",
+									"description": "Specifies the name of a property that will be used as the label of an option."
 								},
 								"value": {
-									"type": "string"
+									"type": "string",
+									"description": "Specifies the name of a property that will be used as the value of an option."
 								},
 								"default": {
-									"type": "string"
+									"type": "string",
+									"description": "Specifies the default value."
 								},
 								"learning": {
 									"type": "boolean"
 								},
 								"placeholder": {
+									"description": "Specifies the label which will be shown when no option is selected.",
 									"oneOf": [
 										{
 											"type": "string"
@@ -325,9 +358,11 @@
 											"type": "object",
 											"properties": {
 												"label": {
-													"type": "string"
+													"type": "string",
+													"description": "Specifies the label which will be shown when no option is selected."
 												},
 												"nested": {
+													"description": "Specifies an array of nested parameters which will be shown when no option is selected.",
 													"$ref": "#/definitions/nested"
 												}
 											},
@@ -336,12 +371,15 @@
 									]
 								},
 								"nested": {
+									"description": "Specifies an array of nested parameters.",
 									"$ref": "#/definitions/nested"
 								},
 								"operators": {
+									"description": "Custom operators. The data structure is the same as the grouped select box.",
 									"$ref": "#/definitions/groups"
 								},
 								"logic": {
+									"description": "Specifies if only and, or or both types of filters are available.",
 									"type": "string"
 								},
 								"scope": {
@@ -364,13 +402,16 @@
 									]
 								},
 								"ids": {
-									"type": "boolean"
+									"type": "boolean",
+									"description": "If set to true , you can work with folder IDs. That means that GUI loads previously selected folders and their labes after reopening the form without having to call the RPC again."
 								},
 								"showRoot": {
-									"type": "boolean"
+									"type": "boolean",
+									"description": "If set to false , top-level folders aren't prefixed with / and there's no option to choose the root /."
 								},
 								"singleLevel": {
-									"type": "boolean"
+									"type": "boolean",
+									"description": "If set to true , only single level of folders is available."
 								}
 							},
 							"additionalProperties": false
@@ -378,6 +419,7 @@
 					]
 				},
 				"extension": {
+					"description": "Allowed extension or array of allowed extensions.",
 					"oneOf": [
 						{
 							"type": "string"
@@ -391,6 +433,7 @@
 					]
 				},
 				"validate": {
+					"description": "Specifies parameter validation.",
 					"oneOf": [
 						{
 							"type": "boolean"
@@ -399,19 +442,28 @@
 							"type": "object",
 							"properties": {
 								"max": {
+									"description": "Specifies maximum length.",
 									"type": "number"
 								},
 								"min": {
+									"description": "Specifies minimum length.",
 									"type": "number"
 								},
 								"pattern": {
+									"description": "Specifies a RegExp pattern that a text parameter should conform to.",
 									"type": "string"
 								},
 								"minItems": {
-									"type": "integer"
+									"type": "integer",
+									"description": "Specifies minimum length that an array parameter can have."
 								},
 								"maxItems": {
-									"type": "integer"
+									"type": "integer",
+									"description": "Specifies maximum length that an array parameter can have."
+								},
+								"enum": {
+									"type": "array",
+									"description": "Array of allowed values in the array."
 								}
 							},
 							"additionalProperties": false
