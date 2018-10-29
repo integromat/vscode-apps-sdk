@@ -189,6 +189,20 @@
                 "string",
                 "number"
             ]
+        },
+        "wrapper": {
+            "$id": "#wrapper",
+            "type": [
+                "object",
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "string"
+            ],
+            "default": "{{output}}",
+            "description": "This directive lets you post process module output before returning it to the user. The output of the module will be available to you as the output context variable - the result of processing the output directive."
         }
     }
 }

@@ -89,6 +89,9 @@
                         },
                         "oauth": {
                             "$ref": "sources.json#/definitions/oauth-1"
+                        },
+                        "wrapper": {
+                            "$ref": "response.json#/definitions/wrapper"
                         }
                     },
                     "additionalProperties": false
