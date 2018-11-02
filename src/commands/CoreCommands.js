@@ -258,10 +258,13 @@ class CoreCommands {
                     this.currentVariablesProvider.dispose()
                 }
 
+                let variablesProvider = new VariablesProvider(this._authorization, this._environment)
+                await variablesProvider.loadVariables(crumbs, version)
+
                 this.currentVariablesProvider = vscode.languages.registerCompletionItemProvider({
                     scheme: 'file',
                     language: 'imljson'
-                }, new VariablesProvider())
+                }, variablesProvider)
             }
 
             else {
