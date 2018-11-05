@@ -4,7 +4,7 @@ const Core = require('../Core')
 
 const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
-const VariablesProvider = require('../providers/VariablesProviers')
+const ParametersProvider = require('../providers/ParametersProvider')
 
 const path = require('path')
 const fs = require('fs')
@@ -13,13 +13,13 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, variablesProvider) {
+    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider) {
         this.appsProvider = appsProvider
         this._authorization = _authorization
         this._environment = _environment
         this.currentRpcProvider = rpcProvider
         this.currentImlProvider = imlProvider
-        this.currentVariablesProvider = variablesProvider
+        this.currentParametersProvider = parametersProvider
     }
 
     /**
@@ -258,20 +258,20 @@ class CoreCommands {
                     this.currentVariablesProvider.dispose()
                 }
 
-                let variablesProvider = new VariablesProvider(this._authorization, this._environment)
-                await variablesProvider.loadVariables(crumbs, version)
+                let parametersProvider = new ParametersProvider(this._authorization, this._environment)
+                await parametersProvider.loadParameters(crumbs, version)
 
-                this.currentVariablesProvider = vscode.languages.registerCompletionItemProvider({
+                this.currentParametersProvider = vscode.languages.registerCompletionItemProvider({
                     scheme: 'file',
                     language: 'imljson'
-                }, variablesProvider)
+                }, parametersProvider)
             }
 
             else {
 
                 // If out of scope, remove existing VariablesProvider
-                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
-                    this.currentVariablesProvider.dispose()
+                if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
+                    this.currentParametersProvider.dispose()
                 }
             }
         }

@@ -4,15 +4,15 @@ const Core = require('../Core')
 
 const rp = require('request-promise')
 
-class VariablesProvider {
+class ParametersProvider {
     constructor(_authorization, _environment) {
         this._authorization = _authorization
         this._environment = _environment
         this.availableParameters = []
-        this.variables = []
+        this.parameters = []
     }
 
-    async loadVariables(crumbs, version) {
+    async loadParameters(crumbs, version) {
 
         // Preparing api route
         let urn = `/app/${crumbs[2]}`
@@ -53,7 +53,7 @@ class VariablesProvider {
             this.availableParameters = this.availableParameters.concat(this.generateParametersMap(JSON.parse(expect), "parameters"))
         }
 
-        this.variables = this.availableParameters.map(parameter => { return new vscode.CompletionItem(parameter, vscode.CompletionItemKind.Variable) })
+        this.parameters = this.availableParameters.map(parameter => { return new vscode.CompletionItem(parameter, vscode.CompletionItemKind.Variable) })
     }
 
     generateParametersMap(parameters, root) {
@@ -82,8 +82,8 @@ class VariablesProvider {
     }
 
     provideCompletionItems() {
-        return this.variables
+        return this.parameters
     }
 }
 
-module.exports = VariablesProvider
+module.exports = ParametersProvider
