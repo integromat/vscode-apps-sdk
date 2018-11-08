@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.0.8
+
+### Added
+
+- Parameters map builder
+- Parameters provider (providing parameters available in the current context)
+
+### Fixed
+
+- Preview/Open behavior (open permanently not forced anymore)
+- Select.Options validation schema fixed
+
 ## 1.0.7
 
 ### Added
