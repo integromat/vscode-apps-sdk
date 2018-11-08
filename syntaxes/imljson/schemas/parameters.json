@@ -314,6 +314,9 @@
 					"description": "Specifies options for the select.",
 					"oneOf": [
 						{
+							"$ref": "#/definitions/options"
+						},
+						{
 							"type": "string"
 						},
 						{

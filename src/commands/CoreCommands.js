@@ -4,7 +4,7 @@ const Core = require('../Core')
 
 const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
-const VariablesProvider = require('../providers/VariablesProviers')
+const ParametersProvider = require('../providers/ParametersProvider')
 
 const path = require('path')
 const fs = require('fs')
@@ -13,13 +13,13 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, variablesProvider) {
+    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider) {
         this.appsProvider = appsProvider
         this._authorization = _authorization
         this._environment = _environment
         this.currentRpcProvider = rpcProvider
         this.currentImlProvider = imlProvider
-        this.currentVariablesProvider = variablesProvider
+        this.currentParametersProvider = parametersProvider
     }
 
     /**
@@ -253,22 +253,25 @@ class CoreCommands {
             if (
                 (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
             ) {
-                // Remove existing VariablesProvider
-                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
-                    this.currentVariablesProvider.dispose()
+                // Remove existing ParametersProvider
+                if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
+                    this.currentParametersProvider.dispose()
                 }
 
-                this.currentVariablesProvider = vscode.languages.registerCompletionItemProvider({
+                let parametersProvider = new ParametersProvider(this._authorization, this._environment)
+                await parametersProvider.loadParameters(crumbs, version)
+
+                this.currentParametersProvider = vscode.languages.registerCompletionItemProvider({
                     scheme: 'file',
                     language: 'imljson'
-                }, new VariablesProvider())
+                }, parametersProvider)
             }
 
             else {
 
-                // If out of scope, remove existing VariablesProvider
-                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
-                    this.currentVariablesProvider.dispose()
+                // If out of scope, remove existing ParametersProvider
+                if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
+                    this.currentParametersProvider.dispose()
                 }
             }
         }
@@ -453,7 +456,7 @@ class CoreCommands {
 
                         // Open the downloaded code in the editor
                         vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
-                            preview: false
+                            preview: true
                         })
                     });
                 });
