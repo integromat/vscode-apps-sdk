@@ -92,12 +92,13 @@ class ParametersProvider {
         let needle = document.getText(document.getWordRangeAtPosition(position, new RegExp("([A-Z0-9.a-z])+")))
         console.log(needle);
         if (needle.indexOf('.') > -1) {
-            return this.parameters.filter(parameter => {
+            let candidates = this.parameters.filter(parameter => {
                 let match = parameter.label.match(`${needle}.[A-Za-z0-9]+`)
                 if (match !== null && match[0].length === match.input.length) {
                     return true
                 }
-            }).map(parameter => {
+            })
+            return candidates.map(parameter => {
                 let toInsert = parameter.label.split('.')[parameter.label.split('.').length - 1]
                 let toProvide = new vscode.CompletionItem(toInsert, vscode.CompletionItemKind.Property)
                 toProvide.insertText = toInsert;

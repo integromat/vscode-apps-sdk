@@ -253,9 +253,9 @@ class CoreCommands {
             if (
                 (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
             ) {
-                // Remove existing VariablesProvider
-                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
-                    this.currentVariablesProvider.dispose()
+                // Remove existing ParametersProvider
+                if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
+                    this.currentParametersProvider.dispose()
                 }
 
                 let parametersProvider = new ParametersProvider(this._authorization, this._environment)
@@ -269,7 +269,7 @@ class CoreCommands {
 
             else {
 
-                // If out of scope, remove existing VariablesProvider
+                // If out of scope, remove existing ParametersProvider
                 if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
                     this.currentParametersProvider.dispose()
                 }
