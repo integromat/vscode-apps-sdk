@@ -456,7 +456,7 @@ class CoreCommands {
 
                         // Open the downloaded code in the editor
                         vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
-                            preview: false
+                            preview: true
                         })
                     });
                 });
