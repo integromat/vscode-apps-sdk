@@ -8,7 +8,7 @@ class ParametersProvider {
     constructor(_authorization, _environment) {
         this._authorization = _authorization
         this._environment = _environment
-        this.availableParameters = []
+        this.availableParameters = ["parameters"]
         this.parameters = []
     }
 
@@ -34,7 +34,7 @@ class ParametersProvider {
             }).catch(err => {
                 vscode.window.showErrorMessage(err.error.message || err)
             })
-            this.availableParameters = this.generateParametersMap(JSON.parse(parameters), "parameters")
+            this.availableParameters = this.availableParameters.concat(this.generateParametersMap(JSON.parse(parameters), "parameters"))
         }
 
         /*
@@ -59,7 +59,9 @@ class ParametersProvider {
     generateParametersMap(parameters, root) {
         let out = []
         parameters.forEach(parameter => {
-            out.push(`${root}.${parameter.name}`)
+            if (parameter.name !== undefined) {
+                out.push(`${root}.${parameter.name}`)
+            }
             if (Array.isArray(parameter.nested)) {
                 out = out.concat(this.generateParametersMap(parameter.nested, root))
             }
@@ -81,8 +83,35 @@ class ParametersProvider {
         return item
     }
 
-    provideCompletionItems() {
-        return this.parameters
+    provideCompletionItems(document, position, c, d) {
+        console.log(document);
+        console.log(position);
+        console.log(c);
+        console.log(d);
+
+        let needle = document.getText(document.getWordRangeAtPosition(position, new RegExp("([A-Z0-9.a-z])+")))
+        console.log(needle);
+        if (needle.indexOf('.') > -1) {
+            return this.parameters.filter(parameter => {
+                let match = parameter.label.match(`${needle}.[A-Za-z0-9]+`)
+                if (match !== null && match[0].length === match.input.length) {
+                    return true
+                }
+            }).map(parameter => {
+                let toInsert = parameter.label.split('.')[parameter.label.split('.').length - 1]
+                let toProvide = new vscode.CompletionItem(toInsert, vscode.CompletionItemKind.Property)
+                toProvide.insertText = toInsert;
+                toProvide.label = toInsert;
+                return toProvide
+            })
+        }
+        else {
+            return this.parameters.filter(parameter => {
+                if (parameter.label.indexOf('.') === -1 && parameter.label.match(needle) !== null) {
+                    return true
+                }
+            })
+        }
     }
 }
 
