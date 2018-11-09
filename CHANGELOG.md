@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.9
+
+### Added
+
+- Connection type showing in braces
+
 ## 1.0.8
 
 ### Added
