@@ -5,6 +5,7 @@
 ### Added
 
 - Connection type showing in braces
+- Module description editation
 
 ## 1.0.8
 

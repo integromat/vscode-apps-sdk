@@ -118,9 +118,6 @@
                     "body"
                 ]
             },
-            "required": [
-                "url"
-            ],
             "additionalProperties": false
         }
     },
