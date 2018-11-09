@@ -5,6 +5,7 @@ const Core = require('../Core')
 const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
 const ParametersProvider = require('../providers/ParametersProvider')
+const StaticImlProvider = require('../providers/StaticImlProvider')
 
 const path = require('path')
 const fs = require('fs')
@@ -13,13 +14,16 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider) {
+    constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider) {
         this.appsProvider = appsProvider
         this._authorization = _authorization
         this._environment = _environment
         this.currentRpcProvider = rpcProvider
         this.currentImlProvider = imlProvider
         this.currentParametersProvider = parametersProvider
+        this.currentStaticImlProvider = staticImlProvider
+        this.staticImlProvider = new StaticImlProvider()
+        this.sipInit = false
     }
 
     /**
@@ -156,9 +160,14 @@ class CoreCommands {
                     this.currentImlProvider.dispose()
                 }
 
-                // Remove existing VariablesProvider
-                if (this.currentVariablesProvider !== null && this.currentVariablesProvider !== undefined) {
-                    this.currentVariablesProvider.dispose()
+                // Remove existing ParametersProvider
+                if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
+                    this.currentParametersProvider.dispose()
+                }
+
+                // Remove existing StaticImlProvider
+                if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
+                    this.currentStaticImlProvider.dispose()
                 }
 
                 return
@@ -245,7 +254,7 @@ class CoreCommands {
             }
 
             /**
-             * VARIABLES-LOADER
+             * PARAMETERS-LOADER
              * VariablesLoader will load all context-related and available IML variables
              * Following condition specifies where and how should be the variables provided
              */
@@ -272,6 +281,37 @@ class CoreCommands {
                 // If out of scope, remove existing ParametersProvider
                 if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
                     this.currentParametersProvider.dispose()
+                }
+            }
+
+            /**
+             * STATIC-IML-LOADER
+             * Static IML loader provides inbuilt IML functions and keywords.
+             */
+
+            if (this.sipInit === false) {
+                await this.staticImlProvider.initialize()
+                this.sipInit = true
+            }
+
+            if (
+                (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+            ) {
+                // Reasign Static IML provider
+                if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
+                    this.currentStaticImlProvider.dispose()
+                }
+                this.currentStaticImlProvider = vscode.languages.registerCompletionItemProvider({
+                    scheme: 'file',
+                    language: 'imljson'
+                }, this.staticImlProvider)
+            }
+
+            else {
+
+                // If out of scope, remove existing StaticImlProvider
+                if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
+                    this.currentStaticImlProvider.dispose()
                 }
             }
         }

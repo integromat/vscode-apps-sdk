@@ -7,6 +7,10 @@
 - Connection type showing in braces
 - Module description editation
 
+### Fixed
+
+- Request-Less Communication allowed in JSON validation
+
 ## 1.0.8
 
 ### Added
