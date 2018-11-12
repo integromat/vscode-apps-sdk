@@ -6,6 +6,8 @@
 
 - Connection type showing in braces
 - Module description editation
+- Inbuilt (Static) IML functions provider
+- Showing docs abstract when adding an inbuild IML function
 
 ### Fixed
 
