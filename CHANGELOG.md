@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.0.9
+
+### Added
+
+- Connection type showing in braces
+- Module description editation
+- Inbuilt (Static) IML functions provider
+- Showing docs abstract when adding an inbuild IML function
+
+### Fixed
+
+- Request-Less Communication allowed in JSON validation
+
 ## 1.0.8
 
 ### Added

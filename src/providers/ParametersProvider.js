@@ -83,14 +83,8 @@ class ParametersProvider {
         return item
     }
 
-    provideCompletionItems(document, position, c, d) {
-        console.log(document);
-        console.log(position);
-        console.log(c);
-        console.log(d);
-
+    provideCompletionItems(document, position) {
         let needle = document.getText(document.getWordRangeAtPosition(position, new RegExp("([A-Z0-9.a-z])+")))
-        console.log(needle);
         if (needle.indexOf('.') > -1) {
             let candidates = this.parameters.filter(parameter => {
                 let match = parameter.label.match(`${needle}.[A-Za-z0-9]+`)

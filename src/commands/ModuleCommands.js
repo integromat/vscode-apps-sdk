@@ -89,9 +89,18 @@ class ModuleCommands {
             })
             if (!Core.isFilled("label", "module", label)) { return }
 
+            // Description prompt with prefilled value
+            let module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
+            let description = await vscode.window.showInputBox({
+                prompt: "Customize module description",
+                value: module.description
+            })
+            if (!Core.isFilled("description", "module", description)) { return }
+
             // Send the request
             try {
                 await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
+                await Core.editEntity(_authorization, { label: label, description: description, type_id: module.type_id }, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
                 appsProvider.refresh()
             }
             catch (err) {

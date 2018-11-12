@@ -7,6 +7,9 @@ class Item extends EnhancedTreeItem {
         if (supertype === "module") {
             label += (isPublic ? (isApproved ? ` ${EnhancedTreeItem.approvedSymbol}` : ` ${EnhancedTreeItem.publicSymbol}`) : "")
         }
+        if (supertype === "connection") {
+            label += ` (${type})`
+        }
         super(label)
         this.bareLabel = temp
         this.id = parent.id + "_" + id
