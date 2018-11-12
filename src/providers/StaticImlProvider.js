@@ -18,20 +18,17 @@ class StaticImlProvider {
             let f = IML.FUNCTIONS[name];
             let item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Function)
             if (Array.isArray(f.group)) {
-                let parts = []
-                for (let group of f.group) {
-                    let details = dictionary[group].functions[name]
-                    if (details !== undefined) {
-                        parts.push(details.help || "")
-                    }
-                }
-                let toMarkdown = parts.join("\n\n------------\n\n")
-                item.documentation = new vscode.MarkdownString(toMarkdown)
+                item.documentation = new vscode.MarkdownString(
+                    f.group.map(group => {
+                        if (dictionary[group].functions[name] !== undefined) {
+                            return dictionary[group].functions[name].help
+                        }
+                    }).join("\n\n------------\n\n")
+                )
             }
             else {
-                let details = dictionary[f.group].functions[name]
-                if (details !== undefined) {
-                    item.documentation = new vscode.MarkdownString(details.help || "")
+                if (dictionary[f.group].functions[name] !== undefined) {
+                    item.documentation = new vscode.MarkdownString(dictionary[f.group].functions[name].help || "")
                 }
             }
             item.insertText = `${name}()`
