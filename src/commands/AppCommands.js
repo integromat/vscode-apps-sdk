@@ -25,7 +25,7 @@ class AppCommands {
                 // Get list of all apps
                 let allApps = await QuickPick.allApps(_environment, _authorization)
 
-                if(!allApps){
+                if (!allApps) {
                     return vscode.window.showErrorMessage('No apps available.')
                 }
 
@@ -49,7 +49,7 @@ class AppCommands {
                     placeHolder: "Choose favorite apps to be displayed in the sidebar."
                 })
 
-                if(newFavs === undefined){
+                if (newFavs === undefined) {
                     return vscode.window.showWarningMessage("Selection canceled.")
                 }
 
@@ -71,13 +71,13 @@ class AppCommands {
 
                 // If there are some apps to be added
                 if (appsToAdd.length > 0) {
-                    await Core.addEntity(_authorization, {name: appsToAdd} , `${_environment}/favorite`)
+                    await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment}/favorite`)
                     changes = true
                 }
 
                 // If there are some apps to be removed
                 if (appsToRemove.length > 0) {
-                    await Core.deleteEntity(_authorization, {name: appsToRemove}, `${_environment}/favorite`)
+                    await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment}/favorite`)
                     changes = true
                 }
 
@@ -317,7 +317,7 @@ class AppCommands {
 
                     // Prepare request options
                     let options = {
-                        url: `${_environment}/app/${app.name}/icon`,
+                        url: `${_environment}/app/${app.name}/${app.version}/icon`,
                         headers: {
                             'Authorization': _authorization
                         }

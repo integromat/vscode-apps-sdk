@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.10
+
+### Modified
+
+- Minor icon endpoint tweaks
+
 ## 1.0.9
 
 ### Added

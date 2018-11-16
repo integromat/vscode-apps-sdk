@@ -54,7 +54,7 @@ class AppsProvider {
                             headers: {
                                 "Authorization": this._authorization
                             },
-                            url: `${this._baseUrl}/app/${app.name}/icon/512`,
+                            url: `${this._baseUrl}/app/${app.name}/${app.version}/icon/512`,
                             dest: dest
                         })
                         await Core.invertPngAsync(dest);
