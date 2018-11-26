@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.11
+
+### Added
+
+- log(.sanitize) directive validation
+
 ## 1.0.10
 
 ### Modified
