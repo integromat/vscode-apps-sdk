@@ -5,6 +5,7 @@
 ### Added
 
 - log(.sanitize) directive validation
+- 'x-imt-apps-sdk-version' header to all requests
 
 ## 1.0.10
 
