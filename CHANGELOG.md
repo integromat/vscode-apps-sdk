@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.11
+
+### Added
+
+- log(.sanitize) directive validation
+- 'x-imt-apps-sdk-version' header to all requests
+
 ## 1.0.10
 
 ### Modified
