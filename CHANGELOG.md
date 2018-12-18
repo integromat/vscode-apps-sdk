@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.12
+
+- Updated API 
+- POST/PUT swap
+
 ## 1.0.11
 
 ### Added

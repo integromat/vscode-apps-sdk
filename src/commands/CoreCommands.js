@@ -64,7 +64,7 @@ class CoreCommands {
 		// Prepare request options
 		var options = {
 			uri: uri,
-			method: 'POST',
+			method: 'PUT',
 			body: file,
 			headers: {
 				"Content-Type": "application/jsonc",
