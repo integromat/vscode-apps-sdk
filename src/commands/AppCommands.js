@@ -327,7 +327,7 @@ class AppCommands {
 					}
 
 					// Read the new file and fire the request
-					fs.createReadStream(uri[0].fsPath).pipe(request.post(options, async function (err, response) {
+					fs.createReadStream(uri[0].fsPath).pipe(request.put(options, async function (err, response) {
 
 						// Parse the response
 						response = JSON.parse(response.body)
@@ -380,7 +380,7 @@ class AppCommands {
 					// Set URI and send the request
 					let uri = `${_environment}/app/${app.name}/${app.version}/private`
 					try {
-						await Core.editEntityPlain(_authorization, "", uri)
+						await Core.executePlain(_authorization, "", uri)
 						appsProvider.refresh()
 					}
 					catch (err) {
@@ -416,7 +416,7 @@ class AppCommands {
 					// Set URI and send the request
 					let uri = `${_environment}/app/${app.name}/${app.version}/public`
 					try {
-						await Core.editEntityPlain(_authorization, "", uri)
+						await Core.executePlain(_authorization, "", uri)
 						appsProvider.refresh()
 					}
 					catch (err) {

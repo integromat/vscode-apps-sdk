@@ -65,7 +65,7 @@ module.exports = {
 
 	addEntity: function (authorization, body, uri) {
 		return rp({
-			method: 'PUT',
+			method: 'POST',
 			uri: uri,
 			body: body,
 			headers: {
@@ -95,7 +95,7 @@ module.exports = {
 
 	editEntity: function (authorization, body, uri) {
 		return rp({
-			method: 'POST',
+			method: 'PUT',
 			uri: uri,
 			body: body,
 			headers: {
@@ -109,6 +109,21 @@ module.exports = {
 	},
 
 	editEntityPlain: function (authorization, value, uri) {
+		return rp({
+			method: 'PUT',
+			uri: uri,
+			body: value,
+			headers: {
+				Authorization: authorization,
+				"Content-Type": "text/plain",
+				'x-imt-apps-sdk-version': Meta.version
+			}
+		}).catch(err => {
+			vscode.window.showErrorMessage(err.error.message)
+		})
+	},
+
+	executePlain: function (authorization, value, uri) {
 		return rp({
 			method: 'POST',
 			uri: uri,
