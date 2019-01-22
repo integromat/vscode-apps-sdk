@@ -53,6 +53,18 @@
 				"pagination": {
 					"$ref": "sources.json#/definitions/pagination"
 				},
+				"output": {
+					"$ref": "response.json#/definitions/output"
+				},
+				"iterate": {
+					"$ref": "response.json#/definitions/iterate"
+				},
+				"respond": {
+					"$ref": "response.json#/definitions/respond"
+				},
+				"verification": {
+					"$ref": "response.json#/definitions/verification"
+				},
 				"response": {
 					"description": "This directive specifies how to parse the data received from the server.",
 					"type": "object",
