@@ -67,7 +67,7 @@ class TempProvider {
 				}
 				// Only one request
 				else {
-					this.availableVariables = this.parseTempRegular(request)
+					this.availableVariables = ["temp"].concat(this.parseTempRegular(request))
 				}
 				break;
 			// OAuth request format
