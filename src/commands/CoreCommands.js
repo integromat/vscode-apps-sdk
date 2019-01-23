@@ -151,6 +151,9 @@ class CoreCommands {
 
 			// If no version, set 1
 			version = version === undefined ? 1 : version;
+			let apiPath
+			let name
+			let app = crumbs[2]
 
 			// If not enough crumbs (=> base/docs) -> remove existing providers and exit.
 			if (crumbs.length < 5) {
@@ -160,33 +163,38 @@ class CoreCommands {
 					this.currentRpcProvider.dispose()
 				}
 
-				// Remove existing ImlProvider
-				if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
-					this.currentImlProvider.dispose()
-				}
-
 				// Remove existing ParametersProvider
 				if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
 					this.currentParametersProvider.dispose()
 				}
 
-				// Remove existing StaticImlProvider
-				if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
-					this.currentStaticImlProvider.dispose()
+				if (crumbs[3] !== 'base.imljson') {
+					// Remove existing ImlProvider
+					if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
+						this.currentImlProvider.dispose()
+					}
+
+					// Remove existing StaticImlProvider
+					if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
+						this.currentStaticImlProvider.dispose()
+					}
+
+					// Remove existing TempProvider
+					if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
+						this.currentTempProvider.dispose()
+					}
+
+					return
 				}
 
-				// Remove existing TempProvider
-				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
-					this.currentTempProvider.dispose()
-				}
-
-				return
+				apiPath = 'base'
+				name = 'base'
 			}
 
-			let apiPath = crumbs[3]
-			let name = crumbs[5].split(".")[0]
-			let app = crumbs[2]
-
+			else {
+				apiPath = crumbs[3]
+				name = crumbs[5].split(".")[0]
+			}
 
             /**
              * RPC-LOADER
@@ -233,7 +241,7 @@ class CoreCommands {
              * Following condition specifies where are IML functions allowed
              */
 			if (
-				(name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
 			) {
 				// Remove existing ImlProvider
 				if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
@@ -270,7 +278,7 @@ class CoreCommands {
              */
 
 			if (
-				(name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				apiPath !== 'base' && (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
 			) {
 				// Remove existing ParametersProvider
 				if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
@@ -305,7 +313,7 @@ class CoreCommands {
 			}
 
 			if (
-				(name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
 			) {
 				// Reasign Static IML provider
 				if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
@@ -331,7 +339,7 @@ class CoreCommands {
 			 */
 
 			if (
-				(name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
 			) {
 				// Reasign Temp provider
 				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {

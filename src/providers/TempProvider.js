@@ -56,6 +56,7 @@ class TempProvider {
 			case 'attach':
 			case 'detach':
 			case 'epoch':
+			case 'base':
 				// text.temp and text.response.temp
 				// If multiple requests
 				if (Array.isArray(request)) {
