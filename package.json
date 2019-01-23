@@ -47,6 +47,7 @@
 		"onCommand:apps-sdk.app.visibility.public",
 		"onCommand:apps-sdk.app.visibility.private",
 		"onCommand:apps-sdk.help",
+		"onCommand:apps-sdk.app.export",
 		"onView:apps",
 		"onView:opensource"
 	],
@@ -322,6 +323,11 @@
 				"command": "apps-sdk.help",
 				"title": "Help",
 				"category": "Integromat Apps"
+			},
+			{
+				"command": "apps-sdk.app.export",
+				"title": "Export App",
+				"category": "Integromat Apps"
 			}
 		],
 		"viewsContainers": {
@@ -494,6 +500,22 @@
 				{
 					"command": "apps-sdk.app.visibility.public",
 					"when": "viewItem == app && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.delete",

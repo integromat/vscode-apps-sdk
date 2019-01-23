@@ -12,6 +12,7 @@ const request = require('request')
 const path = require('path')
 const rp = require('request-promise')
 const asyncfile = require('async-file')
+const tempy = require('tempy')
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -424,6 +425,198 @@ class AppCommands {
 					}
 					break
 			}
+		})
+
+		/**
+		 * Export app
+		 */
+		vscode.commands.registerCommand('apps-sdk.app.export', async function (context) {
+
+			// Context check
+			if (!Core.contextGuard(context)) { return }
+			let app = context
+			const RATE_LIMIT_MS = 600
+			const DIR = tempy.directory()
+			console.log(`Will now export ${app.label}.`);
+
+			const archive = path.join(DIR, app.name, app.version.toString())
+			await asyncfile.mkdir(path.join(DIR, app.name));
+			await asyncfile.mkdir(archive);
+			const urnNoVersion = `${_environment}/app/${app.name}`
+			const urn = `${_environment}/app/${app.name}/${app.version}`
+
+			/**
+			 * 1 - Get App Metadata
+			 */
+			console.log(`${app.name}/META`)
+			await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}`, _authorization), null, 4));
+			await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+			/**
+			 * 2 - Get Base
+			 */
+			console.log(`${app.name}/base`)
+			await asyncfile.writeFile(path.join(archive, `base.imljson`), Core.jsonString(await Core.rpGet(`${urn}/base`, _authorization)))
+			await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+			/**
+			 * 3 - Get Common
+			 */
+			console.log(`${app.name}/common`)
+			await asyncfile.writeFile(path.join(archive, `common.json`), JSON.stringify(await Core.rpGet(`${urn}/common`, _authorization), null, 4))
+			await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+			/**
+			 * 4 - Get Docs
+			 */
+			console.log(`${app.name}/docs`)
+			await asyncfile.writeFile(path.join(archive, `docs.md`), await Core.rpGet(`${urn}/docs`, _authorization))
+			await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+			/**
+			 * 5 - Get Connections
+			 */
+			const connections = await Core.rpGet(`${urnNoVersion}/connection`, _authorization);
+			await asyncfile.mkdir(path.join(archive, 'connection'))
+			for (const connection of connections) {
+				const archivePath = path.join(archive, 'connection', connection.name)
+				await asyncfile.mkdir(archivePath)
+
+				// Get Connection Metadata
+				console.log(`${app.name}/connection/${connection.name}/META`)
+				await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}`, _authorization), null, 4));
+				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+				// Get Corresponding Sources
+				for (const key of [`api`, `scope`, `scopes`, `parameters`]) {
+					console.log(`${app.name}/connection/${connection.name}/${key}`)
+					await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/${key}`, _authorization)))
+					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+				}
+
+				// Get Connection Common
+				console.log(`${app.name}/connection/${connection.name}/common`)
+				await asyncfile.writeFile(path.join(archivePath, `common.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/common`, _authorization), null, 4));
+				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+			}
+
+			/**
+			 * 6 - Get RPCs
+			 */
+			const rpcs = await Core.rpGet(`${urn}/rpc`, _authorization);
+			await asyncfile.mkdir(path.join(archive, 'rpc'))
+			for (const rpc of rpcs) {
+				const archivePath = path.join(archive, 'rpc', rpc.name)
+				await asyncfile.mkdir(archivePath)
+
+				// Get RPC Metadata
+				console.log(`${app.name}/rpc/${rpc.name}/META`)
+				await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}/rpc/${rpc.name}`, _authorization), null, 4));
+				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+				// Get Corresponding Sources
+				for (const key of [`api`, `parameters`]) {
+					console.log(`${app.name}/rpc/${rpc.name}/${key}`)
+					await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/rpc/${rpc.name}/${key}`, _authorization)))
+					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+				}
+			}
+
+			/**
+			 * 7 - Get Webhooks
+			 */
+			const webhooks = await Core.rpGet(`${urnNoVersion}/webhook`, _authorization);
+			await asyncfile.mkdir(path.join(archive, 'webhook'))
+			for (const webhook of webhooks) {
+				const archivePath = path.join(archive, 'webhook', webhook.name)
+				await asyncfile.mkdir(archivePath)
+
+				// Get Webhook Metadata
+				console.log(`${app.name}/webhook/${webhook.name}/META`)
+				await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}`, _authorization), null, 4));
+				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+				// Get Corresponding Sources
+				for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`]) {
+					console.log(`${app.name}/webhook/${webhook.name}/${key}`)
+					await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}/${key}`, _authorization)))
+					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+				}
+			}
+
+			/**
+			 * 8 - Get Modules
+			 */
+			const modules = await Core.rpGet(`${urn}/module`, _authorization);
+			await asyncfile.mkdir(path.join(archive, 'module'))
+			for (const module of modules) {
+				const archivePath = path.join(archive, 'module', module.name)
+				await asyncfile.mkdir(archivePath)
+
+				// Get Module Metadata
+				console.log(`${app.name}/module/${module.name}/META`)
+				await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}/module/${module.name}`, _authorization), null, 4));
+				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+
+				// Get Corresponding Sources Based On Type
+				switch (module.type_id) {
+
+					// Action or search
+					case 4:
+					case 9:
+						for (const key of [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`]) {
+							console.log(`${app.name}/module/${module.name}/${key}`)
+							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
+							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						}
+						break;
+					// Trigger
+					case 1:
+						for (const key of [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`]) {
+							console.log(`${app.name}/module/${module.name}/${key}`)
+							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
+							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						}
+						break;
+					// Instant trigger
+					case 10:
+						for (const key of [`api`, `parameters`, `interface`, `samples`]) {
+							console.log(`${app.name}/module/${module.name}/${key}`)
+							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
+							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						}
+						break;
+					// Responder
+					case 11:
+						for (const key of [`api`, `parameters`, `expect`]) {
+							console.log(`${app.name}/module/${module.name}/${key}`)
+							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
+							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						}
+						break;
+				}
+			}
+
+			/**
+			 * 9 - Get Functions
+			 */
+			const functions = await Core.rpGet(`${urn}/function`, _authorization);
+			await asyncfile.mkdir(path.join(archive, 'function'))
+			for (const fun of functions) {
+				const archivePath = path.join(archive, 'function', fun.name)
+				await asyncfile.mkdir(archivePath)
+
+				// Get Corresponding Sources
+				for (const key of [`code`, `test`]) {
+					console.log(`${app.name}/function/${fun.name}/${key}`)
+					await asyncfile.writeFile(path.join(archivePath, `${key}.js`), await Core.rpGet(`${urn}/function/${fun.name}/${key}`, _authorization))
+					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+				}
+			}
+
+
+			console.log(`Done`);
+			console.log(archive);
 		})
 	}
 }
