@@ -4,6 +4,7 @@ const Core = require('../Core')
 const Meta = require('../Meta')
 
 const rp = require('request-promise')
+const jsoncParser = require('jsonc-parser');
 
 class ParametersProvider {
 	constructor(_authorization, _environment) {
@@ -36,7 +37,7 @@ class ParametersProvider {
 			}).catch(err => {
 				vscode.window.showErrorMessage(err.error.message || err)
 			})
-			this.availableParameters = this.availableParameters.concat(this.generateParametersMap(JSON.parse(parameters), "parameters"))
+			this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), "parameters"))
 		}
 
         /*
@@ -53,7 +54,7 @@ class ParametersProvider {
 			}).catch(err => {
 				vscode.window.showErrorMessage(err.error.message || err)
 			})
-			this.availableParameters = this.availableParameters.concat(this.generateParametersMap(JSON.parse(expect), "parameters"))
+			this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), "parameters"))
 		}
 
 		this.parameters = this.availableParameters.map(parameter => { return new vscode.CompletionItem(parameter, vscode.CompletionItemKind.Variable) })
