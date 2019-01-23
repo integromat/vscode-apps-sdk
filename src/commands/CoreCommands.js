@@ -7,6 +7,7 @@ const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
 const ParametersProvider = require('../providers/ParametersProvider')
 const StaticImlProvider = require('../providers/StaticImlProvider')
+const TempProvider = require('../providers/TempProvider')
 
 const path = require('path')
 const fs = require('fs')
@@ -15,7 +16,7 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider) {
+	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider) {
 		this.appsProvider = appsProvider
 		this._authorization = _authorization
 		this._environment = _environment
@@ -23,8 +24,10 @@ class CoreCommands {
 		this.currentImlProvider = imlProvider
 		this.currentParametersProvider = parametersProvider
 		this.currentStaticImlProvider = staticImlProvider
+		this.currentTempProvider = tempProvider
 		this.staticImlProvider = new StaticImlProvider()
 		this.sipInit = false
+		this.tempListener = null
 	}
 
     /**
@@ -172,6 +175,11 @@ class CoreCommands {
 					this.currentStaticImlProvider.dispose()
 				}
 
+				// Remove existing TempProvider
+				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
+					this.currentTempProvider.dispose()
+				}
+
 				return
 			}
 
@@ -314,6 +322,33 @@ class CoreCommands {
 				// If out of scope, remove existing StaticImlProvider
 				if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
 					this.currentStaticImlProvider.dispose()
+				}
+			}
+
+			/**
+			 * TEMP-LOADER
+			 * Temp loader provides available temp variables in the document
+			 */
+
+			if (
+				(name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+			) {
+				// Reasign Temp provider
+				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
+					this.currentTempProvider.dispose()
+				}
+
+				let tempProvider = new TempProvider(name);
+
+				this.currentTempProvider = vscode.languages.registerCompletionItemProvider({
+					scheme: 'file',
+					language: 'imljson'
+				}, tempProvider)
+			}
+			else {
+				// If out of scope, remove existing StaticImlProvider
+				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
+					this.currentTempProvider.dispose()
 				}
 			}
 		}
