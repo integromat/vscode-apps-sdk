@@ -454,7 +454,6 @@ class AppCommands {
 				progress.report({ increment: 0, message: `${app.label} - Preparing for export` })
 				const RATE_LIMIT_MS = 600
 				const DIR = tempy.directory()
-				console.log(`Will now export ${app.label}.`);
 				token.onCancellationRequested(() => {
 					vscode.window.showWarningMessage(`Export of ${app.label} canceled.`);
 					canceled = true;
@@ -474,7 +473,6 @@ class AppCommands {
 				 */
 				if (canceled) { return }
 				progress.report({ increment: 2, message: `${app.label} - Gathering Metadata` })
-				console.log(`${app.name}/META`)
 				await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}`, _authorization), null, 4));
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
@@ -483,7 +481,6 @@ class AppCommands {
 				 */
 				if (canceled) { return }
 				progress.report({ increment: 2, message: `${app.label} - Exporting Base` })
-				console.log(`${app.name}/base`)
 				await asyncfile.writeFile(path.join(archive, `base.imljson`), Core.jsonString(await Core.rpGet(`${urn}/base`, _authorization)))
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
@@ -491,7 +488,6 @@ class AppCommands {
 				 * 3 - Get Common
 				 */
 				if (canceled) { return }
-				console.log(`${app.name}/common`)
 				progress.report({ increment: 2, message: `${app.label} - Exporting Common Data` })
 				await asyncfile.writeFile(path.join(archive, `common.json`), JSON.stringify(await Core.rpGet(`${urn}/common`, _authorization), null, 4))
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
@@ -500,7 +496,6 @@ class AppCommands {
 				 * 4 - Get Docs
 				 */
 				if (canceled) { return }
-				console.log(`${app.name}/docs`)
 				progress.report({ increment: 2, message: `${app.label} - Exporting Docs` })
 				await asyncfile.writeFile(path.join(archive, `docs.md`), await Core.rpGet(`${urn}/docs`, _authorization))
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
@@ -520,19 +515,16 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get Connection Metadata
-					console.log(`${app.name}/connection/${connection.name}/META`)
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}`, _authorization), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
 					for (const key of [`api`, `scope`, `scopes`, `parameters`]) {
-						console.log(`${app.name}/connection/${connection.name}/${key}`)
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
 
 					// Get Connection Common
-					console.log(`${app.name}/connection/${connection.name}/common`)
 					await asyncfile.writeFile(path.join(archivePath, `common.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/common`, _authorization), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 				}
@@ -552,13 +544,11 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get RPC Metadata
-					console.log(`${app.name}/rpc/${rpc.name}/META`)
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}/rpc/${rpc.name}`, _authorization), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
 					for (const key of [`api`, `parameters`]) {
-						console.log(`${app.name}/rpc/${rpc.name}/${key}`)
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/rpc/${rpc.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -579,13 +569,11 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get Webhook Metadata
-					console.log(`${app.name}/webhook/${webhook.name}/META`)
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}`, _authorization), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
 					for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`]) {
-						console.log(`${app.name}/webhook/${webhook.name}/${key}`)
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -606,7 +594,6 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get Module Metadata
-					console.log(`${app.name}/module/${module.name}/META`)
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}/module/${module.name}`, _authorization), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
@@ -617,7 +604,6 @@ class AppCommands {
 						case 4:
 						case 9:
 							for (const key of [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`]) {
-								console.log(`${app.name}/module/${module.name}/${key}`)
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -625,7 +611,6 @@ class AppCommands {
 						// Trigger
 						case 1:
 							for (const key of [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`]) {
-								console.log(`${app.name}/module/${module.name}/${key}`)
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -633,7 +618,6 @@ class AppCommands {
 						// Instant trigger
 						case 10:
 							for (const key of [`api`, `parameters`, `interface`, `samples`]) {
-								console.log(`${app.name}/module/${module.name}/${key}`)
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -641,7 +625,6 @@ class AppCommands {
 						// Responder
 						case 11:
 							for (const key of [`api`, `parameters`, `expect`]) {
-								console.log(`${app.name}/module/${module.name}/${key}`)
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -665,7 +648,6 @@ class AppCommands {
 
 					// Get Corresponding Sources
 					for (const key of [`code`, `test`]) {
-						console.log(`${app.name}/function/${fun.name}/${key}`)
 						await asyncfile.writeFile(path.join(archivePath, `${key}.js`), await Core.rpGet(`${urn}/function/${fun.name}/${key}`, _authorization))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -679,9 +661,6 @@ class AppCommands {
 				await compressing.zip.compressDir(path.join(DIR, app.name), storage.fsPath).catch((err) => {
 					vscode.window.showErrorMessage(`Saving failed: ${err}`)
 				})
-
-				console.log(`Done`);
-				console.log(archive);
 			});
 			vscode.window.showInformationMessage(`Export of ${app.label} completed!`)
 		})
