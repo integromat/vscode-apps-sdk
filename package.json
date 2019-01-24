@@ -619,6 +619,7 @@
 	"dependencies": {
 		"@integromat/iml": "^1.12.0",
 		"async-file": "^2.0.2",
+		"compressing": "^1.4.0",
 		"image-downloader": "^3.4.1",
 		"jimp": "^0.2.28",
 		"jsonc-parser": "^2.0.1",
