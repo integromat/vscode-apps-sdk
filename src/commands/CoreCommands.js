@@ -483,7 +483,7 @@ class CoreCommands {
 					// Prepared for more app-level codes
 					switch (item.name) {
 						case "content":
-							urn += `/docs`
+							urn += `/readme`
 							break
 						default:
 							urn += `/${item.name}`
