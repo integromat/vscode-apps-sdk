@@ -503,16 +503,17 @@ class AppCommands {
 				await asyncfile.mkdir(path.join(archive, 'connection'))
 				for (const connection of connections) {
 					if (canceled) { return }
-					progress.report({ increment: progressPercentage, message: `${app.label} - Exporting Connection ${connection.label}` })
 					const archivePath = path.join(archive, 'connection', connection.name)
 					await asyncfile.mkdir(archivePath)
 
 					// Get Connection Metadata
+					progress.report({ increment: 0.125 * progressPercentage, message: `${app.label} - Exporting Connection ${connection.label} (metadata)` })
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}`, _authorization), ['name', 'label', 'type']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
 					for (const key of [`api`, `scope`, `scopes`, `parameters`]) {
+						progress.report({ increment: (0.875 * progressPercentage) * (0.25), message: `${app.label} - Exporting Connection ${connection.label} (${key})` })
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -523,21 +524,22 @@ class AppCommands {
 				 */
 				if (canceled) { return }
 				const rpcs = await Core.rpGet(`${urn}/rpc`, _authorization);
-				if (rpcs.length === 0) { progress.report({ increment: 18, message: `${app.label} - No RPCs (skipping)` }) }
-				else { progressPercentage = 18 / rpcs.length }
+				if (rpcs.length === 0) { progress.report({ increment: 17, message: `${app.label} - No RPCs (skipping)` }) }
+				else { progressPercentage = 17 / rpcs.length }
 				await asyncfile.mkdir(path.join(archive, 'rpc'))
 				for (const rpc of rpcs) {
 					if (canceled) { return }
-					progress.report({ increment: progressPercentage, message: `${app.label} - Exporting RPC ${rpc.label}` })
 					const archivePath = path.join(archive, 'rpc', rpc.name)
 					await asyncfile.mkdir(archivePath)
 
 					// Get RPC Metadata
+					progress.report({ increment: (0.25 * progressPercentage), message: `${app.label} - Exporting RPC ${rpc.label} (metadata)` })
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urn}/rpc/${rpc.name}`, _authorization), ['name', 'label', 'connection']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
 					for (const key of [`api`, `parameters`]) {
+						progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` })
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/rpc/${rpc.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -553,16 +555,17 @@ class AppCommands {
 				await asyncfile.mkdir(path.join(archive, 'webhook'))
 				for (const webhook of webhooks) {
 					if (canceled) { return }
-					progress.report({ increment: progressPercentage, message: `${app.label} - Exporting Webhook ${webhook.label}` })
 					const archivePath = path.join(archive, 'webhook', webhook.name)
 					await asyncfile.mkdir(archivePath)
 
 					// Get Webhook Metadata
+					progress.report({ increment: 0.1 * progressPercentage, message: `${app.label} - Exporting Webhook ${webhook.label} (metadata)` })
 					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}`, _authorization), ['name', 'label', 'connection', 'type']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
 					for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`]) {
+						progress.report({ increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})` })
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -573,16 +576,16 @@ class AppCommands {
 				 */
 				if (canceled) { return }
 				const modules = await Core.rpGet(`${urn}/module`, _authorization);
-				if (modules.length === 0) { progress.report({ increment: 43, message: `${app.label} - No Modules (skipping)` }) }
-				else { progressPercentage = 43 / modules.length }
+				if (modules.length === 0) { progress.report({ increment: 41, message: `${app.label} - No Modules (skipping)` }) }
+				else { progressPercentage = 41 / modules.length }
 				await asyncfile.mkdir(path.join(archive, 'module'))
 				for (const module of modules) {
 					if (canceled) { return }
-					progress.report({ increment: progressPercentage, message: `${app.label} - Exporting Module ${module.label}` })
 					const archivePath = path.join(archive, 'module', module.name)
 					await asyncfile.mkdir(archivePath)
 
 					// Get Module Metadata
+					progress.report({ increment: 0.07 * progressPercentage, message: `${app.label} - Exporting Module ${module.label} (metadata)` })
 					let metadata = pick(await Core.rpGet(`${urn}/module/${module.name}`, _authorization), ['name', 'label', 'description', 'type_id', 'connection', 'webhook'])
 					switch (metadata.type_id) {
 						case 1:
@@ -612,6 +615,7 @@ class AppCommands {
 						case 4:
 						case 9:
 							for (const key of [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`]) {
+								progress.report({ increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})` })
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -619,6 +623,7 @@ class AppCommands {
 						// Trigger
 						case 1:
 							for (const key of [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`]) {
+								progress.report({ increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})` })
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -626,6 +631,7 @@ class AppCommands {
 						// Instant trigger
 						case 10:
 							for (const key of [`api`, `parameters`, `interface`, `samples`]) {
+								progress.report({ increment: (0.93 * progressPercentage) * (0.25), message: `${app.label} - Exporting Module ${module.label} (${key})` })
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -633,6 +639,7 @@ class AppCommands {
 						// Responder
 						case 11:
 							for (const key of [`api`, `parameters`, `expect`]) {
+								progress.report({ increment: (0.93 * progressPercentage) * (0.33), message: `${app.label} - Exporting Module ${module.label} (${key})` })
 								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)))
 								await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 							}
@@ -650,12 +657,12 @@ class AppCommands {
 				await asyncfile.mkdir(path.join(archive, 'function'))
 				for (const fun of functions) {
 					if (canceled) { return }
-					progress.report({ increment: progressPercentage, message: `${app.label} - Exporting Function ${fun.name}${fun.args}` })
 					const archivePath = path.join(archive, 'function', fun.name)
 					await asyncfile.mkdir(archivePath)
 
 					// Get Corresponding Sources
 					for (const key of [`code`, `test`]) {
+						progress.report({ increment: progressPercentage * 0.5, message: `${app.label} - Exporting Function ${fun.name}${fun.args} (${key})` })
 						await asyncfile.writeFile(path.join(archivePath, `${key}.js`), await Core.rpGet(`${urn}/function/${fun.name}/${key}`, _authorization))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
@@ -665,6 +672,7 @@ class AppCommands {
 				 * 9 - Get Icon
 				 */
 				if (canceled) { return }
+				progress.report({ increment: 3, message: `${app.label} - Exporting Icon` })
 				await asyncfile.mkdir(path.join(archive, 'assets'))
 				await download.image({
 					headers: {
