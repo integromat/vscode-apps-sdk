@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.0.12",
+	"version": "1.0.13",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
@@ -47,6 +47,7 @@
 		"onCommand:apps-sdk.app.visibility.public",
 		"onCommand:apps-sdk.app.visibility.private",
 		"onCommand:apps-sdk.help",
+		"onCommand:apps-sdk.app.export",
 		"onView:apps",
 		"onView:opensource"
 	],
@@ -322,6 +323,11 @@
 				"command": "apps-sdk.help",
 				"title": "Help",
 				"category": "Integromat Apps"
+			},
+			{
+				"command": "apps-sdk.app.export",
+				"title": "Export App",
+				"category": "Integromat Apps"
 			}
 		],
 		"viewsContainers": {
@@ -496,6 +502,22 @@
 					"when": "viewItem == app && view == apps"
 				},
 				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.export",
+					"when": "viewItem == app_approved_changed && view == apps"
+				},
+				{
 					"command": "apps-sdk.app.delete",
 					"when": "viewItem == app_public && view == apps"
 				},
@@ -597,11 +619,14 @@
 	"dependencies": {
 		"@integromat/iml": "^1.12.0",
 		"async-file": "^2.0.2",
+		"compressing": "^1.4.0",
 		"image-downloader": "^3.4.1",
 		"jimp": "^0.2.28",
 		"jsonc-parser": "^2.0.1",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.kebabcase": "^4.1.1",
+		"lodash.pick": "^4.4.0",
+		"lodash.union": "^4.6.0",
 		"mkdirp": "^0.5.1",
 		"path": "^0.12.7",
 		"pngjs": "^3.3.3",

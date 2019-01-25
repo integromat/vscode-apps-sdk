@@ -172,5 +172,12 @@ module.exports = {
 		let edits = jsoncParser.format(text, undefined, { insertSpaces: 4 })
 		let formatted = jsoncParser.applyEdits(text, edits)
 		return formatted
+	},
+
+	jsonString: function (text) {
+		if (typeof text === 'object' && text !== null) {
+			return JSON.stringify(text, null, 4)
+		}
+		return text
 	}
 }

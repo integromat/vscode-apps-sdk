@@ -101,8 +101,8 @@ class AppsProvider {
 			// Docs
 			else if (element.id.includes("docs")) {
 				return [
-					new Code(`docs`, "Content", element, "md", "app", true),
-					new Code(`images`, "Images", element, "img", true)
+					new Code(`readme`, "Readme", element, "md", "app", true),
+					//new Code(`images`, "Images", element, "img", true)
 				]
 			}
 			// REST

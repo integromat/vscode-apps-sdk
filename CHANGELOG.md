@@ -1,6 +1,21 @@
 # Change Log
 
+## 1.0.13
+
+### Added
+
+- Export App
+- Temp variables provider
+- Webhook custom keys validation (verification, respond)
+
+### Fixed
+
+- Docs links
+- Empty language select
+
 ## 1.0.12
+
+### Modified
 
 - Updated API 
 - POST/PUT swap
