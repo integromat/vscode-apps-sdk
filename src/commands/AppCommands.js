@@ -490,7 +490,7 @@ class AppCommands {
 				 */
 				if (canceled) { return }
 				progress.report({ increment: 2, message: `${app.label} - Exporting Readme` })
-				await asyncfile.writeFile(path.join(archive, `readme.md`), await Core.rpGet(`${urn}/docs`, _authorization))
+				await asyncfile.writeFile(path.join(archive, `readme.md`), await Core.rpGet(`${urn}/readme`, _authorization))
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 				/**
@@ -674,15 +674,17 @@ class AppCommands {
 				if (canceled) { return }
 				progress.report({ increment: 3, message: `${app.label} - Exporting Icon` })
 				await asyncfile.mkdir(path.join(archive, 'assets'))
-				await download.image({
-					headers: {
-						"Authorization": _authorization,
-						'x-imt-apps-sdk-version': Meta.version
-					},
-					url: `${urn}/icon/512`,
-					dest: path.join(archive, 'assets', 'icon.png')
-				})
-
+				try {
+					await download.image({
+						headers: {
+							"Authorization": _authorization,
+							'x-imt-apps-sdk-version': Meta.version
+						},
+						url: `${urn}/icon/512`,
+						dest: path.join(archive, 'assets', 'icon.png')
+					})
+				}
+				catch (err) { }
 
 				/**
 				 * 10 - Compress and save

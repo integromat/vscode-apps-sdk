@@ -155,7 +155,7 @@ class CoreCommands {
 			let name
 			let app = crumbs[2]
 
-			// If not enough crumbs (=> base/docs) -> remove existing providers and exit.
+			// If not enough crumbs (=> base/readme) -> remove existing providers and exit.
 			if (crumbs.length < 5) {
 
 				// Remove existing RpcProvider
@@ -391,8 +391,8 @@ class CoreCommands {
 				case "app":
 					// Prepared for more app-level codes
 					switch (item.name) {
-						case "content":
-							urn += `/docs`
+						case "readme":
+							urn += `/readme`
 							break
 						default:
 							urn += `/${item.name}`

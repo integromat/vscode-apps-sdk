@@ -137,7 +137,7 @@ class AppsProvider {
 			// Docs
 			else if (element.id.includes("docs")) {
 				return [
-					new Code(`content`, "Content", element, "md", "app"),
+					new Code(`readme`, "Readme", element, "md", "app"),
 					//new Code(`images`, "Images", element, "img")
 				]
 			}
