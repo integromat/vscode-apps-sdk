@@ -7,6 +7,8 @@ const Enum = require('../Enum')
 const Meta = require('../Meta')
 
 const kebabCase = require('lodash.kebabcase')
+const pick = require('lodash.pick')
+const download = require('image-downloader')
 const fs = require('fs')
 const request = require('request')
 const path = require('path')
@@ -438,7 +440,7 @@ class AppCommands {
 			let app = context
 
 			// Wait for a path for ZIP
-			let storage = await vscode.window.showSaveDialog({ filters: { 'IMT App Archive': ['zip'] }, saveLabel: "Export", defaultUri: vscode.Uri.file(`${app.name}.zip`) })
+			let storage = await vscode.window.showSaveDialog({ filters: { 'IMT App Archive': ['zip'] }, saveLabel: "Export", defaultUri: vscode.Uri.file(`${app.name}.v${app.version}.zip`) })
 			if (storage === undefined || storage === null) {
 				vscode.window.showWarningMessage("No output file specified.")
 				return
@@ -461,8 +463,7 @@ class AppCommands {
 
 				let progressPercentage;
 
-				const archive = path.join(DIR, app.name, app.version.toString())
-				await asyncfile.mkdir(path.join(DIR, app.name));
+				const archive = path.join(DIR, app.name)
 				await asyncfile.mkdir(archive);
 				const urnNoVersion = `${_environment}/app/${app.name}`
 				const urn = `${_environment}/app/${app.name}/${app.version}`
@@ -473,7 +474,7 @@ class AppCommands {
 				 */
 				if (canceled) { return }
 				progress.report({ increment: 2, message: `${app.label} - Gathering Metadata` })
-				await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}`, _authorization), null, 4));
+				await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urn}`, _authorization), ['name', 'label', 'version', 'theme', 'language', 'countries']), null, 4));
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 				/**
@@ -485,23 +486,15 @@ class AppCommands {
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 				/**
-				 * 3 - Get Common
+				 * 3 - Get Readme
 				 */
 				if (canceled) { return }
-				progress.report({ increment: 2, message: `${app.label} - Exporting Common Data` })
-				await asyncfile.writeFile(path.join(archive, `common.json`), JSON.stringify(await Core.rpGet(`${urn}/common`, _authorization), null, 4))
+				progress.report({ increment: 2, message: `${app.label} - Exporting Readme` })
+				await asyncfile.writeFile(path.join(archive, `readme.md`), await Core.rpGet(`${urn}/docs`, _authorization))
 				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 				/**
-				 * 4 - Get Docs
-				 */
-				if (canceled) { return }
-				progress.report({ increment: 2, message: `${app.label} - Exporting Docs` })
-				await asyncfile.writeFile(path.join(archive, `docs.md`), await Core.rpGet(`${urn}/docs`, _authorization))
-				await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
-
-				/**
-				 * 5 - Get Connections
+				 * 4 - Get Connections
 				 */
 				if (canceled) { return }
 				const connections = await Core.rpGet(`${urnNoVersion}/connection`, _authorization);
@@ -515,7 +508,7 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get Connection Metadata
-					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}`, _authorization), null, 4));
+					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}`, _authorization), ['name', 'label', 'type']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
@@ -523,14 +516,10 @@ class AppCommands {
 						await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`), Core.jsonString(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/${key}`, _authorization)))
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 					}
-
-					// Get Connection Common
-					await asyncfile.writeFile(path.join(archivePath, `common.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/common`, _authorization), null, 4));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 				}
 
 				/**
-				 * 6 - Get RPCs
+				 * 5 - Get RPCs
 				 */
 				if (canceled) { return }
 				const rpcs = await Core.rpGet(`${urn}/rpc`, _authorization);
@@ -544,7 +533,7 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get RPC Metadata
-					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}/rpc/${rpc.name}`, _authorization), null, 4));
+					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urn}/rpc/${rpc.name}`, _authorization), ['name', 'label', 'connection']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
@@ -555,7 +544,7 @@ class AppCommands {
 				}
 
 				/**
-				 * 7 - Get Webhooks
+				 * 6 - Get Webhooks
 				 */
 				if (canceled) { return }
 				const webhooks = await Core.rpGet(`${urnNoVersion}/webhook`, _authorization);
@@ -569,7 +558,7 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get Webhook Metadata
-					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}`, _authorization), null, 4));
+					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}`, _authorization), ['name', 'label', 'connection', 'type']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources
@@ -580,7 +569,7 @@ class AppCommands {
 				}
 
 				/**
-				 * 8 - Get Modules
+				 * 7 - Get Modules
 				 */
 				if (canceled) { return }
 				const modules = await Core.rpGet(`${urn}/module`, _authorization);
@@ -594,7 +583,26 @@ class AppCommands {
 					await asyncfile.mkdir(archivePath)
 
 					// Get Module Metadata
-					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(await Core.rpGet(`${urn}/module/${module.name}`, _authorization), null, 4));
+					let metadata = pick(await Core.rpGet(`${urn}/module/${module.name}`, _authorization), ['name', 'label', 'description', 'type_id', 'connection', 'webhook'])
+					switch (metadata.type_id) {
+						case 1:
+							metadata.type = 'trigger'
+							break;
+						case 4:
+							metadata.type = 'action'
+							break;
+						case 9:
+							metadata.type = 'search'
+							break;
+						case 10:
+							metadata.type = 'instant_trigger'
+							break;
+						case 11:
+							metadata.type = 'responder'
+							break;
+					}
+					delete metadata.type_id
+					await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(metadata, null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					// Get Corresponding Sources Based On Type
@@ -633,7 +641,7 @@ class AppCommands {
 				}
 
 				/**
-				 * 9 - Get Functions
+				 * 8 - Get Functions
 				 */
 				if (canceled) { return }
 				const functions = await Core.rpGet(`${urn}/function`, _authorization);
@@ -654,11 +662,26 @@ class AppCommands {
 				}
 
 				/**
+				 * 9 - Get Icon
+				 */
+				if (canceled) { return }
+				await asyncfile.mkdir(path.join(archive, 'assets'))
+				await download.image({
+					headers: {
+						"Authorization": _authorization,
+						'x-imt-apps-sdk-version': Meta.version
+					},
+					url: `${urn}/icon/512`,
+					dest: path.join(archive, 'assets', 'icon.png')
+				})
+
+
+				/**
 				 * 10 - Compress and save
 				 */
 				if (canceled) { return }
 				progress.report({ increment: 5, message: `${app.label} - Compressing output` })
-				await compressing.zip.compressDir(path.join(DIR, app.name), storage.fsPath).catch((err) => {
+				await compressing.zip.compressDir(archive, storage.fsPath).catch((err) => {
 					vscode.window.showErrorMessage(`Saving failed: ${err}`)
 				})
 			});

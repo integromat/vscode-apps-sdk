@@ -625,6 +625,7 @@
 		"jsonc-parser": "^2.0.1",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.kebabcase": "^4.1.1",
+		"lodash.pick": "^4.4.0",
 		"lodash.union": "^4.6.0",
 		"mkdirp": "^0.5.1",
 		"path": "^0.12.7",
