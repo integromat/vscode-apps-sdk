@@ -167,8 +167,8 @@
 				},
 				"default": {
 					"type": [
-						"array",
 						"boolean",
+						"array",
 						"integer",
 						"null",
 						"number",
