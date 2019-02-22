@@ -611,18 +611,18 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
-		"@types/node": "^7.0.67",
+		"@types/node": "^7.10.3",
 		"eslint": "^4.19.1",
 		"typescript": "^2.9.2",
-		"vscode": "^1.1.6"
+		"vscode": "^1.1.30"
 	},
 	"dependencies": {
-		"@integromat/iml": "^1.12.0",
+		"@integromat/iml": "^1.18.2",
 		"async-file": "^2.0.2",
 		"compressing": "^1.4.0",
-		"image-downloader": "^3.4.1",
+		"image-downloader": "^3.4.2",
 		"jimp": "^0.2.28",
-		"jsonc-parser": "^2.0.1",
+		"jsonc-parser": "^2.0.3",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.kebabcase": "^4.1.1",
 		"lodash.pick": "^4.4.0",
@@ -630,14 +630,14 @@
 		"mkdirp": "^0.5.1",
 		"path": "^0.12.7",
 		"pngjs": "^3.3.3",
-		"request": "^2.87.0",
+		"request": "^2.88.0",
 		"request-light": "^0.2.4",
-		"request-promise": "^4.2.2",
+		"request-promise": "^4.2.4",
 		"tempy": "^0.2.1",
-		"universal-analytics": "^0.4.17",
-		"vm2": "^3.6.3",
+		"universal-analytics": "^0.4.20",
+		"vm2": "^3.6.10",
 		"vscode-json-languageservice": "^3.2.0",
-		"vscode-languageclient": "^5.1.1",
-		"vscode-languageserver": "^5.1.0"
+		"vscode-languageclient": "^5.2.1",
+		"vscode-languageserver": "^5.2.1"
 	}
 }
