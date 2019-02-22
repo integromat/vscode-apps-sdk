@@ -1,5 +1,22 @@
 # Change Log
 
+## 1.0.14
+
+### Added
+
+- Integer snippet
+- Uinteger snippet
+- URL snippet
+- Mappable directive for parameters
+
+### Fixed
+
+- Validation schema select mode -> chose mistype fixed
+- Trigger validation schema -> order unordered
+- Default value doesn't jump to array anymore
+- Typos in docs
+- Date in trigger specification is required only when the trigger type is date
+
 ## 1.0.13
 
 ### Added
