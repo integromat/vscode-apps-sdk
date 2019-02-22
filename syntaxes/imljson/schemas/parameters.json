@@ -166,8 +166,8 @@
 				},
 				"default": {
 					"type": [
-						"array",
 						"boolean",
+						"array",
 						"integer",
 						"null",
 						"number",
@@ -223,7 +223,7 @@
 					"type": "string"
 				},
 				"editable": {
-					"description": "If set to true , the user can map the value.",
+					"description": "If set to true, the user can map the value.",
 					"oneOf": [
 						{
 							"type": "boolean"
@@ -244,6 +244,29 @@
 							"additionalProperties": false,
 							"required": [
 								"enabled"
+							]
+						}
+					]
+				},
+				"mappable": {
+					"description": "If set to true, the user can map the value.",
+					"oneOf": [
+						{
+							"type": "boolean",
+							"default": true
+						},
+						{
+							"type": "object",
+							"properties": {
+								"help": {
+									"type": "string",
+									"minLength": 1,
+									"description": "Alternative help text which is shown only when the mapping is turned on. When this help is provided, the field is mappable automatically."
+								}
+							},
+							"additionalProperties": false,
+							"required": [
+								"help"
 							]
 						}
 					]
@@ -279,7 +302,7 @@
 					"description": "Specifies the initial mode, when editable is true.",
 					"enum": [
 						"edit",
-						"chose"
+						"choose"
 					]
 				},
 				"labels": {

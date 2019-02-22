@@ -156,7 +156,8 @@
 					"type": "string",
 					"enum": [
 						"asc",
-						"desc"
+						"desc",
+						"unordered"
 					]
 				},
 				"id": {
@@ -173,9 +174,25 @@
 			"required": [
 				"type",
 				"order",
-				"id",
-				"date"
+				"id"
 			],
+			"if": {
+				"required": [
+					"type"
+				],
+				"properties": {
+					"type": {
+						"enum": [
+							"date"
+						]
+					}
+				}
+			},
+			"then": {
+				"required": [
+					"date"
+				]
+			},
 			"additionalProperties": false
 		},
 		"data": {
