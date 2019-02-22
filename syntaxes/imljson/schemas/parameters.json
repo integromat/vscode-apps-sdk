@@ -280,7 +280,7 @@
 					"description": "Specifies the initial mode, when editable is true.",
 					"enum": [
 						"edit",
-						"chose"
+						"choose"
 					]
 				},
 				"labels": {
