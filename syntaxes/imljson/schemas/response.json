@@ -156,7 +156,8 @@
 					"type": "string",
 					"enum": [
 						"asc",
-						"desc"
+						"desc",
+						"unordered"
 					]
 				},
 				"id": {
