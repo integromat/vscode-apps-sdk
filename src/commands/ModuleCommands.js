@@ -48,6 +48,15 @@ class ModuleCommands {
 				"type_id": type.description
 			}
 
+			// Action type selector
+			if (type.description === "4") {
+				let crud = await vscode.window.showQuickPick(Enum.crud, { placeHolder: "Pick the action type" })
+				if (!Core.isFilled("crud", "action", crud)) { return }
+				if (crud.label !== "Multipurpose") {
+					body.crud = crud.label.toLowerCase();
+				}
+			}
+
 			// Connection / Webhook / No prompt
 			switch (type.description) {
 				case "1":
@@ -81,6 +90,7 @@ class ModuleCommands {
 
 			// Context check
 			if (!Core.contextGuard(context)) { return }
+			const body = {};
 
 			// Label prompt with prefilled value
 			let label = await vscode.window.showInputBox({
@@ -88,6 +98,7 @@ class ModuleCommands {
 				value: context.bareLabel
 			})
 			if (!Core.isFilled("label", "module", label)) { return }
+			body.label = label;
 
 			// Description prompt with prefilled value
 			let module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
@@ -96,11 +107,25 @@ class ModuleCommands {
 				value: module.description
 			})
 			if (!Core.isFilled("description", "module", description)) { return }
+			body.description = description
+
+			// Action type selector+
+			// Uncomment this when the API's fixed
+			/*if (context.type === 4) {
+				let crud = await vscode.window.showQuickPick([{ label: "Don't change", description: "keep" }].concat(Enum.crud), { placeHolder: "Change the action type or keep existing." })
+				if (!Core.isFilled("crud", "action", crud)) { return }
+				if (crud.description !== "keep") {
+					body.crud = crud.label === "Multipurpose" ? undefined : crud.label.toLowerCase();
+				}
+			}*/
+
+			// Remove this after API's fixed
+			body.type_id = module.type_id
 
 			// Send the request
 			try {
 				await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
-				await Core.editEntity(_authorization, { label: label, description: description, type_id: module.type_id }, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+				await Core.editEntity(_authorization, body, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
 				appsProvider.refresh()
 			}
 			catch (err) {
