@@ -178,6 +178,37 @@ class ModuleCommands {
 			}
 		})
 
+		vscode.commands.registerCommand('apps-sdk.module.change-type', async function (context) {
+
+			// Context check
+			if (!Core.contextGuard(context)) { return }
+
+			switch (context.type) {
+				case 9:
+				case 4:
+					let newType = await vscode.window.showQuickPick(Enum.moduleTypeActionSearch, { placeHolder: "Change the type or keep existing." })
+					if (!Core.isFilled("type", "module", module)) { return }
+					if (newType.description !== "keep") {
+						try {
+							await Core.editEntity(_authorization, {
+								label: context.label,
+								description: context.tooltip,
+								crud: context.crud,
+								type_id: newType.description
+							}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+							appsProvider.refresh()
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
+					}
+					break;
+				default:
+					await vscode.window.showInformationMessage(`This type of module can't be changed to any other.`);
+					break;
+			}
+		})
+
         /**
          * Mark module as private
          */

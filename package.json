@@ -250,6 +250,11 @@
 				"category": "Integromat Apps"
 			},
 			{
+				"command": "apps-sdk.module.change-type",
+				"title": "Change module type",
+				"category": "Integromat Apps"
+			},
+			{
 				"command": "apps-sdk.module.edit-metadata",
 				"title": "Edit metadata",
 				"category": "Integromat Apps"
@@ -467,6 +472,18 @@
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"when": "viewItem == module_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.change-type",
+					"when": "viewItem == module && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.change-type",
+					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.change-type",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{

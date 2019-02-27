@@ -150,5 +150,19 @@ module.exports = {
 			"label": "Delete",
 			"description": "The action deletes an existing entity."
 		}
+	],
+	moduleTypeActionSearch: [
+		{
+			"label": "Don't change",
+			"description": "keep"
+		},
+		{
+			"label": "Action",
+			"description": "4"
+		},
+		{
+			"label": "Search",
+			"description": "9"
+		}
 	]
 }
