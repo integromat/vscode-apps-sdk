@@ -79,7 +79,7 @@ class AppsProvider {
 		else if (element.level === 0) {
 
 			// For each group
-			return [
+			const output = [
 				[`general`, "General"],
 				[`connections`, "Connections"],
 				[`webhooks`, "Webhooks"],
@@ -113,6 +113,10 @@ class AppsProvider {
 				// Return the group and push the changes into it
 				return new Group(group[0], group[1], element, groupChanges)
 			})
+
+			// Add Categories
+			output.push(new Code('categories', 'Categories', element, "jsonc", "app"));
+			return output;
 		}
         /*
          * LEVEL 2 - ITEM OR CODE
