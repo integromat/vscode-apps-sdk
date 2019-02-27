@@ -8,6 +8,7 @@ const ImlProvider = require('../providers/ImlProvider')
 const ParametersProvider = require('../providers/ParametersProvider')
 const StaticImlProvider = require('../providers/StaticImlProvider')
 const TempProvider = require('../providers/TempProvider')
+const DataProvider = require('../providers/DataProvider')
 
 const path = require('path')
 const fs = require('fs')
@@ -16,7 +17,7 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider) {
+	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider, dataProvider) {
 		this.appsProvider = appsProvider
 		this._authorization = _authorization
 		this._environment = _environment
@@ -25,6 +26,7 @@ class CoreCommands {
 		this.currentParametersProvider = parametersProvider
 		this.currentStaticImlProvider = staticImlProvider
 		this.currentTempProvider = tempProvider
+		this.currentDataProvider = dataProvider
 		this.staticImlProvider = new StaticImlProvider()
 		this.sipInit = false
 		this.tempListener = null
@@ -182,6 +184,11 @@ class CoreCommands {
 					// Remove existing TempProvider
 					if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
 						this.currentTempProvider.dispose()
+					}
+
+					// Remove existing DataProvider
+					if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+						this.currentDataProvider.dispose()
 					}
 
 					return
@@ -354,11 +361,64 @@ class CoreCommands {
 				}, tempProvider)
 			}
 			else {
-				// If out of scope, remove existing StaticImlProvider
+				// If out of scope, remove
 				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
 					this.currentTempProvider.dispose()
 				}
 			}
+
+			/**
+			 * DATA-LOADER
+			 * Data loader provides connection.data variables in the document
+			 */
+
+			if (
+				(apiPath === "module" && name === "api") ||
+				(apiPath === "webhook" && (name === "api" || name === "attach" || name === "detach")) ||
+				(apiPath === "rpc" && name === "api")
+			) {
+				if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+					this.currentDataProvider.dispose()
+				}
+
+				let connection;
+				switch (apiPath) {
+					case 'rpc':
+						connection = (await Core.rpGet(`${this._environment}/app/${app}/${version}/rpc/${crumbs[4]}`, this._authorization)).connection;
+						break;
+					case 'module':
+						connection = (await Core.rpGet(`${this._environment}/app/${app}/${version}/module/${crumbs[4]}`, this._authorization)).connection;
+						break;
+					case 'webhook':
+						connection = (await Core.rpGet(`${this._environment}/app/${app}/webhook/${crumbs[4]}`, this._authorization)).connection;
+						break;
+				}
+
+				if (connection) {
+					const connectionType = (await Core.rpGet(`${this._environment}/app/${app}/connection/${connection}`, this._authorization)).type
+					const connectionSource = (await Core.rpGet(`${this._environment}/app/${app}/connection/${connection}/api`, this._authorization))
+					let dataProvider = new DataProvider(connectionSource, connectionType);
+					dataProvider.getAvailableVariables();
+					this.currentDataProvider = vscode.languages.registerCompletionItemProvider({
+						scheme: 'file',
+						language: 'imljson'
+					}, dataProvider)
+				}
+
+				else {
+					if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+						this.currentDataProvider.dispose()
+					}
+				}
+
+			}
+			else {
+				// If out of scope, remove
+				if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+					this.currentDataProvider.dispose()
+				}
+			}
+
 		}
 	}
 
