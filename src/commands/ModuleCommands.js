@@ -101,26 +101,25 @@ class ModuleCommands {
 			body.label = label;
 
 			// Description prompt with prefilled value
-			let module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
 			let description = await vscode.window.showInputBox({
 				prompt: "Customize module description",
-				value: module.description
+				value: context.tooltip
 			})
 			if (!Core.isFilled("description", "module", description)) { return }
 			body.description = description
 
 			// Action type selector+
-			// Uncomment this when the API's fixed
-			/*if (context.type === 4) {
+			if (context.type === 4) {
 				let crud = await vscode.window.showQuickPick([{ label: "Don't change", description: "keep" }].concat(Enum.crud), { placeHolder: "Change the action type or keep existing." })
 				if (!Core.isFilled("crud", "action", crud)) { return }
 				if (crud.description !== "keep") {
 					body.crud = crud.label === "Multipurpose" ? undefined : crud.label.toLowerCase();
+				} else {
+					body.crud = context.crud;
 				}
-			}*/
+			}
 
-			// Remove this after API's fixed
-			body.type_id = module.type_id
+			body.type_id = context.type
 
 			// Send the request
 			try {
