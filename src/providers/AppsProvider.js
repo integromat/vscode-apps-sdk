@@ -157,7 +157,7 @@ class AppsProvider {
 									return change
 								}
 							})
-							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id, item.public, item.approved, changes)
+							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id, item.public, item.approved, changes, item.description)
 						})
 					}
 				}
