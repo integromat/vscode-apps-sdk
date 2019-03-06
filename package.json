@@ -105,6 +105,10 @@
 			{
 				"fileMatch": "api-oauth.json",
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
+			},
+			{
+				"fileMatch": "groups.json",
+				"url": "./syntaxes/imljson/schemas/groups.json"
 			}
 		],
 		"languages": [
