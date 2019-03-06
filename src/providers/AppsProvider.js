@@ -115,7 +115,7 @@ class AppsProvider {
 			})
 
 			// Add Categories
-			output.push(new Code('groups', 'Groups', element, "json", "app"));
+			output.push(new Code('groups', 'Groups', element, "imljson", "app"));
 			return output;
 		}
         /*
