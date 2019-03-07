@@ -210,9 +210,10 @@ class AppsProvider {
 					})
 				case "module":
 					switch (element.type) {
-						// Action or search
+						// Action or search or universal
 						case 4:
 						case 9:
+						case 12:
 							return [
 								[`api`, "Communication", "This specification does inherit from base."],
 								[`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],
