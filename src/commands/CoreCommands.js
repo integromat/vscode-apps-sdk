@@ -8,6 +8,8 @@ const ImlProvider = require('../providers/ImlProvider')
 const ParametersProvider = require('../providers/ParametersProvider')
 const StaticImlProvider = require('../providers/StaticImlProvider')
 const TempProvider = require('../providers/TempProvider')
+const DataProvider = require('../providers/DataProvider')
+const GroupsProvider = require('../providers/GroupsProvider')
 
 const path = require('path')
 const fs = require('fs')
@@ -16,7 +18,7 @@ const mkdirp = require('mkdirp')
 const request = require('request')
 
 class CoreCommands {
-	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider) {
+	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider, dataProvider, groupsProvider) {
 		this.appsProvider = appsProvider
 		this._authorization = _authorization
 		this._environment = _environment
@@ -25,6 +27,8 @@ class CoreCommands {
 		this.currentParametersProvider = parametersProvider
 		this.currentStaticImlProvider = staticImlProvider
 		this.currentTempProvider = tempProvider
+		this.currentDataProvider = dataProvider
+		this.currentGroupsProvider = groupsProvider
 		this.staticImlProvider = new StaticImlProvider()
 		this.sipInit = false
 		this.tempListener = null
@@ -68,13 +72,14 @@ class CoreCommands {
 		var options = {
 			uri: uri,
 			method: 'PUT',
-			body: file,
+			body: file.replace(/\u200B/g, ''),
 			headers: {
 				"Content-Type": "application/jsonc",
 				"Authorization": this._authorization,
 				'x-imt-apps-sdk-version': Meta.version
 			}
 		};
+		// ^^^ File Replace kicks off zerospaces which are used for marking the document edited
 
 		// Change the Content-Type header if needed
 		if (path.extname(right) === ".js") {
@@ -168,7 +173,13 @@ class CoreCommands {
 					this.currentParametersProvider.dispose()
 				}
 
-				if (crumbs[3] !== 'base.imljson') {
+				if (crumbs[3] === 'base.imljson') {
+					apiPath = 'base'
+					name = 'base'
+				} else if (crumbs[3] === 'groups.imljson') {
+					apiPath = 'groups'
+					name = 'groups'
+				} else {
 					// Remove existing ImlProvider
 					if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
 						this.currentImlProvider.dispose()
@@ -184,11 +195,18 @@ class CoreCommands {
 						this.currentTempProvider.dispose()
 					}
 
+					// Remove existing DataProvider
+					if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+						this.currentDataProvider.dispose()
+					}
+
+					// Remove existing GroupsProvider
+					if (this.currentGroupsProvider !== null && this.currentGroupsProvider !== undefined) {
+						this.currentGroupsProvider.dispose()
+					}
+
 					return
 				}
-
-				apiPath = 'base'
-				name = 'base'
 			}
 
 			else {
@@ -354,11 +372,92 @@ class CoreCommands {
 				}, tempProvider)
 			}
 			else {
-				// If out of scope, remove existing StaticImlProvider
+				// If out of scope, remove
 				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
 					this.currentTempProvider.dispose()
 				}
 			}
+
+			/**
+			 * GROUPS-LOADER
+			 * Groups loader provides module names for hints in groups.json
+			 */
+			if (
+				(name === "groups")
+			) {
+
+				if (this.currentGroupsProvider !== null && this.currentGroupsProvider !== undefined) {
+					this.currentGroupsProvider.dispose()
+				}
+
+				let modules = await Core.rpGet(`${this._environment}/app/${app}/${version}/module`, this._authorization);
+				let groupsProvider = new GroupsProvider(modules);
+				groupsProvider.buildCompletionItems();
+				this.currentGroupsProvider = vscode.languages.registerCompletionItemProvider({
+					scheme: 'file',
+					language: 'imljson'
+				}, groupsProvider)
+
+			}
+			else {
+				// If out of scope, remove
+				if (this.currentGroupsProvider !== null && this.currentGroupsProvider !== undefined) {
+					this.currentGroupsProvider.dispose()
+				}
+			}
+
+			/**
+			 * DATA-LOADER
+			 * Data loader provides connection.data variables in the document
+			 */
+
+			if (
+				(apiPath === "module" && name === "api") ||
+				(apiPath === "webhook" && (name === "api" || name === "attach" || name === "detach")) ||
+				(apiPath === "rpc" && name === "api")
+			) {
+				if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+					this.currentDataProvider.dispose()
+				}
+
+				let connection;
+				switch (apiPath) {
+					case 'rpc':
+						connection = (await Core.rpGet(`${this._environment}/app/${app}/${version}/rpc/${crumbs[4]}`, this._authorization)).connection;
+						break;
+					case 'module':
+						connection = (await Core.rpGet(`${this._environment}/app/${app}/${version}/module/${crumbs[4]}`, this._authorization)).connection;
+						break;
+					case 'webhook':
+						connection = (await Core.rpGet(`${this._environment}/app/${app}/webhook/${crumbs[4]}`, this._authorization)).connection;
+						break;
+				}
+
+				if (connection) {
+					const connectionType = (await Core.rpGet(`${this._environment}/app/${app}/connection/${connection}`, this._authorization)).type
+					const connectionSource = (await Core.rpGet(`${this._environment}/app/${app}/connection/${connection}/api`, this._authorization))
+					let dataProvider = new DataProvider(connectionSource, connectionType);
+					dataProvider.getAvailableVariables();
+					this.currentDataProvider = vscode.languages.registerCompletionItemProvider({
+						scheme: 'file',
+						language: 'imljson'
+					}, dataProvider)
+				}
+
+				else {
+					if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+						this.currentDataProvider.dispose()
+					}
+				}
+
+			}
+			else {
+				// If out of scope, remove
+				if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
+					this.currentDataProvider.dispose()
+				}
+			}
+
 		}
 	}
 

@@ -79,7 +79,7 @@ class AppsProvider {
 		else if (element.level === 0) {
 
 			// For each group
-			return [
+			const output = [
 				[`general`, "General"],
 				[`connections`, "Connections"],
 				[`webhooks`, "Webhooks"],
@@ -113,6 +113,10 @@ class AppsProvider {
 				// Return the group and push the changes into it
 				return new Group(group[0], group[1], element, groupChanges)
 			})
+
+			// Add Categories
+			output.push(new Code('groups', 'Groups', element, "imljson", "app"));
+			return output;
 		}
         /*
          * LEVEL 2 - ITEM OR CODE
@@ -157,7 +161,7 @@ class AppsProvider {
 									return change
 								}
 							})
-							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id, item.public, item.approved, changes)
+							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id, item.public, item.approved, changes, item.description, item.crud)
 						})
 					}
 				}
@@ -206,9 +210,10 @@ class AppsProvider {
 					})
 				case "module":
 					switch (element.type) {
-						// Action or search
+						// Action or search or universal
 						case 4:
 						case 9:
+						case 12:
 							return [
 								[`api`, "Communication", "This specification does inherit from base."],
 								[`parameters`, "Static parameters", "Array of static parameters user can fill while configuring the module. Static parameters can't contain variables from other modules. Parameters are accessible via {{parameters.paramName}}."],

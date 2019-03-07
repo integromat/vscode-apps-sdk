@@ -48,6 +48,15 @@ class ModuleCommands {
 				"type_id": type.description
 			}
 
+			// Action type selector
+			if (type.description === "4") {
+				let crud = await vscode.window.showQuickPick(Enum.crud, { placeHolder: "Pick the action type" })
+				if (!Core.isFilled("crud", "action", crud)) { return }
+				if (crud.label !== "Multipurpose") {
+					body.crud = crud.label.toLowerCase();
+				}
+			}
+
 			// Connection / Webhook / No prompt
 			switch (type.description) {
 				case "1":
@@ -81,6 +90,7 @@ class ModuleCommands {
 
 			// Context check
 			if (!Core.contextGuard(context)) { return }
+			const body = {};
 
 			// Label prompt with prefilled value
 			let label = await vscode.window.showInputBox({
@@ -88,19 +98,33 @@ class ModuleCommands {
 				value: context.bareLabel
 			})
 			if (!Core.isFilled("label", "module", label)) { return }
+			body.label = label;
 
 			// Description prompt with prefilled value
-			let module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
 			let description = await vscode.window.showInputBox({
 				prompt: "Customize module description",
-				value: module.description
+				value: context.tooltip
 			})
 			if (!Core.isFilled("description", "module", description)) { return }
+			body.description = description
+
+			// Action type selector+
+			if (context.type === 4) {
+				let crud = await vscode.window.showQuickPick([{ label: "Don't change", description: "keep" }].concat(Enum.crud), { placeHolder: "Change the action type or keep existing." })
+				if (!Core.isFilled("crud", "action", crud)) { return }
+				if (crud.description !== "keep") {
+					body.crud = crud.label === "Multipurpose" ? undefined : crud.label.toLowerCase();
+				} else {
+					body.crud = context.crud;
+				}
+			}
+
+			body.type_id = context.type
 
 			// Send the request
 			try {
 				await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
-				await Core.editEntity(_authorization, { label: label, description: description, type_id: module.type_id }, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+				await Core.editEntity(_authorization, body, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
 				appsProvider.refresh()
 			}
 			catch (err) {
@@ -151,6 +175,37 @@ class ModuleCommands {
 						}
 					}
 					break
+			}
+		})
+
+		vscode.commands.registerCommand('apps-sdk.module.change-type', async function (context) {
+
+			// Context check
+			if (!Core.contextGuard(context)) { return }
+
+			switch (context.type) {
+				case 9:
+				case 4:
+					let newType = await vscode.window.showQuickPick(Enum.moduleTypeActionSearch, { placeHolder: "Change the type or keep existing." })
+					if (!Core.isFilled("type", "module", module)) { return }
+					if (newType.description !== "keep") {
+						try {
+							await Core.editEntity(_authorization, {
+								label: context.label,
+								description: context.tooltip,
+								crud: context.crud,
+								type_id: newType.description
+							}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+							appsProvider.refresh()
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
+					}
+					break;
+				default:
+					await vscode.window.showInformationMessage(`This type of module can't be changed to any other.`);
+					break;
 			}
 		})
 

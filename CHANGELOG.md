@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.0.15
+
+### Added
+
+- Connection data hints when editing "Communication"
+- Module description on hover in tree
+- Action CRUD type specification support
+- Change module type (action <=> search)
+- Module groups support
+- Universal module view RUD support
+
 ## 1.0.14
 
 ### Added

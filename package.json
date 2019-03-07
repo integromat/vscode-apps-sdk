@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
@@ -105,6 +105,10 @@
 			{
 				"fileMatch": "api-oauth.json",
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
+			},
+			{
+				"fileMatch": "groups.json",
+				"url": "./syntaxes/imljson/schemas/groups.json"
 			}
 		],
 		"languages": [
@@ -247,6 +251,11 @@
 			{
 				"command": "apps-sdk.webhook.change-connection",
 				"title": "Change connection",
+				"category": "Integromat Apps"
+			},
+			{
+				"command": "apps-sdk.module.change-type",
+				"title": "Change module type",
 				"category": "Integromat Apps"
 			},
 			{
@@ -467,6 +476,18 @@
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"when": "viewItem == module_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.change-type",
+					"when": "viewItem == module && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.change-type",
+					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.change-type",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
