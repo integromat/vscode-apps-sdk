@@ -105,7 +105,7 @@ class AppsProvider {
 
 				// Look for changes of the group
 				let groupChanges = element.changes.filter(change => {
-					if (change.group === groupItem) {
+					if (change.group === groupItem && change.code !== "groups") {
 						return change
 					}
 				})
@@ -115,7 +115,12 @@ class AppsProvider {
 			})
 
 			// Add Categories
-			output.push(new Code('groups', 'Groups', element, "imljson", "app"));
+			let groupChange = element.changes.find(change => {
+				if (change.code == 'groups') {
+					return change
+				}
+			})
+			output.push(new Code('groups', 'Groups', element, "imljson", "app", false, groupChange ? groupChange.id : null));
 			return output;
 		}
         /*
