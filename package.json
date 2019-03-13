@@ -173,7 +173,7 @@
 			{
 				"category": "Integromat Apps",
 				"command": "apps-sdk.udt",
-				"title": "Open UDT generator",
+				"title": "Open Data Structure Generator",
 				"icon": {
 					"dark": "resources/icons/dark/generator.png",
 					"light": "resources/icons/light/generator.png"
@@ -659,14 +659,14 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
-		"@types/node": "^7.10.3",
+		"@types/node": "^7.10.5",
 		"eslint": "^4.19.1",
 		"typescript": "^2.9.2",
 		"vscode": "^1.1.30"
 	},
 	"dependencies": {
-		"@integromat/iml": "^1.18.2",
-		"@integromat/udt": "^1.1.0",
+		"@integromat/iml": "^1.19.0",
+		"@integromat/udt": "^1.2.0",
 		"async-file": "^2.0.2",
 		"compressing": "^1.4.0",
 		"image-downloader": "^3.4.2",
@@ -678,7 +678,7 @@
 		"lodash.union": "^4.6.0",
 		"mkdirp": "^0.5.1",
 		"path": "^0.12.7",
-		"pngjs": "^3.3.3",
+		"pngjs": "^3.4.0",
 		"request": "^2.88.0",
 		"request-light": "^0.2.4",
 		"request-promise": "^4.2.4",

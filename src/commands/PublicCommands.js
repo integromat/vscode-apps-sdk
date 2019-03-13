@@ -84,7 +84,7 @@ class PublicCommands {
 		vscode.commands.registerCommand('apps-sdk.udt', async function () {
 			const panel = vscode.window.createWebviewPanel(
 				`udt_generator`,
-				`UDT Generator`,
+				`Data Structure Generator`,
 				vscode.ViewColumn.One,
 				{
 					enableScripts: true
