@@ -103,7 +103,7 @@ class ModuleCommands {
 			// Description prompt with prefilled value
 			let description = await vscode.window.showInputBox({
 				prompt: "Customize module description",
-				value: context.tooltip
+				value: context.bareDescription
 			})
 			if (!Core.isFilled("description", "module", description)) { return }
 			body.description = description
@@ -191,8 +191,8 @@ class ModuleCommands {
 					if (newType.description !== "keep") {
 						try {
 							await Core.editEntity(_authorization, {
-								label: context.label,
-								description: context.tooltip,
+								label: context.bareLabel,
+								description: context.bareDescription,
 								crud: context.crud,
 								type_id: newType.description
 							}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)

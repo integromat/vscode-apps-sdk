@@ -22,9 +22,35 @@ class Item extends EnhancedTreeItem {
 		this.approved = isApproved
 		this.contextValue = supertype + (this.approved ? "_approved" : this.public ? "_public" : "")
 		this.changes = changes
-		this.tooltip = description || label
+		this.bareDescription = description
 		this.crud = crud
+		this.tooltip = this.makeTooltip(label, description) || description || label
 		this.iconPath = this.makeIconPath(this.supertype)
+	}
+
+	makeTooltip() {
+		if (this.supertype !== "module") { return undefined; }
+		let tooltip = `${this.bareLabel}\r\n-----------------------\r\nName: ${this.name}\r\nType: ${this.translateTypeId(this.type)}\r\n`
+		if (this.type === 4) {
+			tooltip += `CRUD type: ${this.crud || "multipurpose"}\r\n`
+		}
+		if (this.bareDescription) {
+			tooltip += `Description: ${this.bareDescription}\r\n`
+		}
+		tooltip += `Public: ${this.public}\r\nApproved: ${this.approved}`
+		return tooltip
+	}
+
+	translateTypeId(typeId) {
+		switch (typeId) {
+			case 1: return 'Trigger';
+			case 4: return 'Action';
+			case 9: return 'Search';
+			case 10: return 'Instant Trigger';
+			case 11: return 'Responder';
+			case 12: return 'Universal';
+			default: return 'Unknown';
+		}
 	}
 }
 
