@@ -155,6 +155,10 @@ module.exports = {
 		return (fs.readFileSync(path.join(dir, 'static', 'rpc-test.html'), "utf8")).replace("___rpcName", name).replace("___appName", app).replace("___version", version)
 	},
 
+	getUdtGeneratorHtml: function (dir) {
+		return (fs.readFileSync(path.join(dir, 'static', 'udt-gen.html'), 'utf-8'));
+	},
+
 	compareCountries: function (a, b) {
 		// Sort by PICK
 		if (a.picked && !b.picked) return -1;

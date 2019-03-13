@@ -48,6 +48,7 @@
 		"onCommand:apps-sdk.app.visibility.private",
 		"onCommand:apps-sdk.help",
 		"onCommand:apps-sdk.app.export",
+		"onCommand:apps-sdk.udt",
 		"onView:apps",
 		"onView:opensource"
 	],
@@ -167,6 +168,15 @@
 				"icon": {
 					"dark": "resources/icons/dark/refresh.png",
 					"light": "resources/icons/light/refresh.png"
+				}
+			},
+			{
+				"category": "Integromat Apps",
+				"command": "apps-sdk.udt",
+				"title": "Open UDT generator",
+				"icon": {
+					"dark": "resources/icons/dark/generator.png",
+					"light": "resources/icons/light/generator.png"
 				}
 			},
 			{
@@ -361,6 +371,23 @@
 			]
 		},
 		"menus": {
+			"editor/title": [
+				{
+					"when": "resourceFilename == interface.imljson",
+					"command": "apps-sdk.udt",
+					"group": "navigation"
+				},
+				{
+					"when": "resourceFilename == parameters.imljson",
+					"command": "apps-sdk.udt",
+					"group": "navigation"
+				},
+				{
+					"when": "resourceFilename == expect.imljson",
+					"command": "apps-sdk.udt",
+					"group": "navigation"
+				}
+			],
 			"view/title": [
 				{
 					"command": "apps-sdk.refresh",
@@ -639,6 +666,7 @@
 	},
 	"dependencies": {
 		"@integromat/iml": "^1.18.2",
+		"@integromat/udt": "^1.1.0",
 		"async-file": "^2.0.2",
 		"compressing": "^1.4.0",
 		"image-downloader": "^3.4.2",
