@@ -1,5 +1,7 @@
 const EnhancedTreeItem = require('./EnhancedTreeItem');
 
+const Core = require('../Core');
+
 class Item extends EnhancedTreeItem {
 	constructor(id, label, parent, supertype, type, isPublic, isApproved, changes, description, crud) {
 		let temp = label
@@ -30,7 +32,7 @@ class Item extends EnhancedTreeItem {
 
 	makeTooltip() {
 		if (this.supertype !== "module") { return undefined; }
-		let tooltip = `${this.bareLabel}\r\n-----------------------\r\nName: ${this.name}\r\nType: ${this.translateTypeId(this.type)}\r\n`
+		let tooltip = `${this.bareLabel}\r\n-----------------------\r\nName: ${this.name}\r\nType: ${Core.translateModuleTypeId(this.type)}\r\n`
 		if (this.type === 4) {
 			tooltip += `CRUD type: ${this.crud || "multipurpose"}\r\n`
 		}
@@ -39,18 +41,6 @@ class Item extends EnhancedTreeItem {
 		}
 		tooltip += `Public: ${this.public}\r\nApproved: ${this.approved}`
 		return tooltip
-	}
-
-	translateTypeId(typeId) {
-		switch (typeId) {
-			case 1: return 'Trigger';
-			case 4: return 'Action';
-			case 9: return 'Search';
-			case 10: return 'Instant Trigger';
-			case 11: return 'Responder';
-			case 12: return 'Universal';
-			default: return 'Unknown';
-		}
 	}
 }
 

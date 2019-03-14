@@ -163,6 +163,10 @@ module.exports = {
 		return (fs.readFileSync(path.join(dir, 'static', 'app-detail.html'), 'utf-8'));
 	},
 
+	getModuleDetailHtml: function (dir) {
+		return (fs.readFileSync(path.join(dir, 'static', 'module-detail.html'), 'utf-8'));
+	},
+
 	compareCountries: function (a, b) {
 		// Sort by PICK
 		if (a.picked && !b.picked) return -1;
@@ -187,5 +191,17 @@ module.exports = {
 			return JSON.stringify(text, null, 4)
 		}
 		return text
+	},
+
+	translateModuleTypeId: function (typeId) {
+		switch (typeId) {
+			case 1: return 'Trigger';
+			case 4: return 'Action';
+			case 9: return 'Search';
+			case 10: return 'Instant Trigger';
+			case 11: return 'Responder';
+			case 12: return 'Universal';
+			default: return 'Unknown';
+		}
 	}
 }

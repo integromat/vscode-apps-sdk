@@ -6,6 +6,7 @@ const Enum = require('../Enum')
 const QuickPick = require('../QuickPick')
 
 const camelCase = require('lodash.camelcase');
+const path = require('path');
 
 class ModuleCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -178,6 +179,9 @@ class ModuleCommands {
 			}
 		})
 
+		/**
+		 * Change module type
+		 */
 		vscode.commands.registerCommand('apps-sdk.module.change-type', async function (context) {
 
 			// Context check
@@ -207,6 +211,40 @@ class ModuleCommands {
 					await vscode.window.showInformationMessage(`This type of module can't be changed to any other.`);
 					break;
 			}
+		})
+
+		/**
+		 * Module show detail
+		 */
+		vscode.commands.registerCommand('apps-sdk.module.show-detail', async function (context) {
+
+			// If called directly (by using a command pallete) -> die
+			if (!Core.contextGuard(context)) { return }
+
+			const module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
+			module.connection = module.connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
+			module.webhook = module.webhook ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
+
+			module.type = {
+				id: module.type_id,
+				label: Core.translateModuleTypeId(module.type_id)
+			}
+			delete module.type_id;
+
+			const panel = vscode.window.createWebviewPanel(
+				`${context.parent.parent.name}_${context.name}_detail`,
+				`${context.bareLabel} detail (${context.parent.parent.bareLabel})`,
+				vscode.ViewColumn.One,
+				{
+					enableScripts: true
+				}
+			)
+			panel.webview.html = Core.getModuleDetailHtml(path.join(__dirname, '..', '..'))
+
+			console.log(module);
+
+			panel.webview.postMessage(module)
+
 		})
 
         /**

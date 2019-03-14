@@ -254,6 +254,11 @@
 				"category": "Integromat Apps"
 			},
 			{
+				"command": "apps-sdk.module.show-detail",
+				"title": "Show detail",
+				"category": "Integromat Apps"
+			},
+			{
 				"command": "apps-sdk.connection.edit-metadata",
 				"title": "Edit metadata",
 				"category": "Integromat Apps"
@@ -633,6 +638,18 @@
 				{
 					"command": "apps-sdk.app.show-detail",
 					"when": "viewItem == app_approved_changed && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.show-detail",
+					"when": "viewItem == module && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.show-detail",
+					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.show-detail",
+					"when": "viewItem == module_approved && view == apps"
 				}
 			]
 		},
