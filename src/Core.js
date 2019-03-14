@@ -159,6 +159,10 @@ module.exports = {
 		return (fs.readFileSync(path.join(dir, 'static', 'udt-gen.html'), 'utf-8'));
 	},
 
+	getAppDetailHtml: function (dir) {
+		return (fs.readFileSync(path.join(dir, 'static', 'app-detail.html'), 'utf-8'));
+	},
+
 	compareCountries: function (a, b) {
 		// Sort by PICK
 		if (a.picked && !b.picked) return -1;

@@ -359,6 +359,30 @@ class AppCommands {
 			}, undefined)
 		})
 
+		/**
+		 * Show app detail
+		 */
+		vscode.commands.registerCommand('apps-sdk.app.show-detail', async function (context) {
+
+			// If called directly (by using a command pallete) -> die
+			if (!Core.contextGuard(context)) { return }
+
+			const urn = `${_environment}/app/${context.name}/${context.version}`
+			const app = await Core.rpGet(`${urn}`, _authorization)
+
+			const panel = vscode.window.createWebviewPanel(
+				`${app.name}_detail`,
+				`${app.label} detail`,
+				vscode.ViewColumn.One,
+				{
+					enableScripts: true
+				}
+			)
+			panel.webview.html = Core.getAppDetailHtml(path.join(__dirname, '..', '..'))
+			panel.webview.postMessage(app)
+
+		})
+
         /**
          * Mark app as private
          */

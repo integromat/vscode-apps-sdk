@@ -1,0 +1,39 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<style type="text/css">
+
+	</style>
+</head>
+
+<body>
+
+	<div class="wrapper">
+		<p>Name: <span id="name"></span></p>
+		<p>Label: <span id="label"></span></p>
+		<p>Version: <span id="version"></span></p>
+		<p>Theme: <span id="theme"></span></p>
+		<p>Language: <span id="language"></span></p>
+		<p>Public: <span id="public"></span></p>
+		<p>Approved: <span id="approved"></span></p>
+		<p>Countries: <span id="countries"></span></p>
+		<p>Created: <span id="created"></span></p>
+		<p>Manifest version: <span id="manifest_version"></span></p>
+		<p>Private: <span id="private"></span></p>
+	</div>
+
+	<script type="text/javascript">
+		const vscode = acquireVsCodeApi();
+		window.addEventListener('message', display, false);
+
+		function display(message) {
+			for (const id of ['name', 'label', 'version', 'theme', 'language', 'public', 'approved', 'countries', 'created', 'manifest_version', 'private']) {
+				if (id === 'countries') { document.getElementById(id).innerHTML = message.data[id] ? message.data[id] : 'global'; }
+				else { document.getElementById(id).innerHTML = message.data[id]; }
+			}
+		}
+	</script>
+</body>
+
+</html>
