@@ -251,8 +251,6 @@ class ModuleCommands {
 			}
 			module.theme = context.parent.parent.theme;
 
-			console.log(module);
-
 			panel.webview.postMessage(module)
 
 		})

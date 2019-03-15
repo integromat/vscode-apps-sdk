@@ -394,8 +394,6 @@ class AppCommands {
 				}
 			)
 
-			console.log(app);
-
 			panel.webview.html = Core.getAppDetailHtml(path.join(__dirname, '..', '..'))
 			panel.webview.postMessage(app)
 
