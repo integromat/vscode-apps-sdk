@@ -3,24 +3,50 @@
 <head>
 	<meta charset="utf-8">
 	<style type="text/css">
+		.wrapper {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+		}
 
+		.theme {
+			border-radius: 100%;
+			transform: scale(.9, .9);
+		}
+
+		.icon {
+			transform: scale(.7, .7);
+		}
+
+		.icon img {
+			max-width: 100vw;
+			max-height: 100vh
+		}
 	</style>
 </head>
 
 <body>
 
-	<div class="wrapper">
+	<div class="details">
 		<p>Name: <span id="name"></span></p>
 		<p>Label: <span id="label"></span></p>
 		<p>Version: <span id="version"></span></p>
 		<p>Theme: <span id="theme"></span></p>
-		<p>Language: <span id="language"></span></p>
+		<p>Language: <span id="language_label"></span> (<span id="language_description"></span>)</p>
 		<p>Public: <span id="public"></span></p>
 		<p>Approved: <span id="approved"></span></p>
 		<p>Countries: <span id="countries"></span></p>
 		<p>Created: <span id="created"></span></p>
 		<p>Manifest version: <span id="manifest_version"></span></p>
 		<p>Private: <span id="private"></span></p>
+		<div class="wrapper">
+			<div class="theme" id="icon_wrapper">
+				<div class="icon">
+					<img id="icon">
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<script type="text/javascript">
@@ -28,10 +54,18 @@
 		window.addEventListener('message', display, false);
 
 		function display(message) {
-			for (const id of ['name', 'label', 'version', 'theme', 'language', 'public', 'approved', 'countries', 'created', 'manifest_version', 'private']) {
-				if (id === 'countries') { document.getElementById(id).innerHTML = message.data[id] ? message.data[id] : 'global'; }
-				else { document.getElementById(id).innerHTML = message.data[id]; }
+			for (const id of ['name', 'label', 'version', 'theme', 'public', 'approved', 'created', 'manifest_version', 'private']) {
+				document.getElementById(id).innerHTML = message.data[id];
 			}
+			document.getElementById('language_label').innerHTML = message.data.language.label;
+			document.getElementById('language_description').innerHTML = message.data.language.description;
+
+			for (const country of message.data.countries) {
+				document.getElementById('countries').innerHTML += `<div><span>${country.label}</span> (<span>${country.description}</span>)</div>`
+			}
+
+			document.getElementById('icon').src = `data:image/png;base64,${message.data.icon}`
+			document.getElementById('icon_wrapper').style = `background-color: ${message.data.theme};`
 		}
 	</script>
 </body>

@@ -7,6 +7,7 @@ const QuickPick = require('../QuickPick')
 
 const camelCase = require('lodash.camelcase');
 const path = require('path');
+const fs = require('fs');
 
 class ModuleCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -240,6 +241,15 @@ class ModuleCommands {
 				}
 			)
 			panel.webview.html = Core.getModuleDetailHtml(path.join(__dirname, '..', '..'))
+			module.crud = module.crud ? module.crud : 'multipurpose'
+
+			if (fs.existsSync(context.parent.parent.iconPath.dark)) {
+				module.icon = new Buffer(fs.readFileSync(context.parent.parent.iconPath.dark)).toString('base64')
+			}
+			else {
+				module.icon = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg=="
+			}
+			module.theme = context.parent.parent.theme;
 
 			console.log(module);
 

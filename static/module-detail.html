@@ -3,14 +3,55 @@
 <head>
 	<meta charset="utf-8">
 	<style type="text/css">
+		.wrapper {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+		}
 
+		.theme {
+			border-radius: 100%;
+			transform: scale(.9, .9);
+		}
+
+		.icon {
+			transform: scale(.7, .7);
+		}
+
+		.icon img {
+			max-width: 100vw;
+			max-height: 100vh
+		}
 	</style>
 </head>
 
 <body>
 
-	<div class="wrapper">
-
+	<div class="details">
+		<p>Name: <span id="name"></span></p>
+		<p>Label: <span id="label"></span></p>
+		<p>Description: <span id="description"></span></p>
+		<p>Public: <span id="public"></span></p>
+		<p>Approved: <span id="approved"></span></p>
+		<p>CRUD: <span id="crud"></span></p>
+		<p>Type: <span id="type_label"></span> (<span id="type_id"></span>)</p>
+		<p id='connection'>Connection:
+			<span id="connection_label"></span>
+			(<span id="connection_name"></span>),
+			<span id="connection_type"></span></p>
+		<p id='webhook'>Webhook:
+			<span id="webhook_label"></span>
+			(<span id="webhook_name"></span>),
+			<span id="webhook_type"></span></p>
+		</p>
+		<div class="wrapper">
+			<div class="theme" id="icon_wrapper">
+				<div class="icon">
+					<img id="icon">
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<script type="text/javascript">
@@ -18,7 +59,30 @@
 		window.addEventListener('message', display, false);
 
 		function display(message) {
+			for (const id of ['name', 'label', 'description', 'public', 'approved', 'crud']) {
+				document.getElementById(id).innerHTML = message.data[id];
+			}
+			document.getElementById('type_label').innerHTML = message.data.type.label;
+			document.getElementById('type_id').innerHTML = message.data.type.id;
 
+			if (message.data.connection) {
+				document.getElementById('connection_label').innerHTML = message.data.connection.label;
+				document.getElementById('connection_name').innerHTML = message.data.connection.name;
+				document.getElementById('connection_type').innerHTML = message.data.connection.type;
+			} else {
+				document.getElementById('connection').outerHTML = "";
+			}
+
+			if (message.data.webhook) {
+				document.getElementById('webhook_label').innerHTML = message.data.webhook.label;
+				document.getElementById('webhook_name').innerHTML = message.data.webhook.name;
+				document.getElementById('webhook_type').innerHTML = message.data.webhook.type;
+			} else {
+				document.getElementById('webhook').outerHTML = "";
+			}
+
+			document.getElementById('icon').src = `data:image/png;base64,${message.data.icon}`
+			document.getElementById('icon_wrapper').style = `background-color: ${message.data.theme};`
 		}
 	</script>
 </body>
