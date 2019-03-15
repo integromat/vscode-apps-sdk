@@ -370,6 +370,21 @@ class AppCommands {
 			const urn = `${_environment}/app/${context.name}/${context.version}`
 			const app = await Core.rpGet(`${urn}`, _authorization)
 
+			const languages = await QuickPick.languages(_environment, _authorization)
+			app.language = languages.find(language => language.description === app.language);
+
+			const countries = await QuickPick.countries(_environment, _authorization)
+			app.countries = (app.countries && app.countries.length > 0) ? countries.filter(country => app.countries.includes(country.description)) : [{ label: 'Global', description: 'global' }];
+
+			if (fs.existsSync(context.iconPath.dark)) {
+				app.icon = new Buffer(fs.readFileSync(context.iconPath.dark)).toString('base64')
+			}
+
+			// If not, use the BASE64 of blank 512*512 png square
+			else {
+				app.icon = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg=="
+			}
+
 			const panel = vscode.window.createWebviewPanel(
 				`${app.name}_detail`,
 				`${app.label} detail`,
