@@ -1,52 +1,176 @@
-<html>
-
 <head>
 	<meta charset="utf-8">
 	<style type="text/css">
-		.wrapper {
-			display: flex;
-			align-items: center;
-			justify-content: center;
+		* {
+			box-sizing: border-box;
+		}
+
+		html {
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 13px;
+			zoom: 1.3
+		}
+
+		.fullsize {
+			width: 350px;
+			max-width: calc(100% - 4px);
+			margin-left: 40px;
+			margin-top: 40px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+			border-radius: 8px;
+			line-height: 1.7em;
+			margin-bottom: 20px;
+			padding-bottom: 20px;
+			background: #fff;
+		}
+
+		.fullsize header {
+			border-radius: 8px 8px 0 0;
+		}
+
+		.px-30 {
+			padding: 0 30px;
+		}
+
+		.p-30 {
+			padding: 30px;
+		}
+
+		.pr-15 {
+			padding-right: 15px;
+		}
+
+		.p-relative {
+			position: relative;
+		}
+
+		.icon {
 			height: 100%;
+			width: 100%;
+			position: relative;
+		}
+
+		#icon {
+			height: 75%;
+			width: 75%;
+			margin: auto;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
 		}
 
 		.theme {
 			border-radius: 100%;
-			transform: scale(.9, .9);
+			width: 82px;
+			height: 82px;
+			margin-left: auto;
 		}
 
-		.icon {
-			transform: scale(.7, .7);
+		.o7 {
+			opacity: .7;
+			color: #000;
 		}
 
-		.icon img {
-			max-width: 100vw;
-			max-height: 100vh
+		h1 {
+			font-weight: normal;
+			margin: 3px 0;
+			color: #000;
+		}
+
+		h1 span {
+			font-weight: bold;
+			height: 1.2em;
+		}
+
+		p {
+			margin: 5px 0;
+			padding: 3px 0;
+			border-bottom: 1px solid #eee;
+			line-height: 20px;
+			color: #000;
+		}
+
+		.left {
+			width: 120px;
+			font-weight: bold;
+			display: inline-block;
+		}
+
+		.ultrasmall {
+			font-size: 10px;
+		}
+
+		.hr {
+			height: 1px;
+			background: #eee;
+			display: block;
+		}
+
+		.d-table {
+			display: table;
+		}
+
+		.d-table-cell {
+			display: table-cell;
+			vertical-align: middle;
+		}
+
+		.text-right {
+			text-align: right;
+		}
+
+		.w-100 {
+			width: 100%;
+		}
+
+		.right {
+			display: inline-block;
+			padding-left: 120px;
+		}
+
+		.top.left {
+			position: absolute;
 		}
 	</style>
 </head>
 
 <body>
+	<div class="fullsize p-relative">
 
-	<div class="details">
-		<p>Name: <span id="name"></span></p>
-		<p>Label: <span id="label"></span></p>
-		<p>Version: <span id="version"></span></p>
-		<p>Theme: <span id="theme"></span></p>
-		<p>Language: <span id="language_label"></span> (<span id="language_description"></span>)</p>
-		<p>Public: <span id="public"></span></p>
-		<p>Approved: <span id="approved"></span></p>
-		<p>Countries: <span id="countries"></span></p>
-		<p>Created: <span id="created"></span></p>
-		<p>Manifest version: <span id="manifest_version"></span></p>
-		<p>Private: <span id="private"></span></p>
-		<div class="wrapper">
-			<div class="theme" id="icon_wrapper">
-				<div class="icon">
-					<img id="icon">
+		<div class="d-table p-30 w-100">
+			<div class="d-table-cell pr-15">
+				<small class="o7">
+					Name: <span id="name"></span> | v. <span id="version"></span>
+				</small>
+				<h1><span id="label"></span></h1>
+			</div>
+			<div class="d-table-cell text-right">
+				<div class="theme" id="icon_wrapper">
+					<div class="icon">
+						<img id="icon">
+					</div>
 				</div>
 			</div>
 		</div>
+
+		<div class="hr"></div>
+
+		<div class="details px-30">
+			<p><span class="left">Theme:</span> <span id="theme"></span></p>
+			<p><span class="left">Language:</span> <span id="language_label"></span> <small class="ultrasmall">(<span
+						id="language_description"></span>)</small></p>
+			<p><span class="left">Public:</span> <span id="public"></span></p>
+			<p><span class="left">Approved:</span> <span id="approved"></span></p>
+			<p class="p-relative">
+				<span class="left top">Countries:</span> <span class="right" id="countries"></span>
+			</p>
+			<p><span class="left">Created:</span> <span id="created"></span></p>
+			<p><span class="left">Manifest version:</span> <span id="manifest_version"></span></p>
+			<p><span class="left">Private:</span> <span id="private"></span></p>
+		</div>
+
 	</div>
 
 	<script type="text/javascript">
@@ -54,9 +178,13 @@
 		window.addEventListener('message', display, false);
 
 		function display(message) {
-			for (const id of ['name', 'label', 'version', 'theme', 'public', 'approved', 'created', 'manifest_version', 'private']) {
+			for (const id of ['name', 'label', 'version', 'theme', 'public', 'approved', 'manifest_version', 'private']) {
 				document.getElementById(id).innerHTML = message.data[id];
 			}
+
+			let created = new Date(Date.parse(message.data.created));
+			document.getElementById('created').innerHTML = created.toLocaleDateString();
+
 			document.getElementById('language_label').innerHTML = message.data.language.label;
 			document.getElementById('language_description').innerHTML = message.data.language.description;
 

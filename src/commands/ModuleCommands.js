@@ -237,7 +237,8 @@ class ModuleCommands {
 				`${context.bareLabel} detail (${context.parent.parent.bareLabel})`,
 				vscode.ViewColumn.One,
 				{
-					enableScripts: true
+					enableScripts: true,
+					retainContextWhenHidden: true
 				}
 			)
 			panel.webview.html = Core.getModuleDetailHtml(path.join(__dirname, '..', '..'))

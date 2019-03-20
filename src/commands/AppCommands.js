@@ -390,7 +390,8 @@ class AppCommands {
 				`${app.label} detail`,
 				vscode.ViewColumn.One,
 				{
-					enableScripts: true
+					enableScripts: true,
+					retainContextWhenHidden: true
 				}
 			)
 
