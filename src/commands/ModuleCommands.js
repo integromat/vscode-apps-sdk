@@ -244,8 +244,8 @@ class ModuleCommands {
 			panel.webview.html = Core.getModuleDetailHtml(path.join(__dirname, '..', '..'))
 			module.crud = module.crud ? module.crud : 'multipurpose'
 
-			if (fs.existsSync(context.parent.parent.iconPath.dark)) {
-				module.icon = new Buffer(fs.readFileSync(context.parent.parent.iconPath.dark)).toString('base64')
+			if (fs.existsSync(context.parent.parent.rawIcon.dark)) {
+				module.icon = new Buffer(fs.readFileSync(context.parent.parent.rawIcon.dark)).toString('base64')
 			}
 			else {
 				module.icon = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg=="

@@ -376,8 +376,8 @@ class AppCommands {
 			const countries = await QuickPick.countries(_environment, _authorization)
 			app.countries = (app.countries && app.countries.length > 0) ? countries.filter(country => app.countries.includes(country.description)) : [{ label: 'Global', description: 'global' }];
 
-			if (fs.existsSync(context.iconPath.dark)) {
-				app.icon = new Buffer(fs.readFileSync(context.iconPath.dark)).toString('base64')
+			if (fs.existsSync(context.rawIcon.dark)) {
+				app.icon = new Buffer(fs.readFileSync(context.rawIcon.dark)).toString('base64')
 			}
 
 			// If not, use the BASE64 of blank 512*512 png square
