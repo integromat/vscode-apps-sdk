@@ -1,5 +1,20 @@
 # Change Log
 
+## 1.0.16
+
+### Added
+
+- Changes support on Groups
+- Data Structure Generator
+- App Detail page
+- Module Detail page
+
+### Modified
+
+- Better module hover
+- Better app hover
+- Public/Private indicators changed
+
 ## 1.0.15
 
 ### Added

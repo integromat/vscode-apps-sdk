@@ -288,8 +288,8 @@ class AppCommands {
 			let buff
 
 			// If the icon exists on the disc -> get its BASE64
-			if (fs.existsSync(app.iconPath.dark)) {
-				buff = new Buffer(fs.readFileSync(app.iconPath.dark)).toString('base64')
+			if (fs.existsSync(app.rawIcon.dark)) {
+				buff = new Buffer(fs.readFileSync(app.rawIcon.dark)).toString('base64')
 			}
 
 			// If not, use the BASE64 of blank 512*512 png square
@@ -344,11 +344,11 @@ class AppCommands {
 						// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
 						else {
 
-							if (await asyncfile.exists(app.iconPath.dark)) {
-								await asyncfile.rename(app.iconPath.dark, `${app.iconPath.dark}.old`)
+							if (await asyncfile.exists(app.rawIcon.dark)) {
+								await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`)
 							}
-							if (await asyncfile.exists(app.iconPath.light)) {
-								await asyncfile.rename(app.iconPath.light, `${app.iconPath.light}.old`)
+							if (await asyncfile.exists(app.rawIcon.light)) {
+								await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`)
 							}
 
 							vscode.commands.executeCommand('apps-sdk.refresh')
@@ -357,6 +357,47 @@ class AppCommands {
 					}))
 				}
 			}, undefined)
+		})
+
+		/**
+		 * Show app detail
+		 */
+		vscode.commands.registerCommand('apps-sdk.app.show-detail', async function (context) {
+
+			// If called directly (by using a command pallete) -> die
+			if (!Core.contextGuard(context)) { return }
+
+			const urn = `${_environment}/app/${context.name}/${context.version}`
+			const app = await Core.rpGet(`${urn}`, _authorization)
+
+			const languages = await QuickPick.languages(_environment, _authorization)
+			app.language = languages.find(language => language.description === app.language);
+
+			const countries = await QuickPick.countries(_environment, _authorization)
+			app.countries = (app.countries && app.countries.length > 0) ? countries.filter(country => app.countries.includes(country.description)) : [{ label: 'Global', description: 'global' }];
+
+			if (fs.existsSync(context.rawIcon.dark)) {
+				app.icon = new Buffer(fs.readFileSync(context.rawIcon.dark)).toString('base64')
+			}
+
+			// If not, use the BASE64 of blank 512*512 png square
+			else {
+				app.icon = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg=="
+			}
+
+			const panel = vscode.window.createWebviewPanel(
+				`${app.name}_detail`,
+				`${app.label} detail`,
+				vscode.ViewColumn.One,
+				{
+					enableScripts: true,
+					retainContextWhenHidden: true
+				}
+			)
+
+			panel.webview.html = Core.getAppDetailHtml(path.join(__dirname, '..', '..'))
+			panel.webview.postMessage(app)
+
 		})
 
         /**

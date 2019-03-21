@@ -25,6 +25,13 @@ module.exports = {
 		})
 	},
 
+	generatePublicIcon: async function (uri) {
+		const icon = await Jimp.read(uri);
+		const mask = await Jimp.read(path.join(__dirname, '..', 'resources', 'icons', 'masks', 'public.png'));
+		icon.blit(mask, 320, 320);
+		await icon.write(`${uri.slice(0, -4)}.public.png`);
+	},
+
 	rpGet: async function (uri, authorization, qs) {
 		return rp({
 			url: uri,
@@ -155,6 +162,18 @@ module.exports = {
 		return (fs.readFileSync(path.join(dir, 'static', 'rpc-test.html'), "utf8")).replace("___rpcName", name).replace("___appName", app).replace("___version", version)
 	},
 
+	getUdtGeneratorHtml: function (dir) {
+		return (fs.readFileSync(path.join(dir, 'static', 'udt-gen.html'), 'utf-8'));
+	},
+
+	getAppDetailHtml: function (dir) {
+		return (fs.readFileSync(path.join(dir, 'static', 'app-detail.html'), 'utf-8'));
+	},
+
+	getModuleDetailHtml: function (dir) {
+		return (fs.readFileSync(path.join(dir, 'static', 'module-detail.html'), 'utf-8'));
+	},
+
 	compareCountries: function (a, b) {
 		// Sort by PICK
 		if (a.picked && !b.picked) return -1;
@@ -179,5 +198,17 @@ module.exports = {
 			return JSON.stringify(text, null, 4)
 		}
 		return text
+	},
+
+	translateModuleTypeId: function (typeId) {
+		switch (typeId) {
+			case 1: return 'Trigger';
+			case 4: return 'Action';
+			case 9: return 'Search';
+			case 10: return 'Instant Trigger';
+			case 11: return 'Responder';
+			case 12: return 'Universal';
+			default: return 'Unknown';
+		}
 	}
 }

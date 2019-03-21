@@ -6,6 +6,8 @@ const Enum = require('../Enum')
 const QuickPick = require('../QuickPick')
 
 const camelCase = require('lodash.camelcase');
+const path = require('path');
+const fs = require('fs');
 
 class ModuleCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -103,7 +105,7 @@ class ModuleCommands {
 			// Description prompt with prefilled value
 			let description = await vscode.window.showInputBox({
 				prompt: "Customize module description",
-				value: context.tooltip
+				value: context.bareDescription
 			})
 			if (!Core.isFilled("description", "module", description)) { return }
 			body.description = description
@@ -178,6 +180,9 @@ class ModuleCommands {
 			}
 		})
 
+		/**
+		 * Change module type
+		 */
 		vscode.commands.registerCommand('apps-sdk.module.change-type', async function (context) {
 
 			// Context check
@@ -191,8 +196,8 @@ class ModuleCommands {
 					if (newType.description !== "keep") {
 						try {
 							await Core.editEntity(_authorization, {
-								label: context.label,
-								description: context.tooltip,
+								label: context.bareLabel,
+								description: context.bareDescription,
 								crud: context.crud,
 								type_id: newType.description
 							}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
@@ -207,6 +212,48 @@ class ModuleCommands {
 					await vscode.window.showInformationMessage(`This type of module can't be changed to any other.`);
 					break;
 			}
+		})
+
+		/**
+		 * Module show detail
+		 */
+		vscode.commands.registerCommand('apps-sdk.module.show-detail', async function (context) {
+
+			// If called directly (by using a command pallete) -> die
+			if (!Core.contextGuard(context)) { return }
+
+			const module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
+			module.connection = module.connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
+			module.webhook = module.webhook ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
+
+			module.type = {
+				id: module.type_id,
+				label: Core.translateModuleTypeId(module.type_id)
+			}
+			delete module.type_id;
+
+			const panel = vscode.window.createWebviewPanel(
+				`${context.parent.parent.name}_${context.name}_detail`,
+				`${context.bareLabel} detail (${context.parent.parent.bareLabel})`,
+				vscode.ViewColumn.One,
+				{
+					enableScripts: true,
+					retainContextWhenHidden: true
+				}
+			)
+			panel.webview.html = Core.getModuleDetailHtml(path.join(__dirname, '..', '..'))
+			module.crud = module.crud ? module.crud : 'multipurpose'
+
+			if (fs.existsSync(context.parent.parent.rawIcon.dark)) {
+				module.icon = new Buffer(fs.readFileSync(context.parent.parent.rawIcon.dark)).toString('base64')
+			}
+			else {
+				module.icon = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg=="
+			}
+			module.theme = context.parent.parent.theme;
+
+			panel.webview.postMessage(module)
+
 		})
 
         /**

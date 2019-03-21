@@ -67,6 +67,14 @@ class AppsProvider {
 						}
 					}
 				}
+				if (app.public) {
+					if (await asyncfile.exists(dest) && !await asyncfile.exists(`${dest.slice(0, -4)}.public.png`)) {
+						await Core.generatePublicIcon(dest);
+					}
+					if (await asyncfile.exists(`${dest.slice(0, -4)}.dark.png`) && !await asyncfile.exists(`${dest.slice(0, -4)}.dark.public.png`)) {
+						await Core.generatePublicIcon(`${dest.slice(0, -4)}.dark.png`);
+					}
+				}
 				return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
 			})
 			apps = await Promise.all(apps)
@@ -105,7 +113,7 @@ class AppsProvider {
 
 				// Look for changes of the group
 				let groupChanges = element.changes.filter(change => {
-					if (change.group === groupItem) {
+					if (change.group === groupItem && change.code !== "groups") {
 						return change
 					}
 				})
@@ -115,7 +123,12 @@ class AppsProvider {
 			})
 
 			// Add Categories
-			output.push(new Code('groups', 'Groups', element, "imljson", "app"));
+			let groupChange = element.changes.find(change => {
+				if (change.code == 'groups') {
+					return change
+				}
+			})
+			output.push(new Code('groups', 'Groups', element, "imljson", "app", false, groupChange ? groupChange.id : null));
 			return output;
 		}
         /*

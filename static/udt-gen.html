@@ -1,0 +1,122 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<style type="text/css">
+		div.wrapper {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			justify-content: center;
+			align-items: center;
+			align-content: center;
+		}
+
+		textarea.generator-field {
+			width: 90%;
+			resize: none;
+			font-family: monospace;
+			font-size: 14px;
+			border-style: solid;
+			border-width: 10px;
+			border-radius: 14px;
+		}
+
+		#source {
+			border-color: #cccccc;
+			height: 87%;
+		}
+
+		#drain {
+			border-color: #2f8cbb;
+			height: 90%;
+		}
+
+		div.generator {
+			padding: 21px;
+			width: 50vw;
+			height: 92vh;
+			display: flex;
+			align-items: center;
+			justify-content: flex-start;
+			flex-direction: column
+		}
+
+		div.source {
+			border-right-style: solid;
+			border-right: 1px;
+		}
+
+		div.drain {
+			border-left-style: solid;
+			border-left-width: 1px;
+		}
+
+		div.formatbox {
+			padding: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="source generator">
+			<h2>Paste the source here...</h2>
+			<textarea class="generator-field" id="source"></textarea>
+			<div class="formatbox">
+				<label for="format">Source format: </label>
+				<select id='format' required>
+					<option value="json" selected>JSON</option>
+					<option value="xml">XML</option>
+					<option value="form">Form Data</option>
+					<option value="query">Query String</option>
+				</select>
+			</div>
+		</div>
+		<div class="drain generator">
+			<h2>...and grab the parsed structure.</h2>
+			<textarea class="generator-field" id="drain" readonly></textarea>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		const vscode = acquireVsCodeApi();
+
+		const source = document.getElementById('source');
+		const drain = document.getElementById('drain');
+		const format = document.getElementById('format');
+
+		source.addEventListener('change', parse);
+		source.addEventListener('keyup', parse);
+		format.addEventListener('change', parse);
+
+		window.addEventListener('message', display, false);
+
+		function parse() {
+			vscode.postMessage({
+				type: format.value,
+				command: 'parse',
+				source: source.value
+			})
+		}
+
+		function display(message) {
+			if (message.data.command === 'display') {
+				drain.innerHTML = JSON.stringify(message.data.structure, null, 4)
+				return;
+			}
+			if (message.data.command === 'error') {
+				drain.innerHTML = message.data.structure
+				return;
+			}
+		}
+
+	</script>
+
+	<!-- Text Area Tab Support -->
+	<script type="text/javascript">
+		HTMLTextAreaElement.prototype.getCaretPosition = function () { return this.selectionStart }, HTMLTextAreaElement.prototype.setCaretPosition = function (t) { this.selectionStart = t, this.selectionEnd = t, this.focus() }, HTMLTextAreaElement.prototype.hasSelection = function () { return this.selectionStart != this.selectionEnd }, HTMLTextAreaElement.prototype.getSelectedText = function () { return this.value.substring(this.selectionStart, this.selectionEnd) }, HTMLTextAreaElement.prototype.setSelection = function (t, e) { this.selectionStart = t, this.selectionEnd = e, this.focus() }; var textarea = document.getElementsByTagName("textarea")[0]; textarea.onkeydown = function (t) { var e; if (9 == t.keyCode) return e = textarea.getCaretPosition() + "    ".length, textarea.value = textarea.value.substring(0, textarea.getCaretPosition()) + "    " + textarea.value.substring(textarea.getCaretPosition(), textarea.value.length), textarea.setCaretPosition(e), !1; 8 == t.keyCode && ("    " == textarea.value.substring(textarea.getCaretPosition() - 4, textarea.getCaretPosition()) && (e = textarea.getCaretPosition() - 3, textarea.value = textarea.value.substring(0, textarea.getCaretPosition() - 3) + textarea.value.substring(textarea.getCaretPosition(), textarea.value.length), textarea.setCaretPosition(e))); 37 == t.keyCode && ("    " == textarea.value.substring(textarea.getCaretPosition() - 4, textarea.getCaretPosition()) && (e = textarea.getCaretPosition() - 3, textarea.setCaretPosition(e))); 39 == t.keyCode && ("    " == textarea.value.substring(textarea.getCaretPosition() + 4, textarea.getCaretPosition()) && (e = textarea.getCaretPosition() + 3, textarea.setCaretPosition(e))) };
+	</script>
+</body>
+
+</html>
