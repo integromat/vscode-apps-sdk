@@ -17,7 +17,10 @@ class App extends EnhancedTreeItem {
 		this.changes = changes
 		this.tooltip = this.makeTooltip()
 		this.iconPath = this.makeIconPath(iconDir)
-		this.rawIcon = path.join(iconDir, `${this.name}.${this.iconVersion}.png`);
+		this.rawIcon = {
+			dark: path.join(iconDir, `${this.name}.${this.iconVersion}.png`),
+			light: path.join(iconDir, `${this.name}.${this.iconVersion}.dark.png`)
+		}
 	}
 	makeIconPath(iconDir) {
 		if (!this.public) {

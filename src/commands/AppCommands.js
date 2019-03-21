@@ -288,8 +288,8 @@ class AppCommands {
 			let buff
 
 			// If the icon exists on the disc -> get its BASE64
-			if (fs.existsSync(app.iconPath.dark)) {
-				buff = new Buffer(fs.readFileSync(app.iconPath.dark)).toString('base64')
+			if (fs.existsSync(app.rawIcon.dark)) {
+				buff = new Buffer(fs.readFileSync(app.rawIcon.dark)).toString('base64')
 			}
 
 			// If not, use the BASE64 of blank 512*512 png square
@@ -344,11 +344,11 @@ class AppCommands {
 						// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
 						else {
 
-							if (await asyncfile.exists(app.iconPath.dark)) {
-								await asyncfile.rename(app.iconPath.dark, `${app.iconPath.dark}.old`)
+							if (await asyncfile.exists(app.rawIcon.dark)) {
+								await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`)
 							}
-							if (await asyncfile.exists(app.iconPath.light)) {
-								await asyncfile.rename(app.iconPath.light, `${app.iconPath.light}.old`)
+							if (await asyncfile.exists(app.rawIcon.light)) {
+								await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`)
 							}
 
 							vscode.commands.executeCommand('apps-sdk.refresh')

@@ -68,17 +68,16 @@ class AppsProvider {
 					}
 				}
 				if (app.public) {
-					if (!await asyncfile.exists(`${dest.slice(0, -4)}.public.png`)) {
+					if (await asyncfile.exists(dest) && !await asyncfile.exists(`${dest.slice(0, -4)}.public.png`)) {
 						await Core.generatePublicIcon(dest);
 					}
-					if (!await asyncfile.exists(`${dest.slice(0, -4)}.dark.public.png`)) {
+					if (await asyncfile.exists(`${dest.slice(0, -4)}.dark.png`) && !await asyncfile.exists(`${dest.slice(0, -4)}.dark.public.png`)) {
 						await Core.generatePublicIcon(`${dest.slice(0, -4)}.dark.png`);
 					}
 				}
 				return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
 			})
 			apps = await Promise.all(apps)
-			console.log(iconDir);
 			apps.sort(Core.compareApps)
 			return apps
 		}
