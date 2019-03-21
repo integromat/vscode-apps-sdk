@@ -27,7 +27,7 @@ class Item extends EnhancedTreeItem {
 		this.bareDescription = description
 		this.crud = crud
 		this.tooltip = this.makeTooltip(label, description) || description || label
-		this.iconPath = this.makeIconPath(this.supertype)
+		this.iconPath = this.makeIconPath(this.supertype, this.public ? ".public" : "");
 	}
 
 	makeTooltip() {
