@@ -25,6 +25,13 @@ module.exports = {
 		})
 	},
 
+	generatePublicIcon: async function (uri) {
+		const icon = await Jimp.read(uri);
+		const mask = await Jimp.read(path.join(__dirname, '..', 'resources', 'icons', 'masks', 'public.png'));
+		icon.blit(mask, 320, 320);
+		await icon.write(`${uri.slice(0, -4)}.public.png`);
+	},
+
 	rpGet: async function (uri, authorization, qs) {
 		return rp({
 			url: uri,

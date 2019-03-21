@@ -7,7 +7,7 @@ class Item extends EnhancedTreeItem {
 		let temp = label
 		label = temp + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "")
 		if (supertype === "module") {
-			label += (isPublic ? (isApproved ? ` ${EnhancedTreeItem.approvedSymbol}` : ` ${EnhancedTreeItem.publicSymbol}`) : "")
+
 		}
 		if (supertype === "connection") {
 			label += ` (${type})`

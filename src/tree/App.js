@@ -1,9 +1,9 @@
 const path = require('path')
-const EnhancedTreeItem = require('./EnhancedTreeItem');
+const EnhancedTreeItem = require('./EnhancedTreeItem')
 
 class App extends EnhancedTreeItem {
 	constructor(name, label, version, isPublic, isApproved, iconDir, theme, changes, iconVersion) {
-		super(label + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "") + (isPublic ? (isApproved ? ` ${EnhancedTreeItem.approvedSymbol}` : ` ${EnhancedTreeItem.publicSymbol}`) : ""))
+		super(label + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : ""))
 		this.bareLabel = label
 		this.id = name
 		this.name = name
@@ -17,11 +17,20 @@ class App extends EnhancedTreeItem {
 		this.changes = changes
 		this.tooltip = this.makeTooltip()
 		this.iconPath = this.makeIconPath(iconDir)
+		this.rawIcon = path.join(iconDir, `${this.name}.${this.iconVersion}.png`);
 	}
 	makeIconPath(iconDir) {
-		return {
-			dark: path.join(iconDir, `${this.name}.${this.iconVersion}.png`),
-			light: path.join(iconDir, `${this.name}.${this.iconVersion}.dark.png`)
+		if (!this.public) {
+			return {
+				dark: path.join(iconDir, `${this.name}.${this.iconVersion}.png`),
+				light: path.join(iconDir, `${this.name}.${this.iconVersion}.dark.png`)
+			}
+		}
+		else {
+			return {
+				dark: path.join(iconDir, `${this.name}.${this.iconVersion}.public.png`),
+				light: path.join(iconDir, `${this.name}.${this.iconVersion}.dark.public.png`)
+			}
 		}
 	}
 	makeTooltip() {

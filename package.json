@@ -717,6 +717,7 @@
 		"mkdirp": "^0.5.1",
 		"path": "^0.12.7",
 		"pngjs": "^3.4.0",
+		"pngjs-draw": "0.0.6",
 		"request": "^2.88.0",
 		"request-light": "^0.2.4",
 		"request-promise": "^4.2.4",
