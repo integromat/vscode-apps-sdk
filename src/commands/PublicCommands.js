@@ -110,6 +110,20 @@ class PublicCommands {
 					})
 					if (structure.command === 'display') {
 						structure.structure = udt.generateLabels(structure.structure);
+						function innerLabels(parameters) {
+							parameters.forEach(parameter => {
+								if (parameter.type === 'collection') {
+									parameter.spec = udt.generateLabels(parameter.spec);
+									innerLabels(parameter.spec);
+								} else if (parameter.type === 'array') {
+									if (parameter.spec && parameter.spec.type === 'collection') {
+										parameter.spec.spec = udt.generateLabels(parameter.spec.spec)
+										innerLabels(parameter.spec.spec)
+									}
+								}
+							})
+						}
+						innerLabels(structure.structure);
 					}
 					panel.webview.postMessage(structure)
 				}
