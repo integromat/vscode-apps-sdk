@@ -87,6 +87,7 @@ class PublicCommands {
 				`Data Structure Generator`,
 				vscode.ViewColumn.One,
 				{
+					retainContextWhenHidden: true,
 					enableScripts: true
 				}
 			)
