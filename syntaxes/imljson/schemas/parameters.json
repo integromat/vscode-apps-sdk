@@ -223,6 +223,56 @@
 				"visible": {
 					"type": "string"
 				},
+				"convert": {
+					"description": "Allows you to specify how the parameter will look like in the module interface.",
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string"
+						},
+						"format": {
+							"type": "string"
+						},
+						"timezone": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						},
+						"label": {
+							"type": "string"
+						},
+						"names": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"name": {
+												"type": "string"
+											},
+											"label": {
+												"type": "string"
+											}
+										},
+										"additionalProperties": false,
+										"required": [
+											"name"
+										]
+									}
+								}
+							]
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"type"
+					]
+				},
 				"editable": {
 					"description": "If set to true, the user can map the value.",
 					"oneOf": [
@@ -309,6 +359,10 @@
 				"labels": {
 					"type": "object",
 					"description": "Custom labels of the buttons. You can find more about this feature in the docs."
+				},
+				"metadata": {
+					"type": "object",
+					"description": "Parameter metadata, you can use this object to store additional data to work with."
 				},
 				"spec": {
 					"description": "Describes the data structure of the parameter.",
