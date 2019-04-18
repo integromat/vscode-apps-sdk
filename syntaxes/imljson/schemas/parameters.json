@@ -132,6 +132,7 @@
 					"minLength": 1,
 					"description": "A type of the parameter. Each type has its own documentation page.",
 					"enum": [
+						"any",
 						"array",
 						"boolean",
 						"buffer",

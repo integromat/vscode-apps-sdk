@@ -72,6 +72,11 @@
 		"description": "Inserts an email type parameter.",
 		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"email\"\n}"
 	},
+	"parameter-any": {
+		"prefix": "any",
+		"description": "Inserts an any type parameter.",
+		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"any\"\n}"
+	},
 	"attribute-nested": {
 		"prefix": "nested",
 		"description": "Inserts a nested attribute.",
