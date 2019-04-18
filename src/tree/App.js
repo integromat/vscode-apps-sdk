@@ -5,7 +5,7 @@ class App extends EnhancedTreeItem {
 	constructor(name, label, version, isPublic, isApproved, iconDir, theme, changes, iconVersion) {
 		super(label + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : ""))
 		this.bareLabel = label
-		this.id = name
+		this.id = `${name}@${version}`
 		this.name = name
 		this.version = version
 		this.public = isPublic
