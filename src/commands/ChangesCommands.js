@@ -3,6 +3,7 @@ const vscode = require('vscode')
 const Core = require('../Core')
 const Enum = require('../Enum')
 const Meta = require('../Meta')
+const Validator = require('../Validator')
 
 const tempy = require('tempy');
 const asyncfile = require('async-file')
@@ -49,6 +50,19 @@ class ChangesCommands {
 			// Context check
 			if (!Core.contextGuard(context)) { return }
 
+			let commitMessage = await vscode.window.showInputBox({ prompt: "Enter commit message", validateInput: Validator.commitMessage })
+			if (commitMessage === undefined || commitMessage === null) {
+				vscode.window.showWarningMessage("No commit message provided.")
+				return
+			}
+
+			let notify = await vscode.window.showQuickPick(Enum.notify, { placeHolder: "Notify about the update and add the update to the timeline?" })
+			if (notify === undefined || notify === null) {
+				vscode.window.showWarningMessage("No answer has been recognized.")
+				return
+			}
+			notify = notify.label === "Yes" ? true : false;
+
 			// Wait for confirmation
 			let answer = await vscode.window.showQuickPick(Enum.commit, { placeHolder: "Do you really want to commit all changes in the app?" })
 			if (answer === undefined || answer === null) {
@@ -71,6 +85,10 @@ class ChangesCommands {
 							headers: {
 								Authorization: _authorization,
 								'x-imt-apps-sdk-version': Meta.version
+							},
+							body: {
+								notify: notify,
+								message: commitMessage
 							},
 							json: true
 						})

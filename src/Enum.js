@@ -99,6 +99,16 @@ module.exports = {
 			"description": "All changes in the app will be commited and available for public users."
 		}
 	],
+	notify: [
+		{
+			"label": "No",
+			"description": "Don't notify."
+		},
+		{
+			"label": "Yes",
+			"description": "Generate the notification."
+		}
+	],
 	rollback: [
 		{
 			"label": "No",
