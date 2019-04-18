@@ -67,6 +67,11 @@
 		"description": "Inserts a URL type parameter.",
 		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"url\"\n}"
 	},
+	"parameter-email": {
+		"prefix": "email",
+		"description": "Inserts an email type parameter.",
+		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"email\"\n}"
+	},
 	"attribute-nested": {
 		"prefix": "nested",
 		"description": "Inserts a nested attribute.",
