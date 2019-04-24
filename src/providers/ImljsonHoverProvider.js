@@ -55,6 +55,7 @@ class ImljsonHoverProvider {
 
 	provideTypeHover(text) {
 		switch (text) {
+			case 'any': return '- Undefined type of parameter\r\n- Type will be determined based on the response'
 			case 'array': return '- Array of items of the same type'
 			case 'boolean': return '- `true` or `false` value'
 			case 'buffer': return '- Binary buffer'

@@ -83,12 +83,18 @@ module.exports = {
 	allApps: async function (environment, authorization) {
 		let response = await Core.rpGet(`${environment}/app`, authorization, { all: true })
 		try {
-			return response.map(app => {
-				return {
-					label: app.label,
-					description: app.name
+			const apps = [];
+			const used = [];
+			response.forEach(app => {
+				if (!used.includes(app.name)) {
+					used.push(app.name);
+					apps.push({
+						label: app.label,
+						description: app.name
+					});
 				}
 			})
+			return apps;
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(err.message || err.error.message)

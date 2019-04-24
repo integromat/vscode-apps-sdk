@@ -154,6 +154,22 @@ class CoreCommands {
 				crumbs.splice(3, 1)
 			}
 
+
+			/**
+			 *   ###              #    #       ####### ######  #######
+			 *   ###             # #   #       #       #     #    #
+             *   ###            #   #  #       #       #     #    #
+             *    #            #     # #       #####   ######     #
+             *                 ####### #       #       #   #      #
+             *   ###           #     # #       #       #    #     #
+             *   ###           #     # ####### ####### #     #    #
+			 * 
+			 * The version is fixed here, because we didn't know how to make it nonfixed at the time
+			 * This should be changed when the connection is separated from the app
+			 * It would require it's custom RPCs and custom IMLFunctions
+			 */
+
+
 			// If no version, set 1
 			version = version === undefined ? 1 : version;
 			let apiPath
