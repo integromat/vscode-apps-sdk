@@ -395,6 +395,9 @@
 							"$ref": "#/definitions/options"
 						},
 						{
+							"$ref": "#/definitions/groups"
+						},
+						{
 							"type": "string"
 						},
 						{
