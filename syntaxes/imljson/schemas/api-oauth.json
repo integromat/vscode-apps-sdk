@@ -1,25 +1,31 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "preauthorize": {
-            "$ref": "api.json#/request"
-        },
-        "authorize": {
-            "$ref": "api.json#/request"
-        },
-        "token": {
-            "$ref": "api.json#/request"
-        },
-        "info": {
-            "$ref": "api.json#/request"
-        },
-        "refresh": {
-            "$ref": "api.json#/request"
-        },
-        "invalidate": {
-            "$ref": "api.json#/request"
-        }
-    },
-    "additionalProperties": false
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"definitions": {
+		"oauth-request": {
+			"$id": "#oauth-request",
+			"type": "object",
+			"properties": {
+				"preauthorize": {
+					"$ref": "api.json#/definitions/request"
+				},
+				"authorize": {
+					"$ref": "api.json#/definitions/request"
+				},
+				"token": {
+					"$ref": "api.json#/definitions/request"
+				},
+				"info": {
+					"$ref": "api.json#/definitions/request"
+				},
+				"refresh": {
+					"$ref": "api.json#/definitions/request"
+				},
+				"invalidate": {
+					"$ref": "api.json#/definitions/request"
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"$ref": "#/definitions/oauth-request"
 }

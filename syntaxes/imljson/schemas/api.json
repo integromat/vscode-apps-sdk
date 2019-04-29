@@ -107,6 +107,9 @@
 						},
 						"wrapper": {
 							"$ref": "response.json#/definitions/wrapper"
+						},
+						"expires": {
+							"$ref": "response.json#/definitions/expires"
 						}
 					},
 					"additionalProperties": false

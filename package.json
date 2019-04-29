@@ -104,7 +104,7 @@
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
-				"fileMatch": "api-oauth.json",
+				"fileMatch": "api-oauth.imljson",
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
 			{
