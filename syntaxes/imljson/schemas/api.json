@@ -124,8 +124,7 @@
 						"enum": [
 							"POST",
 							"PUT",
-							"PATCH",
-							"DELETE"
+							"PATCH"
 						]
 					}
 				}
