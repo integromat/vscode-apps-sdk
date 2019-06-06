@@ -28,7 +28,7 @@
 	"parameter-select": {
 		"prefix": "select",
 		"body": [
-			"{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"select\",\n    \"options\": [\n        \n    ],\n    \"editable\": ${3|true,false|}\n}"
+			"{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"select\",\n    \"options\": [\n        \n    ],\n    \"mappable\": ${3|true,false|}\n}"
 		],
 		"description": "Inserts a select type parameter."
 	},
@@ -75,7 +75,12 @@
 	"parameter-any": {
 		"prefix": "any",
 		"description": "Inserts an any type parameter.",
-		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"any\"\n}"
+		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"$${1:name}\",\n    \"type\": \"any\"\n}"
+	},
+	"parameter-filter": {
+		"prefix": "filter",
+		"description": "Inserts a filter type parameter.",
+		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"filter\",\n    \"options\": [\n        \n    ]\n}"
 	},
 	"attribute-nested": {
 		"prefix": "nested",
