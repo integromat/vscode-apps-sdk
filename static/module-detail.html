@@ -233,7 +233,7 @@
 				document.getElementById('connection').outerHTML = "";
 			}
 
-			if (message.data.alt_connection) {
+			if (message.data.connection && message.data.alt_connection) {
 				document.getElementById('alt_connection_label').innerHTML = message.data.alt_connection.label;
 				document.getElementById('alt_connection_name').innerHTML = message.data.alt_connection.name;
 				document.getElementById('alt_connection_type').innerHTML = message.data.alt_connection.type;

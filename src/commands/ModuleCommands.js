@@ -148,20 +148,64 @@ class ModuleCommands {
 				case 4:
 				case 9:
 					let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
-					connections = [{ label: "Don't change", description: "keep" }].concat(connections)
-					let connection = await vscode.window.showQuickPick(connections, { placeHolder: "Change connection or keep existing." })
-					if (!Core.isFilled("connection", "module", connection)) { return }
-					if (connection.description !== "keep") {
-						connection = connection.label === "--- Without connection ---" ? "" : connection.description
-						try {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-							appsProvider.refresh()
+
+					// There's a "Without Connection" option, so that's why there's +1
+					if (connections.length > 2) {
+						const moduleDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization);
+						const primaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections)
+						let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." })
+						let hasPrimary = !!moduleDetail.connection;
+						if (!Core.isFilled("connection", "module", connection)) { return }
+						if (moduleDetail.connection === null && (connection.description === 'keep' || connection.label === '--- Without connection ---')) { return; }
+						if (connection.description !== "keep") {
+							if (connection.label === '--- Without connection ---') {
+								hasPrimary = false;
+							} else {
+								hasPrimary = true;
+							}
+							connection = connection.label === "--- Without connection ---" ? "" : connection.description
+							try {
+								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
 						}
-						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+						if (!hasPrimary) {
+							appsProvider.refresh();
+							return;
 						}
+						const secondaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections)
+						secondaryConnectionOptions.find(c => c.label === "--- Without connection ---").label = '--- Don\'t use secondary connection ---'
+						connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
+						if (!Core.isFilled("connection", "module", connection)) { return }
+						if (connection.description !== "keep") {
+							connection = connection.label === "--- Don\'t use secondary connection ---" ? "" : connection.description
+							try {
+								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
+								appsProvider.refresh()
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
+						}
+						break;
+					} else {
+						connections = [{ label: "Don't change", description: "keep" }].concat(connections)
+						let connection = await vscode.window.showQuickPick(connections, { placeHolder: "Change connection or keep existing." })
+						if (!Core.isFilled("connection", "module", connection)) { return }
+						if (connection.description !== "keep") {
+							connection = connection.label === "--- Without connection ---" ? "" : connection.description
+							try {
+								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
+								appsProvider.refresh()
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
+						}
+						break;
 					}
-					break
 				case 10:
 					let webhooks = await QuickPick.webhooks(_environment, _authorization, context.parent.parent, false)
 					webhooks = [{ label: "Don't change", description: "keep" }].concat(webhooks)
