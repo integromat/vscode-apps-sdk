@@ -224,6 +224,7 @@ class ModuleCommands {
 
 			const module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
 			module.connection = module.connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
+			module.alt_connection = module.alt_connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.alt_connection}`, _authorization) : null;
 			module.webhook = module.webhook ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
 
 			module.type = {

@@ -194,6 +194,14 @@
 					<span id="connection_type"></span>
 				</span>
 			</p>
+			<p id='alt_connection'>
+				<span class="left top">Alternative Connection:</span>
+				<span class="right">
+					<span id="alt_connection_label"></span>
+					(<span id="alt_connection_name"></span>),
+					<span id="alt_connection_type"></span>
+				</span>
+			</p>
 			<p id='webhook'>
 				<span class="left top">Webhook:</span>
 				<span class="right">
@@ -223,6 +231,14 @@
 				document.getElementById('connection_type').innerHTML = message.data.connection.type;
 			} else {
 				document.getElementById('connection').outerHTML = "";
+			}
+
+			if (message.data.alt_connection) {
+				document.getElementById('alt_connection_label').innerHTML = message.data.alt_connection.label;
+				document.getElementById('alt_connection_name').innerHTML = message.data.alt_connection.name;
+				document.getElementById('alt_connection_type').innerHTML = message.data.alt_connection.type;
+			} else {
+				document.getElementById('alt_connection').outerHTML = "";
 			}
 
 			if (message.data.webhook) {
