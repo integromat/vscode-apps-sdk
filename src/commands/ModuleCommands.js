@@ -147,14 +147,29 @@ class ModuleCommands {
 				case 1:
 				case 4:
 				case 9:
-					let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
+					let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
 
 					// There's a "Without Connection" option, so that's why there's +1
 					if (connections.length > 2) {
 						const moduleDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization);
-						const primaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections)
-						let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." })
+						const primaryConnectionOptions = connections;
 						let hasPrimary = !!moduleDetail.connection;
+						if(hasPrimary) {
+							const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === moduleDetail.connection);
+							const toSelect = primaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							primaryConnectionOptions.splice(toSelectIndex,1);
+							primaryConnectionOptions.unshift(toSelect);
+						} else {
+							const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+							const toSelect = primaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							primaryConnectionOptions.splice(toSelectIndex,1);
+							primaryConnectionOptions.unshift(toSelect);
+						}
+						let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." })
 						if (!Core.isFilled("connection", "module", connection)) { return }
 						if (moduleDetail.connection === null && (connection.description === 'keep' || connection.label === '--- Without connection ---')) { return; }
 						if (connection.description !== "keep") {
@@ -175,12 +190,26 @@ class ModuleCommands {
 							appsProvider.refresh();
 							return;
 						}
-						const secondaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections)
-						secondaryConnectionOptions.find(c => c.label === "--- Without connection ---").label = '--- Don\'t use secondary connection ---'
+						const secondaryConnectionOptions = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
+						if(!!moduleDetail.alt_connection) {
+							const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === moduleDetail.alt_connection);
+							const toSelect = secondaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							secondaryConnectionOptions.splice(toSelectIndex,1);
+							secondaryConnectionOptions.unshift(toSelect);
+						} else {
+							const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+							const toSelect = secondaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							secondaryConnectionOptions.splice(toSelectIndex,1);
+							secondaryConnectionOptions.unshift(toSelect);
+						}
 						connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
 						if (!Core.isFilled("connection", "module", connection)) { return }
 						if (connection.description !== "keep") {
-							connection = connection.label === "--- Don\'t use secondary connection ---" ? "" : connection.description
+							connection = connection.label === "--- Without connection ---" ? "" : connection.description
 							try {
 								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
 								appsProvider.refresh()

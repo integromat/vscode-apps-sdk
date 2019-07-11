@@ -90,17 +90,20 @@ class WebhookCommands {
 
 			// Prepare connections -> determine if required or not
 			let connections
+			let alts
 			let multi = false;
 			switch (context.type) {
 				case "web":
 					connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
 					if (connections.length > 1) {
+						alts = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
 						multi = true;
 					}
 					break
 				case "web-shared":
 					connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, false)
 					if (connections.length > 2) {
+						alts = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
 						multi = true;
 					}
 					break
@@ -108,9 +111,27 @@ class WebhookCommands {
 
 			if (multi) {
 				const webhookDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${context.name}`, _authorization);
-				const primaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections);
-				let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." });
+
+				const primaryConnectionOptions = connections;
+
 				let hasPrimary = !!webhookDetail.connection;
+				if(hasPrimary) {
+					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === webhookDetail.connection);
+					const toSelect = primaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.unshift(toSelect);
+				} else {
+					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+					const toSelect = primaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.unshift(toSelect);
+				}
+
+				let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." });
 				if (!Core.isFilled("connection", "webhook", connection)) { return }
 				if (webhookDetail.connection === null && (connection.description === 'keep' || connection.label === '--- Without connection ---')) { return; }
 				if (connection.description !== "keep") {
@@ -131,11 +152,27 @@ class WebhookCommands {
 					appsProvider.refresh();
 					return;
 				}
-				const secondaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections);
-				secondaryConnectionOptions.find(c => c.label === "--- Without connection ---").label = '--- Don\'t use secondary connection ---';
+
+				const secondaryConnectionOptions = alts;
 				if (context.type === 'web-shared') {
-					secondaryConnectionOptions.push({ label: '--- Don\'t use secondary connection ---', description: 'dont-use' });
+					secondaryConnectionOptions.push({ label: '--- Without connection ---', description: 'dont-use' });
 				}
+				if(!!webhookDetail.alt_connection) {
+					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === webhookDetail.alt_connection);
+					const toSelect = secondaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.unshift(toSelect);
+				} else {
+					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+					const toSelect = secondaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.unshift(toSelect);
+				}
+				
 				connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
 				if (!Core.isFilled("connection", "webhook", connection)) { return }
 				if (connection.description !== "keep") {

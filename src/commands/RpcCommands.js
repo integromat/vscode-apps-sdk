@@ -91,9 +91,26 @@ class RpcCommands {
 
 			if (connections.length > 2) {
 				const rpcDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}`, _authorization);
-				const primaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections);
-				let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." });
+				
+				const primaryConnectionOptions = connections;
 				let hasPrimary = !!rpcDetail.connection;
+				if(hasPrimary) {
+					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === rpcDetail.connection);
+					const toSelect = primaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.unshift(toSelect);
+				} else {
+					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+					const toSelect = primaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.unshift(toSelect);
+				}
+
+				let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." });
 				if (!Core.isFilled("connection", "RPC", connection)) { return }
 
 				if (rpcDetail.connection === null && (connection.description === 'keep' || connection.label === '--- Without connection ---')) { return; }
@@ -115,8 +132,24 @@ class RpcCommands {
 					appsProvider.refresh();
 					return;
 				}
-				const secondaryConnectionOptions = [{ label: "Don't change", description: "keep" }].concat(connections)
-				secondaryConnectionOptions.find(c => c.label === "--- Without connection ---").label = '--- Don\'t use secondary connection ---'
+
+				const secondaryConnectionOptions = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
+				if(!!rpcDetail.alt_connection) {
+					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === rpcDetail.alt_connection);
+					const toSelect = secondaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.unshift(toSelect);
+				} else {
+					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+					const toSelect = secondaryConnectionOptions[toSelectIndex];
+					toSelect.label += ` (current)`;
+					toSelect.description = 'keep';
+					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.unshift(toSelect);
+				}
+
 				connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
 				if (!Core.isFilled("connection", "RPC", connection)) { return }
 				if (connection.description !== "keep") {
