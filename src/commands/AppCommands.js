@@ -395,6 +395,9 @@ class AppCommands {
 				}
 			)
 
+			app.modules = (await Core.rpGet(`${urn}/module`, _authorization)).map(m => m.approved)
+			app.rpcsCount = (await Core.rpGet(`${urn}/rpc`, _authorization)).length
+
 			panel.webview.html = Core.getAppDetailHtml(path.join(__dirname, '..', '..'))
 			panel.webview.postMessage(app)
 

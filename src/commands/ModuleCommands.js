@@ -147,21 +147,94 @@ class ModuleCommands {
 				case 1:
 				case 4:
 				case 9:
-					let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
-					connections = [{ label: "Don't change", description: "keep" }].concat(connections)
-					let connection = await vscode.window.showQuickPick(connections, { placeHolder: "Change connection or keep existing." })
-					if (!Core.isFilled("connection", "module", connection)) { return }
-					if (connection.description !== "keep") {
-						connection = connection.label === "--- Without connection ---" ? "" : connection.description
-						try {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-							appsProvider.refresh()
+					let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
+
+					// There's a "Without Connection" option, so that's why there's +1
+					if (connections.length > 2) {
+						const moduleDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization);
+						const primaryConnectionOptions = connections;
+						let hasPrimary = !!moduleDetail.connection;
+						if(hasPrimary) {
+							const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === moduleDetail.connection);
+							const toSelect = primaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							primaryConnectionOptions.splice(toSelectIndex,1);
+							primaryConnectionOptions.unshift(toSelect);
+						} else {
+							const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+							const toSelect = primaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							primaryConnectionOptions.splice(toSelectIndex,1);
+							primaryConnectionOptions.unshift(toSelect);
 						}
-						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+						let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." })
+						if (!Core.isFilled("connection", "module", connection)) { return }
+						if (moduleDetail.connection === null && (connection.description === 'keep' || connection.label === '--- Without connection ---')) { return; }
+						if (connection.description !== "keep") {
+							if (connection.label === '--- Without connection ---') {
+								hasPrimary = false;
+							} else {
+								hasPrimary = true;
+							}
+							connection = connection.label === "--- Without connection ---" ? "" : connection.description
+							try {
+								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
 						}
+						if (!hasPrimary) {
+							appsProvider.refresh();
+							return;
+						}
+						const secondaryConnectionOptions = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
+						if(!!moduleDetail.alt_connection) {
+							const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === moduleDetail.alt_connection);
+							const toSelect = secondaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							secondaryConnectionOptions.splice(toSelectIndex,1);
+							secondaryConnectionOptions.unshift(toSelect);
+						} else {
+							const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
+							const toSelect = secondaryConnectionOptions[toSelectIndex];
+							toSelect.label += ` (current)`;
+							toSelect.description = 'keep';
+							secondaryConnectionOptions.splice(toSelectIndex,1);
+							secondaryConnectionOptions.unshift(toSelect);
+						}
+						connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
+						if (!Core.isFilled("connection", "module", connection)) { return }
+						if (connection.description !== "keep") {
+							connection = connection.label === "--- Without connection ---" ? "" : connection.description
+							try {
+								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
+								appsProvider.refresh()
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
+						}
+						break;
+					} else {
+						connections = [{ label: "Don't change", description: "keep" }].concat(connections)
+						let connection = await vscode.window.showQuickPick(connections, { placeHolder: "Change connection or keep existing." })
+						if (!Core.isFilled("connection", "module", connection)) { return }
+						if (connection.description !== "keep") {
+							connection = connection.label === "--- Without connection ---" ? "" : connection.description
+							try {
+								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
+								appsProvider.refresh()
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
+						}
+						break;
 					}
-					break
 				case 10:
 					let webhooks = await QuickPick.webhooks(_environment, _authorization, context.parent.parent, false)
 					webhooks = [{ label: "Don't change", description: "keep" }].concat(webhooks)
@@ -224,6 +297,7 @@ class ModuleCommands {
 
 			const module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
 			module.connection = module.connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
+			module.alt_connection = module.alt_connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.alt_connection}`, _authorization) : null;
 			module.webhook = module.webhook ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
 
 			module.type = {

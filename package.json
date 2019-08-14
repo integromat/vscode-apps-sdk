@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.0.17",
+	"version": "1.0.19",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
@@ -104,7 +104,7 @@
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
-				"fileMatch": "api-oauth.json",
+				"fileMatch": "api-oauth.imljson",
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
 			{
@@ -707,6 +707,7 @@
 		"@integromat/udt": "^1.2.0",
 		"async-file": "^2.0.2",
 		"compressing": "^1.4.0",
+		"eslint-config-integromat": "^1.5.0",
 		"image-downloader": "^3.4.2",
 		"jimp": "^0.2.28",
 		"jsonc-parser": "^2.0.3",

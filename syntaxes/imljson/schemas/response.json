@@ -283,6 +283,13 @@
 					"$ref": "sources.json#/definitions/body"
 				}
 			}
+		},
+		"expires": {
+			"$id": "#expires",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 512,
+			"description": "When the current time is greater than the key's expiration, the refreshment process will be called, if available."
 		}
 	}
 }

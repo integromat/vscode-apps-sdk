@@ -1,5 +1,41 @@
 # Change Log
 
+## 1.0.18
+
+### Added
+
+- Filter snippet
+- Alternative Connection Support
+- More IML keywords highlight
+- RPCs and Modules count in app detail
+
+### Fixed
+
+- Connection rename bracket
+- Body not required with delete method
+
+### Modified
+
+- OAuth validation schema
+- Editable -> Mappable
+
+## 1.0.17
+
+### Added
+
+- Metadata and Convert to validation schemas
+- labels for nested keys in UDT Generator
+- Email snippet
+- Grouped options to validation schemas
+- Commit message support
+- Parameter type "any"
+- Multiple versions support
+- Favorite apps unique select
+
+### Modified
+
+- UDF generator persistent
+
 ## 1.0.16
 
 ### Added

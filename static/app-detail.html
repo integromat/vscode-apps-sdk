@@ -169,6 +169,8 @@
 			<p><span class="left">Created:</span> <span id="created"></span></p>
 			<p><span class="left">Manifest version:</span> <span id="manifest_version"></span></p>
 			<p><span class="left">Private:</span> <span id="private"></span></p>
+			<p><span class="left">Total modules:</span> <span id="modules"></span></p>
+			<p><span class="left">Total RPCs:</span> <span id="rpcsCount"></span></p>
 		</div>
 
 	</div>
@@ -178,12 +180,14 @@
 		window.addEventListener('message', display, false);
 
 		function display(message) {
-			for (const id of ['name', 'label', 'version', 'theme', 'public', 'approved', 'manifest_version', 'private']) {
+			for (const id of ['name', 'label', 'version', 'theme', 'public', 'approved', 'manifest_version', 'private', 'rpcsCount']) {
 				document.getElementById(id).innerHTML = message.data[id];
 			}
 
 			let created = new Date(Date.parse(message.data.created));
 			document.getElementById('created').innerHTML = created.toLocaleDateString();
+
+			document.getElementById('modules').innerHTML = `${message.data.modules.length} (${message.data.modules.filter(m => m).length} approved)`
 
 			document.getElementById('language_label').innerHTML = message.data.language.label;
 			document.getElementById('language_description').innerHTML = message.data.language.description;

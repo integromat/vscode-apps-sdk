@@ -107,7 +107,7 @@
       <key>moustache-keywords</key>
       <dict>
         <key>match</key>
-        <string>((item|body|connection|parameters|response|headers|temp)\.)([\w\.]+)</string>
+        <string>((item|body|connection|parameters|response|headers|temp|oauth|common|query|data)\.)([\w\.]+)</string>
         <key>captures</key>
         <dict>
           <key>1</key>
@@ -125,7 +125,7 @@
       <key>moustache-keywords-alone</key>
       <dict>
         <key>match</key>
-        <string>(item|body|connection|parameters|response|headers|temp|undefined)</string>
+        <string>(item|body|connection|parameters|response|headers|temp|undefined|oauth|common|query|data|emptyarray|emptystring)</string>
         <key>captures</key>
         <dict>
           <key>0</key>
