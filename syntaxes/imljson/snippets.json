@@ -45,7 +45,27 @@
 	"parameter-filedata": {
 		"prefix": "filedata",
 		"description": "Inserts a pair of parameters describing the mappable file data structure.",
-		"body": "{\r\n    \"name\": \"${1:filename}\",\r\n    \"type\": \"filename\",\r\n    \"label\": \"${2:label}\",\r\n    \"semantic\": \"file:name\"\r\n},\r\n{\r\n    \"name\": \"${3:data}\",\r\n    \"type\": \"buffer\",\r\n    \"label\": \"${4:label}\",\r\n    \"semantic\": \"file:data\"\r\n}"
+		"body": "{\r\n    \"name\": \"${1:filename}\",\r\n    \"type\": \"filename\",\r\n    \"label\": \"${2:label}\",\r\n    \"semantic\": \"file:name\",\r\n    \"help\": \"File name, including the extension, e.g.`invoice.xml`\"\r\n},\r\n{\r\n    \"name\": \"${3:data}\",\r\n    \"type\": \"buffer\",\r\n    \"label\": \"${4:label}\",\r\n    \"semantic\": \"file:data\"\r\n}"
+	},
+	"parameter-file": {
+		"prefix": "file",
+		"description": "Inserts a file type parameter.",
+		"body": "{\r\n    \"name\": \"${1:name}\",\r\n    \"type\": \"file\",\r\n    \"label\": \"${2:label}\",\r\n    \"options\":{}\r\n}"
+	},
+	"parameter-folder": {
+		"prefix": "folder",
+		"description": "Inserts a folder type parameter.",
+		"body": "{\r\n    \"name\": \"${1:name}\",\r\n    \"type\": \"folder\",\r\n    \"label\": \"${2:label}\",\r\n    \"options\":{}\r\n}"
+	},
+	"parameter-buffer": {
+		"prefix": "buffer",
+		"description": "Inserts a buffer type parameter.",
+		"body": "{\r\n    \"name\": \"${1:name}\",\r\n    \"type\": \"buffer\",\r\n    \"label\": \"${2:label}\"\r\n}"
+	},
+	"parameter-filename": {
+		"prefix": "filename",
+		"description": "Inserts a filename parameter.",
+		"body": "{\r\n    \"name\": \"${1:filename}\",\r\n    \"type\": \"filename\",\r\n    \"label\": \"${2:label}\",\r\n    \"help\": \"File name, including the extension, e.g.`invoice.xml`\"\r\n}"
 	},
 	"parameter-date": {
 		"prefix": "date",
@@ -61,6 +81,11 @@
 		"prefix": "uinteger",
 		"description": "Inserts an uinteger type parameter.",
 		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"uinteger\"\n}"
+	},
+	"parameter-limit": {
+		"prefix": "limit",
+		"description": "Inserts a default limit parameter.",
+		"body": "{\r\n\t\"name\": \"limit\",\r\n\t\"label\": \"${1:label}\",\r\n\t\"type\": \"uinteger\",\r\n\t\"default\": 2\r\n}"
 	},
 	"parameter-url": {
 		"prefix": "url",
