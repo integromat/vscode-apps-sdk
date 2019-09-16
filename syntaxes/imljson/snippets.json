@@ -42,9 +42,9 @@
 		"description": "Inserts a collection type parameter.",
 		"body": "{\n    \"name\": \"${1:name}\",\n    \"label\": \"${2:label}\",\n    \"type\": \"collection\",\n    \"spec\": [\n        \n    ]\n}"
 	},
-	"parameter-file": {
-		"prefix": "file",
-		"description": "Inserts a file type parameter.",
+	"parameter-filedata": {
+		"prefix": "filedata",
+		"description": "Inserts a pair of parameters describing the mappable file data structure.",
 		"body": "{\r\n    \"name\": \"${1:filename}\",\r\n    \"type\": \"filename\",\r\n    \"label\": \"${2:label}\",\r\n    \"semantic\": \"file:name\"\r\n},\r\n{\r\n    \"name\": \"${3:data}\",\r\n    \"type\": \"buffer\",\r\n    \"label\": \"${4:label}\",\r\n    \"semantic\": \"file:data\"\r\n}"
 	},
 	"parameter-date": {
