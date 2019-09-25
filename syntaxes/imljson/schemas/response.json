@@ -22,9 +22,28 @@
 		"valid": {
 			"description": "This directive lets you decide if the response returned by a service is valid or not.",
 			"$id": "#valid",
-			"type": [
-				"boolean",
-				"string"
+			"oneOf": [
+				{
+					"type": [
+						"boolean",
+						"string"
+					]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"condition": {
+							"type": "string"
+						},
+						"message": {
+							"type": "string"
+						},
+						"type": {
+							"type": "string"
+						}
+					},
+					"additionalProperties": false
+				}
 			],
 			"default": true
 		},
