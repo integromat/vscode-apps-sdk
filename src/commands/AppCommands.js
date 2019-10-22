@@ -16,6 +16,7 @@ const rp = require('request-promise');
 const asyncfile = require('async-file');
 const tempy = require('tempy');
 const compressing = require('compressing');
+const AdmZip = require('adm-zip');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -856,6 +857,31 @@ class AppCommands {
 				}
 			});
 			vscode.window.showInformationMessage(`Export of ${app.label} completed!`);
+		});
+
+		/**
+		 * Import app
+		 */
+		vscode.commands.registerCommand('apps-sdk.app.import', async () => {
+			const source = await vscode.window.showOpenDialog({
+				filters: { 'IMT App Archive': ['zip'] },
+				openLabel: 'Import',
+				canSelectFolders: false,
+				canSelectMany: false
+			});
+			if (!source || source.length === 0 || !source[0]) {
+				vscode.window.showWarningMessage('No Archive specified.');
+				return;
+			}
+			const zip = new AdmZip(source[0].fsPath);
+			const entries = zip.getEntries();
+
+			// Try to get app metadata from the raw zip path
+			const metadata = JSON.parse((await new Promise(resolve => {
+				entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
+					resolve(data);
+				}));
+			})).toString());
 		});
 	}
 }
