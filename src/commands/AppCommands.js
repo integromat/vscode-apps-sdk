@@ -863,25 +863,29 @@ class AppCommands {
 		 * Import app
 		 */
 		vscode.commands.registerCommand('apps-sdk.app.import', async () => {
-			const source = await vscode.window.showOpenDialog({
-				filters: { 'IMT App Archive': ['zip'] },
-				openLabel: 'Import',
-				canSelectFolders: false,
-				canSelectMany: false
-			});
-			if (!source || source.length === 0 || !source[0]) {
-				vscode.window.showWarningMessage('No Archive specified.');
-				return;
-			}
-			const zip = new AdmZip(source[0].fsPath);
-			const entries = zip.getEntries();
+			try {
+				const source = await vscode.window.showOpenDialog({
+					filters: { 'IMT App Archive': ['zip'] },
+					openLabel: 'Import',
+					canSelectFolders: false,
+					canSelectMany: false
+				});
+				if (!source || source.length === 0 || !source[0]) {
+					vscode.window.showWarningMessage('No Archive specified.');
+					return;
+				}
+				const zip = new AdmZip(source[0].fsPath);
+				const entries = zip.getEntries();
 
-			// Try to get app metadata from the raw zip path
-			const metadata = JSON.parse((await new Promise(resolve => {
-				entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
-					resolve(data);
-				}));
-			})).toString());
+				// Try to get app metadata from the raw zip path
+				const metadata = JSON.parse((await new Promise(resolve => {
+					entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
+						resolve(data);
+					}));
+				})).toString());
+			} catch (err) {
+				vscode.window.showErrorMessage(err);
+			}
 		});
 	}
 }
