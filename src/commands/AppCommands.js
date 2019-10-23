@@ -736,6 +736,9 @@ class AppCommands {
 							case 11:
 								metadata.type = 'responder';
 								break;
+							case 12:
+								metadata.type = 'universal';
+								break;
 						}
 						delete metadata.type_id;
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(metadata, null, 4));
@@ -747,6 +750,7 @@ class AppCommands {
 							// Action or search
 							case 4:
 							case 9:
+							case 12:
 								for (const key of [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`]) {
 									progress.report({
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
@@ -863,6 +867,43 @@ class AppCommands {
 		 * Import app
 		 */
 		vscode.commands.registerCommand('apps-sdk.app.import', async () => {
+
+			const deduplicate = (arr) => {
+				const out = [];
+				for (const e of arr) {
+					if (!(out.includes(e))) {
+						out.push(e);
+					}
+				}
+				return out;
+			};
+
+			const parseComponent = async (entries, metadata, key, codes) => {
+				return Promise.all(deduplicate(entries
+					.filter(entry => entry.entryName.match(`${metadata.name}/${key}/.*`))
+					.map(entry => entry.entryName.split('/')[2]))
+					.map(async (internalName) => {
+						const component = {};
+						component.metadata = JSON.parse((await new Promise(resolve => {
+							entries
+								.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
+								.getDataAsync((data => {
+									resolve(data);
+								}));
+						})).toString());
+						await Promise.all((Array.isArray(codes) ? codes : codes[component.metadata.type]).map(async (code) => {
+							component[code] = (await new Promise(resolve => {
+								entries
+									.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/${code}.imljson`)
+									.getDataAsync((data => {
+										resolve(data);
+									}));
+							})).toString();
+						}));
+						return component;
+					}));
+			};
+
 			try {
 				const source = await vscode.window.showOpenDialog({
 					filters: { 'IMT App Archive': ['zip'] },
@@ -883,6 +924,39 @@ class AppCommands {
 						resolve(data);
 					}));
 				})).toString());
+
+				console.log('Got metadata.');
+
+				const base = (await new Promise(resolve => {
+					entries.find(entry => entry.entryName === `${metadata.name}/base.imljson`).getDataAsync((data) => {
+						resolve(data);
+					});
+				})).toString();
+
+				console.log('Got base');
+
+				const readme = (await new Promise(resolve => {
+					entries.find(entry => entry.entryName === `${metadata.name}/readme.md`).getDataAsync((data) => {
+						resolve(data);
+					});
+				})).toString();
+
+				console.log('Got readme');
+
+				const connections = await parseComponent(entries, metadata, 'connection', [`api`, `scope`, `scopes`, `parameters`]);
+				const rpcs = await parseComponent(entries, metadata, 'rpc', [`api`, `parameters`]);
+				const webhooks = await parseComponent(entries, metadata, 'webhook', [`api`, `parameters`, `attach`, `detach`, `scope`]);
+				const modules = await parseComponent(entries, metadata, 'module', {
+					action: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
+					search: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
+					universal_module: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
+					trigger: [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`],
+					instant_trigger: [`api`, `parameters`, `interface`, `samples`],
+					responder: [`api`, `parameters`, `expect`],
+				});
+				const functions = await parseComponent(entries, metadata, 'function', ['code', 'test']);
+
+				console.log('A');
 			} catch (err) {
 				vscode.window.showErrorMessage(err);
 			}
