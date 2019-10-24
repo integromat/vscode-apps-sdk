@@ -1195,7 +1195,7 @@ class AppCommands {
 								store[s.slug] = JSON.parse(response)[s.key];
 							});
 						}
-						await new Promise(resolve => setTimeout(resolve, 100));
+						await new Promise(resolve => setTimeout(resolve, 600));
 					}
 				});
 				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
