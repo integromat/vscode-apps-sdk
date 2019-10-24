@@ -917,6 +917,35 @@ class AppCommands {
 				});
 			};
 
+			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined) => {
+				return {
+					endpoint: endpoint,
+					method: method,
+					type: contentType,
+					body: body,
+					_store: _store,
+					_replaceInBody: _replaceInBody,
+					_label: _label
+				};
+			};
+
+			const extract = (obj, keys) => {
+				const out = {};
+				keys.forEach(key => {
+					out[key] = obj[key];
+				});
+				return out;
+			};
+
+			const replaceSlugs = (store, uri) => {
+				Object.keys(store).forEach(key => {
+					if (uri.includes(key)) {
+						uri = uri.replace(key, store[key]);
+					}
+				});
+				return uri;
+			};
+
 			const parseApp = async (entries) => {
 				const validator = {
 					count: 0
@@ -947,6 +976,154 @@ class AppCommands {
 				}, 'imljson');
 				app.functions = await parseComponent(validator, entries, app.metadata, 'function', ['code', 'test'], 'js', false);
 				return app;
+
+				// validator.count should equal entries.length;
+			};
+
+			const buildRequestQueue = (app, remoteApp) => {
+				const requests = [];
+
+				requests.push(makeRequestProto(`Base`, `${remoteApp.version}/base`, 'PUT', 'application/jsonc', app.base));
+				requests.push(makeRequestProto(`Readme`, `${remoteApp.version}/readme`, 'PUT', 'text/markdown', app.readme));
+				requests.push(makeRequestProto(`Icon`, `${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
+
+				app.connections.forEach((connection) => {
+					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `connection`, 'POST', 'application/json',
+						JSON.stringify(extract(connection.metadata, ['label', 'type'])),
+						[
+							{
+								key: 'name',
+								slug: '#CONN_NAME#'
+							},
+							{
+								key: 'name',
+								slug: `connection-${connection.metadata.name}`
+							}
+						]));
+					[`api`, `parameters`].forEach(code => {
+						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
+							`connection/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+					});
+					[`scope`, `scopes`].forEach(code => {
+						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
+							`connection/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+					});
+				});
+
+				app.rpcs.forEach((rpc) => {
+					requests.push(makeRequestProto(`RPC ${rpc.metadata.label}`,
+						`${remoteApp.version}/rpc`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
+						[
+							{
+								key: 'connection',
+								slug: `connection-${rpc.metadata.connection}`
+							}
+						]));
+					[`api`, `parameters`].forEach(code => {
+						requests.push(makeRequestProto(`RPC ${rpc.metadata.label} - ${code}`,
+							`${remoteApp.version}/rpc/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
+					});
+				});
+
+				app.webhooks.forEach((webhook) => {
+					requests.push(makeRequestProto(`Webhook ${webhook.metadata.label}`,
+						`webhook`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
+							['label', 'type', 'connection'])),
+						[
+							{
+								key: 'name',
+								slug: '#WEBHOOK_NAME#'
+							},
+							{
+								key: 'name',
+								slug: `webhook-${webhook.metadata.name}`
+							}
+						],
+						[
+							{
+								key: 'connection',
+								slug: `connection-${webhook.metadata.connection}`
+							}
+						]));
+					[`api`, `parameters`, `attach`, `detach`, `scope`].forEach(code => {
+						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
+							`webhook/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
+					});
+				});
+
+				app.modules.forEach((appModule) => {
+					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook']);
+					switch (appModule.metadata.type) {
+						case 'trigger':
+							body.type_id = 1;
+							break;
+						case 'action':
+							body.type_id = 4;
+							break;
+						case 'search':
+							body.type_id = 9;
+							break;
+						case 'instant_trigger':
+							body.type_id = 10;
+							break;
+						case 'responder':
+							body.type_id = 11;
+							break;
+						case 'universal':
+							body.type_id = 12;
+							break;
+					}
+					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
+						`${remoteApp.version}/module`, 'POST', 'application/json', JSON.stringify(body), undefined,
+						[
+							{
+								key: 'connection',
+								slug: `connection-${appModule.metadata.connection}`
+							},
+							{
+								key: 'webhook',
+								slug: `webhook-${appModule.metadata.webhook}`
+							}
+						]));
+					let codes;
+					switch (body.type_id) {
+						case 4:
+						case 9:
+						case 12:
+							codes = [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`];
+							break;
+						case 1:
+							codes = [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`];
+							break;
+						case 10:
+							codes = [`api`, `parameters`, `interface`, `samples`];
+							break;
+						case 11:
+							codes = [`api`, `parameters`, `expect`];
+							break;
+					}
+					codes.forEach(code => {
+						requests.push(makeRequestProto(`Module ${appModule.metadata.label} - ${code}`,
+							`${remoteApp.version}/module/${appModule.metadata.name}/${code}`,
+							'PUT', 'application/jsonc', appModule[code]));
+					});
+				});
+
+				app.functions.forEach(appFunction => {
+					const functionName = /(?:function )(.+)(?:\()/.exec(appFunction.code)[1];
+					requests.push(makeRequestProto(`Function ${functionName}`,
+						`${remoteApp.version}/function`, 'POST', 'application/json', JSON.stringify({
+							name: functionName
+						})));
+					[`code`, `test`].forEach(code => {
+						requests.push(makeRequestProto(`Function ${functionName} - ${code}`,
+							`${remoteApp.version}/function/${functionName}/${code}`,
+							'PUT', 'application/javascript', appFunction[code]));
+					});
+				});
+				return requests;
+
+				// requests.length should equal entries.lenght - 1 (because app create preflight is not in queue)
 			};
 
 			try {
@@ -963,12 +1140,67 @@ class AppCommands {
 				const zip = new AdmZip(source[0].fsPath);
 				const entries = zip.getEntries();
 				const app = await parseApp(entries);
+				const remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment}/app`);
+				const requests = buildRequestQueue(app, remoteApp);
 
+				let shouldStop = false;
+				await vscode.window.withProgress({
+					location: vscode.ProgressLocation.Notification,
+					title: `Importing ${app.metadata.label}`,
+					cancellable: true
+				}, async (progress, token) => {
 
+					token.onCancellationRequested(() => {
+						vscode.window.showWarningMessage(`Import terminated.`);
+						shouldStop = true;
+					});
+					progress.report({
+						increment: 0
+					});
 
-				console.log(app);
+					const store = {};
+					for (const r of requests) {
+						if (shouldStop) {
+							return;
+						}
+						const uri = replaceSlugs(store, `${_environment}/app/${remoteApp.name}/${r.endpoint}`);
+						progress.report({
+							increment: (100 / requests.length),
+							message: r._label
+						});
+
+						let bodyProto = r.body;
+						if (r._replaceInBody !== undefined) {
+							bodyProto = JSON.parse(bodyProto);
+							r._replaceInBody.forEach(replacement => {
+								if (bodyProto[replacement.key]) {
+									bodyProto[replacement.key] = store[replacement.slug];
+								}
+							});
+							bodyProto = JSON.stringify(bodyProto);
+						}
+						const options = {
+							uri: uri,
+							headers: {
+								'Authorization': _authorization,
+								'x-imt-apps-sdk-version': Meta.version,
+								'content-type': r.type
+							},
+							method: r.method,
+							body: bodyProto
+						};
+						const response = await rp(options);
+						if (r._store !== undefined) {
+							r._store.forEach(s => {
+								store[s.slug] = JSON.parse(response)[s.key];
+							});
+						}
+						await new Promise(resolve => setTimeout(resolve, 100));
+					}
+				});
+				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
 			} catch (err) {
-				vscode.window.showErrorMessage(err);
+				vscode.window.showErrorMessage(err.message || err);
 			}
 		});
 	}

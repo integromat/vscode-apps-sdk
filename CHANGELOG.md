@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.1.0
+
+### Added
+
+- Apps Import
+
+### Modified
+
+- Minor tweaks
+- Snippet fixes
+
 ## 1.0.18
 
 ### Added

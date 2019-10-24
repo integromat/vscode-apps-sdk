@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.0.20",
+	"version": "1.1.0",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
@@ -362,7 +362,11 @@
 			{
 				"command": "apps-sdk.app.import",
 				"title": "Import App",
-				"category": "Integromat Apps"
+				"category": "Integromat Apps",
+				"icon": {
+					"dark": "./resources/icons/dark/import.png",
+					"light": "./resources/icons/light/import.png"
+				}
 			}
 		],
 		"viewsContainers": {
@@ -412,6 +416,11 @@
 				},
 				{
 					"command": "apps-sdk.app.new",
+					"when": "view == apps && config.apps-sdk.login == true",
+					"group": "navigation"
+				},
+				{
+					"command": "apps-sdk.app.import",
 					"when": "view == apps && config.apps-sdk.login == true",
 					"group": "navigation"
 				}
