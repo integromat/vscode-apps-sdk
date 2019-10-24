@@ -878,30 +878,75 @@ class AppCommands {
 				return out;
 			};
 
-			const parseComponent = async (entries, metadata, key, codes) => {
+			const parseComponent = async (validator, entries, metadata, key, codes, extension, requireMetadata = true) => {
 				return Promise.all(deduplicate(entries
 					.filter(entry => entry.entryName.match(`${metadata.name}/${key}/.*`))
 					.map(entry => entry.entryName.split('/')[2]))
 					.map(async (internalName) => {
 						const component = {};
-						component.metadata = JSON.parse((await new Promise(resolve => {
-							entries
-								.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
-								.getDataAsync((data => {
-									resolve(data);
-								}));
-						})).toString());
+						if (requireMetadata === true) {
+							component.metadata = JSON.parse((await new Promise(resolve => {
+								entries
+									.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
+									.getDataAsync((data => {
+										resolve(data);
+									}));
+							})).toString());
+							validator.count++;
+						}
 						await Promise.all((Array.isArray(codes) ? codes : codes[component.metadata.type]).map(async (code) => {
 							component[code] = (await new Promise(resolve => {
 								entries
-									.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/${code}.imljson`)
+									.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/${code}.${extension}`)
 									.getDataAsync((data => {
 										resolve(data);
 									}));
 							})).toString();
+							validator.count++;
 						}));
 						return component;
 					}));
+			};
+
+			const getData = async (validator, entries, searchPath) => {
+				return new Promise(resolve => {
+					entries.find(entry => entry.entryName === searchPath).getDataAsync((data) => {
+						validator.count++;
+						resolve(data);
+					});
+				});
+			};
+
+			const parseApp = async (entries) => {
+				const validator = {
+					count: 0
+				};
+				const app = {};
+
+				// Try to get app metadata from the raw zip path
+				app.metadata = JSON.parse((await new Promise(resolve => {
+					entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
+						validator.count++;
+						resolve(data);
+					}));
+				})).toString());
+
+				app.base = (await getData(validator, entries, `${app.metadata.name}/base.imljson`)).toString();
+				app.readme = (await getData(validator, entries, `${app.metadata.name}/readme.md`)).toString();
+				app.icon = await getData(validator, entries, `${app.metadata.name}/assets/icon.png`);
+				app.connections = await parseComponent(validator, entries, app.metadata, 'connection', [`api`, `scope`, `scopes`, `parameters`], 'imljson');
+				app.rpcs = await parseComponent(validator, entries, app.metadata, 'rpc', [`api`, `parameters`], 'imljson');
+				app.webhooks = await parseComponent(validator, entries, app.metadata, 'webhook', [`api`, `parameters`, `attach`, `detach`, `scope`], 'imljson');
+				app.modules = await parseComponent(validator, entries, app.metadata, 'module', {
+					action: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
+					search: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
+					universal: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
+					trigger: [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`],
+					instant_trigger: [`api`, `parameters`, `interface`, `samples`],
+					responder: [`api`, `parameters`, `expect`],
+				}, 'imljson');
+				app.functions = await parseComponent(validator, entries, app.metadata, 'function', ['code', 'test'], 'js', false);
+				return app;
 			};
 
 			try {
@@ -917,46 +962,11 @@ class AppCommands {
 				}
 				const zip = new AdmZip(source[0].fsPath);
 				const entries = zip.getEntries();
+				const app = await parseApp(entries);
 
-				// Try to get app metadata from the raw zip path
-				const metadata = JSON.parse((await new Promise(resolve => {
-					entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
-						resolve(data);
-					}));
-				})).toString());
 
-				console.log('Got metadata.');
 
-				const base = (await new Promise(resolve => {
-					entries.find(entry => entry.entryName === `${metadata.name}/base.imljson`).getDataAsync((data) => {
-						resolve(data);
-					});
-				})).toString();
-
-				console.log('Got base');
-
-				const readme = (await new Promise(resolve => {
-					entries.find(entry => entry.entryName === `${metadata.name}/readme.md`).getDataAsync((data) => {
-						resolve(data);
-					});
-				})).toString();
-
-				console.log('Got readme');
-
-				const connections = await parseComponent(entries, metadata, 'connection', [`api`, `scope`, `scopes`, `parameters`]);
-				const rpcs = await parseComponent(entries, metadata, 'rpc', [`api`, `parameters`]);
-				const webhooks = await parseComponent(entries, metadata, 'webhook', [`api`, `parameters`, `attach`, `detach`, `scope`]);
-				const modules = await parseComponent(entries, metadata, 'module', {
-					action: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
-					search: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
-					universal_module: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
-					trigger: [`api`, `epoch`, `parameters`, `interface`, `samples`, `scope`],
-					instant_trigger: [`api`, `parameters`, `interface`, `samples`],
-					responder: [`api`, `parameters`, `expect`],
-				});
-				const functions = await parseComponent(entries, metadata, 'function', ['code', 'test']);
-
-				console.log('A');
+				console.log(app);
 			} catch (err) {
 				vscode.window.showErrorMessage(err);
 			}
