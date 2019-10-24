@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.0.20",
+	"version": "1.1.0",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
@@ -49,6 +49,7 @@
 		"onCommand:apps-sdk.help",
 		"onCommand:apps-sdk.app.export",
 		"onCommand:apps-sdk.udt",
+		"onCommand:apps-sdk.app.import",
 		"onView:apps",
 		"onView:opensource"
 	],
@@ -357,6 +358,15 @@
 				"command": "apps-sdk.app.export",
 				"title": "Export App",
 				"category": "Integromat Apps"
+			},
+			{
+				"command": "apps-sdk.app.import",
+				"title": "Import App",
+				"category": "Integromat Apps",
+				"icon": {
+					"dark": "./resources/icons/dark/import.png",
+					"light": "./resources/icons/light/import.png"
+				}
 			}
 		],
 		"viewsContainers": {
@@ -406,6 +416,11 @@
 				},
 				{
 					"command": "apps-sdk.app.new",
+					"when": "view == apps && config.apps-sdk.login == true",
+					"group": "navigation"
+				},
+				{
+					"command": "apps-sdk.app.import",
 					"when": "view == apps && config.apps-sdk.login == true",
 					"group": "navigation"
 				}
@@ -705,6 +720,7 @@
 	"dependencies": {
 		"@integromat/iml": "^1.19.0",
 		"@integromat/udt": "^1.2.0",
+		"adm-zip": "^0.4.13",
 		"async-file": "^2.0.2",
 		"compressing": "^1.4.0",
 		"eslint-config-integromat": "^1.5.0",
