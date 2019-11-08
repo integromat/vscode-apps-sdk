@@ -122,6 +122,16 @@ class AppCommands {
 					return;
 				}
 
+				// Description propmpt
+				const description = await vscode.window.showInputBox({
+					prompt:
+						'Enter app description'
+				});
+
+				if (!Core.isFilled('description', 'app', description)) {
+					return;
+				}
+
 				// Color theme prompt and check
 				const theme = await vscode.window.showInputBox({
 					prompt: 'Pick a color theme',
@@ -161,6 +171,7 @@ class AppCommands {
 					await Core.addEntity(_authorization, {
 						'name': id,
 						'label': label,
+						'description': description,
 						'theme': theme,
 						'language': language.description,
 						'private': true,
@@ -192,6 +203,15 @@ class AppCommands {
 				value: context.bareLabel
 			});
 			if (!Core.isFilled('label', 'app', label)) {
+				return;
+			}
+
+			// Description prompt with prefilled value
+			const description = await vscode.window.showInputBox({
+				prompt: 'Customize app description',
+				value: app.description
+			});
+			if (!Core.isFilled('label', 'app', description)) {
 				return;
 			}
 
@@ -244,6 +264,7 @@ class AppCommands {
 				await Core.editEntity(_authorization, {
 					label: label,
 					theme: theme,
+					description: description,
 					language: language.description,
 					countries: countries
 				}, uri);

@@ -2,11 +2,12 @@ const path = require('path')
 const EnhancedTreeItem = require('./EnhancedTreeItem')
 
 class App extends EnhancedTreeItem {
-	constructor(name, label, version, isPublic, isApproved, iconDir, theme, changes, iconVersion) {
+	constructor(name, label, description, version, isPublic, isApproved, iconDir, theme, changes, iconVersion) {
 		super(label + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "") + (version > 1 ? ` (version ${version})` : ""))
 		this.bareLabel = label
 		this.id = `${name}@${version}`
 		this.name = name
+		this.description = description || ''
 		this.version = version
 		this.public = isPublic
 		this.approved = isApproved
@@ -40,6 +41,7 @@ class App extends EnhancedTreeItem {
 		let tooltip = `${this.bareLabel}
 -----------------------
 Name: ${this.name}
+Description: ${this.description}
 Theme: ${this.theme}
 Version: ${this.version}
 Public: ${this.public}

@@ -75,7 +75,7 @@ class AppsProvider {
 						await Core.generatePublicIcon(`${dest.slice(0, -4)}.dark.png`);
 					}
 				}
-				return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
+				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
 			})
 			apps = await Promise.all(apps)
 			apps.sort(Core.compareApps)
