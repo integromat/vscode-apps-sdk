@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.1.2
+
+### Fixed
+
+- Docs Bug
+
+## 1.1.1
+
+### Added
+
+- Apps Descriptions
+
 ## 1.1.0
 
 ### Added

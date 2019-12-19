@@ -152,7 +152,7 @@ class AppsProvider {
 			}
 
 			// Docs
-			else if (element.id.includes("docs")) {
+			else if (element.contextValue === "docs") {
 				return [
 					new Code(`readme`, "Readme", element, "md", "app"),
 					//new Code(`images`, "Images", element, "img")
