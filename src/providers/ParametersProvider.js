@@ -17,7 +17,7 @@ class ParametersProvider {
 	async loadParameters(crumbs, version) {
 
 		// Preparing api route
-		let urn = `/app/${crumbs[2]}`
+		let urn = `/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${crumbs[2]}`
 		if (Core.isVersionable(crumbs[3])) {
 			urn += `/${version}`
 		}
@@ -26,8 +26,8 @@ class ParametersProvider {
         /*
          * PARAMETERS
          */
-		if (["connection", "webhook", "rpc", "module"].includes(crumbs[3])) {
-			let url = `${this._environment}${urn}/parameters`
+		if (["connection", "webhook", "rpc", "module", "connections", "webhooks", "rpcs", "modules"].includes(crumbs[3])) {
+			let url = `${this._environment.baseUrl}${urn}/parameters`
 			let parameters = await rp({
 				url: url,
 				headers: {
@@ -43,8 +43,8 @@ class ParametersProvider {
         /*
          * EXPECT
          */
-		if (crumbs[3] === "module") {
-			let url = `${this._environment}${urn}/expect`
+		if (crumbs[3] === "module" || crumbs[3] === "modules") {
+			let url = `${this._environment.baseUrl}${urn}/expect`
 			let expect = await rp({
 				url: url,
 				headers: {

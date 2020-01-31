@@ -51,7 +51,7 @@ module.exports = {
 	},
 
 	isVersionable: function (item) {
-		return !(["connection", "webhook"].includes(item))
+		return !(["connection", "webhook", "connections", "webhooks"].includes(item))
 	},
 
 	contextGuard: function (context) {
@@ -209,6 +209,38 @@ module.exports = {
 			case 11: return 'Responder';
 			case 12: return 'Universal';
 			default: return 'Unknown';
+		}
+	},
+
+	pathDeterminer: (version, originalPath) => {
+		switch (version) {
+			case 2:
+				switch (originalPath) {
+					case 'app':
+						return 'apps';
+					case 'connection':
+						return 'connections';
+					case 'webhook':
+						return 'webhooks';
+					case 'module':
+						return 'modules';
+					case 'rpc':
+						return 'rpcs';
+					case 'function':
+						return 'functions';
+					case '__sdk':
+						return 'sdk/'
+					default:
+						return ''
+				}
+			case 1:
+			default:
+				switch (originalPath) {
+					case '__sdk':
+						return ''
+					default:
+						return originalPath;
+				}
 		}
 	}
 }

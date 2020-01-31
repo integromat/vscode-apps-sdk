@@ -11,13 +11,15 @@ const path = require('path')
 const mkdirp = require('mkdirp')
 const download = require('image-downloader')
 const asyncfile = require('async-file')
+const camelCase = require('lodash.camelcase');
 
 class AppsProvider {
-	constructor(_authorization, _baseUrl, _DIR) {
+	constructor(_authorization, _environment, _DIR) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
 		this._authorization = _authorization
-		this._baseUrl = _baseUrl
+		this._environment = _environment;
+		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 	}
 
@@ -38,7 +40,20 @@ class AppsProvider {
          * LEVEL 0 - APPS
          */
 		if (element === undefined) {
-			let response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization)
+			let response;
+			switch (this._environment.version) {
+				case 2:
+					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
+						'cols[]': [
+							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
+						]
+					})).apps
+					break;
+				case 1:
+				default:
+					response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization)
+					break;
+			}
 			if (response === undefined) { return }
 			let iconDir = path.join(this._DIR, "icons")
 			mkdirp(iconDir)
@@ -56,7 +71,15 @@ class AppsProvider {
 								"Authorization": this._authorization,
 								'x-imt-apps-sdk-version': Meta.version
 							},
-							url: `${this._baseUrl}/app/${app.name}/${app.version}/icon/512`,
+							url: (() => {
+								switch (this._environment.version) {
+									case 2:
+										return `${this._baseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`
+									case 1:
+									default:
+										return `${this._baseUrl}/app/${app.name}/${app.version}/icon/512`
+								}
+							})(),
 							dest: dest
 						})
 						await Core.invertPngAsync(dest);
@@ -128,7 +151,7 @@ class AppsProvider {
 					return change
 				}
 			})
-			output.push(new Code('groups', 'Groups', element, "imljson", "app", false, groupChange ? groupChange.id : null));
+			output.push(new Code('groups', 'Groups', element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), false, groupChange ? groupChange.id : null));
 			return output;
 		}
         /*
@@ -147,14 +170,14 @@ class AppsProvider {
 							return change
 						}
 					})
-					return new Code(code[0], code[1], element, "imljson", "app", false, change ? change.id : null, code[2])
+					return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), false, change ? change.id : null, code[2])
 				})
 			}
 
 			// Docs
 			else if (element.contextValue === "docs") {
 				return [
-					new Code(`readme`, "Readme", element, "md", "app"),
+					new Code(`readme`, "Readme", element, "md", Core.pathDeterminer(this._environment.version, 'app')),
 					//new Code(`images`, "Images", element, "img")
 				]
 			}
@@ -165,16 +188,17 @@ class AppsProvider {
 					if (element.id.includes(needle)) {
 						let name = needle.slice(0, -1);
 						let uri = ["connection", "webhook"].includes(name) ?
-							`${this._baseUrl}/app/${element.parent.name}/${name}` :
-							`${this._baseUrl}/app/${element.parent.name}/${element.parent.version}/${name}`
-						let connections = await Core.rpGet(uri, this._authorization)
-						return connections.map(item => {
+							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
+							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, name)}`
+						let response = await Core.rpGet(uri, this._authorization)
+						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
+						return items.map(item => {
 							let changes = element.changes.filter(change => {
 								if (change.item === item.name) {
 									return change
 								}
 							})
-							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id, item.public, item.approved, changes, item.description, item.crud)
+							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id || item.typeId, item.public, item.approved, changes, item.description, item.crud)
 						})
 					}
 				}
@@ -201,7 +225,7 @@ class AppsProvider {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "imljson", "connection", false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), false, change ? change.id : null, code[2])
 					})
 				case "webhook":
 					return [
@@ -219,7 +243,7 @@ class AppsProvider {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "imljson", "webhook", false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), false, change ? change.id : null, code[2])
 					})
 				case "module":
 					switch (element.type) {
@@ -243,7 +267,7 @@ class AppsProvider {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
 							})
 						// Trigger
 						case 1:
@@ -263,7 +287,7 @@ class AppsProvider {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
 							})
 						// Instant trigger
 						case 10:
@@ -281,7 +305,7 @@ class AppsProvider {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
 							})
 						// Responder
 						case 11:
@@ -298,7 +322,7 @@ class AppsProvider {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", "module", false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
 							})
 					}
 				case "rpc":
@@ -314,7 +338,7 @@ class AppsProvider {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "imljson", "rpc", false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), false, change ? change.id : null, code[2])
 					})
 				case "function":
 					return [
@@ -329,7 +353,7 @@ class AppsProvider {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "js", "function", false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "js", Core.pathDeterminer(this._environment.version, 'function'), false, change ? change.id : null, code[2])
 					})
 			}
 		}

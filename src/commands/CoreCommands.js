@@ -66,7 +66,7 @@ class CoreCommands {
 		let url = (path.join(path.dirname(right), basename)).replace(/\\/g, "/")
 
 		// And compose the URI
-		let uri = this._environment + url
+		let uri = this._environment.baseUrl + url
 
 		// Prepare request options
 		var options = {
@@ -104,7 +104,7 @@ class CoreCommands {
 			let response = JSON.parse(await rp(options))
 
 			// If there's no change to be displayed, end
-			if (!response.change) { return }
+			if (!response.change || Object.keys(response.change).length === 0) { return }
 
 			// Else refresh the tree, because there's a new change to be displayed
 			this.appsProvider.refresh()
@@ -146,6 +146,11 @@ class CoreCommands {
 
 			// Prepare data for loaders
 			let crumbs = right.split("/")
+
+			// Shift SDK
+			if (crumbs[1] === 'sdk') {
+				crumbs.shift();
+			}
 
 			// If versionable, stash the version
 			let version
@@ -236,10 +241,10 @@ class CoreCommands {
              * Following condition specifies where are RPCs allowed
              */
 			if (
-				(apiPath === "connection" && name === "parameters") ||
-				(apiPath === "webhook" && name === "parameters") ||
-				(apiPath === "module" && (name === "parameters" || name === "expect" || name === "interface" || name === "samples")) ||
-				(apiPath === "rpc" && name === "api")
+				((apiPath === "connections" || apiPath === "connection") && name === "parameters") ||
+				((apiPath === "webhook" || apiPath === "webhooks") && name === "parameters") ||
+				((apiPath === "module" || apiPath === "modules") && (name === "parameters" || name === "expect" || name === "interface" || name === "samples")) ||
+				((apiPath === "rpc" || apiPath === "rpcs") && name === "api")
 			) {
 				// Remove existing RpcProvider
 				if (this.currentRpcProvider !== null && this.currentRpcProvider !== undefined) {
@@ -247,11 +252,12 @@ class CoreCommands {
 				}
 
 				// RPC list url
-				let url = `${this._environment}/app/${app}/${version}/rpc`
+				let url = `${this._environment.baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${app}/${version}/${Core.pathDeterminer(this._environment.version, 'rpc')}`
 
 				// Get list of RPCs
 				let response = await Core.rpGet(url, this._authorization)
-				let rpcs = response.map(rpc => {
+				let items = this._environment.version === 1 ? response : response.appRpcs;
+				let rpcs = items.map(rpc => {
 					return `rpc://${rpc.name}`
 				})
 
@@ -283,11 +289,12 @@ class CoreCommands {
 				}
 
 				// IML functions list url
-				let url = `${this._environment}/app/${app}/${version}/function`
+				let url = `${this._environment.baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${app}/${version}/${Core.pathDeterminer(this._environment.version, 'function')}`
 
 				// Get list of IML functions
 				let response = await Core.rpGet(url, this._authorization)
-				let imls = response.map(iml => {
+				let items = this._environment.version === 1 ? response : response.appFunctions;
+				let imls = items.map(iml => {
 					return `${iml.name}()`
 				})
 
@@ -406,7 +413,9 @@ class CoreCommands {
 					this.currentGroupsProvider.dispose()
 				}
 
-				let modules = await Core.rpGet(`${this._environment}/app/${app}/${version}/module`, this._authorization);
+				let url = `${this._environment.baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${app}/${version}/${Core.pathDeterminer(this._environment.version, 'module')}`
+				let response = await Core.rpGet(url, this._authorization)
+				let modules = this._environment.version === 1 ? response : response.appModules;
 				let groupsProvider = new GroupsProvider(modules);
 				groupsProvider.buildCompletionItems();
 				this.currentGroupsProvider = vscode.languages.registerCompletionItemProvider({
@@ -428,9 +437,9 @@ class CoreCommands {
 			 */
 
 			if (
-				(apiPath === "module" && name === "api") ||
-				(apiPath === "webhook" && (name === "api" || name === "attach" || name === "detach")) ||
-				(apiPath === "rpc" && name === "api")
+				((apiPath === "module" || apiPath === "modules") && name === "api") ||
+				((apiPath === "webhook" || apiPath === "webhooks") && (name === "api" || name === "attach" || name === "detach")) ||
+				((apiPath === "rpc" || apiPath === "rpcs") && name === "api")
 			) {
 				if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {
 					this.currentDataProvider.dispose()
@@ -439,19 +448,41 @@ class CoreCommands {
 				let connection;
 				switch (apiPath) {
 					case 'rpc':
-						connection = (await Core.rpGet(`${this._environment}/app/${app}/${version}/rpc/${crumbs[4]}`, this._authorization)).connection;
+					case 'rpcs':
+						if (this._environment.version === 1) {
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/${version}/rpc/${crumbs[4]}`, this._authorization)).connection;
+						} else {
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/${version}/rpcs/${crumbs[4]}`, this._authorization)).appRpc.connection;
+						}
 						break;
 					case 'module':
-						connection = (await Core.rpGet(`${this._environment}/app/${app}/${version}/module/${crumbs[4]}`, this._authorization)).connection;
+					case 'modules':
+						if (this._environment.version === 1) {
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/${version}/module/${crumbs[4]}`, this._authorization)).connection;
+						} else {
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/${version}/modules/${crumbs[4]}`, this._authorization)).appModule.connection;
+						}
 						break;
 					case 'webhook':
-						connection = (await Core.rpGet(`${this._environment}/app/${app}/webhook/${crumbs[4]}`, this._authorization)).connection;
+					case 'webhooks':
+						if (this._environment.version === 1) {
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/webhook/${crumbs[4]}`, this._authorization)).connection;
+						} else {
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/webhook/${crumbs[4]}`, this._authorization)).appWebhook.connection;
+						}
 						break;
 				}
 
 				if (connection) {
-					const connectionType = (await Core.rpGet(`${this._environment}/app/${app}/connection/${connection}`, this._authorization)).type
-					const connectionSource = (await Core.rpGet(`${this._environment}/app/${app}/connection/${connection}/api`, this._authorization))
+					let connectionType;
+					let connectionSource;
+					if (this._environment.version === 1) {
+						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}`, this._authorization)).appConnection.type
+						connectionSource = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}/api`, this._authorization))
+					} else {
+						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/connections/${connection}`, this._authorization)).appConnection.type
+						connectionSource = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/connections/${connection}/api`, this._authorization))
+					}
 					let dataProvider = new DataProvider(connectionSource, connectionType);
 					dataProvider.getAvailableVariables();
 					this.currentDataProvider = vscode.languages.registerCompletionItemProvider({
@@ -485,7 +516,7 @@ class CoreCommands {
 		vscode.commands.registerCommand('apps-sdk.load-open-source', async function (item) {
 
 			// Compose directory structure
-			let urn = `/app/${Core.getApp(item).name}`
+			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
 
 			// Add version to URN for versionable items
 			if (Core.isVersionable(item.apiPath)) {
@@ -495,15 +526,21 @@ class CoreCommands {
 			// Complete the URN by the type of item
 			switch (item.apiPath) {
 				case "function":
+				case "functions":
 					urn += `/${item.apiPath}/${item.parent.name}/code`
 					break
 				case "rpc":
+				case "rpcs":
 				case "module":
+				case "modules":
 				case "connection":
+				case "connections":
 				case "webhook":
+				case "webhooks":
 					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
 					break
 				case "app":
+				case "apps":
 					// Prepared for more app-level codes
 					switch (item.name) {
 						case "readme":
@@ -535,7 +572,7 @@ class CoreCommands {
 				}
 
 				// Compose a download URL
-				let url = _environment + urn
+				let url = _environment.baseUrl + urn
 
                 /**
                  * GET THE SOURCE CODE
@@ -576,7 +613,7 @@ class CoreCommands {
 		vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {
 
 			// Compose directory structure
-			let urn = `/app/${Core.getApp(item).name}`
+			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
 
 			// Add version to URN for versionable items
 			if (Core.isVersionable(item.apiPath)) {
@@ -586,15 +623,21 @@ class CoreCommands {
 			// Complete the URN by the type of item
 			switch (item.apiPath) {
 				case "function":
+				case "functions":
 					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
 					break
 				case "rpc":
+				case "rpcs":
 				case "module":
+				case "modules":
 				case "connection":
+				case "connections":
 				case "webhook":
+				case "webhooks":
 					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
 					break
 				case "app":
+				case "apps":
 					// Prepared for more app-level codes
 					switch (item.name) {
 						case "content":
@@ -631,7 +674,7 @@ class CoreCommands {
 				}
 
 				// Compose a download URL
-				let url = _environment + urn
+				let url = _environment.baseUrl + urn
 
                 /**
                  * GET THE SOURCE CODE
