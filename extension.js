@@ -27,6 +27,7 @@ const jsoncParser = require('jsonc-parser')
 var _configuration
 var _authorization
 var _environment
+var _apiVersion
 var _admin
 var _DIR
 var currentRpcProvider
@@ -98,8 +99,19 @@ async function activate(context) {
 
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
-			_authorization = "Token " + _configuration.environments[_configuration.environment].apikey
-			_environment = `https://${_configuration.environment}/v1`
+			const configuration = _configuration.environments[_configuration.environment];
+			_authorization = "Token " + configuration.apikey
+			// If API version not set or it's 1
+			if (!(configuration.version) || configuration.version === 1) {
+				_environment = `https://${_configuration.environment}/v1`
+				_apiVersion = 1;
+			} else {
+				// API V2 and development purposes
+				// configuration.unsafe removes https
+				// configuration.noVersionPath removes vX in path
+				_environment = `http${configuration.unsafe === true ? '' : 's'}://${_configuration.environment}${configuration.noVersionPath === true ? '' : `/v${configuration.version}`}`;
+				_apiVersion = configuration.version;
+			}
 			_admin = _configuration.environments[_configuration.environment].admin === true ? true : false
 		}
 	}
