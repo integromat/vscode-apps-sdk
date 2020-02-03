@@ -24,7 +24,7 @@ class ConnectionCommands {
 			if (!Core.isFilled("type", "connection", type)) { return }
 
 			// Prepare URI
-			let uri = `${_environment}/app/${app.name}/connection`
+			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${Core.pathDeterminer(_environment.version, 'connection')}`
 
 			// Send the request
 			try {
@@ -54,16 +54,27 @@ class ConnectionCommands {
 			})
 			if (!Core.isFilled("label", "connection", label)) { return }
 
-			// Build URI
-			let uri = `${_environment}/app/${context.parent.parent.name}/connection/${context.name}/label`
 
-			// Send the request
-			try {
-				await Core.editEntityPlain(_authorization, label, uri)
-				appsProvider.refresh()
-			}
-			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+			if (_environment.version === 2) {
+				let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${Core.pathDeterminer(_environment.version, 'connection')}/${context.name}`
+				try {
+					await Core.patchEntity(_authorization, {
+						label: label
+					}, uri)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
+			} else {
+				let uri = `${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${context.name}/label`
+				try {
+					await Core.editEntityPlain(_authorization, label, uri)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
 			}
 		})
 	}
