@@ -34,7 +34,9 @@ class CommonCommands {
 				case "Yes":
 					// Set URI and send the request
 					context.apiPath = context.apiPath === undefined ? context.supertype : context.apiPath
-					let uri = Core.isVersionable(context.apiPath) ? `${_environment}/app/${app.name}/${app.version}/${context.apiPath}/${context.name}` : `${_environment}/app/${app.name}/${context.apiPath}/${context.name}`
+					let uri = Core.isVersionable(context.apiPath) ?
+						`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, context.apiPath)}/${context.name}` :
+						`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${Core.pathDeterminer(_environment.version, context.apiPath)}/${context.name}`
 					try {
 						await rp({
 							method: 'DELETE',
