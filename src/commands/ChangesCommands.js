@@ -18,7 +18,7 @@ class ChangesCommands {
 		vscode.commands.registerCommand('apps-sdk.changes.show', async function (code) {
 
 			// Get the diff
-			let url = `${_environment}/app/${Core.getApp(code).name}/${Core.getApp(code).version}/change/${code.change}`
+			const url = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(code).name}/${Core.getApp(code).version}/${Core.pathDeterminer(_environment.version, 'change')}/${code.change}`
 			let diffdata = await Core.rpGet(url, _authorization)
 
 			// Prepare paths for files
@@ -26,8 +26,8 @@ class ChangesCommands {
 			let cur = tempy.file({ name: `cur.${code.language}` })
 
 			// Get the data to write
-			let old_data = (code.language === "js" || code.language === "md") ? diffdata.old_value : JSON.stringify(diffdata.old_value, null, 4)
-			let cur_data = (code.language === "js" || code.language === "md") ? diffdata.new_value : JSON.stringify(diffdata.new_value, null, 4)
+			let old_data = (code.language === "js" || code.language === "md") ? (diffdata.old_value || diffdata.oldValue) : JSON.stringify((diffdata.old_value || diffdata.oldValue), null, 4)
+			let cur_data = (code.language === "js" || code.language === "md") ? (diffdata.new_value || diffdata.newValue) : JSON.stringify((diffdata.new_value || diffdata.newValue), null, 4)
 
 			// Save the files
 			Promise.all([
@@ -77,7 +77,7 @@ class ChangesCommands {
 					break
 				case "Yes":
 					// Compose URI
-					let uri = `${_environment}/app/${context.name}/${context.version}/commit`
+					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/commit`
 					try {
 						await rp({
 							method: 'POST',
@@ -123,7 +123,7 @@ class ChangesCommands {
 					break
 				case "Yes":
 					// Compose URI
-					let uri = `${_environment}/app/${context.name}/${context.version}/rollback`
+					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/rollback`
 					try {
 						await rp({
 							method: 'POST',

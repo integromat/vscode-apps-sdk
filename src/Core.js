@@ -247,6 +247,8 @@ module.exports = {
 						return 'rpcs';
 					case 'function':
 						return 'functions';
+					case 'change':
+						return 'changes';
 					case '__sdk':
 						return 'sdk/'
 					default:
