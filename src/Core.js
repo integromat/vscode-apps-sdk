@@ -115,6 +115,21 @@ module.exports = {
 		})
 	},
 
+	patchEntity: function (authorization, body, uri) {
+		return rp({
+			method: 'PATCH',
+			uri: uri,
+			body: body,
+			headers: {
+				Authorization: authorization,
+				'x-imt-apps-sdk-version': Meta.version
+			},
+			json: true
+		}).catch(err => {
+			vscode.window.showErrorMessage(err.error.message)
+		})
+	},
+
 	editEntityPlain: function (authorization, value, uri) {
 		return rp({
 			method: 'PUT',
@@ -147,7 +162,11 @@ module.exports = {
 
 	getAppObject: async function (environment, authorization, app) {
 		try {
-			return await this.rpGet(`${environment}/app/${app.name}/${app.version}`, authorization)
+			if (environment.version === 2) {
+				return (await this.rpGet(`${environment.baseUrl}/sdk/apps/${app.name}/${app.version}`, authorization)).app
+			} else {
+				return await this.rpGet(`${environment.baseUrl}/app/${app.name}/${app.version}`, authorization)
+			}
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(err.error.message)

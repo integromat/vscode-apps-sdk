@@ -266,7 +266,7 @@ class AppCommands {
 			}
 
 			// Build URI and prepare countries list
-			const uri = `${_environment}/app/${context.name}/${context.version}`;
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
 			countries = countries.map(country => {
 				return country.description;
 			});
@@ -274,13 +274,24 @@ class AppCommands {
 
 			// Send the request
 			try {
-				await Core.editEntity(_authorization, {
-					label: label,
-					theme: theme,
-					description: description,
-					language: language.description,
-					countries: countries
-				}, uri);
+				if (_environment.version === 2) {
+					await Core.patchEntity(_authorization, {
+						label: label,
+						theme: theme,
+						description: description,
+						language: language.description,
+						audience: countries === undefined ? 'global' : 'countries',
+						countries: countries
+					}, uri);
+				} else {
+					await Core.editEntity(_authorization, {
+						label: label,
+						theme: theme,
+						description: description,
+						language: language.description,
+						countries: countries
+					}, uri);
+				}
 				appsProvider.refresh();
 			} catch (err) {
 				vscode.window.showErrorMessage(err.error.message || err);
@@ -312,7 +323,7 @@ class AppCommands {
 					break;
 				case 'Yes':
 					// Set URI and send the request
-					const uri = `${_environment}/app/${app.name}/${app.version}`;
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
 					try {
 						await rp({
 							method: 'DELETE',
@@ -389,7 +400,7 @@ class AppCommands {
 
 					// Prepare request options
 					const options = {
-						url: `${_environment}/app/${app.name}/${app.version}/icon`,
+						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
 						headers: {
 							'Authorization': _authorization,
 							'x-imt-apps-sdk-version': Meta.version
@@ -432,8 +443,13 @@ class AppCommands {
 				return;
 			}
 
-			const urn = `${_environment}/app/${context.name}/${context.version}`;
-			const app = await Core.rpGet(`${urn}`, _authorization);
+			const urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
+			let app = await Core.rpGet(`${urn}`, _authorization);
+
+			// ApiFlip
+			if (_environment.version === 2) {
+				app = app.app;
+			}
 
 			const languages = await QuickPick.languages(_environment, _authorization);
 			app.language = languages.find(language => language.description === app.language);
@@ -461,10 +477,24 @@ class AppCommands {
 				}
 			);
 
-			app.modules = (await Core.rpGet(`${urn}/module`, _authorization)).map(m => m.approved);
-			app.rpcsCount = (await Core.rpGet(`${urn}/rpc`, _authorization)).length;
+			if (_environment.version === 2) {
+				app.modules = (await Core.rpGet(`${urn}/modules`, _authorization)).appModules.map(m => m.approved);
+				app.rpcsCount = (await Core.rpGet(`${urn}/rpcs`, _authorization)).appRpcs.length;
+			} else {
+				app.modules = (await Core.rpGet(`${urn}/module`, _authorization)).map(m => m.approved);
+				app.rpcsCount = (await Core.rpGet(`${urn}/rpc`, _authorization)).length;
+			}
 
 			panel.webview.html = Core.getAppDetailHtml(path.join(__dirname, '..', '..'));
+
+			// ApiFlip
+			if (app.manifestVersion) {
+				app.manifest_version = app.manifestVersion;
+			}
+			if (app.public !== undefined) {
+				app.private = !(app.public)
+			}
+
 			panel.webview.postMessage(app);
 
 		});
@@ -494,7 +524,7 @@ class AppCommands {
 					break;
 				case 'Yes':
 					// Set URI and send the request
-					const uri = `${_environment}/app/${app.name}/${app.version}/private`;
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/private`;
 					try {
 						await Core.executePlain(_authorization, '', uri);
 						appsProvider.refresh();
@@ -531,7 +561,7 @@ class AppCommands {
 					break;
 				case 'Yes':
 					// Set URI and send the request
-					const uri = `${_environment}/app/${app.name}/${app.version}/public`;
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/public`;
 					try {
 						await Core.executePlain(_authorization, '', uri);
 						appsProvider.refresh();
