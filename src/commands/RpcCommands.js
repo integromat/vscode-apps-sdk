@@ -37,7 +37,7 @@ class RpcCommands {
 
 			// Connection and URI compose
 			connection = connection.label === "--- Without connection ---" ? undefined : connection.description
-			let uri = `${_environment}/app/${app.name}/${app.version}/rpc`
+			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`
 
 			// Request
 			try {
@@ -68,13 +68,24 @@ class RpcCommands {
 			})
 			if (!Core.isFilled("label", "RPC", label)) { return }
 
-			// Send the request
-			try {
-				await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/label`)
-				appsProvider.refresh()
-			}
-			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+			if (_environment.version === 2) {
+				try {
+					await Core.patchEntity(_authorization, {
+						label: label
+					}, `${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/${context.parent.parent.version}/rpcs/${context.name}`)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
+			} else {
+				try {
+					await Core.editEntityPlain(_authorization, label, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/label`)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
 			}
 		})
 
@@ -90,23 +101,28 @@ class RpcCommands {
 			let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
 
 			if (connections.length > 2) {
-				const rpcDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}`, _authorization);
-				
+				let rpcDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`, _authorization);
+
+				// ApiFlip
+				if (_environment.version === 2) {
+					rpcDetail = rpcDetail.appRpc;
+				}
+
 				const primaryConnectionOptions = connections;
 				let hasPrimary = !!rpcDetail.connection;
-				if(hasPrimary) {
+				if (hasPrimary) {
 					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === rpcDetail.connection);
 					const toSelect = primaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.splice(toSelectIndex, 1);
 					primaryConnectionOptions.unshift(toSelect);
 				} else {
 					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
 					const toSelect = primaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.splice(toSelectIndex, 1);
 					primaryConnectionOptions.unshift(toSelect);
 				}
 
@@ -121,11 +137,22 @@ class RpcCommands {
 						hasPrimary = true;
 					}
 					connection = connection.label === "--- Without connection ---" ? "" : connection.description
-					try {
-						await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
-					}
-					catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err)
+					if (_environment.version === 2) {
+						try {
+							await Core.patchEntity(_authorization, {
+								connection: connection
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
+					} else {
+						try {
+							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
 					}
 				}
 				if (!hasPrimary) {
@@ -134,19 +161,26 @@ class RpcCommands {
 				}
 
 				const secondaryConnectionOptions = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
-				if(!!rpcDetail.alt_connection) {
+
+				// ApiFlip
+				if (rpcDetail.altConnection !== undefined) {
+					rpcDetail.alt_connection = rpcDetail.altConnection;
+				}
+
+
+				if (!!rpcDetail.alt_connection) {
 					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === rpcDetail.alt_connection);
 					const toSelect = secondaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.splice(toSelectIndex, 1);
 					secondaryConnectionOptions.unshift(toSelect);
 				} else {
 					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
 					const toSelect = secondaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.splice(toSelectIndex, 1);
 					secondaryConnectionOptions.unshift(toSelect);
 				}
 
@@ -154,12 +188,23 @@ class RpcCommands {
 				if (!Core.isFilled("connection", "RPC", connection)) { return }
 				if (connection.description !== "keep") {
 					connection = connection.label === "--- Don\'t use secondary connection ---" ? "" : connection.description
-					try {
-						await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/alt_connection`)
-						appsProvider.refresh()
-					}
-					catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err)
+					if (_environment.version === 2) {
+						try {
+							await Core.patchEntity(_authorization, {
+								altConnection: connection
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
+					} else {
+						try {
+							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/alt_connection`)
+							appsProvider.refresh()
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
 					}
 				}
 			} else {
@@ -171,7 +216,13 @@ class RpcCommands {
 				try {
 					if (connection.description !== "keep") {
 						connection = connection.label === "--- Without connection ---" ? "" : connection.description
-						await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
+						if (_environment.version === 2) {
+							await Core.patchEntity(_authorization, {
+								connection: connection
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
+						} else {
+							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
+						}
 						appsProvider.refresh()
 					}
 				}
