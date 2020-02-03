@@ -161,22 +161,35 @@ class AppCommands {
 				}
 
 				// Build URI and prepare countries list
-				const uri = `${_environment}/app`;
+				const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`;
 				countries = countries.map(item => {
 					return item.description;
 				});
 
 				// Send the request
 				try {
-					await Core.addEntity(_authorization, {
-						'name': id,
-						'label': label,
-						'description': description,
-						'theme': theme,
-						'language': language.description,
-						'private': true,
-						'countries': countries
-					}, uri);
+					if (_environment.version === 2) {
+						// TODO : Language not sent, formula tweak needed
+						await Core.addEntity(_authorization, {
+							'name': id,
+							'label': label,
+							'description': description,
+							'theme': theme,
+							'language': language.description,
+							'audience': countries.length === 0 ? 'global' : 'countries',
+							'countries': countries.length === 0 ? undefined : countries
+						}, uri);
+					} else {
+						await Core.addEntity(_authorization, {
+							'name': id,
+							'label': label,
+							'description': description,
+							'theme': theme,
+							'language': language.description,
+							'private': true,
+							'countries': countries
+						}, uri);
+					}
 					appsProvider.refresh();
 				} catch (err) {
 					vscode.window.showErrorMessage(err.error.message || err);
