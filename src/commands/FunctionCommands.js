@@ -34,7 +34,7 @@ class FunctionCommands {
 
 			// Add the new entity. Refresh the tree or show the error
 			try {
-				await Core.addEntity(_authorization, { "name": name }, `${_environment}/app/${app.name}/${app.version}/function`)
+				await Core.addEntity(_authorization, { "name": name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
 				appsProvider.refresh()
 			}
 			catch (err) {
@@ -70,25 +70,25 @@ class FunctionCommands {
 					vscode.window.showErrorMessage("The path was not parsed successfully.")
 					return
 				}
-				// If the path hasn't 7 crumbs it's definitely not a function
-				if (crumbs.length !== 7) {
+				// If the path hasn't 8 or 7 crumbs it's definitely not a function
+				if (crumbs.length !== 8 && crumbs.length !== 7) {
 					vscode.window.showErrorMessage("The parsed path doesn't lead to function.")
 					return
 				}
 				// If the path doesn't contain required crumbs
-				if (!((crumbs[0] === "test.js" || crumbs[0] === "code.js") && crumbs[2] === "function" && crumbs[5] === "app")) {
+				if (!((crumbs[0] === "test.js" || crumbs[0] === "code.js") && (crumbs[2] === "function" || crumbs[2] === "functions") && (crumbs[5] === "app" || crumbs[5] === "apps"))) {
 					vscode.window.showErrorMessage("The parsed path doesn't correspond to the function test schema.")
 					return
 				}
 				// If all checks passed, set URN
-				urn = `${_environment}/app/${crumbs[4]}/${crumbs[3]}/function`
+				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${crumbs[4]}/${crumbs[3]}/${Core.pathDeterminer(_environment.version, 'function')}`
 				functionName = `${crumbs[1]}`
 			}
 
 			// Else parse from context
 			else {
 				// Set correct URN (if called from function or core or test)
-				urn = `${_environment}/app/${Core.getApp(context).name}/${Core.getApp(context).version}/function`
+				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(context).name}/${Core.getApp(context).version}/${Core.pathDeterminer(_environment.version, 'function')}`
 				if (context.supertype === "function") {
 					functionName = `${context.name}`
 				}
@@ -104,7 +104,10 @@ class FunctionCommands {
 			let test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
 
 			// Get users' functions
-			let userFunctions = await Core.rpGet(`${urn}`, _authorization, { code: true })
+			let userFunctions = await Core.rpGet(`${urn}?cols[]=code`, _authorization, { code: true })
+			if (_environment.version === 2) {
+				userFunctions = userFunctions.appFunctions;
+			}
 
 			// Merge codes
 			let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
