@@ -468,7 +468,7 @@ class CoreCommands {
 						if (this._environment.version === 1) {
 							connection = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/webhook/${crumbs[4]}`, this._authorization)).connection;
 						} else {
-							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/webhook/${crumbs[4]}`, this._authorization)).appWebhook.connection;
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/webhooks/${crumbs[4]}`, this._authorization)).appWebhook.connection;
 						}
 						break;
 				}
