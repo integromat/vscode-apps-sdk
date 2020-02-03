@@ -42,12 +42,18 @@ class ModuleCommands {
 			if (!Core.isFilled("type", "module", type)) { return }
 
 			// Prepare URI and request body
-			let uri = `${_environment}/app/${app.name}/${app.version}/module`
+			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'module')}`
 			let body = {
 				"name": id,
 				"label": label,
 				"description": description,
 				"type_id": type.description
+			}
+
+			// ApiFlip
+			if (_environment.version === 2) {
+				body.typeId = parseInt(body.type_id);
+				delete body.type_id;
 			}
 
 			// Action type selector
@@ -123,14 +129,25 @@ class ModuleCommands {
 
 			body.type_id = context.type
 
-			// Send the request
-			try {
-				await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
-				await Core.editEntity(_authorization, body, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
-				appsProvider.refresh()
-			}
-			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+			if (_environment.version === 2) {
+				try {
+					body.label = label;
+					delete body.type_id;
+					await Core.patchEntity(_authorization, body, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
+					appsProvider.refresh()
+				} catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
+			} else {
+				// Send the request
+				try {
+					await Core.editEntityPlain(_authorization, label, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
+					await Core.editEntity(_authorization, body, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
 			}
 		})
 
@@ -151,22 +168,25 @@ class ModuleCommands {
 
 					// There's a "Without Connection" option, so that's why there's +1
 					if (connections.length > 2) {
-						const moduleDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization);
+						let moduleDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`, _authorization);
+						if (_environment.version === 2) {
+							moduleDetail = moduleDetail.appModule
+						}
 						const primaryConnectionOptions = connections;
 						let hasPrimary = !!moduleDetail.connection;
-						if(hasPrimary) {
+						if (hasPrimary) {
 							const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === moduleDetail.connection);
 							const toSelect = primaryConnectionOptions[toSelectIndex];
 							toSelect.label += ` (current)`;
 							toSelect.description = 'keep';
-							primaryConnectionOptions.splice(toSelectIndex,1);
+							primaryConnectionOptions.splice(toSelectIndex, 1);
 							primaryConnectionOptions.unshift(toSelect);
 						} else {
 							const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
 							const toSelect = primaryConnectionOptions[toSelectIndex];
 							toSelect.label += ` (current)`;
 							toSelect.description = 'keep';
-							primaryConnectionOptions.splice(toSelectIndex,1);
+							primaryConnectionOptions.splice(toSelectIndex, 1);
 							primaryConnectionOptions.unshift(toSelect);
 						}
 						let connection = await vscode.window.showQuickPick(primaryConnectionOptions, { placeHolder: "Change primary connection or keep existing." })
@@ -179,11 +199,22 @@ class ModuleCommands {
 								hasPrimary = true;
 							}
 							connection = connection.label === "--- Without connection ---" ? "" : connection.description
-							try {
-								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-							}
-							catch (err) {
-								vscode.window.showErrorMessage(err.error.message || err)
+							if (_environment.version === 2) {
+								try {
+									await Core.patchEntity(_authorization, {
+										connection: connection
+									}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
+								}
+								catch (err) {
+									vscode.window.showErrorMessage(err.error.message || err)
+								}
+							} else {
+								try {
+									await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
+								}
+								catch (err) {
+									vscode.window.showErrorMessage(err.error.message || err)
+								}
 							}
 						}
 						if (!hasPrimary) {
@@ -191,31 +222,48 @@ class ModuleCommands {
 							return;
 						}
 						const secondaryConnectionOptions = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
-						if(!!moduleDetail.alt_connection) {
+
+						// ApiFlip
+						if (moduleDetail.altConnection !== undefined) {
+							moduleDetail.alt_connection = moduleDetail.altConnection
+						}
+
+						if (!!moduleDetail.alt_connection) {
 							const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === moduleDetail.alt_connection);
 							const toSelect = secondaryConnectionOptions[toSelectIndex];
 							toSelect.label += ` (current)`;
 							toSelect.description = 'keep';
-							secondaryConnectionOptions.splice(toSelectIndex,1);
+							secondaryConnectionOptions.splice(toSelectIndex, 1);
 							secondaryConnectionOptions.unshift(toSelect);
 						} else {
 							const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
 							const toSelect = secondaryConnectionOptions[toSelectIndex];
 							toSelect.label += ` (current)`;
 							toSelect.description = 'keep';
-							secondaryConnectionOptions.splice(toSelectIndex,1);
+							secondaryConnectionOptions.splice(toSelectIndex, 1);
 							secondaryConnectionOptions.unshift(toSelect);
 						}
 						connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
 						if (!Core.isFilled("connection", "module", connection)) { return }
 						if (connection.description !== "keep") {
 							connection = connection.label === "--- Without connection ---" ? "" : connection.description
-							try {
-								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
-								appsProvider.refresh()
-							}
-							catch (err) {
-								vscode.window.showErrorMessage(err.error.message || err)
+							if (_environment.version === 2) {
+								try {
+									await Core.patchEntity(_authorization, {
+										altConnection: connection
+									}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
+								}
+								catch (err) {
+									vscode.window.showErrorMessage(err.error.message || err)
+								}
+							} else {
+								try {
+									await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
+									appsProvider.refresh()
+								}
+								catch (err) {
+									vscode.window.showErrorMessage(err.error.message || err)
+								}
 							}
 						}
 						break;
@@ -225,12 +273,23 @@ class ModuleCommands {
 						if (!Core.isFilled("connection", "module", connection)) { return }
 						if (connection.description !== "keep") {
 							connection = connection.label === "--- Without connection ---" ? "" : connection.description
-							try {
-								await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-								appsProvider.refresh()
-							}
-							catch (err) {
-								vscode.window.showErrorMessage(err.error.message || err)
+							if (_environment.version === 2) {
+								try {
+									await Core.patchEntity(_authorization, {
+										connection: connection
+									}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
+								}
+								catch (err) {
+									vscode.window.showErrorMessage(err.error.message || err)
+								}
+							} else {
+								try {
+									await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
+									appsProvider.refresh()
+								}
+								catch (err) {
+									vscode.window.showErrorMessage(err.error.message || err)
+								}
 							}
 						}
 						break;
@@ -241,12 +300,23 @@ class ModuleCommands {
 					let webhook = await vscode.window.showQuickPick(webhooks, { placeHolder: "Change webhook or keep existing." })
 					if (!Core.isFilled("webhook", "module", webhook)) { return }
 					if (webhook.description !== "keep") {
-						try {
-							await Core.editEntityPlain(_authorization, webhook.description, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/webhook`)
-							appsProvider.refresh()
-						}
-						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+						if (_environment.version === 2) {
+							try {
+								await Core.patchEntity(_authorization, {
+									webhook: webhook
+								}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
+						} else {
+							try {
+								await Core.editEntityPlain(_authorization, webhook.description, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/webhook`)
+								appsProvider.refresh()
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
 						}
 					}
 					break
@@ -266,18 +336,30 @@ class ModuleCommands {
 				case 4:
 					let newType = await vscode.window.showQuickPick(Enum.moduleTypeActionSearch, { placeHolder: "Change the type or keep existing." })
 					if (!Core.isFilled("type", "module", module)) { return }
-					if (newType.description !== "keep") {
-						try {
-							await Core.editEntity(_authorization, {
-								label: context.bareLabel,
-								description: context.bareDescription,
-								crud: context.crud,
-								type_id: newType.description
-							}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
-							appsProvider.refresh()
+					if (_environment.version === 2) {
+						if (newType.description !== "keep") {
+							try {
+								await Core.patchEntity(_authorization, {
+									typeId: parseInt(newType.description)
+								}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
+							} catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
 						}
-						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+					} else {
+						if (newType.description !== "keep") {
+							try {
+								await Core.editEntity(_authorization, {
+									label: context.bareLabel,
+									description: context.bareDescription,
+									crud: context.crud,
+									type_id: newType.description
+								}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+								appsProvider.refresh()
+							}
+							catch (err) {
+								vscode.window.showErrorMessage(err.error.message || err)
+							}
 						}
 					}
 					break;
@@ -295,16 +377,30 @@ class ModuleCommands {
 			// If called directly (by using a command pallete) -> die
 			if (!Core.contextGuard(context)) { return }
 
-			const module = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`, _authorization)
-			module.connection = module.connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
-			module.alt_connection = module.alt_connection ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/connection/${module.alt_connection}`, _authorization) : null;
-			module.webhook = module.webhook ? await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
+			let module = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`, _authorization)
+			if (_environment.version === 2) {
+				module = module.appModule;
 
-			module.type = {
-				id: module.type_id,
-				label: Core.translateModuleTypeId(module.type_id)
+				module.connection = module.connection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/connections/${module.connection}`, _authorization)).appConnection : null;
+				module.alt_connection = module.altConnection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/connections/${module.altConnection}`, _authorization)).appConnection : null;
+				module.webhook = module.webhook ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/webhooks/${module.webhook}`, _authorization)).appWebhook : null;
+
+				module.type = {
+					id: module.typeId,
+					label: Core.translateModuleTypeId(module.typeId)
+				}
+				delete module.type_id;
+			} else {
+				module.connection = module.connection ? await Core.rpGet(`${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
+				module.alt_connection = module.alt_connection ? await Core.rpGet(`${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${module.alt_connection}`, _authorization) : null;
+				module.webhook = module.webhook ? await Core.rpGet(`${_environment.baseUrl}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
+
+				module.type = {
+					id: module.type_id,
+					label: Core.translateModuleTypeId(module.type_id)
+				}
+				delete module.type_id;
 			}
-			delete module.type_id;
 
 			const panel = vscode.window.createWebviewPanel(
 				`${context.parent.parent.name}_${context.name}_detail`,
@@ -352,7 +448,7 @@ class ModuleCommands {
 					break
 				case "Yes":
 					// Set URI and send the request
-					let uri = `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/private`
+					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/private`
 					try {
 						await Core.executePlain(_authorization, "", uri)
 						appsProvider.refresh()
@@ -387,7 +483,7 @@ class ModuleCommands {
 					break
 				case "Yes":
 					// Set URI and send the request
-					let uri = `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/public`
+					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/public`
 					try {
 						await Core.executePlain(_authorization, "", uri)
 						appsProvider.refresh()
