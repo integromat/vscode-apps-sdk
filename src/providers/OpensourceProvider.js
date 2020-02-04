@@ -138,7 +138,7 @@ class AppsProvider {
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, name)}`
 						let response = await Core.rpGet(uri, this._authorization)
-						const items = this._environment.version === 1 ? response : response[camelCase(`apps_${needle}`)];
+						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
 						return items.map(item => new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id || item.typeId, item.public, item.approved))
 					}
 				}
