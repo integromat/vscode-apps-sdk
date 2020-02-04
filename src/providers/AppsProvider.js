@@ -14,13 +14,14 @@ const asyncfile = require('async-file')
 const camelCase = require('lodash.camelcase');
 
 class AppsProvider {
-	constructor(_authorization, _environment, _DIR) {
+	constructor(_authorization, _environment, _DIR, _admin) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
 		this._authorization = _authorization
 		this._environment = _environment;
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
+		this._admin = _admin;
 	}
 
 	refresh() {
@@ -43,7 +44,7 @@ class AppsProvider {
 			let response;
 			switch (this._environment.version) {
 				case 2:
-					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
+					response = (await Core.rpGet(`${this._environment.baseUrl}/${this._admin === true ? 'admin/' : ''}sdk/apps`, this._authorization, {
 						'cols[]': [
 							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
 						]

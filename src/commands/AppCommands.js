@@ -79,16 +79,30 @@ class AppCommands {
 
 				let changes = false;
 
-				// If there are some apps to be added
-				if (appsToAdd.length > 0) {
-					await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment}/favorite`);
-					changes = true;
-				}
+				if (_environment.version === 2) {
+					// If there are some apps to be added
+					if (appsToAdd.length > 0) {
+						await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment.baseUrl}/admin/sdk/apps/favorites`);
+						changes = true;
+					}
 
-				// If there are some apps to be removed
-				if (appsToRemove.length > 0) {
-					await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment}/favorite`);
-					changes = true;
+					// If there are some apps to be removed
+					if (appsToRemove.length > 0) {
+						await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment.baseUrl}/admin/sdk/apps/favorites`);
+						changes = true;
+					}
+				} else {
+					// If there are some apps to be added
+					if (appsToAdd.length > 0) {
+						await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment.baseUrl}/favorite`);
+						changes = true;
+					}
+
+					// If there are some apps to be removed
+					if (appsToRemove.length > 0) {
+						await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment.baseUrl}/favorite`);
+						changes = true;
+					}
 				}
 
 				// If there were some changes, refresh the app tree
