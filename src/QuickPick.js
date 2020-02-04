@@ -98,7 +98,12 @@ module.exports = {
 	},
 
 	allApps: async function (environment, authorization) {
-		let response = await Core.rpGet(`${environment}/app`, authorization, { all: true })
+		let response;
+		if (environment.version === 2) {
+			response = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization, { all: true })).apps
+		} else {
+			response = await Core.rpGet(`${environment.baseUrl}/app`, authorization, { all: true })
+		}
 		try {
 			const apps = [];
 			const used = [];
@@ -119,7 +124,12 @@ module.exports = {
 	},
 
 	favApps: async function (environment, authorization) {
-		let response = await Core.rpGet(`${environment}/app`, authorization)
+		let response;
+		if (environment.version === 2) {
+			response = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization)).apps
+		} else {
+			response = await Core.rpGet(`${environment.baseUrl}/app`, authorization)
+		}
 		try {
 			return response.map(app => {
 				return {
