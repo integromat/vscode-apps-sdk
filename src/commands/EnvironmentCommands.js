@@ -1,101 +1,138 @@
 const vscode = require('vscode')
+const rp = require('request-promise')
 
 const Core = require('../Core')
 const QuickPick = require('../QuickPick')
 const Validator = require('../Validator')
+const Meta = require('../Meta')
 
-class EnvironmentCommands{
-    static async register(envChanger, _configuration){
+class EnvironmentCommands {
+	static async register(envChanger, _configuration) {
 
         /**
          * Add new environment
          */
-        vscode.commands.registerCommand('apps-sdk.env.add', async () => {
+		vscode.commands.registerCommand('apps-sdk.env.add', async () => {
 
-            // Prompt for URL
-            let url = await vscode.window.showInputBox({
-                prompt: "Enter new environment URL (without https:// and API version)",
-                value: "api.integromat.com",
-                validateInput: Validator.urlFormat
-            })
+			// Prompt for URL
+			let url = await vscode.window.showInputBox({
+				prompt: "Enter new environment URL (without https:// and API version)",
+				value: "api.integromat.com",
+				validateInput: Validator.urlFormat
+			})
 
-            // Check if filled and unique
-            if(!Core.isFilled("url", "environment", url, "An")){ return }
-            if(_configuration.environments[url]){
-                vscode.window.showErrorMessage("This environment URL has been configured already.")
-                return
-            }
+			// Check if filled and unique
+			if (!Core.isFilled("url", "environment", url, "An")) { return }
+			if (_configuration.environments[url]) {
+				vscode.window.showErrorMessage("This environment URL has been configured already.")
+				return
+			}
 
-            // Prompt for environment name
-            let name = await vscode.window.showInputBox({
-                prompt: "Enter new environment name",
-                value: url === "api.integromat.com" ? "Integromat: Production" : ""
-            })
+			// Prompt for environment name
+			let name = await vscode.window.showInputBox({
+				prompt: "Enter new environment name",
+				value: url === "api.integromat.com" ? "Integromat: Production" : ""
+			})
 
-            // Check if filled
-            if (!Core.isFilled("name", "environment", name)) { return }
+			// Check if filled
+			if (!Core.isFilled("name", "environment", name)) { return }
 
-            // Prompt for API key
-            let apikey = await vscode.window.showInputBox({ prompt: "Enter your Integromat API key" })
+			// Prompt for API version
+			let version = await vscode.window.showQuickPick([
+				{
+					label: 'Integromat 2.0',
+					description: '2'
+				},
+				{
+					label: 'Integromat 1.0',
+					description: '1'
+				}], {
+				placeHolder: 'Choose the environment version.'
+			});
 
-            // Check if filled
-            if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
+			// Check if filled
+			if (!Core.isFilled("version", "environment", name)) { return }
 
-            // Ping who-am-I endpoint
-            let uri = `https://${url}/v1/whoami`
-            let response = await Core.rpGet(uri, `Token ${apikey}`)
-            if(response === undefined){ return }
+			// Prompt for API key
+			let apikey = await vscode.window.showInputBox({ prompt: "Enter your Integromat API key" })
 
-            // RAW copy of environments, because _configuration is read only
-            let envs = JSON.parse(JSON.stringify(_configuration.environments))
+			// Check if filled
+			if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
 
-            // Add new env to environments object
-            envs[url] = {
-                name: name,
-                apikey: apikey
-            }
+			if (version.description === '2') {
+				let uri = `https://${url}/v2/auth/authorized`
+				try {
+					await rp({
+						url: uri,
+						json: true,
+						headers: {
+							'Authorization': `Token ${apikey}`,
+							'x-imt-apps-sdk-version': Meta.version
+						}
+					})
+				} catch (err) {
+					vscode.window.showWarningMessage(err.error ? err.error.message : err)
+					vscode.window.showInformationMessage('Environment probe failed. You can try to set the environment in VSCode settings.json manually.');
+					return;
+				}
+			} else {
+				// Ping who-am-I endpoint
+				let uri = `https://${url}/v1/whoami`
+				let response = await Core.rpGet(uri, `Token ${apikey}`)
+				if (response === undefined) { return }
+			}
 
-            // Save all and reload the window
-            Promise.all([
-                _configuration.update('login', true, 1),
-                _configuration.update('environments', envs, 1),
-                _configuration.update('environment', url, 1)
-            ]).then(() => {
-                vscode.commands.executeCommand("workbench.action.reloadWindow")
-            })
-        })
+			// RAW copy of environments, because _configuration is read only
+			let envs = JSON.parse(JSON.stringify(_configuration.environments))
+
+			// Add new env to environments object
+			envs[url] = {
+				name: name,
+				apikey: apikey,
+				version: parseInt(version.description)
+			}
+
+			// Save all and reload the window
+			Promise.all([
+				_configuration.update('login', true, 1),
+				_configuration.update('environments', envs, 1),
+				_configuration.update('environment', url, 1)
+			]).then(() => {
+				vscode.commands.executeCommand("workbench.action.reloadWindow")
+			})
+		})
 
         /**
          * Change environment
          */
-        vscode.commands.registerCommand('apps-sdk.env.change', async () => {
+		vscode.commands.registerCommand('apps-sdk.env.change', async () => {
 
-            // Prompt for environment (show quickpick of existing)
-            let environment = await vscode.window.showQuickPick(QuickPick.environments(_configuration), {
-                placeHolder: "Choose an environment to use"
-            })
+			// Prompt for environment (show quickpick of existing)
+			let environment = await vscode.window.showQuickPick(QuickPick.environments(_configuration), {
+				placeHolder: "Choose an environment to use"
+			})
 
-            // Check if filled 
-            if(!environment){ return }
+			// Check if filled 
+			if (!environment) { return }
 
-            if(environment.description === "add"){
-                vscode.commands.executeCommand('apps-sdk.env.add')
-                return
-            }
+			if (environment.description === "add") {
+				vscode.commands.executeCommand('apps-sdk.env.add')
+				return
+			}
 
-            // Update active environment in _configuration
-            await _configuration.update('environment', environment.description, 1)
+			// Update active environment in _configuration
+			await _configuration.update('environment', environment.description, 1)
 
-            // If new env doesn't contain API key -> set login falsey
-            if(_configuration.environments[environment.description].apikey === ""){
-                await _configuration.update('login', false, 1)
-            }
+			// If new env doesn't contain API key -> set login falsey
+			if (_configuration.environments[environment.description].apikey === "") {
+				await _configuration.update('login', false, 1)
+			}
 
-            // Update envChanger in statusbar and reload the window
-            envChanger.text = `$(server) ${environment.label}`
-            vscode.commands.executeCommand("workbench.action.reloadWindow")
-        })
-    }
+			// Update envChanger in statusbar and reload the window
+			envChanger.text = `$(server) ${environment.label}`
+			vscode.commands.executeCommand("workbench.action.reloadWindow")
+		})
+	}
 }
 
 module.exports = EnvironmentCommands
