@@ -70,7 +70,7 @@ module.exports = {
 	languages: async function (environment, authorization, context) {
 		let response;
 		if (environment.version === 2) {
-			response = (await Core.rpGet(`${environment.baseUrl}/enums/locales`, authorization)).locales
+			response = (await Core.rpGet(`${environment.baseUrl}/enums/languages`, authorization)).languages
 		} else {
 			response = await Core.rpGet(`${environment.baseUrl}/language`, authorization)
 		}
