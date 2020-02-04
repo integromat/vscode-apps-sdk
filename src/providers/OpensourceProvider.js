@@ -43,7 +43,12 @@ class AppsProvider {
 			let response;
 			switch (this._environment.version) {
 				case 2:
-					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, { opensource: true })).apps
+					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
+						opensource: true,
+						'cols[]': [
+							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
+						]
+					})).apps
 					break;
 				case 1:
 				default:
