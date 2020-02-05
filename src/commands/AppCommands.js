@@ -628,7 +628,7 @@ class AppCommands {
 				const archive = path.join(DIR, app.name);
 				await asyncfile.mkdir(archive);
 				const urnNoVersion = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}`;
-				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}`;
+				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`;
 				const urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
 
 				try {
@@ -700,7 +700,7 @@ class AppCommands {
 								increment: (0.875 * progressPercentage) * (0.25), message: `${app.label} - Exporting Connection ${connection.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization)));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -777,7 +777,7 @@ class AppCommands {
 								increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization)));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -1104,12 +1104,12 @@ class AppCommands {
 			const buildRequestQueue = (app, remoteApp) => {
 				const requests = [];
 
-				requests.push(makeRequestProto(`Base`, `${remoteApp.version}/base`, 'PUT', 'application/jsonc', app.base));
-				requests.push(makeRequestProto(`Readme`, `${remoteApp.version}/readme`, 'PUT', 'text/markdown', app.readme));
-				requests.push(makeRequestProto(`Icon`, `${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
+				requests.push(makeRequestProto(`Base`, `${remoteApp.name}/${remoteApp.version}/base`, 'PUT', 'application/jsonc', app.base));
+				requests.push(makeRequestProto(`Readme`, `${remoteApp.name}/${remoteApp.version}/readme`, 'PUT', 'text/markdown', app.readme));
+				requests.push(makeRequestProto(`Icon`, `${remoteApp.name}/${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
 
 				app.connections.forEach((connection) => {
-					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, Core.pathDeterminer(_environment.version, 'connection'), 'POST', 'application/json',
+					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'connection')}`, 'POST', 'application/json',
 						JSON.stringify(extract(connection.metadata, ['label', 'type'])),
 						[
 							{
@@ -1133,7 +1133,7 @@ class AppCommands {
 
 				app.rpcs.forEach((rpc) => {
 					requests.push(makeRequestProto(`RPC ${rpc.metadata.label}`,
-						`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
 						[
 							{
 								key: 'connection',
@@ -1142,13 +1142,13 @@ class AppCommands {
 						]));
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`RPC ${rpc.metadata.label} - ${code}`,
-							`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
 					});
 				});
 
 				app.webhooks.forEach((webhook) => {
 					requests.push(makeRequestProto(`Webhook ${webhook.metadata.label}`,
-						`${Core.pathDeterminer(_environment.version, 'webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
+						`${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
 							['label', 'type', 'connection'])),
 						[
 							{
@@ -1195,7 +1195,7 @@ class AppCommands {
 							break;
 					}
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
-						`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
 						[
 							{
 								key: 'connection',
@@ -1225,7 +1225,7 @@ class AppCommands {
 					}
 					codes.forEach(code => {
 						requests.push(makeRequestProto(`Module ${appModule.metadata.label} - ${code}`,
-							`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}/${appModule.metadata.name}/${code}`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}/${appModule.metadata.name}/${code}`,
 							'PUT', 'application/jsonc', appModule[code]));
 					});
 				});
@@ -1233,12 +1233,12 @@ class AppCommands {
 				app.functions.forEach(appFunction => {
 					const functionName = /(?:function )(.+)(?:\()/.exec(appFunction.code)[1];
 					requests.push(makeRequestProto(`Function ${functionName}`,
-						`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}`, 'POST', 'application/json', JSON.stringify({
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}`, 'POST', 'application/json', JSON.stringify({
 							name: functionName
 						})));
 					[`code`, `test`].forEach(code => {
 						requests.push(makeRequestProto(`Function ${functionName} - ${code}`,
-							`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}/${functionName}/${code}`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}/${functionName}/${code}`,
 							'PUT', 'application/javascript', appFunction[code]));
 					});
 				});
@@ -1297,7 +1297,7 @@ class AppCommands {
 						if (shouldStop) {
 							return;
 						}
-						const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${remoteApp.name}/${r.endpoint}`);
+						const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${r.endpoint}`);
 						progress.report({
 							increment: (100 / requests.length),
 							message: r._label

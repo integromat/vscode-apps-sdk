@@ -381,9 +381,9 @@ class ModuleCommands {
 			if (_environment.version === 2) {
 				module = module.appModule;
 
-				module.connection = module.connection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/connections/${module.connection}`, _authorization)).appConnection : null;
-				module.alt_connection = module.altConnection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/connections/${module.altConnection}`, _authorization)).appConnection : null;
-				module.webhook = module.webhook ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/webhooks/${module.webhook}`, _authorization)).appWebhook : null;
+				module.connection = module.connection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/connections/${module.connection}`, _authorization)).appConnection : null;
+				module.alt_connection = module.altConnection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/connections/${module.altConnection}`, _authorization)).appConnection : null;
+				module.webhook = module.webhook ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/webhooks/${module.webhook}`, _authorization)).appWebhook : null;
 
 				module.type = {
 					id: module.typeId,
