@@ -65,6 +65,13 @@ class CoreCommands {
 		}
 		let url = (path.join(path.dirname(right), basename)).replace(/\\/g, "/")
 
+		// Remove webhooks and connections from path as they're not under the APP-NAME endpoint
+		if (url.includes('/webhooks/') || url.includes('/connections/')) {
+			url = url.split('/')
+			url.splice(3, 1)
+			url = url.join('/')
+		}
+
 		// And compose the URI
 		let uri = this._environment.baseUrl + url
 
@@ -468,7 +475,7 @@ class CoreCommands {
 						if (this._environment.version === 1) {
 							connection = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/webhook/${crumbs[4]}`, this._authorization)).connection;
 						} else {
-							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/webhooks/${crumbs[4]}`, this._authorization)).appWebhook.connection;
+							connection = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/webhooks/${crumbs[4]}`, this._authorization)).appWebhook.connection;
 						}
 						break;
 				}
@@ -480,8 +487,8 @@ class CoreCommands {
 						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}`, this._authorization)).appConnection.type
 						connectionSource = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}/api`, this._authorization))
 					} else {
-						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/connections/${connection}`, this._authorization)).appConnection.type
-						connectionSource = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/${app}/connections/${connection}/api`, this._authorization))
+						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/connections/${connection}`, this._authorization)).appConnection.type
+						connectionSource = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/connections/${connection}/api`, this._authorization))
 					}
 					let dataProvider = new DataProvider(connectionSource, connectionType);
 					dataProvider.getAvailableVariables();
@@ -516,11 +523,13 @@ class CoreCommands {
 		vscode.commands.registerCommand('apps-sdk.load-open-source', async function (item) {
 
 			// Compose directory structure
-			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
+			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`
+			let urnForFile = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
 
 			// Add version to URN for versionable items
 			if (Core.isVersionable(item.apiPath)) {
-				urn += `/${Core.getApp(item).version}`
+				urn += `/${Core.getApp(item).name}/${Core.getApp(item).version}`
+				urnForFile += `/${Core.getApp(item).version}`
 			}
 
 			// Complete the URN by the type of item
@@ -528,6 +537,7 @@ class CoreCommands {
 				case "function":
 				case "functions":
 					urn += `/${item.apiPath}/${item.parent.name}/code`
+					urnForFile += `/${item.apiPath}/${item.parent.name}/code`
 					break
 				case "rpc":
 				case "rpcs":
@@ -538,6 +548,7 @@ class CoreCommands {
 				case "webhook":
 				case "webhooks":
 					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
+					urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`
 					break
 				case "app":
 				case "apps":
@@ -545,16 +556,18 @@ class CoreCommands {
 					switch (item.name) {
 						case "readme":
 							urn += `/readme`
+							urnForFile += `/readme`
 							break
 						default:
 							urn += `/${item.name}`
+							urnForFile += `/${item.name}`
 							break;
 					}
 					break
 			}
 
 			// Prepare filepath and dirname for the code
-			let filepath = `${urn}.${item.language}`
+			let filepath = `${urnForFile}.${item.language}`
 			let dirname = path.dirname(filepath)
 
             /**
@@ -613,11 +626,13 @@ class CoreCommands {
 		vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {
 
 			// Compose directory structure
-			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
+			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`
+			let urnForFile = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
 
 			// Add version to URN for versionable items
 			if (Core.isVersionable(item.apiPath)) {
-				urn += `/${Core.getApp(item).version}`
+				urn += `/${Core.getApp(item).name}/${Core.getApp(item).version}`
+				urnForFile += `/${Core.getApp(item).version}`
 			}
 
 			// Complete the URN by the type of item
@@ -625,6 +640,7 @@ class CoreCommands {
 				case "function":
 				case "functions":
 					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
+					urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`
 					break
 				case "rpc":
 				case "rpcs":
@@ -635,6 +651,7 @@ class CoreCommands {
 				case "webhook":
 				case "webhooks":
 					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
+					urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`
 					break
 				case "app":
 				case "apps":
@@ -642,21 +659,23 @@ class CoreCommands {
 					switch (item.name) {
 						case "content":
 							urn += `/readme`
+							urnForFile += `/readme`
 							break
 						default:
 							urn += `/${item.name}`
+							urnForFile += `/${item.name}`
 							break;
 					}
 					break
 			}
 
 			// Prepare filepath and dirname for the code
-			let filepath = `${urn}.${item.language}`
+			let filepath = `${urnForFile}.${item.language}`
 			let dirname = path.dirname(filepath)
 
 			// Special case: OAuth connection API
 			if (item.parent.supertype === "connection" && item.parent.type === "oauth" && item.name === "api") {
-				filepath = `${urn}-oauth.${item.language}`
+				filepath = `${urnForFile}-oauth.${item.language}`
 			}
 
             /**

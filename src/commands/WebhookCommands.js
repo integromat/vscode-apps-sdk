@@ -75,7 +75,7 @@ class WebhookCommands {
 				try {
 					await Core.patchEntity(_authorization, {
 						label: label
-					}, `${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/webhooks/${context.name}`)
+					}, `${_environment.baseUrl}/sdk/apps/webhooks/${context.name}`)
 					appsProvider.refresh()
 				}
 				catch (err) {
@@ -122,7 +122,7 @@ class WebhookCommands {
 			}
 
 			if (multi) {
-				let webhookDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`, _authorization);
+				let webhookDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${_environment.version === 2 ? '' : `${context.parent.parent.name}/`}${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`, _authorization);
 
 				// ApiFlip
 				if (_environment.version === 2) {
@@ -162,7 +162,7 @@ class WebhookCommands {
 						try {
 							await Core.patchEntity(_authorization, {
 								connection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
 						}
 						catch (err) {
 							vscode.window.showErrorMessage(err.error.message || err)
@@ -215,7 +215,7 @@ class WebhookCommands {
 						try {
 							await Core.patchEntity(_authorization, {
 								altConnection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
 						}
 						catch (err) {
 							vscode.window.showErrorMessage(err.error.message || err)
@@ -244,7 +244,7 @@ class WebhookCommands {
 						if (_environment.version === 2) {
 							await Core.patchEntity(_authorization, {
 								connection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
 						} else {
 							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
 						}

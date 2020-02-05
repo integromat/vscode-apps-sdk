@@ -56,7 +56,7 @@ class ConnectionCommands {
 
 
 			if (_environment.version === 2) {
-				let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${Core.pathDeterminer(_environment.version, 'connection')}/${context.name}`
+				let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'connection')}/${context.name}`
 				try {
 					await Core.patchEntity(_authorization, {
 						label: label

@@ -17,9 +17,9 @@ class ParametersProvider {
 	async loadParameters(crumbs, version) {
 
 		// Preparing api route
-		let urn = `/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${crumbs[2]}`
+		let urn = `/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}`
 		if (Core.isVersionable(crumbs[3])) {
-			urn += `/${version}`
+			urn += `/${crumbs[2]}/${version}`
 		}
 		urn += `/${crumbs[3]}/${crumbs[4]}`
 
