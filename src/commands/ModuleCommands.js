@@ -354,7 +354,7 @@ class ModuleCommands {
 									description: context.bareDescription,
 									crud: context.crud,
 									type_id: newType.description
-								}, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
+								}, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
 								appsProvider.refresh()
 							}
 							catch (err) {

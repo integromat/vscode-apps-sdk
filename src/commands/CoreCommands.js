@@ -65,8 +65,8 @@ class CoreCommands {
 		}
 		let url = (path.join(path.dirname(right), basename)).replace(/\\/g, "/")
 
-		// Remove webhooks and connections from path as they're not under the APP-NAME endpoint
-		if (url.includes('/webhooks/') || url.includes('/connections/')) {
+		// Remove webhooks and connections from path as they're not under the APP-NAME endpoint in v2
+		if (url.startswith('sdk/') && url.includes('/webhooks/') || url.includes('/connections/')) {
 			url = url.split('/')
 			url.splice(3, 1)
 			url = url.join('/')
@@ -523,12 +523,12 @@ class CoreCommands {
 		vscode.commands.registerCommand('apps-sdk.load-open-source', async function (item) {
 
 			// Compose directory structure
-			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`
+			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${(_environment.version !== 2) ? `/${Core.getApp(item).name}` : ''}`
 			let urnForFile = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
 
 			// Add version to URN for versionable items
 			if (Core.isVersionable(item.apiPath)) {
-				urn += `/${Core.getApp(item).name}/${Core.getApp(item).version}`
+				urn += `${(_environment.version === 2) ? `/${Core.getApp(item).name}` : ''}/${Core.getApp(item).version}`
 				urnForFile += `/${Core.getApp(item).version}`
 			}
 
@@ -626,12 +626,12 @@ class CoreCommands {
 		vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {
 
 			// Compose directory structure
-			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`
+			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${(_environment.version !== 2) ? `/${Core.getApp(item).name}` : ''}`
 			let urnForFile = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(item).name}`
 
 			// Add version to URN for versionable items
 			if (Core.isVersionable(item.apiPath)) {
-				urn += `/${Core.getApp(item).name}/${Core.getApp(item).version}`
+				urn += `${(_environment.version === 2) ? `/${Core.getApp(item).name}` : ''}/${Core.getApp(item).version}`
 				urnForFile += `/${Core.getApp(item).version}`
 			}
 

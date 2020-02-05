@@ -628,7 +628,7 @@ class AppCommands {
 				const archive = path.join(DIR, app.name);
 				await asyncfile.mkdir(archive);
 				const urnNoVersion = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}`;
-				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`;
+				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${_environment.version !== 2 ? `/${context.name}` : ''}`;
 				const urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
 
 				try {
@@ -1123,11 +1123,11 @@ class AppCommands {
 						]));
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
-							`${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 					[`scope`, `scopes`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
-							`${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 				});
 
@@ -1168,7 +1168,7 @@ class AppCommands {
 						]));
 					[`api`, `parameters`, `attach`, `detach`, `scope`].forEach(code => {
 						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
-							`${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
+							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
 				});
 
