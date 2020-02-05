@@ -626,8 +626,9 @@ class AppCommands {
 
 				const archive = path.join(DIR, app.name);
 				await asyncfile.mkdir(archive);
-				const urnNoVersion = `${_environment}/app/${app.name}`;
-				const urn = `${_environment}/app/${app.name}/${app.version}`;
+				const urnNoVersion = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}`;
+				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}`;
+				const urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
 
 				try {
 					/**
@@ -667,18 +668,19 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					const connections = await Core.rpGet(`${urnNoVersion}/connection`, _authorization);
+					let connections = await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'connection')}`, _authorization);
+					if (_environment.version === 2) { connections = connections.appConnections }
 					if (connections.length === 0) {
 						progress.report({ increment: 7, message: `${app.label} - No Connections (skipping)` });
 					} else {
 						progressPercentage = 7 / connections.length;
 					}
-					await asyncfile.mkdir(path.join(archive, 'connection'));
+					await asyncfile.mkdir(path.join(archive, 'connections'));
 					for (const connection of connections) {
 						if (canceled) {
 							return;
 						}
-						const archivePath = path.join(archive, 'connection', connection.name);
+						const archivePath = path.join(archive, 'connections', connection.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get Connection Metadata
@@ -686,7 +688,7 @@ class AppCommands {
 							increment: 0.125 * progressPercentage, message: `${app.label} - Exporting Connection ${connection.label} (metadata)`
 						});
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
-							JSON.stringify(pick(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}`,
+							JSON.stringify(pick(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}`,
 								_authorization), ['name', 'label', 'type']), null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
@@ -696,7 +698,7 @@ class AppCommands {
 								increment: (0.875 * progressPercentage) * (0.25), message: `${app.label} - Exporting Connection ${connection.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoVersion}/connection/${connection.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization)));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -707,31 +709,32 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					const rpcs = await Core.rpGet(`${urn}/rpc`, _authorization);
+					let rpcs = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}`, _authorization);
+					if (_environment.version === 2) { rpcs = rpcs.appRpcs }
 					if (rpcs.length === 0) {
 						progress.report({ increment: 17, message: `${app.label} - No RPCs (skipping)` });
 					} else {
 						progressPercentage = 17 / rpcs.length;
 					}
-					await asyncfile.mkdir(path.join(archive, 'rpc'));
+					await asyncfile.mkdir(path.join(archive, 'rpcs'));
 					for (const rpc of rpcs) {
 						if (canceled) {
 							return;
 						}
-						const archivePath = path.join(archive, 'rpc', rpc.name);
+						const archivePath = path.join(archive, 'rpcs', rpc.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get RPC Metadata
 						progress.report({ increment: (0.25 * progressPercentage), message: `${app.label} - Exporting RPC ${rpc.label} (metadata)` });
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
-							JSON.stringify(pick(await Core.rpGet(`${urn}/rpc/${rpc.name}`, _authorization), ['name', 'label', 'connection']), null, 4));
+							JSON.stringify(pick(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}`, _authorization), ['name', 'label', 'connection']), null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `parameters`]) {
 							progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` });
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urn}/rpc/${rpc.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization)));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -742,24 +745,25 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					const webhooks = await Core.rpGet(`${urnNoVersion}/webhook`, _authorization);
+					let webhooks = await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'webhook')}`, _authorization);
+					if (_environment.version === 2) { webhooks = webhooks.appWebhooks }
 					if (webhooks.length === 0) {
 						progress.report({ increment: 12, message: `${app.label} - No Webhooks (skipping)` });
 					} else {
 						progressPercentage = 12 / webhooks.length;
 					}
-					await asyncfile.mkdir(path.join(archive, 'webhook'));
+					await asyncfile.mkdir(path.join(archive, 'webhooks'));
 					for (const webhook of webhooks) {
 						if (canceled) {
 							return;
 						}
-						const archivePath = path.join(archive, 'webhook', webhook.name);
+						const archivePath = path.join(archive, 'webhooks', webhook.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get Webhook Metadata
 						progress.report({ increment: 0.1 * progressPercentage, message: `${app.label} - Exporting Webhook ${webhook.label} (metadata)` });
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
-							JSON.stringify(pick(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}`,
+							JSON.stringify(pick(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}`,
 								_authorization), ['name', 'label', 'connection', 'type']), null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
@@ -769,7 +773,7 @@ class AppCommands {
 								increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoVersion}/webhook/${webhook.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization)));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -780,23 +784,24 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					const modules = await Core.rpGet(`${urn}/module`, _authorization);
+					let modules = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}`, _authorization);
+					if (_environment.version === 2) { modules = modules.appModules }
 					if (modules.length === 0) {
 						progress.report({ increment: 41, message: `${app.label} - No Modules (skipping)` });
 					} else {
 						progressPercentage = 41 / modules.length;
 					}
-					await asyncfile.mkdir(path.join(archive, 'module'));
+					await asyncfile.mkdir(path.join(archive, 'modules'));
 					for (const module of modules) {
 						if (canceled) {
 							return;
 						}
-						const archivePath = path.join(archive, 'module', module.name);
+						const archivePath = path.join(archive, 'modules', module.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get Module Metadata
 						progress.report({ increment: 0.07 * progressPercentage, message: `${app.label} - Exporting Module ${module.label} (metadata)` });
-						const metadata = pick(await Core.rpGet(`${urn}/module/${module.name}`,
+						const metadata = pick(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}`,
 							_authorization), ['name', 'label', 'description', 'type_id', 'connection', 'webhook']);
 						switch (metadata.type_id) {
 							case 1:
@@ -834,7 +839,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -845,7 +850,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -856,7 +861,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.25), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -867,7 +872,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.33), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/module/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -880,18 +885,19 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					const functions = await Core.rpGet(`${urn}/function`, _authorization);
+					let functions = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'function')}`, _authorization);
+					if (_environment.version === 2) { functions = functions.appFunctions }
 					if (functions.length === 0) {
 						progress.report({ increment: 7, message: `${app.label} - No Functions (skipping)` });
 					} else {
 						progressPercentage = 7 / functions.length;
 					}
-					await asyncfile.mkdir(path.join(archive, 'function'));
+					await asyncfile.mkdir(path.join(archive, 'functions'));
 					for (const fun of functions) {
 						if (canceled) {
 							return;
 						}
-						const archivePath = path.join(archive, 'function', fun.name);
+						const archivePath = path.join(archive, 'functions', fun.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get Corresponding Sources
@@ -900,7 +906,7 @@ class AppCommands {
 								increment: progressPercentage * 0.5, message: `${app.label} - Exporting Function ${fun.name}${fun.args} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.js`),
-								await Core.rpGet(`${urn}/function/${fun.name}/${key}`, _authorization));
+								await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'function')}/${fun.name}/${key}`, _authorization));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -925,7 +931,17 @@ class AppCommands {
 					} catch (err) { }
 
 					/**
-					 * 10 - Compress and save
+					 * 10 - Note the format
+					 */
+					if (canceled) {
+						return
+					}
+					await asyncfile.writeFile(path.join(archive, `.sdk`), JSON.stringify({
+						version: 2
+					}, null, 4));
+
+					/**
+					 * 11 - Compress and save
 					 */
 					if (canceled) {
 						return;
