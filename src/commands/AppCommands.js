@@ -17,6 +17,7 @@ const asyncfile = require('async-file');
 const tempy = require('tempy');
 const compressing = require('compressing');
 const AdmZip = require('adm-zip');
+const camelCase = require('lodash.camelcase');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -638,8 +639,9 @@ class AppCommands {
 						return;
 					}
 					progress.report({ increment: 2, message: `${app.label} - Gathering Metadata` });
-					await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(pick(await Core.rpGet(`${urn}`,
-						_authorization), ['name', 'label', 'version', 'theme', 'language', 'countries']), null, 4));
+					let a = await Core.rpGet(`${urn}`, _authorization);
+					if (_environment.version === 2) { a = a.app }
+					await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(pick(a, ['name', 'label', 'version', 'theme', 'language', 'countries']), null, 4));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					/**
@@ -687,9 +689,9 @@ class AppCommands {
 						progress.report({
 							increment: 0.125 * progressPercentage, message: `${app.label} - Exporting Connection ${connection.label} (metadata)`
 						});
-						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
-							JSON.stringify(pick(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}`,
-								_authorization), ['name', 'label', 'type']), null, 4));
+						let c = (await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}`, _authorization));
+						if (_environment.version === 2) { c = c.appConnection }
+						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(c, ['name', 'label', 'type']), null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
@@ -726,8 +728,10 @@ class AppCommands {
 
 						// Get RPC Metadata
 						progress.report({ increment: (0.25 * progressPercentage), message: `${app.label} - Exporting RPC ${rpc.label} (metadata)` });
+						let r = (await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}`, _authorization));
+						if (_environment.version === 2) { r = r.appRpc }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
-							JSON.stringify(pick(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}`, _authorization), ['name', 'label', 'connection']), null, 4));
+							JSON.stringify(pick(r, ['name', 'label', 'connection']), null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
@@ -762,9 +766,9 @@ class AppCommands {
 
 						// Get Webhook Metadata
 						progress.report({ increment: 0.1 * progressPercentage, message: `${app.label} - Exporting Webhook ${webhook.label} (metadata)` });
-						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
-							JSON.stringify(pick(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}`,
-								_authorization), ['name', 'label', 'connection', 'type']), null, 4));
+						let w = await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}`, _authorization)
+						if (_environment.version === 2) { w = w.appWebhook }
+						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(w, ['name', 'label', 'connection', 'type']), null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
@@ -796,13 +800,15 @@ class AppCommands {
 						if (canceled) {
 							return;
 						}
+						if (_environment.version === 2) { module.type_id = module.typeId; delete module.typeId; }
 						const archivePath = path.join(archive, 'modules', module.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get Module Metadata
 						progress.report({ increment: 0.07 * progressPercentage, message: `${app.label} - Exporting Module ${module.label} (metadata)` });
-						const metadata = pick(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}`,
-							_authorization), ['name', 'label', 'description', 'type_id', 'connection', 'webhook']);
+						let m = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}`, _authorization)
+						if (_environment.version === 2) { m = m.appModule; m.type_id = m.typeId; delete m.typeId }
+						const metadata = pick(m, ['name', 'label', 'description', 'type_id', 'connection', 'webhook']);
 						switch (metadata.type_id) {
 							case 1:
 								metadata.type = 'trigger';
@@ -986,6 +992,12 @@ class AppCommands {
 										resolve(data);
 									}));
 							})).toString());
+
+							// Universal module subtype
+							if (key === 'modules' && component.metadata.type === 'universal') {
+								component.metadata.subtype = 'Universal'
+							}
+
 							validator.count++;
 						}
 						await Promise.all((Array.isArray(codes) ? codes : codes[component.metadata.type]).map(async (code) => {
@@ -1054,13 +1066,28 @@ class AppCommands {
 					}));
 				})).toString());
 
+				// Get .sdk metadata raw directly
+				const _sdk = JSON.parse((await new Promise(resolve => {
+					const f = entries.find(entry => entry.entryName.match(`${app.metadata.name}/.sdk`));
+					if (f) {
+						f.getDataAsync((data => {
+							resolve(data.toString());
+						}));
+					} else {
+						// Resolve with default data
+						resolve(JSON.stringify({
+							version: 1
+						}));
+					}
+				})));
+
 				app.base = (await getData(validator, entries, `${app.metadata.name}/base.imljson`)).toString();
 				app.readme = (await getData(validator, entries, `${app.metadata.name}/readme.md`)).toString();
 				app.icon = await getData(validator, entries, `${app.metadata.name}/assets/icon.png`);
-				app.connections = await parseComponent(validator, entries, app.metadata, 'connection', [`api`, `scope`, `scopes`, `parameters`], 'imljson');
-				app.rpcs = await parseComponent(validator, entries, app.metadata, 'rpc', [`api`, `parameters`], 'imljson');
-				app.webhooks = await parseComponent(validator, entries, app.metadata, 'webhook', [`api`, `parameters`, `attach`, `detach`, `scope`], 'imljson');
-				app.modules = await parseComponent(validator, entries, app.metadata, 'module', {
+				app.connections = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'connection'), [`api`, `scope`, `scopes`, `parameters`], 'imljson');
+				app.rpcs = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'rpc'), [`api`, `parameters`], 'imljson');
+				app.webhooks = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'webhook'), [`api`, `parameters`, `attach`, `detach`, `scope`], 'imljson');
+				app.modules = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'module'), {
 					action: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
 					search: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
 					universal: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
@@ -1068,7 +1095,7 @@ class AppCommands {
 					instant_trigger: [`api`, `parameters`, `interface`, `samples`],
 					responder: [`api`, `parameters`, `expect`],
 				}, 'imljson');
-				app.functions = await parseComponent(validator, entries, app.metadata, 'function', ['code', 'test'], 'js', false);
+				app.functions = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'function'), ['code', 'test'], 'js', false);
 				return app;
 
 				// validator.count should equal entries.length;
@@ -1082,7 +1109,7 @@ class AppCommands {
 				requests.push(makeRequestProto(`Icon`, `${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
 
 				app.connections.forEach((connection) => {
-					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `connection`, 'POST', 'application/json',
+					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, Core.pathDeterminer(_environment.version, 'connection'), 'POST', 'application/json',
 						JSON.stringify(extract(connection.metadata, ['label', 'type'])),
 						[
 							{
@@ -1096,17 +1123,17 @@ class AppCommands {
 						]));
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
-							`connection/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+							`${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 					[`scope`, `scopes`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
-							`connection/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+							`${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 				});
 
 				app.rpcs.forEach((rpc) => {
 					requests.push(makeRequestProto(`RPC ${rpc.metadata.label}`,
-						`${remoteApp.version}/rpc`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
+						`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
 						[
 							{
 								key: 'connection',
@@ -1115,13 +1142,13 @@ class AppCommands {
 						]));
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`RPC ${rpc.metadata.label} - ${code}`,
-							`${remoteApp.version}/rpc/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
+							`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
 					});
 				});
 
 				app.webhooks.forEach((webhook) => {
 					requests.push(makeRequestProto(`Webhook ${webhook.metadata.label}`,
-						`webhook`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
+						`${Core.pathDeterminer(_environment.version, 'webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
 							['label', 'type', 'connection'])),
 						[
 							{
@@ -1141,12 +1168,12 @@ class AppCommands {
 						]));
 					[`api`, `parameters`, `attach`, `detach`, `scope`].forEach(code => {
 						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
-							`webhook/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
+							`${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
 				});
 
 				app.modules.forEach((appModule) => {
-					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook']);
+					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook', 'subtype']);
 					switch (appModule.metadata.type) {
 						case 'trigger':
 							body.type_id = 1;
@@ -1168,7 +1195,7 @@ class AppCommands {
 							break;
 					}
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
-						`${remoteApp.version}/module`, 'POST', 'application/json', JSON.stringify(body), undefined,
+						`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
 						[
 							{
 								key: 'connection',
@@ -1198,7 +1225,7 @@ class AppCommands {
 					}
 					codes.forEach(code => {
 						requests.push(makeRequestProto(`Module ${appModule.metadata.label} - ${code}`,
-							`${remoteApp.version}/module/${appModule.metadata.name}/${code}`,
+							`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}/${appModule.metadata.name}/${code}`,
 							'PUT', 'application/jsonc', appModule[code]));
 					});
 				});
@@ -1206,12 +1233,12 @@ class AppCommands {
 				app.functions.forEach(appFunction => {
 					const functionName = /(?:function )(.+)(?:\()/.exec(appFunction.code)[1];
 					requests.push(makeRequestProto(`Function ${functionName}`,
-						`${remoteApp.version}/function`, 'POST', 'application/json', JSON.stringify({
+						`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}`, 'POST', 'application/json', JSON.stringify({
 							name: functionName
 						})));
 					[`code`, `test`].forEach(code => {
 						requests.push(makeRequestProto(`Function ${functionName} - ${code}`,
-							`${remoteApp.version}/function/${functionName}/${code}`,
+							`${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}/${functionName}/${code}`,
 							'PUT', 'application/javascript', appFunction[code]));
 					});
 				});
@@ -1234,7 +1261,20 @@ class AppCommands {
 				const zip = new AdmZip(source[0].fsPath);
 				const entries = zip.getEntries();
 				const app = await parseApp(entries);
-				const remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment}/app`);
+
+				if (_environment.version === 2) {
+					app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
+					if (app.metadata.audience === 'global') {
+						delete app.metadata.countries;
+					}
+					delete app.metadata.version;
+					if (!app.metadata.description) {
+						app.metadata.description = `Imported app ${app.metadata.label}.`
+					}
+				}
+
+				let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
+				if (_environment.version === 2) { remoteApp = remoteApp.app }
 				const requests = buildRequestQueue(app, remoteApp);
 
 				let shouldStop = false;
@@ -1257,7 +1297,7 @@ class AppCommands {
 						if (shouldStop) {
 							return;
 						}
-						const uri = replaceSlugs(store, `${_environment}/app/${remoteApp.name}/${r.endpoint}`);
+						const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${remoteApp.name}/${r.endpoint}`);
 						progress.report({
 							increment: (100 / requests.length),
 							message: r._label
@@ -1283,10 +1323,26 @@ class AppCommands {
 							method: r.method,
 							body: bodyProto
 						};
+
+						if (_environment.version === 2 && options.method === 'POST' && options.headers['content-type'] === 'application/json') {
+							const j = JSON.parse(options.body);
+							options.body = JSON.stringify(Object.keys(j).reduce((p, c) => {
+								p[camelCase(c)] = j[c] === null ? undefined : j[c];
+								return p;
+							}, {}))
+						}
+
 						const response = await rp(options);
 						if (r._store !== undefined) {
 							r._store.forEach(s => {
-								store[s.slug] = JSON.parse(response)[s.key];
+								let parsed = JSON.parse(response);
+
+								// Autoparse the nested object
+								if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
+									parsed = parsed[Object.keys(parsed)[0]];
+								}
+
+								store[s.slug] = parsed[s.key];
 							});
 						}
 						await new Promise(resolve => setTimeout(resolve, 600));
