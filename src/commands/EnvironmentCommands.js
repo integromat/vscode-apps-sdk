@@ -40,11 +40,7 @@ class EnvironmentCommands {
 			// Prompt for API version
 			let version = await vscode.window.showQuickPick([
 				{
-					label: 'Integromat 2.0',
-					description: '2'
-				},
-				{
-					label: 'Integromat 1.0',
+					label: 'Integromat',
 					description: '1'
 				}], {
 				placeHolder: 'Choose the environment version.'
