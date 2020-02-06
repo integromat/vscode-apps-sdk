@@ -484,7 +484,7 @@ class CoreCommands {
 					let connectionType;
 					let connectionSource;
 					if (this._environment.version === 1) {
-						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}`, this._authorization)).appConnection.type
+						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}`, this._authorization)).type
 						connectionSource = (await Core.rpGet(`${this._environment.baseUrl}/app/${app}/connection/${connection}/api`, this._authorization))
 					} else {
 						connectionType = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps/connections/${connection}`, this._authorization)).appConnection.type
