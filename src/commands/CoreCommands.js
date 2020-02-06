@@ -66,7 +66,7 @@ class CoreCommands {
 		let url = (path.join(path.dirname(right), basename)).replace(/\\/g, "/")
 
 		// Remove webhooks and connections from path as they're not under the APP-NAME endpoint in v2
-		if (url.startswith('sdk/') && url.includes('/webhooks/') || url.includes('/connections/')) {
+		if (url.startsWith('/sdk/') && url.includes('/webhooks/') || url.includes('/connections/')) {
 			url = url.split('/')
 			url.splice(3, 1)
 			url = url.join('/')

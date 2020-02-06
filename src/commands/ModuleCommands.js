@@ -303,7 +303,7 @@ class ModuleCommands {
 						if (_environment.version === 2) {
 							try {
 								await Core.patchEntity(_authorization, {
-									webhook: webhook
+									webhook: webhook.description
 								}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
 							}
 							catch (err) {
