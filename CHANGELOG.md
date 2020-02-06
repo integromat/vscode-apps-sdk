@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.2.0
+
+### Added
+
+- Compatibility with the new API version (not available to use yet, but the support is added)
+
+### Fixed and modified
+
+- Several bugfixes and tweaks
+
 ## 1.1.2
 
 ### Fixed

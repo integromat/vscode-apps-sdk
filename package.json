@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.1.2",
+	"version": "1.2.0",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
