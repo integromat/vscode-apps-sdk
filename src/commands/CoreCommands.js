@@ -119,7 +119,13 @@ class CoreCommands {
 		catch (err) {
 			// Parse the error and display it
 			let e = JSON.parse(err.error)
-			vscode.window.showErrorMessage(`${e.name}: ${e.message}`)
+
+			// If name is undefined and environment version is 2, then try to use APIError message format instead of syntax error
+			if (e.name === undefined && this._environment.version === 2) {
+				vscode.window.showErrorMessage(`${e.message}: ${e.detail ? e.detail[0] : 'No further information available.'}`);
+			} else {
+				vscode.window.showErrorMessage(`${e.name}: ${e.message}`)
+			}
 
 			// Get active text editor, if exists, insert zero-space char -> mark changed
 			let editor = vscode.window.activeTextEditor
