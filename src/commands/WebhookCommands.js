@@ -38,7 +38,7 @@ class WebhookCommands {
 			if (!Core.isFilled("connection", "webhook", connection)) { return }
 
 			// Build URI and prepare connection value
-			let uri = `${_environment}/app/${app.name}/webhook`
+			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${Core.pathDeterminer(_environment.version, 'webhook')}`
 			connection = connection.label === "--- Without connection ---" ? "" : connection.description
 
 			// Send the request
@@ -71,12 +71,24 @@ class WebhookCommands {
 			if (!Core.isFilled("label", "webhook", label)) { return }
 
 			// Send the request
-			try {
-				await Core.editEntityPlain(_authorization, label, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/label`)
-				appsProvider.refresh()
-			}
-			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+			if (_environment.version === 2) {
+				try {
+					await Core.patchEntity(_authorization, {
+						label: label
+					}, `${_environment.baseUrl}/sdk/apps/webhooks/${context.name}`)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
+			} else {
+				try {
+					await Core.editEntityPlain(_authorization, label, `${_environment.baseUrl}/app/${context.parent.parent.name}/webhook/${context.name}/label`)
+					appsProvider.refresh()
+				}
+				catch (err) {
+					vscode.window.showErrorMessage(err.error.message || err)
+				}
 			}
 		})
 
@@ -110,24 +122,29 @@ class WebhookCommands {
 			}
 
 			if (multi) {
-				const webhookDetail = await Core.rpGet(`${_environment}/app/${context.parent.parent.name}/webhook/${context.name}`, _authorization);
+				let webhookDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${_environment.version === 2 ? '' : `${context.parent.parent.name}/`}${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`, _authorization);
+
+				// ApiFlip
+				if (_environment.version === 2) {
+					webhookDetail = webhookDetail.appWebhook;
+				}
 
 				const primaryConnectionOptions = connections;
 
 				let hasPrimary = !!webhookDetail.connection;
-				if(hasPrimary) {
+				if (hasPrimary) {
 					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.description === webhookDetail.connection);
 					const toSelect = primaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.splice(toSelectIndex, 1);
 					primaryConnectionOptions.unshift(toSelect);
 				} else {
 					const toSelectIndex = primaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
 					const toSelect = primaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					primaryConnectionOptions.splice(toSelectIndex,1);
+					primaryConnectionOptions.splice(toSelectIndex, 1);
 					primaryConnectionOptions.unshift(toSelect);
 				}
 
@@ -141,11 +158,22 @@ class WebhookCommands {
 						hasPrimary = true;
 					}
 					connection = connection.label === "--- Without connection ---" ? "" : connection.description
-					try {
-						await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
-					}
-					catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err)
+					if (_environment.version === 2) {
+						try {
+							await Core.patchEntity(_authorization, {
+								connection: connection
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
+					} else {
+						try {
+							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
 					}
 				}
 				if (!hasPrimary) {
@@ -157,32 +185,49 @@ class WebhookCommands {
 				if (context.type === 'web-shared') {
 					secondaryConnectionOptions.push({ label: '--- Without connection ---', description: 'dont-use' });
 				}
-				if(!!webhookDetail.alt_connection) {
+
+				if (webhookDetail.altConnection !== undefined) {
+					webhookDetail.alt_connection = webhookDetail.altConnection;
+					delete webhookDetail.altConnection;
+				}
+
+				if (!!webhookDetail.alt_connection) {
 					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.description === webhookDetail.alt_connection);
 					const toSelect = secondaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.splice(toSelectIndex, 1);
 					secondaryConnectionOptions.unshift(toSelect);
 				} else {
 					const toSelectIndex = secondaryConnectionOptions.findIndex(o => o.label === '--- Without connection ---');
 					const toSelect = secondaryConnectionOptions[toSelectIndex];
 					toSelect.label += ` (current)`;
 					toSelect.description = 'keep';
-					secondaryConnectionOptions.splice(toSelectIndex,1);
+					secondaryConnectionOptions.splice(toSelectIndex, 1);
 					secondaryConnectionOptions.unshift(toSelect);
 				}
-				
+
 				connection = await vscode.window.showQuickPick(secondaryConnectionOptions, { placeHolder: "Change secondary connection or keep existing." })
 				if (!Core.isFilled("connection", "webhook", connection)) { return }
 				if (connection.description !== "keep") {
 					connection = connection.label === "--- Don\'t use secondary connection ---" ? "" : connection.description
-					try {
-						await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/alt_connection`)
-						appsProvider.refresh()
-					}
-					catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err)
+					if (_environment.version === 2) {
+						try {
+							await Core.patchEntity(_authorization, {
+								altConnection: connection
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
+					} else {
+						try {
+							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/alt_connection`)
+							appsProvider.refresh()
+						}
+						catch (err) {
+							vscode.window.showErrorMessage(err.error.message || err)
+						}
 					}
 				}
 			} else {
@@ -196,7 +241,13 @@ class WebhookCommands {
 				try {
 					if (connection.description !== "keep") {
 						connection = connection.label === "--- Without connection ---" ? "" : connection.description
-						await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
+						if (_environment.version === 2) {
+							await Core.patchEntity(_authorization, {
+								connection: connection
+							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
+						} else {
+							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
+						}
 						appsProvider.refresh()
 					}
 				}

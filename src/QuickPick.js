@@ -1,9 +1,12 @@
 const vscode = require('vscode');
 const Core = require('./Core');
+const camelCase = require('lodash.camelcase');
 
 module.exports = {
 	connections: async function (environment, authorization, app, allow_no) {
-		let response = await Core.rpGet(`${environment}/app/${app.name}/connection`, authorization)
+		const uri = `${environment.baseUrl}/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${app.name}/${Core.pathDeterminer(environment.version, 'connection')}`;
+		let response = await Core.rpGet(uri, authorization);
+		response = environment.version === 1 ? response : response[camelCase(`appConnections`)];
 		try {
 			let connections = response.map(connection => {
 				return {
@@ -22,7 +25,9 @@ module.exports = {
 	},
 
 	webhooks: async function (environment, authorization, app, allow_no) {
-		let response = await Core.rpGet(`${environment}/app/${app.name}/webhook`, authorization)
+		const uri = `${environment.baseUrl}/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${app.name}/${Core.pathDeterminer(environment.version, 'webhook')}`;
+		let response = await Core.rpGet(uri, authorization);
+		response = environment.version === 1 ? response : response[camelCase(`appWebhooks`)];
 		try {
 			let webhooks = response.map(webhook => {
 				return {
@@ -41,12 +46,19 @@ module.exports = {
 	},
 
 	countries: async function (environment, authorization) {
-		let countries = await Core.rpGet(`${environment}/country`, authorization)
+		let countries;
+		let code = 'code';
+		if (environment.version === 2) {
+			countries = (await Core.rpGet(`${environment.baseUrl}/enums/countries`, authorization)).countries
+			code = 'code2'
+		} else {
+			countries = await Core.rpGet(`${environment.baseUrl}/country`, authorization)
+		}
 		try {
 			return countries.map(country => {
 				return {
 					label: country.name,
-					description: country.code
+					description: country[code]
 				}
 			})
 		}
@@ -56,7 +68,12 @@ module.exports = {
 	},
 
 	languages: async function (environment, authorization, context) {
-		let response = await Core.rpGet(`${environment}/language`, authorization)
+		let response;
+		if (environment.version === 2) {
+			response = (await Core.rpGet(`${environment.baseUrl}/enums/languages`, authorization)).languages
+		} else {
+			response = await Core.rpGet(`${environment.baseUrl}/language`, authorization)
+		}
 		let languages = response.map(language => {
 			if (language == null) { return }
 			return {
@@ -81,7 +98,12 @@ module.exports = {
 	},
 
 	allApps: async function (environment, authorization) {
-		let response = await Core.rpGet(`${environment}/app`, authorization, { all: true })
+		let response;
+		if (environment.version === 2) {
+			response = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization, { all: true })).apps
+		} else {
+			response = await Core.rpGet(`${environment.baseUrl}/app`, authorization, { all: true })
+		}
 		try {
 			const apps = [];
 			const used = [];
@@ -102,7 +124,12 @@ module.exports = {
 	},
 
 	favApps: async function (environment, authorization) {
-		let response = await Core.rpGet(`${environment}/app`, authorization)
+		let response;
+		if (environment.version === 2) {
+			response = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization)).apps
+		} else {
+			response = await Core.rpGet(`${environment.baseUrl}/app`, authorization)
+		}
 		try {
 			return response.map(app => {
 				return {

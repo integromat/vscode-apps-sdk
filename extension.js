@@ -98,8 +98,23 @@ async function activate(context) {
 
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
-			_authorization = "Token " + _configuration.environments[_configuration.environment].apikey
-			_environment = `https://${_configuration.environment}/v1`
+			const configuration = _configuration.environments[_configuration.environment];
+			_authorization = "Token " + configuration.apikey
+			// If API version not set or it's 1
+			if (!(configuration.version) || configuration.version === 1) {
+				_environment = {
+					baseUrl: `https://${_configuration.environment}/v1`,
+					version: 1
+				}
+			} else {
+				// API V2 and development purposes
+				// configuration.unsafe removes https
+				// configuration.noVersionPath removes vX in path
+				_environment = {
+					baseUrl: `http${configuration.unsafe === true ? '' : 's'}://${_configuration.environment}${configuration.noVersionPath === true ? '' : `/v${configuration.version}`}`,
+					version: configuration.version
+				}
+			}
 			_admin = _configuration.environments[_configuration.environment].admin === true ? true : false
 		}
 	}
@@ -116,7 +131,7 @@ async function activate(context) {
 		vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider())
 		vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, _DIR))
 
-		let appsProvider = new AppsProvider(_authorization, _environment, _DIR);
+		let appsProvider = new AppsProvider(_authorization, _environment, _DIR, _admin);
 		vscode.window.registerTreeDataProvider('apps', appsProvider);
 
         /**

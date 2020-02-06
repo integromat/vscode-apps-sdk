@@ -11,13 +11,15 @@ const path = require('path')
 const mkdirp = require('mkdirp')
 const download = require('image-downloader')
 const asyncfile = require('async-file')
+const camelCase = require('lodash.camelcase');
 
 class AppsProvider {
-	constructor(_authorization, _baseUrl, _DIR) {
+	constructor(_authorization, _environment, _DIR) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
 		this._authorization = _authorization
-		this._baseUrl = _baseUrl
+		this._environment = _environment;
+		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 	}
 
@@ -38,7 +40,21 @@ class AppsProvider {
          * LEVEL 0 - APPS
          */
 		if (element === undefined) {
-			let response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization, { opensource: true })
+			let response;
+			switch (this._environment.version) {
+				case 2:
+					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
+						opensource: true,
+						'cols[]': [
+							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
+						]
+					})).apps
+					break;
+				case 1:
+				default:
+					response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization, { opensource: true })
+					break;
+			}
 			if (response === undefined) { return }
 			let iconDir = path.join(this._DIR, "icons")
 			mkdirp(iconDir)
@@ -56,7 +72,15 @@ class AppsProvider {
 								"Authorization": this._authorization,
 								'x-imt-apps-sdk-version': Meta.version
 							},
-							url: `${this._baseUrl}/app/${app.name}/${app.version}/icon/512`,
+							url: (() => {
+								switch (this._environment.version) {
+									case 2:
+										return `${this._baseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`
+									case 1:
+									default:
+										return `${this._baseUrl}/app/${app.name}/${app.version}/icon/512`
+								}
+							})(),
 							dest: dest
 						})
 						await Core.invertPngAsync(dest);
@@ -67,7 +91,7 @@ class AppsProvider {
 						}
 					}
 				}
-				return new App(app.name, app.label, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
+				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
 			})
 			apps = await Promise.all(apps)
 			apps.sort(Core.compareApps)
@@ -94,14 +118,14 @@ class AppsProvider {
 			// General
 			if (element.id.includes("general")) {
 				return [
-					new Code(`base`, "Base", element, "imljson", "app", true),
-					new Code(`common`, "Common", element, "imljson", "app", true)
+					new Code(`base`, "Base", element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), true),
+					new Code(`common`, "Common", element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), true)
 				]
 			}
 			// Docs
 			else if (element.id.includes("docs")) {
 				return [
-					new Code(`readme`, "Readme", element, "md", "app", true),
+					new Code(`readme`, "Readme", element, "md", Core.pathDeterminer(this._environment.version, 'app'), true),
 					//new Code(`images`, "Images", element, "img", true)
 				]
 			}
@@ -111,10 +135,11 @@ class AppsProvider {
 					if (element.id.includes(needle)) {
 						let name = needle.slice(0, -1);
 						let uri = ["connection", "webhook"].includes(name) ?
-							`${this._baseUrl}/app/${element.parent.name}/${name}` :
-							`${this._baseUrl}/app/${element.parent.name}/${element.parent.version}/${name}`
-						let connections = await Core.rpGet(uri, this._authorization)
-						return connections.map(item => new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id, item.public, item.approved))
+							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
+							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, name)}`
+						let response = await Core.rpGet(uri, this._authorization)
+						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
+						return items.map(item => new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id || item.typeId, item.public, item.approved))
 					}
 				}
 			}
@@ -126,19 +151,19 @@ class AppsProvider {
 			switch (element.supertype) {
 				case "connection":
 					return [
-						new Code(`api`, "Communication", element, "imljson", "connection", true),
-						new Code(`common`, "Common data", element, "imljson", "connection", true),
-						new Code(`scopes`, "Scope list", element, "imljson", "connection", true),
-						new Code(`scope`, "Default scope", element, "imljson", "connection", true),
-						new Code(`parameters`, "Parameters", element, "imljson", "connection", true)
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
+						new Code(`common`, "Common data", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
+						new Code(`scopes`, "Scope list", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
+						new Code(`scope`, "Default scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
+						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true)
 					]
 				case "webhook":
 					return [
-						new Code(`api`, "Communication", element, "imljson", "webhook", true),
-						new Code(`parameters`, "Parameters", element, "imljson", "webhook", true),
-						new Code(`attach`, "Attach", element, "imljson", "webhook", true),
-						new Code(`detach`, "Detach", element, "imljson", "webhook", true),
-						new Code(`scope`, "Required scope", element, "imljson", "webhook", true),
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
+						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
+						new Code(`attach`, "Attach", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
+						new Code(`detach`, "Detach", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
+						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 					]
 				case "module":
 					switch (element.type) {
@@ -146,47 +171,47 @@ class AppsProvider {
 						case 4:
 						case 9:
 							return [
-								new Code(`api`, "Communication", element, "imljson", "module", true),
-								new Code(`parameters`, "Static parameters", element, "imljson", "module", true),
-								new Code(`expect`, "Mappable parameters", element, "imljson", "module", true),
-								new Code(`interface`, "Interface", element, "imljson", "module", true),
-								new Code(`samples`, "Samples", element, "imljson", "module", true),
-								new Code(`scope`, "Scope", element, "imljson", "module", true),
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`interface`, "Interface", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`scope`, "Scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
 							]
 						// Trigger
 						case 1:
 							return [
-								new Code(`api`, "Communication", element, "imljson", "module", true),
-								new Code(`epoch`, "Epoch", element, "imljson", "module", true),
-								new Code(`parameters`, "Static parameters", element, "imljson", "module", true),
-								new Code(`interface`, "Interface", element, "imljson", "module", true),
-								new Code(`samples`, "Samples", element, "imljson", "module", true),
-								new Code(`scope`, "Scope", element, "imljson", "module", true),
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`epoch`, "Epoch", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`interface`, "Interface", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`scope`, "Scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
 							]
 						// Instant trigger
 						case 10:
 							return [
-								new Code(`api`, "Communication", element, "imljson", "module", true),
-								new Code(`parameters`, "Static parameters", element, "imljson", "module", true),
-								new Code(`expect`, "Interface", element, "imljson", "module", true),
-								new Code(`samples`, "Samples", element, "imljson", "module", true)
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`expect`, "Interface", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true)
 							]
 						// Responder
 						case 11:
 							return [
-								new Code(`api`, "Communication", element, "imljson", "module", true),
-								new Code(`parameters`, "Static parameters", element, "imljson", "module", true),
-								new Code(`expect`, "Mappable parameters", element, "imljson", "module", true)
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true)
 							]
 					}
 				case "rpc":
 					return [
-						new Code(`api`, "Communication", element, "imljson", "rpc", true),
-						new Code(`parameters`, "Parameters", element, "imljson", "rpc", true)
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), true),
+						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), true)
 					]
 				case "function":
 					return [
-						new Code(`code`, "Code", element, "js", "function", true)
+						new Code(`code`, "Code", element, "js", Core.pathDeterminer(this._environment.version, 'function'), true)
 					]
 			}
 		}
