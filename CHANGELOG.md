@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.2.2
+
+### Modified
+
+- Path to WHOAMI call in V2
+
+## 1.2.1
+
+### Modified
+
+- Source Upload error messages improved
+
 ## 1.2.0
 
 ### Added

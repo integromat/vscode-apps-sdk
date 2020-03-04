@@ -56,7 +56,7 @@ class EnvironmentCommands {
 			if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
 
 			if (version.description === '2') {
-				let uri = `https://${url}/v2/auth/authorized`
+				let uri = `https://${url}/v2/​users/me`
 				try {
 					await rp({
 						url: uri,

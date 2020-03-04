@@ -24,7 +24,7 @@ class AccountCommands {
 
 			// who-am-I endpoint test
 			if (environment.version === 2) {
-				let uri = `http${environment.unsafe === true ? '' : 's'}://${_configuration.environment}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/auth/authorized`
+				let uri = `http${environment.unsafe === true ? '' : 's'}://${_configuration.environment}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/users/me`
 				try {
 					await rp({
 						url: uri,
