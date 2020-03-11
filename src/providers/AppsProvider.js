@@ -137,7 +137,7 @@ class AppsProvider {
 
 				// Look for changes of the group
 				let groupChanges = element.changes.filter(change => {
-					if (change.group === groupItem && change.code !== "groups") {
+					if ((change.group === 'account' ? 'connection' : (change.group === 'hook' ? 'webhook' : change.group)) === groupItem && change.code !== "groups") {
 						return change
 					}
 				})

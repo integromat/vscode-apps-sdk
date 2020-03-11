@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.3
+
+### Fixed
+
+- Connection Changes
+
 ## 1.2.2
 
 ### Modified
