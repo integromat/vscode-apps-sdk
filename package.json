@@ -690,13 +690,16 @@
 				},
 				"apps-sdk.environment": {
 					"type": "string",
-					"description": "Current environment URL.",
+					"description": "Current environment UUID.",
 					"default": ""
 				},
 				"apps-sdk.environments": {
-					"type": "object",
+					"type": [
+						"object",
+						"array"
+					],
 					"description": "Integromat SDK API environment",
-					"default": {}
+					"default": []
 				},
 				"apps-sdk.timezone": {
 					"type": "string",
@@ -725,7 +728,7 @@
 		"compressing": "^1.4.0",
 		"eslint-config-integromat": "^1.5.0",
 		"image-downloader": "^3.4.2",
-		"jimp": "^0.2.28",
+		"jimp": "^0.10.0",
 		"jsonc-parser": "^2.0.3",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.kebabcase": "^4.1.1",
@@ -741,6 +744,7 @@
 		"request-promise": "^4.2.4",
 		"tempy": "^0.2.1",
 		"universal-analytics": "^0.4.20",
+		"uuid": "^7.0.2",
 		"vm2": "^3.6.10",
 		"vscode-json-languageservice": "^3.2.0",
 		"vscode-languageclient": "^5.2.1",

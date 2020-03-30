@@ -23,6 +23,7 @@ const LanguageServersSettings = require('./src/LanguageServersSettings')
 const tempy = require('tempy')
 const path = require('path')
 const jsoncParser = require('jsonc-parser')
+const { v4: uuidv4 } = require('uuid');
 
 var _configuration
 var _authorization
@@ -42,6 +43,30 @@ async function activate(context) {
 	_DIR = path.join(tempy.directory(), "apps-sdk")
 	_configuration = vscode.workspace.getConfiguration('apps-sdk')
 	console.log('Apps SDK active.');
+
+	// Backward Compatibility Layer - Transform Old Config Format to the New One
+	if (typeof _configuration.environments === 'object' && !(Array.isArray(_configuration.environments))) {
+		console.debug('Old Environment Configuration Schema detected - transforming');
+
+		// RAW copy of environments, because _configuration is read only
+		const oldEnvironments = JSON.parse(JSON.stringify(_configuration.environments))
+
+		// Build new Envs
+		let currentEnvUuid;
+		const newEnvironments = Object.keys(oldEnvironments).map(url => {
+			const e = Object.assign({}, oldEnvironments[url], { url: url });
+			const uuid = uuidv4();
+			e.uuid = uuid;
+			if (url === _configuration.environment) {
+				currentEnvUuid = uuid;
+			}
+			return e;
+		});
+		// Store
+		await Promise.all([_configuration.update('environments', newEnvironments, 1), _configuration.update('environment', currentEnvUuid, 1)]);
+		// Reload 
+		_configuration = vscode.workspace.getConfiguration('apps-sdk');
+	}
 
     /**
      * IMLJSON language server
@@ -63,7 +88,7 @@ async function activate(context) {
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10)
 	envChanger.tooltip = "Click to change your working environment"
 	if (_configuration.environment) {
-		envChanger.text = `$(server) ${_configuration.environments[_configuration.environment].name}`
+		envChanger.text = `$(server) ${_configuration.environments.find(e => e.uuid === _configuration.environment).name}`
 	}
 	else {
 		envChanger.text = `$(server) ENVIRONMENT NOT SET`
@@ -89,7 +114,7 @@ async function activate(context) {
 		await AccountCommands.register(_configuration)
 
 		// If environment is set, but there's no API key in the configuration
-		if (_configuration.environments[_configuration.environment].apikey === "") {
+		if (_configuration.environments.find(e => e.uuid === _configuration.environment).apikey === "") {
 			let input = await vscode.window.showWarningMessage("Your API key for this environment is not set. Please login first.", "Login")
 			if (input === "Login") {
 				vscode.commands.executeCommand("apps-sdk.login")
@@ -98,12 +123,12 @@ async function activate(context) {
 
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
-			const configuration = _configuration.environments[_configuration.environment];
+			const configuration = _configuration.environments.find(e => e.uuid === _configuration.environment);
 			_authorization = "Token " + configuration.apikey
 			// If API version not set or it's 1
 			if (!(configuration.version) || configuration.version === 1) {
 				_environment = {
-					baseUrl: `https://${_configuration.environment}/v1`,
+					baseUrl: `https://${configuration.url}/v1`,
 					version: 1
 				}
 			} else {
@@ -111,11 +136,11 @@ async function activate(context) {
 				// configuration.unsafe removes https
 				// configuration.noVersionPath removes vX in path
 				_environment = {
-					baseUrl: `http${configuration.unsafe === true ? '' : 's'}://${_configuration.environment}${configuration.noVersionPath === true ? '' : `/v${configuration.version}`}`,
+					baseUrl: `http${configuration.unsafe === true ? '' : 's'}://${configuration.url}${configuration.noVersionPath === true ? '' : `/v${configuration.version}`}`,
 					version: configuration.version
 				}
 			}
-			_admin = _configuration.environments[_configuration.environment].admin === true ? true : false
+			_admin = configuration.admin === true ? true : false
 		}
 	}
 

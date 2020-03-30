@@ -92,7 +92,7 @@ module.exports = {
 	},
 
 	environments: function (configuration) {
-		let envs = Object.keys(configuration.environments).map(key => { return { label: configuration.environments[key].name, description: key } })
+		let envs = configuration.environments.map(e => { return { label: e.name, description: e.uuid } })
 		envs.push({ label: "+ Add a new environment", description: "add" })
 		return envs
 	},
