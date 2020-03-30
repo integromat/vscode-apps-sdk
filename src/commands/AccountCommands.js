@@ -14,7 +14,7 @@ class AccountCommands {
 		vscode.commands.registerCommand('apps-sdk.login', async () => {
 
 			// Load environment from configuration
-			let environment = _configuration.environments[_configuration.environment]
+			let environment = _configuration.environments.find(e => e.uuid === _configuration.environment)
 
 			// Prompt for API key
 			let apikey = await vscode.window.showInputBox({ prompt: `Enter your API key for environment ${environment.name}.` })
@@ -24,7 +24,7 @@ class AccountCommands {
 
 			// who-am-I endpoint test
 			if (environment.version === 2) {
-				let uri = `http${environment.unsafe === true ? '' : 's'}://${_configuration.environment}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/users/me`
+				let uri = `http${environment.unsafe === true ? '' : 's'}://${environment.url}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/users/me`
 				try {
 					await rp({
 						url: uri,
@@ -39,14 +39,14 @@ class AccountCommands {
 					return;
 				}
 			} else {
-				let uri = `https://${_configuration.environment}/v1/whoami`
+				let uri = `https://${environment.url}/v1/whoami`
 				let response = await Core.rpGet(uri, `Token ${apikey}`)
 				if (response === undefined) { return }
 			}
 
 			// Update environments, save everything and reload the window
 			let environments = JSON.parse(JSON.stringify(_configuration.environments))
-			environments[_configuration.environment].apikey = apikey
+			environments.find(e => e.uuid === _configuration.environment).apikey = apikey;
 			Promise.all([
 				_configuration.update('login', true, 1),
 				_configuration.update('environments', environments, 1),
@@ -71,7 +71,7 @@ class AccountCommands {
 			// If answer is yes -> update environments, login to falsey, save and reload
 			if (answer.label === "Yes") {
 				let environments = JSON.parse(JSON.stringify(_configuration.environments))
-				environments[_configuration.environment].apikey = ""
+				environments.find(e => e.uuid === _configuration.environment).apikey = ""
 				Promise.all([
 					_configuration.update('login', false, 1),
 					_configuration.update('environments', environments, 1)

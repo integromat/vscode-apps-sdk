@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.4
+
+### Modified
+
+- Better Environment Management
+
 ## 1.2.3
 
 ### Fixed

@@ -8,3 +8,4 @@ node_modules
 .idea/workspace.xml
 .idea/inspectionProfiles/Project_Default.xml
 .DS_Store
+local

@@ -6,6 +6,8 @@ const QuickPick = require('../QuickPick')
 const Validator = require('../Validator')
 const Meta = require('../Meta')
 
+const { v4: uuidv4 } = require('uuid');
+
 class EnvironmentCommands {
 	static async register(envChanger, _configuration) {
 
@@ -23,10 +25,8 @@ class EnvironmentCommands {
 
 			// Check if filled and unique
 			if (!Core.isFilled("url", "environment", url, "An")) { return }
-			if (_configuration.environments[url]) {
-				vscode.window.showErrorMessage("This environment URL has been configured already.")
-				return
-			}
+
+			// Removed Unique Index of URL here.
 
 			// Prompt for environment name
 			let name = await vscode.window.showInputBox({
@@ -82,25 +82,27 @@ class EnvironmentCommands {
 			let envs = JSON.parse(JSON.stringify(_configuration.environments))
 
 			// Add new env to environments object
-			envs[url] = {
+			const newEnvUuid = uuidv4();
+			envs.push({
+				uuid: newEnvUuid,
+				url: url,
 				name: name,
 				apikey: apikey,
 				version: parseInt(version.description)
-			}
+			})
 
 			// Save all and reload the window
-			Promise.all([
+			await Promise.all([
 				_configuration.update('login', true, 1),
 				_configuration.update('environments', envs, 1),
-				_configuration.update('environment', url, 1)
-			]).then(() => {
-				vscode.commands.executeCommand("workbench.action.reloadWindow")
-			})
+				_configuration.update('environment', newEnvUuid, 1)
+			]);
+			vscode.commands.executeCommand("workbench.action.reloadWindow")
 		})
 
-        /**
-         * Change environment
-         */
+		/**
+		 * Change environment
+		 */
 		vscode.commands.registerCommand('apps-sdk.env.change', async () => {
 
 			// Prompt for environment (show quickpick of existing)
@@ -120,7 +122,7 @@ class EnvironmentCommands {
 			await _configuration.update('environment', environment.description, 1)
 
 			// If new env doesn't contain API key -> set login falsey
-			if (_configuration.environments[environment.description].apikey === "") {
+			if (_configuration.environments.find(e => e.uuid === environment.description).apikey === "") {
 				await _configuration.update('login', false, 1)
 			}
 
