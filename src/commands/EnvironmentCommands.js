@@ -83,27 +83,26 @@ class EnvironmentCommands {
 
 			// Add new env to environments object
 			const newEnvUuid = uuidv4();
-			envs.push = {
+			envs.push({
 				uuid: newEnvUuid,
 				url: url,
 				name: name,
 				apikey: apikey,
 				version: parseInt(version.description)
-			}
+			})
 
 			// Save all and reload the window
-			Promise.all([
+			await Promise.all([
 				_configuration.update('login', true, 1),
 				_configuration.update('environments', envs, 1),
 				_configuration.update('environment', newEnvUuid, 1)
-			]).then(() => {
-				vscode.commands.executeCommand("workbench.action.reloadWindow")
-			})
+			]);
+			vscode.commands.executeCommand("workbench.action.reloadWindow")
 		})
 
-        /**
-         * Change environment
-         */
+		/**
+		 * Change environment
+		 */
 		vscode.commands.registerCommand('apps-sdk.env.change', async () => {
 
 			// Prompt for environment (show quickpick of existing)
