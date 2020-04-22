@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.2.6
+
+## Fixed
+
+- Language Server
+
+## 1.2.5
+
+### Modified
+
+- Minor Tweaks
+
 ## 1.2.4
 
 ### Modified
