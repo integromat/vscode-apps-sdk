@@ -1,8 +1,14 @@
 # Change Log
 
+## 1.2.7
+
+### Fixed
+
+- Import for Apps without an icon
+
 ## 1.2.6
 
-## Fixed
+### Fixed
 
 - Language Server
 
