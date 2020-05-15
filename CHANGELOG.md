@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.8
+
+### Added
+
+- Early Access Connection for 2.0 API
+
 ## 1.2.7
 
 ### Fixed
