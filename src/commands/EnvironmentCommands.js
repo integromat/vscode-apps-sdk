@@ -42,6 +42,10 @@ class EnvironmentCommands {
 				{
 					label: 'Integromat',
 					description: '1'
+				},
+				{
+					label: 'Integromat 2.0 (early access)',
+					description: '2'
 				}], {
 				placeHolder: 'Choose the environment version.'
 			});
@@ -56,7 +60,7 @@ class EnvironmentCommands {
 			if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
 
 			if (version.description === '2') {
-				let uri = `https://${url}/v2/​users/me`
+				let uri = `https://${url}/v2/users/me`
 				try {
 					await rp({
 						url: uri,

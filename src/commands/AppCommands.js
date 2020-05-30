@@ -1083,7 +1083,11 @@ class AppCommands {
 
 				app.base = (await getData(validator, entries, `${app.metadata.name}/base.imljson`)).toString();
 				app.readme = (await getData(validator, entries, `${app.metadata.name}/readme.md`)).toString();
-				app.icon = await getData(validator, entries, `${app.metadata.name}/assets/icon.png`);
+				try {
+					app.icon = await getData(validator, entries, `${app.metadata.name}/assets/icon.png`);
+				} catch (e) {
+					app.icon = undefined;
+				}
 				app.connections = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'connection'), [`api`, `scope`, `scopes`, `parameters`], 'imljson');
 				app.rpcs = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'rpc'), [`api`, `parameters`], 'imljson');
 				app.webhooks = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'webhook'), [`api`, `parameters`, `attach`, `detach`, `scope`], 'imljson');
@@ -1106,7 +1110,10 @@ class AppCommands {
 
 				requests.push(makeRequestProto(`Base`, `${remoteApp.name}/${remoteApp.version}/base`, 'PUT', 'application/jsonc', app.base));
 				requests.push(makeRequestProto(`Readme`, `${remoteApp.name}/${remoteApp.version}/readme`, 'PUT', 'text/markdown', app.readme));
-				requests.push(makeRequestProto(`Icon`, `${remoteApp.name}/${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
+
+				if (app.icon !== undefined) {
+					requests.push(makeRequestProto(`Icon`, `${remoteApp.name}/${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
+				}
 
 				app.connections.forEach((connection) => {
 					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'connection')}`, 'POST', 'application/json',
@@ -1345,7 +1352,7 @@ class AppCommands {
 								store[s.slug] = parsed[s.key];
 							});
 						}
-						await new Promise(resolve => setTimeout(resolve, 600));
+						await new Promise(resolve => setTimeout(resolve, 700));
 					}
 				});
 				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);

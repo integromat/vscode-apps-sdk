@@ -1,5 +1,29 @@
 # Change Log
 
+## 1.2.8
+
+### Added
+
+- Early Access Connection for 2.0 API
+
+## 1.2.7
+
+### Fixed
+
+- Import for Apps without an icon
+
+## 1.2.6
+
+### Fixed
+
+- Language Server
+
+## 1.2.5
+
+### Modified
+
+- Minor Tweaks
+
 ## 1.2.4
 
 ### Modified
