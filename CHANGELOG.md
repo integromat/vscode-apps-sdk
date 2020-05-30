@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.2.9
+
+### Added
+
+- App Archive corruption detection
+- App Import failsave
+- App Import Rename Option
+
+### Fixed
+
+- Apps Import/Export Tweaks
+- Null value guards
+
 ## 1.2.8
 
 ### Added
