@@ -980,8 +980,11 @@ class AppCommands {
 
 			const parseComponent = async (validator, entries, metadata, key, codes, extension, requireMetadata = true) => {
 				return Promise.all(deduplicate(entries
-					.filter(entry => entry.entryName.match(`${metadata.name}/${key}/.*`))
+					.filter(entry => {
+						return (entry.entryName.match(`${metadata.name}/${key}/.+`)) && !(entry.entryName.startsWith(`__MAC`)) && (entry.isDirectory === false)
+					})
 					.map(entry => entry.entryName.split('/')[2]))
+					.filter(filename => !(['.DS_Store'].includes(filename)))
 					.map(async (internalName) => {
 						const component = {};
 						if (requireMetadata === true) {
@@ -1301,6 +1304,9 @@ class AppCommands {
 				}
 
 				let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
+				if (!remoteApp) {
+					return;
+				}
 				if (_environment.version === 2) { remoteApp = remoteApp.app }
 				const requests = buildRequestQueue(app, remoteApp);
 
