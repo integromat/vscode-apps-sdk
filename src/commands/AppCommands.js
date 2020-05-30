@@ -1073,10 +1073,15 @@ class AppCommands {
 
 				// Try to get app metadata from the raw zip path
 				app.metadata = JSON.parse((await new Promise(resolve => {
-					entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
-						validator.count++;
-						resolve(data);
-					}));
+					const e = entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/));
+					if (e) {
+						e.getDataAsync((data => {
+							validator.count++;
+							resolve(data);
+						}));
+					} else {
+						vscode.window.showErrorMessage(`App archive corrupted. (metadata.json not resolved correctly)`);
+					}
 				})).toString());
 
 				// Get .sdk metadata raw directly
