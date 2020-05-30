@@ -616,7 +616,7 @@ class AppCommands {
 
 				let canceled = false;
 				progress.report({ increment: 0, message: `${app.label} - Preparing for export` });
-				const RATE_LIMIT_MS = 600;
+				const RATE_LIMIT_MS = Meta.turbo === true ? 10 : 600;
 				const DIR = tempy.directory();
 				token.onCancellationRequested(() => {
 					vscode.window.showWarningMessage(`Export of ${app.label} canceled.`);
@@ -1290,6 +1290,16 @@ class AppCommands {
 					}
 				}
 
+				// Name prompt
+				app.metadata.name = await vscode.window.showInputBox({
+					prompt: 'Enter name of the imported app',
+					value: app.metadata.name,
+					validateInput: Validator.appName
+				});
+				if (!Core.isFilled('name', 'imported app', app.metadata.name, 'A')) {
+					return;
+				}
+
 				let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
 				if (_environment.version === 2) { remoteApp = remoteApp.app }
 				const requests = buildRequestQueue(app, remoteApp);
@@ -1362,7 +1372,7 @@ class AppCommands {
 								store[s.slug] = parsed[s.key];
 							});
 						}
-						await new Promise(resolve => setTimeout(resolve, 700));
+						await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
 					}
 				});
 				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
