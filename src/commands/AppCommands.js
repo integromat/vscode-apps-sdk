@@ -616,7 +616,7 @@ class AppCommands {
 
 				let canceled = false;
 				progress.report({ increment: 0, message: `${app.label} - Preparing for export` });
-				const RATE_LIMIT_MS = 600;
+				const RATE_LIMIT_MS = Meta.turbo === true ? 10 : 600;
 				const DIR = tempy.directory();
 				token.onCancellationRequested(() => {
 					vscode.window.showWarningMessage(`Export of ${app.label} canceled.`);
@@ -700,7 +700,7 @@ class AppCommands {
 								increment: (0.875 * progressPercentage) * (0.25), message: `${app.label} - Exporting Connection ${connection.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization), key));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -738,7 +738,7 @@ class AppCommands {
 						for (const key of [`api`, `parameters`]) {
 							progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` });
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization), key));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -777,7 +777,7 @@ class AppCommands {
 								increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization), key));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -845,7 +845,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -856,7 +856,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -867,7 +867,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.25), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -878,7 +878,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.33), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -980,8 +980,11 @@ class AppCommands {
 
 			const parseComponent = async (validator, entries, metadata, key, codes, extension, requireMetadata = true) => {
 				return Promise.all(deduplicate(entries
-					.filter(entry => entry.entryName.match(`${metadata.name}/${key}/.*`))
+					.filter(entry => {
+						return (entry.entryName.match(`${metadata.name}/${key}/.+`)) && !(entry.entryName.startsWith(`__MAC`)) && (entry.isDirectory === false)
+					})
 					.map(entry => entry.entryName.split('/')[2]))
+					.filter(filename => !(['.DS_Store'].includes(filename)))
 					.map(async (internalName) => {
 						const component = {};
 						if (requireMetadata === true) {
@@ -1008,6 +1011,16 @@ class AppCommands {
 										resolve(data);
 									}));
 							})).toString();
+
+							// Fix null value -- DON'T FORGET TO CHANGE IN CORE COMMANDS WHEN CHANGING THIS
+							if (component[code] === "null") {
+								if (code === "samples") {
+									component[code] = '{}';
+								} else {
+									component[code] = '[]';
+								}
+							}
+
 							validator.count++;
 						}));
 						return component;
@@ -1060,10 +1073,15 @@ class AppCommands {
 
 				// Try to get app metadata from the raw zip path
 				app.metadata = JSON.parse((await new Promise(resolve => {
-					entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/)).getDataAsync((data => {
-						validator.count++;
-						resolve(data);
-					}));
+					const e = entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/));
+					if (e) {
+						e.getDataAsync((data => {
+							validator.count++;
+							resolve(data);
+						}));
+					} else {
+						vscode.window.showErrorMessage(`App archive corrupted. (metadata.json not resolved correctly)`);
+					}
 				})).toString());
 
 				// Get .sdk metadata raw directly
@@ -1280,7 +1298,20 @@ class AppCommands {
 					}
 				}
 
+				// Name prompt
+				app.metadata.name = await vscode.window.showInputBox({
+					prompt: 'Enter name of the imported app',
+					value: app.metadata.name,
+					validateInput: Validator.appName
+				});
+				if (!Core.isFilled('name', 'imported app', app.metadata.name, 'A')) {
+					return;
+				}
+
 				let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
+				if (!remoteApp) {
+					return;
+				}
 				if (_environment.version === 2) { remoteApp = remoteApp.app }
 				const requests = buildRequestQueue(app, remoteApp);
 
@@ -1352,7 +1383,7 @@ class AppCommands {
 								store[s.slug] = parsed[s.key];
 							});
 						}
-						await new Promise(resolve => setTimeout(resolve, 700));
+						await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
 					}
 				});
 				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
