@@ -700,7 +700,7 @@ class AppCommands {
 								increment: (0.875 * progressPercentage) * (0.25), message: `${app.label} - Exporting Connection ${connection.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization), key));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -738,7 +738,7 @@ class AppCommands {
 						for (const key of [`api`, `parameters`]) {
 							progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` });
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization), key));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -777,7 +777,7 @@ class AppCommands {
 								increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization)));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization), key));
 							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
@@ -845,7 +845,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -856,7 +856,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -867,7 +867,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.25), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -878,7 +878,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.33), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization)));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
 									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
@@ -1008,6 +1008,16 @@ class AppCommands {
 										resolve(data);
 									}));
 							})).toString();
+
+							// Fix null value -- DON'T FORGET TO CHANGE IN CORE COMMANDS WHEN CHANGING THIS
+							if (component[code] === "null") {
+								if (code === "samples") {
+									component[code] = '{}';
+								} else {
+									component[code] = '[]';
+								}
+							}
+
 							validator.count++;
 						}));
 						return component;

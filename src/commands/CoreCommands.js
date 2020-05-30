@@ -716,6 +716,16 @@ class CoreCommands {
 					// Prepare a stream to be saved
 					let write = (item.language === "js" || item.language === "md") ? body : Core.formatJsonc(body)
 
+					// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
+					if (write === "null") {
+						if (item.name === 'samples') {
+							write = '{}';
+						} else {
+							write = '[]';
+						}
+					}
+
+
 					// Save the received code to the temp directory
 					fs.writeFile(path.join(_DIR, filepath), write, function (err) {
 

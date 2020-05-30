@@ -212,7 +212,19 @@ module.exports = {
 		return formatted
 	},
 
-	jsonString: function (text) {
+	jsonString: function (text, sectionGuard) {
+
+		// Section Guard to prevent NULLs in exported filed
+		if (sectionGuard !== undefined) {
+			if (text === null) {
+				if (sectionGuard === "samples") {
+					text = {};
+				} else {
+					text = [];
+				}
+			}
+		}
+
 		if (typeof text === 'object' && text !== null) {
 			return JSON.stringify(text, null, 4)
 		}
