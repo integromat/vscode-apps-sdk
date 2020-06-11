@@ -295,6 +295,11 @@
 				"category": "Integromat Apps"
 			},
 			{
+				"command": "apps-sdk.module.clone",
+				"title": "Clone",
+				"category": "Integromat Apps"
+			},
+			{
 				"command": "apps-sdk.module.change-connection-or-webhook",
 				"title": "Change connection or webhook",
 				"category": "Integromat Apps"
@@ -513,6 +518,18 @@
 				{
 					"command": "apps-sdk.module.edit-metadata",
 					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",

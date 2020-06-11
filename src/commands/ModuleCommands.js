@@ -4,6 +4,7 @@ const Core = require('../Core')
 const Validator = require('../Validator')
 const Enum = require('../Enum')
 const QuickPick = require('../QuickPick')
+const Felicia = require('../Felicia');
 
 const camelCase = require('lodash.camelcase');
 const path = require('path');
@@ -494,6 +495,47 @@ class ModuleCommands {
 					break
 			}
 		})
+
+		/**
+		 * Clone module
+		 */
+		vscode.commands.registerCommand('apps-sdk.module.clone', async (context) => {
+
+			// Only V2
+			if (!Core.envGuard(_environment, [2])) { return; }
+
+			// Context check
+			if (!Core.contextGuard(context)) { return; }
+
+			// Form Data
+			const form = await Felicia([
+				{
+					name: 'newName',
+					label: 'New name',
+					type: 'text',
+					required: true,
+					default: context.name,
+					validate: {
+						pattern: '^[a-zA-Z][0-9a-zA-Z]+[0-9a-zA-Z]$',
+						min: 3
+					}
+				}
+			]);
+			if (!form) {
+				return;
+			}
+
+			const app = context.parent.parent;
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/clone`
+			try {
+				await Core.addEntity(_authorization, form, uri)
+				appsProvider.refresh()
+			}
+			catch (err) {
+				vscode.window.showErrorMessage(err.error.message || err)
+			}
+
+		});
 	}
 }
 
