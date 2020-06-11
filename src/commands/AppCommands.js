@@ -5,6 +5,7 @@ const Validator = require('../Validator');
 const QuickPick = require('../QuickPick');
 const Enum = require('../Enum');
 const Meta = require('../Meta');
+const Felicia = require('../Felicia');
 
 const kebabCase = require('lodash.kebabcase');
 const pick = require('lodash.pick');
@@ -137,6 +138,18 @@ class AppCommands {
 					return;
 				}
 
+				let version = 1;
+				if ([2].includes(_environment.version)) {
+					// Version Propmpt
+					version = await vscode.window.showInputBox({
+						prompt: 'Enter app version, if you\'re not creating a new version of an existing app, keep 1',
+						value: version
+					});
+					if (!Core.isFilled('version', 'app', version, 'A')) {
+						return;
+					}
+				}
+
 				// Description propmpt
 				const description = await vscode.window.showInputBox({
 					prompt:
@@ -188,6 +201,7 @@ class AppCommands {
 						await Core.addEntity(_authorization, {
 							'name': id,
 							'label': label,
+							'version': parseInt(version) || 1,
 							'description': description,
 							'theme': theme,
 							'language': language.description,
@@ -1390,6 +1404,48 @@ class AppCommands {
 			} catch (err) {
 				vscode.window.showErrorMessage(err.message || err);
 			}
+		});
+
+		/**
+		 * Clone app
+		 */
+		vscode.commands.registerCommand('apps-sdk.app.clone', async (context) => {
+			if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) { return; }
+
+			// Form Data
+			const form = await Felicia([
+				{
+					name: 'newName',
+					label: 'New name',
+					type: 'text',
+					required: true,
+					default: context.name,
+					validate: {
+						pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
+						min: 3
+					}
+				},
+				{
+					name: 'newVersion',
+					label: 'New version',
+					type: 'number',
+					required: true,
+					default: context.version
+				}
+			]);
+			if (!form) {
+				return;
+			}
+
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/clone`;
+			try {
+				await Core.addEntity(_authorization, form, uri);
+				appsProvider.refresh();
+			}
+			catch (err) {
+				vscode.window.showErrorMessage(err.error.message || err);
+			}
+
 		});
 	}
 }

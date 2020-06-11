@@ -12,14 +12,14 @@ class ValidationError extends Error {
 const types = {
 	text: async (field) => {
 		const validate = (spec, value) => {
-			if (spec.pattern !== undefined) {
-				return RegExp(spec.pattern).test(value) ? undefined : `Value must match following pattern: /${spec.pattern}/.`
+			if (spec.pattern !== undefined && !(RegExp(spec.pattern).test(value))) {
+				return `Value must match following pattern: /${spec.pattern}/.`
 			}
-			if (spec.min !== undefined) {
-				return value.length >= spec.min ? undefined : `Value must be at least ${spec.min} characters long.`
+			if (spec.min !== undefined && value.length < spec.min) {
+				return `Value must be at least ${spec.min} characters long.`
 			}
-			if (spec.max !== undefined) {
-				return value.length <= spec.max ? undefined : `Value must be at most ${spec.max} characters long`
+			if (spec.max !== undefined && value.length > spec.max) {
+				return `Value must be at most ${spec.max} characters long`
 			}
 			return undefined;
 		}
@@ -38,11 +38,16 @@ const types = {
 	},
 	number: async (field) => {
 		const validate = (spec, value) => {
-			if (spec.min !== undefined) {
-				return value > spec.min ? undefined : `Numeric value must be at least ${spec.min}.`
+			try {
+				parseInt(value);
+			} catch (err) {
+				return err;
 			}
-			if (spec.max !== undefined) {
-				return value <= spec.max ? undefined : `Numeric value must be at most ${spec.max}.`
+			if (spec.min !== undefined && value < spec.min) {
+				return `Numeric value must be at least ${spec.min}.`
+			}
+			if (spec.max !== undefined && value > spec.max) {
+				return `Numeric value must be at most ${spec.max}.`
 			}
 			return undefined;
 		}
@@ -50,7 +55,7 @@ const types = {
 		const value = await vscode.window.showInputBox({
 			prompt: field.label,
 			value: field.default,
-			validateInput: field.validate ? validate.bind(field.validate) : undefined
+			validateInput: validate.bind(null, field.validate || {})
 		});
 
 		if (field.required === true && (value === undefined || value === null || value === '')) {

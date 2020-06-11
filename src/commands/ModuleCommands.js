@@ -500,12 +500,7 @@ class ModuleCommands {
 		 * Clone module
 		 */
 		vscode.commands.registerCommand('apps-sdk.module.clone', async (context) => {
-
-			// Only V2
-			if (!Core.envGuard(_environment, [2])) { return; }
-
-			// Context check
-			if (!Core.contextGuard(context)) { return; }
+			if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) { return; }
 
 			// Form Data
 			const form = await Felicia([
@@ -528,11 +523,11 @@ class ModuleCommands {
 			const app = context.parent.parent;
 			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/clone`
 			try {
-				await Core.addEntity(_authorization, form, uri)
-				appsProvider.refresh()
+				await Core.addEntity(_authorization, form, uri);
+				appsProvider.refresh();
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+				vscode.window.showErrorMessage(err.error.message || err);
 			}
 
 		});

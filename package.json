@@ -250,6 +250,11 @@
 				"category": "Integromat Apps"
 			},
 			{
+				"command": "apps-sdk.app.clone",
+				"title": "Clone",
+				"category": "Integromat Apps"
+			},
+			{
 				"command": "apps-sdk.app.show-detail",
 				"title": "Show detail",
 				"category": "Integromat Apps"
@@ -681,6 +686,34 @@
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"when": "viewItem == module_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app_approved_changed && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
 					"when": "viewItem == module_approved && view == apps"
 				}
 			]
