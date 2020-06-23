@@ -62,6 +62,14 @@ module.exports = {
 		return true
 	},
 
+	envGuard: function (environment, available) {
+		if (!(available.includes(environment.version))) {
+			vscode.window.showErrorMessage(`Not available in this version of Integromat.`);
+			return false;
+		}
+		return true;
+	},
+
 	isFilled: function (subject, object, thing, article, the) {
 		if (thing === undefined || thing === "" || thing === null) {
 			vscode.window.showWarningMessage(`${article || "A"} ${subject} for ${the === false ? "" : "the"} ${object} has not been specified.`)

@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Integromat Apps SDK",
 	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.2.9",
+	"version": "1.3.0",
 	"icon": "resources/extension-icon.png",
 	"repository": {
 		"type": "git",
@@ -250,6 +250,11 @@
 				"category": "Integromat Apps"
 			},
 			{
+				"command": "apps-sdk.app.clone",
+				"title": "Clone",
+				"category": "Integromat Apps"
+			},
+			{
 				"command": "apps-sdk.app.show-detail",
 				"title": "Show detail",
 				"category": "Integromat Apps"
@@ -292,6 +297,11 @@
 			{
 				"command": "apps-sdk.module.visibility.private",
 				"title": "Mark module as private",
+				"category": "Integromat Apps"
+			},
+			{
+				"command": "apps-sdk.module.clone",
+				"title": "Clone",
 				"category": "Integromat Apps"
 			},
 			{
@@ -515,6 +525,18 @@
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.module.clone",
+					"when": "viewItem == module_approved && view == apps"
+				},
+				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
 					"when": "viewItem == module_public && view == apps"
 				},
@@ -665,6 +687,22 @@
 				{
 					"command": "apps-sdk.module.show-detail",
 					"when": "viewItem == module_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.app.clone",
+					"when": "viewItem == app_approved_changed && view == apps"
 				}
 			]
 		},
