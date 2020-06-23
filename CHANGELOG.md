@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.3.0
+
+### Added
+
+- Support for multiple versions of Apps
+- Cloning Apps
+- Cloning Modules
+
 ## 1.2.9
 
 ### Added

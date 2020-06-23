@@ -134,6 +134,9 @@ class ModuleCommands {
 				try {
 					body.label = label;
 					delete body.type_id;
+					if (body.crud === null) {
+						delete body.crud;
+					}
 					await Core.patchEntity(_authorization, body, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
 					appsProvider.refresh()
 				} catch (err) {
