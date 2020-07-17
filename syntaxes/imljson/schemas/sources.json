@@ -165,7 +165,7 @@
 			"$id": "#ca",
 			"type": "string",
 			"description": "Custom Certificate Authority",
-			"maxLength": 512
+			"maxLength": 8192
 		},
 		"condition": {
 			"$id": "#condition",
