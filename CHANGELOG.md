@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.1
+
+### Fixed
+
+- Extended length on CA field validation (to 8192)
+
 ## 1.3.0
 
 ### Added
