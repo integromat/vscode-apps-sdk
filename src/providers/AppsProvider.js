@@ -44,7 +44,7 @@ class AppsProvider {
 			let response;
 			switch (this._environment.version) {
 				case 2:
-					response = (await Core.rpGet(`${this._environment.baseUrl}/${this._admin === true ? 'admin/' : ''}sdk/apps`, this._authorization, {
+					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
 						'cols[]': [
 							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
 						]
