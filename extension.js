@@ -136,7 +136,7 @@ async function activate(context) {
 				// configuration.unsafe removes https
 				// configuration.noVersionPath removes vX in path
 				_environment = {
-					baseUrl: `http${configuration.unsafe === true ? '' : 's'}://${configuration.url}${configuration.noVersionPath === true ? '' : `/v${configuration.version}`}`,
+					baseUrl: `http${configuration.unsafe === true ? '' : 's'}://${configuration.url}${configuration.noVersionPath === true ? '' : `/v${configuration.version}`}${configuration.admin === true ? '/admin' : ''}`,
 					version: configuration.version
 				}
 			}
