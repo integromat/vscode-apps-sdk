@@ -253,7 +253,7 @@ class AppCommands {
 				prompt: 'Customize app description',
 				value: app.description
 			});
-			if (!Core.isFilled('label', 'app', description)) {
+			if (!Core.isFilled('description', 'app', description)) {
 				return;
 			}
 
