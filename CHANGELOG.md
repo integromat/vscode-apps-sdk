@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.3
+
+### Fixed
+
+- JSON schema validation improved, minor tweaks in schemas
+
 ## 1.3.2
 
 ### Added

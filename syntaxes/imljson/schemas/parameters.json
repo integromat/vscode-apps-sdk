@@ -515,49 +515,79 @@
 						}
 					]
 				},
-				"validate": {
-					"description": "Specifies parameter validation.",
-					"oneOf": [
-						{
-							"type": "boolean"
-						},
-						{
-							"type": "object",
-							"properties": {
-								"max": {
-									"description": "Specifies maximum length.",
-									"type": "number"
-								},
-								"min": {
-									"description": "Specifies minimum length.",
-									"type": "number"
-								},
-								"pattern": {
-									"description": "Specifies a RegExp pattern that a text parameter should conform to.",
-									"type": "string"
-								},
-								"minItems": {
-									"type": "integer",
-									"description": "Specifies minimum length that an array parameter can have."
-								},
-								"maxItems": {
-									"type": "integer",
-									"description": "Specifies maximum length that an array parameter can have."
-								},
-								"enum": {
-									"type": "array",
-									"description": "Array of allowed values in the array."
-								}
-							},
-							"additionalProperties": false
-						}
-					]
-				}
+				"validate": {}
 			},
 			"additionalProperties": false,
 			"required": [
 				"type"
-			]
+			],
+			"if": {
+				"properties": {
+					"type": {
+						"const": "array"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"validate": {
+						"description": "Specifies parameter validation.",
+						"oneOf": [
+							{
+								"type": "object",
+								"properties": {
+									"minItems": {
+										"type": "integer",
+										"description": "Specifies minimum length that an array parameter can have."
+									},
+									"maxItems": {
+										"type": "integer",
+										"description": "Specifies maximum length that an array parameter can have."
+									},
+									"enum": {
+										"type": "array",
+										"description": "Array of allowed values in the array."
+									}
+								},
+								"additionalProperties": false
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				}
+			},
+			"else": {
+				"properties": {
+					"validate": {
+						"description": "Specifies parameter validation.",
+						"oneOf": [
+							{
+								"type": "object",
+								"properties": {
+									"max": {
+										"description": "Specifies maximum length.",
+										"type": "number"
+									},
+									"min": {
+										"description": "Specifies minimum length.",
+										"type": "number"
+									},
+									"pattern": {
+										"description": "Specifies a RegExp pattern that a text parameter should conform to.",
+										"type": "string"
+									}
+								},
+								"additionalProperties": false
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				}
+			}
 		}
 	},
 	"type": "array",
