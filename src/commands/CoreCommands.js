@@ -294,7 +294,7 @@ class CoreCommands {
              * Following condition specifies where are IML functions allowed
              */
 			if (
-				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach" || name === "publish")
 			) {
 				// Remove existing ImlProvider
 				if (this.currentImlProvider !== null && this.currentImlProvider !== undefined) {
@@ -332,7 +332,7 @@ class CoreCommands {
              */
 
 			if (
-				apiPath !== 'base' && (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				apiPath !== 'base' && (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach" || name === "publish")
 			) {
 				// Remove existing ParametersProvider
 				if (this.currentParametersProvider !== null && this.currentParametersProvider !== undefined) {
@@ -367,7 +367,7 @@ class CoreCommands {
 			}
 
 			if (
-				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach" || name === "publish")
 			) {
 				// Reasign Static IML provider
 				if (this.currentStaticImlProvider !== null && this.currentStaticImlProvider !== undefined) {
@@ -393,7 +393,7 @@ class CoreCommands {
 			 */
 
 			if (
-				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach")
+				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach" || name === "publish")
 			) {
 				// Reasign Temp provider
 				if (this.currentTempProvider !== null && this.currentTempProvider !== undefined) {
@@ -451,7 +451,7 @@ class CoreCommands {
 
 			if (
 				((apiPath === "module" || apiPath === "modules") && name === "api") ||
-				((apiPath === "webhook" || apiPath === "webhooks") && (name === "api" || name === "attach" || name === "detach")) ||
+				((apiPath === "webhook" || apiPath === "webhooks") && (name === "api" || name === "attach" || name === "detach" || name === "publish")) ||
 				((apiPath === "rpc" || apiPath === "rpcs") && name === "api")
 			) {
 				if (this.currentDataProvider !== null && this.currentDataProvider !== undefined) {

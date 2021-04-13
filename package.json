@@ -101,6 +101,10 @@
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
+				"fileMatch": "publish.imljson",
+				"url": "./syntaxes/imljson/schemas/api.json"
+			},
+			{
 				"fileMatch": "base.imljson",
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
