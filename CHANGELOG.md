@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.4
+
+### Fixed
+
+- App Export
+
 ## 1.3.3
 
 ### Fixed
