@@ -101,6 +101,10 @@
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
+				"fileMatch": "publish.imljson",
+				"url": "./syntaxes/imljson/schemas/api.json"
+			},
+			{
 				"fileMatch": "base.imljson",
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
@@ -613,10 +617,6 @@
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
-					"command": "apps-sdk.app.delete",
-					"when": "viewItem == app_public && view == apps"
-				},
-				{
 					"command": "apps-sdk.app.get-icon",
 					"when": "viewItem == app_public && view == apps"
 				},
@@ -629,20 +629,12 @@
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
-					"command": "apps-sdk.app.delete",
-					"when": "viewItem == app_approved && view == apps"
-				},
-				{
 					"command": "apps-sdk.app.get-icon",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
 					"when": "viewItem == app_approved && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.delete",
-					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",

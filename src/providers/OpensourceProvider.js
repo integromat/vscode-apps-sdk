@@ -159,13 +159,17 @@ class AppsProvider {
 						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true)
 					]
 				case "webhook":
-					return [
+					const out = [
 						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 						new Code(`attach`, "Attach", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 						new Code(`detach`, "Detach", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
-					]
+					];
+					if (this._environment.version === 2) {
+						out.push(new Code(`publish`, "Publish", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true));
+					}
+					return out;
 				case "module":
 					switch (element.type) {
 						// Action or search

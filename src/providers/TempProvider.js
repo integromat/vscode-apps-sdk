@@ -54,6 +54,7 @@ class TempProvider {
 			// Regular request format
 			case 'api':
 			case 'attach':
+			case 'publish':
 			case 'detach':
 			case 'epoch':
 			case 'base':
