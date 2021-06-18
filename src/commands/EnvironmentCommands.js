@@ -20,7 +20,7 @@ class EnvironmentCommands {
 			let url = await vscode.window.showInputBox({
 				prompt: "Enter new environment URL (without https:// and API version)",
 				value: "api.integromat.com",
-				validateInput: Validator.urlFormat
+				// validateInput: Validator.urlFormat // As anybody can host Integromat almost anywhere, there's no place for some RegExp validation
 			})
 
 			// Check if filled and unique
