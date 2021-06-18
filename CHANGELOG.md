@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.6
+
+### Fixed
+
+- API Base URL validation
+
 ## 1.3.5
 
 ### Fixed
