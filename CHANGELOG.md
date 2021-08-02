@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.7
+
+### Updated
+
+- Using Update instead of Publish on Web Hooks​​
+
 ## 1.3.6
 
 ### Fixed
