@@ -675,7 +675,7 @@ class AppCommands {
 						return;
 					}
 					progress.report({ increment: 2, message: `${app.label} - Exporting Readme` });
-					await asyncfile.writeFile(path.join(archive, `readme.md`), await Core.rpGet(`${urn}/readme`, _authorization));
+					await asyncfile.writeFile(path.join(archive, `readme.md`), (await Core.rpGet(`${urn}/readme`, _authorization) || ''));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					/**
