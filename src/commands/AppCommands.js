@@ -1038,6 +1038,11 @@ class AppCommands {
 								}
 							}
 
+							// Hack for top-level RPC calls
+							if (component[code].startsWith('rpc://')) {
+								component[code] = `"${component[code]}"`;
+							}
+
 							validator.count++;
 						}));
 						return component;

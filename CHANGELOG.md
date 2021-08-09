@@ -5,6 +5,7 @@
 ### Updated
 
 - Using Update instead of Publish on Web Hooks​​
+- Fixed Top Level string RPC calls in JSONCs
 
 ## 1.3.6
 
