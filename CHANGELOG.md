@@ -14,6 +14,18 @@
 
 - API Base URL validation
 
+## 1.3.5
+
+### Fixed
+
+- Another part of App Export
+
+## 1.3.4
+
+### Fixed
+
+- App Export
+
 ## 1.3.3
 
 ### Fixed
