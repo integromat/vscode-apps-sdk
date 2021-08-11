@@ -234,10 +234,10 @@ class AppsProvider {
 						[`parameters`, "Parameters", "Array of parameters user should fill while creating a new webhook."],
 						[`attach`, "Attach", "Describes how to register this webhook automatically via API. Leave empty if user needs to register webhook manually. This specification does inherit from base."],
 						[`detach`, "Detach", "Describes how to unregister this webhook automatically via API. Leave empty if user needs to unregister webhook manually. This specification does inherit from base."],
-						[`publish`, "Publish", "Describes the API call to be performed when a scenario containing the Webhooks is published. Leave empty when there's no such call. This specification does inherit from base."],
+						[`update`, "Update", "Describes the API call to be performed when the webhook is updated. Leave empty when there's no such call. This specification does inherit from base."],
 						[`scope`, "Required scope", "Scope required by this webhook. Array of strings."]
 					].flatMap(code => {
-						if (code[0] === 'publish' && this._environment.version === 1) return [];
+						if (code[0] === 'update' && this._environment.version === 1) return [];
 						let change
 						if (element.changes) {
 							change = element.changes.find(change => {

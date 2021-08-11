@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.3.7
+
+### Updated
+
+- Using Update instead of Publish on Web Hooks​​
+- Fixed Top Level string RPC calls in JSONCs
+- Fixed Export Command
+
 ## 1.3.6
 
 ### Fixed

@@ -167,7 +167,7 @@ class AppsProvider {
 						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 					];
 					if (this._environment.version === 2) {
-						out.push(new Code(`publish`, "Publish", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true));
+						out.push(new Code(`update`, "Update", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true));
 					}
 					return out;
 				case "module":

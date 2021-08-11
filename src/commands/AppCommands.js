@@ -675,7 +675,7 @@ class AppCommands {
 						return;
 					}
 					progress.report({ increment: 2, message: `${app.label} - Exporting Readme` });
-					await asyncfile.writeFile(path.join(archive, `readme.md`), await Core.rpGet(`${urn}/readme`, _authorization) || '');
+					await asyncfile.writeFile(path.join(archive, `readme.md`), (await Core.rpGet(`${urn}/readme`, _authorization) || ''));
 					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					/**
@@ -786,7 +786,7 @@ class AppCommands {
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
-						for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`publish`] : [])) {
+						for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])) {
 							progress.report({
 								increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})`
 							});
@@ -1038,6 +1038,11 @@ class AppCommands {
 								}
 							}
 
+							// Hack for top-level RPC calls
+							if (component[code].startsWith('rpc://')) {
+								component[code] = `"${component[code]}"`;
+							}
+
 							validator.count++;
 						}));
 						return component;
@@ -1125,7 +1130,7 @@ class AppCommands {
 				}
 				app.connections = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'connection'), [`api`, `scope`, `scopes`, `parameters`], 'imljson');
 				app.rpcs = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'rpc'), [`api`, `parameters`], 'imljson');
-				app.webhooks = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'webhook'), [`api`, `parameters`, `attach`, `detach`, `scope`, `publish`], 'imljson');
+				app.webhooks = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'webhook'), [`api`, `parameters`, `attach`, `detach`, `scope`, `update`], 'imljson');
 				app.modules = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'module'), {
 					action: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
 					search: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
@@ -1208,7 +1213,7 @@ class AppCommands {
 								slug: `connection-${webhook.metadata.connection}`
 							}
 						]));
-					([`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`publish`] : [])).forEach(code => {
+					([`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])).forEach(code => {
 						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
