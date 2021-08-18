@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.8
+
+### Fixed
+
+- Apps Tree Provider
+
 ## 1.3.7
 
 ### Updated
