@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.9
+
+### Fixed
+
+- Bad Packaging
+
 ## 1.3.8
 
 ### Fixed
