@@ -186,7 +186,7 @@ class AppsProvider {
 			// REST
 			else {
 				for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
-					if (element.id.includes(needle)) {
+					if (element.id.includes(`_${needle}`)) {
 						let name = needle.slice(0, -1);
 						let uri = ["connection", "webhook"].includes(name) ?
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
