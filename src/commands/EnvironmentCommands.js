@@ -44,7 +44,7 @@ class EnvironmentCommands {
 					description: '1'
 				},
 				{
-					label: 'Integromat 2.0 (early access)',
+					label: 'Make',
 					description: '2'
 				}], {
 				placeHolder: 'Choose the environment version.'
