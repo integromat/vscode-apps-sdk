@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.10
+
+### Fixed
+
+- Renamed Integromat 2.0 to Make
+
 ## 1.3.9
 
 ### Fixed
