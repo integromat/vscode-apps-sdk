@@ -773,7 +773,7 @@
 		"tempy": "^0.2.1",
 		"universal-analytics": "^0.4.23",
 		"uuid": "^7.0.3",
-		"vm2": "^3.9.2",
+		"vm2": "^3.9.11",
 		"vscode-json-languageservice": "^3.8.3",
 		"vscode-languageclient": "^5.2.1",
 		"vscode-languageserver": "^5.2.1"
