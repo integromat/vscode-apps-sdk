@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.12
+
+### Fixed
+
+- removed whitespace on Mata.version whitespace
+
 ## 1.3.11
 
 ### Fixed
