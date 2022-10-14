@@ -756,7 +756,7 @@
 		"async-file": "^2.0.2",
 		"compressing": "^1.5.1",
 		"image-downloader": "^3.6.0",
-		"jimp": "^0.10.3",
+		"jimp": "^0.16.2",
 		"jsonc-parser": "^2.3.0",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.kebabcase": "^4.1.1",
