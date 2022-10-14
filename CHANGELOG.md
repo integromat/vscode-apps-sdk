@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.11
+
+### Fixed
+
+- Fixed to retrieve all apps in Make admin env by Minsu​
+
 ## 1.3.10
 
 ### Fixed
