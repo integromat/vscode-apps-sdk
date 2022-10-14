@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.11
+
+### Fixed
+
+- Fixed to retrieve all apps on Make admin eny by Minsu
+
 ## 1.3.10
 
 ### Fixed
