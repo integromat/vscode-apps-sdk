@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.13
+
+### Fixed
+
+- Rebranded and removed step for version when cloning/creating an app (only admin can)
+
 ## 1.3.12
 
 ### Fixed
@@ -10,7 +16,7 @@
 
 ### Fixed
 
-- Fixed to retrieve all apps in Make admin env by Minsu​
+- Fixed to retrieve all apps on Make admin eny by Minsu
 
 ## 1.3.10
 

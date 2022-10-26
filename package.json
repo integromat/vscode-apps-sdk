@@ -1,9 +1,9 @@
 {
 	"name": "apps-sdk",
-	"displayName": "Integromat Apps SDK",
-	"description": "Integromat Apps SDK plugin for Visual Studio Code",
-	"version": "1.3.12",
-	"icon": "resources/extension-icon.png",
+	"displayName": "Make Apps SDK",
+	"description": "Make Apps SDK plugin for Visual Studio Code",
+	"version": "1.3.13",
+	"icon": "resources/make.png",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/integromat/vscode-apps-sdk"
@@ -13,6 +13,8 @@
 		"vscode": "^1.24.0"
 	},
 	"keywords": [
+		"Make",
+		"Celonis",
 		"Integromat",
 		"IMT",
 		"Apps",
@@ -169,14 +171,14 @@
 			{
 				"command": "apps-sdk.refresh",
 				"title": "Refresh",
-				"category": "Integromat Apps",
+				"category": "Make Apps",
 				"icon": {
 					"dark": "resources/icons/dark/refresh.png",
 					"light": "resources/icons/light/refresh.png"
 				}
 			},
 			{
-				"category": "Integromat Apps",
+				"category": "Make Apps",
 				"command": "apps-sdk.udt",
 				"title": "Open Data Structure Generator",
 				"icon": {
@@ -187,37 +189,37 @@
 			{
 				"command": "apps-sdk.function.new",
 				"title": "New function",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.function.test",
 				"title": "Run IML test",
-				"category": "Integromat Apps "
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.rpc.new",
 				"title": "New RPC",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.connection.new",
 				"title": "New connection",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.webhook.new",
 				"title": "New webhook",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.new",
 				"title": "New module",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.new",
 				"title": "New app",
-				"category": "Integromat Apps",
+				"category": "Make Apps",
 				"icon": {
 					"dark": "./resources/icons/dark/add.png",
 					"light": "./resources/icons/light/add.png"
@@ -226,157 +228,157 @@
 			{
 				"command": "apps-sdk.delete",
 				"title": "Delete",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.delete",
 				"title": "Delete",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.login",
 				"title": "Login",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.logout",
 				"title": "Logout",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.get-icon",
 				"title": "Edit icon",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.edit-metadata",
 				"title": "Edit metadata",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.clone",
 				"title": "Clone",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.show-detail",
 				"title": "Show detail",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.show-detail",
 				"title": "Show detail",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.connection.edit-metadata",
 				"title": "Edit metadata",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.webhook.edit-metadata",
 				"title": "Edit metadata",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.webhook.change-connection",
 				"title": "Change connection",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.change-type",
 				"title": "Change module type",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.edit-metadata",
 				"title": "Edit metadata",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.visibility.public",
 				"title": "Mark module as public",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.visibility.private",
 				"title": "Mark module as private",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.clone",
 				"title": "Clone",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.module.change-connection-or-webhook",
 				"title": "Change connection or webhook",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.rpc.edit-metadata",
 				"title": "Edit metadata",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.rpc.change-connection",
 				"title": "Change connection",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.rpc.test",
 				"title": "Test",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.env.change",
 				"title": "Change SDK Environment",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.env.add",
 				"title": "Add SDK Environment",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.changes.show",
 				"title": "Show changes",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.changes.commit",
 				"title": "Commit all changes",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.changes.rollback",
 				"title": "Rollback all changes",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.visibility.private",
 				"title": "Mark an app as private",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.visibility.public",
 				"title": "Mark an app as public",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.help",
 				"title": "Help",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.export",
 				"title": "Export App",
-				"category": "Integromat Apps"
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.import",
 				"title": "Import App",
-				"category": "Integromat Apps",
+				"category": "Make Apps",
 				"icon": {
 					"dark": "./resources/icons/dark/import.png",
 					"light": "./resources/icons/light/import.png"
@@ -387,8 +389,8 @@
 			"activitybar": [
 				{
 					"id": "integromat-apps",
-					"title": "Integromat Apps",
-					"icon": "resources/imt-icon.svg"
+					"title": "Make Apps",
+					"icon": "resources/make.png"
 				}
 			]
 		},
@@ -716,7 +718,7 @@
 				},
 				"apps-sdk.apikey": {
 					"type": "string",
-					"description": "Your Integromat API key which will be used for access to your apps."
+					"description": "Your Make API key which will be used for access to your apps."
 				},
 				"apps-sdk.environment": {
 					"type": "string",
@@ -728,7 +730,7 @@
 						"object",
 						"array"
 					],
-					"description": "Integromat SDK API environment",
+					"description": "Make SDK API environment",
 					"default": []
 				},
 				"apps-sdk.timezone": {

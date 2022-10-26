@@ -26,8 +26,8 @@ class AppCommands {
 		// IF ADMIN, remap new app to favadd
 		if (_admin === true) {
 			/**
-             * NEW APP - ADMIN MODE
-             */
+			 * NEW APP - ADMIN MODE
+			 */
 			vscode.commands.registerCommand('apps-sdk.app.new', async () => {
 
 				// Get list of all apps
@@ -114,8 +114,8 @@ class AppCommands {
 			});
 		} else {
 			/**
-             * New APP - NORMAL MODE
-             */
+			 * New APP - NORMAL MODE
+			 */
 			vscode.commands.registerCommand('apps-sdk.app.new', async () => {
 
 				// Label prompt
@@ -140,11 +140,16 @@ class AppCommands {
 
 				let version = 1;
 				if ([2].includes(_environment.version)) {
-					// Version Propmpt
-					version = await vscode.window.showInputBox({
-						prompt: 'Enter app version, if you\'re not creating a new version of an existing app, keep 1',
-						value: version
-					});
+					let response = await Core.rpGet(`${_environment.baseUrl}/users/me`, _authorization);
+
+					//check if a user have "Can create Apps without ID suffix" feature on admin
+					if (response && response.authUser && response.authUser.features && response.authUser.features.allow_apps) {
+						// Version Propmpt
+						version = await vscode.window.showInputBox({
+							prompt: 'Enter app version, if you\'re not creating a new version of an existing app, keep 1',
+							value: version
+						});
+					}
 					if (!Core.isFilled('version', 'app', version, 'A')) {
 						return;
 					}
@@ -152,8 +157,7 @@ class AppCommands {
 
 				// Description propmpt
 				const description = await vscode.window.showInputBox({
-					prompt:
-						'Enter app description'
+					prompt: 'Enter app description'
 				});
 
 				if (!Core.isFilled('description', 'app', description)) {
@@ -227,8 +231,8 @@ class AppCommands {
 		}
 
 		/**
-         * Edit app
-         */
+		 * Edit app
+		 */
 		vscode.commands.registerCommand('apps-sdk.app.edit-metadata', async (context) => {
 
 			// Context check
@@ -328,8 +332,8 @@ class AppCommands {
 		});
 
 		/**
-         * Delete app
-         */
+		 * Delete app
+		 */
 		vscode.commands.registerCommand('apps-sdk.app.delete', async (context) => {
 
 			// Context check
@@ -372,8 +376,8 @@ class AppCommands {
 		});
 
 		/**
-         * Edit app icon
-         */
+		 * Edit app icon
+		 */
 		vscode.commands.registerCommand('apps-sdk.app.get-icon', (app) => {
 
 			// If called directly (by using a command pallete) -> die
@@ -407,8 +411,8 @@ class AppCommands {
 			panel.webview.html = Core.getIconHtml(buff, app.theme, path.join(__dirname, '..', '..'));
 
 			/**
-             * Change handler
-             */
+			 * Change handler
+			 */
 			panel.webview.onDidReceiveMessage(async (message) => {
 				if (message.command === 'change-icon') {
 
@@ -529,8 +533,8 @@ class AppCommands {
 		});
 
 		/**
-         * Mark app as private
-         */
+		 * Mark app as private
+		 */
 		vscode.commands.registerCommand('apps-sdk.app.visibility.private', async (context) => {
 
 			// Context check
@@ -566,8 +570,8 @@ class AppCommands {
 		});
 
 		/**
-         * Mark app as public
-         */
+		 * Mark app as public
+		 */
 		vscode.commands.registerCommand('apps-sdk.app.visibility.public', async (context) => {
 
 			// Context check
@@ -1421,26 +1425,49 @@ class AppCommands {
 			if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) { return; }
 
 			// Form Data
-			const form = await Felicia([
-				{
-					name: 'newName',
-					label: 'New name',
-					type: 'text',
-					required: true,
-					default: context.name,
-					validate: {
-						pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
-						min: 3
+
+			let form
+			if (_admin === true) {
+				form = await Felicia([
+					{
+						name: 'newName',
+						label: 'New name',
+						type: 'text',
+						required: true,
+						default: context.name,
+						validate: {
+							pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
+							min: 3
+						}
+					},
+					{
+						name: 'newVersion',
+						label: 'New version (Make sure that your account enables "Can create Apps without ID suffix" feature.)',
+						type: 'number',
+						required: true,
+						default: context.version
 					}
-				},
-				{
-					name: 'newVersion',
-					label: 'New version',
-					type: 'number',
-					required: true,
-					default: context.version
-				}
-			]);
+				]);
+			}
+
+			else {
+				form = await Felicia([
+					{
+						name: 'newName',
+						label: 'New name',
+						type: 'text',
+						required: true,
+						default: context.name,
+						validate: {
+							pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
+							min: 3
+						}
+					}
+				]);
+
+				form.newVersion = 1;
+			}
+
 			if (!form) {
 				return;
 			}

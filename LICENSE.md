@@ -1,4 +1,4 @@
-Copyright (c) 2018 Integromat (www.integromat.com)
+Copyright (c) 2022 Celonis, Inc. All rights reserved (www.make.com)
 
 Permission is hereby granted, free of charge, to any person	
 obtaining a copy of this software and associated documentation	

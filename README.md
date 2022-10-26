@@ -1,4 +1,4 @@
-# Integromat Apps SDK plugin for Visual Studio Code
+# Make Apps SDK plugin for Visual Studio Code
 
 ## Features
 
