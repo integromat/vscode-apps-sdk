@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.13
+
+### Fixed
+
+- Rebranded and removed step for version when cloning/creating an app (only admin can)
+
 ## 1.3.12
 
 ### Fixed

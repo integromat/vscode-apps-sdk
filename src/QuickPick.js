@@ -102,7 +102,7 @@ module.exports = {
 		if (environment.version === 2) {
 			let appsResponse, noOfApps = [], offset = 0
 			do {
-				appsResponse = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization, { all: true , "pg[offset]": offset * 10000 }))
+				appsResponse = await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization, { all: true , "pg[offset]": offset * 10000 })
 				noOfApps = noOfApps.concat(appsResponse.apps)
 				offset++
 			} while (appsResponse.apps.length === 10000)

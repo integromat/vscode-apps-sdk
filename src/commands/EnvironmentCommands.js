@@ -16,10 +16,23 @@ class EnvironmentCommands {
          */
 		vscode.commands.registerCommand('apps-sdk.env.add', async () => {
 
+			// Prompt for environments
+			let version = await vscode.window.showQuickPick([
+				{
+					label: 'Integromat',
+					description: '1'
+				},
+				{
+					label: 'Make',
+					description: '2'
+				}], {
+				placeHolder: 'Choose an environment.'
+			});
+
 			// Prompt for URL
 			let url = await vscode.window.showInputBox({
-				prompt: "Enter new environment URL (without https:// and API version)",
-				value: "api.integromat.com",
+				prompt: version.description === '2' ? "Enter a new Make environment URL (without https:// and API version)" : "Enter a new Integromat environment URL (without https:// and API version)",
+				value: version.description === '2' ? "eu1.make.com" : "api.integromat.com",
 				// validateInput: Validator.urlFormat // As anybody can host Integromat almost anywhere, there's no place for some RegExp validation
 			})
 
@@ -31,30 +44,17 @@ class EnvironmentCommands {
 			// Prompt for environment name
 			let name = await vscode.window.showInputBox({
 				prompt: "Enter new environment name",
-				value: url === "api.integromat.com" ? "Integromat: Production" : ""
+				value: url === "api.integromat.com" ? "Integromat: " : "Make: "
 			})
 
 			// Check if filled
 			if (!Core.isFilled("name", "environment", name)) { return }
 
-			// Prompt for API version
-			let version = await vscode.window.showQuickPick([
-				{
-					label: 'Integromat',
-					description: '1'
-				},
-				{
-					label: 'Make',
-					description: '2'
-				}], {
-				placeHolder: 'Choose the environment version.'
-			});
-
 			// Check if filled
 			if (!Core.isFilled("version", "environment", name)) { return }
 
 			// Prompt for API key
-			let apikey = await vscode.window.showInputBox({ prompt: "Enter your Integromat API key" })
+			let	apikey = await vscode.window.showInputBox({ prompt: `Enter your ${version.description === '2' ? 'Make' : "Integromat"} API key` })
 
 			// Check if filled
 			if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
