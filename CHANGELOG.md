@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.14
+
+### Fixed
+
+- Fixed Show changes feature
+
 ## 1.3.13
 
 ### Fixed
