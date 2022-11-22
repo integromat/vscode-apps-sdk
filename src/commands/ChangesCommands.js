@@ -26,8 +26,8 @@ class ChangesCommands {
 			let cur = tempy.file({ name: `cur.${code.language}` })
 
 			// Get the data to write
-			let old_data = (code.language === "js" || code.language === "md") ? (diffdata.old_value || diffdata.oldValue) : JSON.stringify((diffdata.old_value || diffdata.oldValue), null, 4)
-			let cur_data = (code.language === "js" || code.language === "md") ? (diffdata.new_value || diffdata.newValue) : JSON.stringify((diffdata.new_value || diffdata.newValue), null, 4)
+			let old_data = (code.language === "js" || code.language === "md") ? (diffdata.old_value || diffdata.oldValue || diffdata.change.oldValue) : (JSON.stringify((diffdata.old_value || diffdata.oldValue), null, 4) || diffdata.change.oldValue)
+			let cur_data = (code.language === "js" || code.language === "md") ? (diffdata.new_value || diffdata.newValue || diffdata.change.newValue) : (JSON.stringify((diffdata.old_value || diffdata.oldValue), null, 4) || diffdata.change.newValue)
 
 			// Save the files
 			Promise.all([
