@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.15
+
+### Fixed
+
+- Hot Fix of Make domain URL configuation when adding a new environment "eu1.make.com" => "eu1.make.com/api"
+
 ## 1.3.14
 
 ### Fixed
