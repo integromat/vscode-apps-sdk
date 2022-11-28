@@ -32,7 +32,7 @@ class EnvironmentCommands {
 			// Prompt for URL
 			let url = await vscode.window.showInputBox({
 				prompt: version.description === '2' ? "Enter a new Make environment URL (without https:// and API version)" : "Enter a new Integromat environment URL (without https:// and API version)",
-				value: version.description === '2' ? "eu1.make.com" : "api.integromat.com",
+				value: version.description === '2' ? "eu1.make.com/api" : "api.integromat.com",
 				// validateInput: Validator.urlFormat // As anybody can host Integromat almost anywhere, there's no place for some RegExp validation
 			})
 
