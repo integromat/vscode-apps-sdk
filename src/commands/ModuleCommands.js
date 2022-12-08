@@ -94,7 +94,7 @@ class ModuleCommands {
             if (!Core.isFilled("description", "module", description)) { return }
 
             // Type prompt
-            let type = await vscode.window.showQuickPick(Enum.moduleTypes)
+            let type = await vscode.window.showQuickPick(Enum.moduleTypes, { placeHolder: "Pick the module type" })
             if (!Core.isFilled("type", "module", type)) { return }
 
             // Prepare URI and request body
@@ -114,11 +114,18 @@ class ModuleCommands {
 
             // Action type selector
             if (type.description === "4") {
-                let crud = await vscode.window.showQuickPick(Enum.crud, { placeHolder: "Pick the action type" })
+                let crud = await vscode.window.showQuickPick(Enum.crud, { placeHolder: "Pick the action module type" })
                 if (!Core.isFilled("crud", "action", crud)) { return }
                 if (crud.label !== "Multipurpose") {
                     body.crud = crud.label.toLowerCase();
                 }
+            }
+
+            // Universal module subtype prompt
+            if(type.description === '12') {
+                let subtype = await vscode.window.showQuickPick(Enum.universalModuleSubtypes, { placeHolder: "Pick the subtype for universal module"})
+                if (!Core.isFilled("subtype", "module", subtype)) { return }
+                body.subtype = subtype.description;
             }
 
             // Connection / Webhook / No prompt
@@ -126,6 +133,7 @@ class ModuleCommands {
                 case "1":
                 case "4":
                 case "9":
+                case "12":
                     let connection = await vscode.window.showQuickPick(QuickPick.connections(_environment, _authorization, app, true), { placeHolder: "Pick a connection for the module" })
                     if (!Core.isFilled("connection", "module", connection)) { return }
                     body.connection = connection.label === "--- Without connection ---" ? "" : connection.description
