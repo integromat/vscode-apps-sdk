@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.16
+
+### New Features
+
+- Implemented to creating a new universal module
+
 ## 1.3.15
 
 ### Fixed

@@ -19,6 +19,20 @@ module.exports = {
 		{
 			"label": "Responder",
 			"description": "11"
+		},
+		{
+			"label": "Universal",
+			"description": "12"
+		}
+	],
+	universalModuleSubtypes: [
+		{
+			"label": "REST",
+			"description": "Universal"
+		},
+		{
+			"label": "GraphQL",
+			"description": "UniversalGraphQL"
 		}
 	],
 	webhookTypes: [
