@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.18
+
+### Fixed
+
+- `vm2` library security patch
+
 ## 1.3.17
 
 ### Fixed
