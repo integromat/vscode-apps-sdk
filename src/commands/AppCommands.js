@@ -367,9 +367,9 @@ class AppCommands {
 							},
 							json: true
 						});
-						appsProvider.refresh();
+						await appsProvider.refresh();
 					} catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err);
+						await vscode.window.showErrorMessage(err.error.message || err);
 					}
 					break;
 			}
@@ -1423,6 +1423,26 @@ class AppCommands {
 		 */
 		vscode.commands.registerCommand('apps-sdk.app.clone', async (context) => {
 			if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) { return; }
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`;
+			const throwError = async (errorType) => {
+				switch (errorType) {
+					case 'missingParameters':
+						await vscode.window.showErrorMessage('Enter all required parameters');
+						break;
+					case 'insufficientRoles':
+						await vscode.window.showErrorMessage('You do not have sufficient permissions to access this.');
+						break;
+					case 'notFound':
+						await vscode.window.showErrorMessage('The data value you are entering is not found.');
+						break;
+					default:
+						await vscode.window.showErrorMessage('Unknown Error');
+						return;
+				}
+				return;
+			};
+			const connectionList = (await Core.rpGet(`${uri}/${context.name}/connections`, _authorization))?.appConnections || [];
+			const webhookList = (await Core.rpGet(`${uri}/${context.name}/webhooks`, _authorization))?.appWebhooks || [];
 
 			// Form Data
 
@@ -1448,6 +1468,50 @@ class AppCommands {
 						default: context.version
 					}
 				]);
+
+				if (!form) throwError('missingParameters');
+
+				if (form.newVersion != context.version) {
+					const userCheckAdmin = (await Core.rpGet(`${_environment.baseUrl}/users/me`, _authorization))?.authUser;
+
+					if (userCheckAdmin.authUser && userCheckAdmin.authUser.features.allow_apps === false) {
+						throwError ('insufficientRoles');
+					}
+
+					if (!(await Core.rpGet(`${uri}/${context.name}/${context.version}`, _authorization))) {
+						throwError ('notFound');
+					}
+
+					const replaceConnection = await vscode.window.showQuickPick(['Yes', 'No'], {
+						placeHolder: 'Would you like to replace the connection?'
+					});
+	
+					if (!replaceConnection) throwError('missingParameters');
+	
+					else if (replaceConnection === 'Yes') {
+						var connectionName = await vscode.window.showInputBox({
+							prompt: 'Enter a connection name. (The connection from native apps does not work.)'
+						});
+						if (!connectionName || connectionName === '' || connectionName.trim() === '') throwError('missingParameters');
+	
+						if (!(await Core.rpGet(`${uri}/connections/${connectionName}`, _authorization))) return;
+	
+						var altConnectionName = await vscode.window.showInputBox({
+							prompt: 'Enter a secondary connection name. (Optional)'
+						});
+						if (!altConnectionName || altConnectionName === '' || altConnectionName.trim() === '') altConnectionName = null;
+						else {
+							if (!(await Core.rpGet(`${uri}/connections/${altConnectionName}`, _authorization))) return;
+						}
+					}
+				}
+
+				else {
+					if (form.newName === context.name) {
+						await vscode.window.showErrorMessage("The cloned app's name must be same with the parent app's name if they have same app's version.");
+						return;
+					}
+				}
 			}
 
 			else {
@@ -1464,23 +1528,159 @@ class AppCommands {
 						}
 					}
 				]);
-
+				if (!form) throwError('missingParameters');
 				form.newVersion = 1;
 			}
 
-			if (!form) {
-				return;
-			}
-
-			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/clone`;
 			try {
-				await Core.addEntity(_authorization, form, uri);
-				appsProvider.refresh();
+				const cloned_app = (await Core.addEntity(_authorization, form, `${uri}/${context.name}/${context.version}/clone`))?.app;
+				const cloned_urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`;
+
+				const modules = (await Core.rpGet(`${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules`, _authorization))?.appModules;
+				const rpcs = (await Core.rpGet(`${cloned_urn}/${cloned_app.name}/${cloned_app.version}/rpcs`, _authorization))?.appRpcs;
+
+				async function swarm (connectionList, webhookList, modules, rpcs) {
+
+					const jsonc_rq_update = (async (uri, body) => {
+						let res = await rp({
+							method: 'PUT',
+							uri: uri,
+							body: body,
+							headers: {
+								Authorization: _authorization,
+								'x-imt-apps-sdk-version': Meta.version,
+								"Content-Type": 'application/jsonc'
+							}
+						}).catch(err => {
+							return vscode.window.showErrorMessage(err.error.message)
+						})
+						if (!res) return;
+						return res;
+					});
+	
+					let oldNewConnections = [];
+
+					if (connectionList.length > 0) {
+						await vscode.window.withProgress({
+							location: vscode.ProgressLocation.Notification,
+							title: `Copying & Attaching connections to Modules and RPCs`,
+							cancellable: false
+						}, async (progress) => {
+							progress.report({
+								increment: 0
+							});
+							for (const connection of connectionList) {
+								const clonedConnection = (await Core.addEntity(_authorization, { label: connection.label, type: connection.type }, `${uri}/${cloned_app.name}/connections`))?.appConnection;
+								const connectionMetadata = (await Core.rpGet(`${uri}/connections/${connection.name}`, _authorization, { "cols[0]": "name", "cols[1]": "label", "cols[2]": "type", "cols[3]": "apiJsonc", "cols[4]": "parametersJsonc", "cols[5]": "scopeJsonc", "cols[6]": "scopesJsonc", "cols[7]": "installSpecJsonc", "cols[8]": "installJsonc", "cols[9]": "connectedSystemName" }))?.appConnection;
+								const connectionCommon = await Core.rpGet(`${uri}/connections/${connection.name}/common`, _authorization);
+								const connectionWraps = [["api", "apiJsonc"], ["parameters", "parametersJsonc"], ["scopes", "scopesJsonc"], ["scope", "scopeJsonc"], ["installSpec", "installSpecJsonc"], ["install", "installJsonc"]];
+			
+								for (const e of connectionWraps) {
+									if (connectionMetadata.type === 'oauth') {
+										jsonc_rq_update(`${uri}/connections/${clonedConnection.name}/${e[0]}`, Core.formatJsonc(connectionMetadata[e[1]]).replace(/\u200B/g, ''));
+									}
+									else {
+										if (!['scopes', 'scope', 'installSpec', 'install'].includes(e[0])) {
+											jsonc_rq_update(`${uri}/connections/${clonedConnection.name}/${e[0]}`, Core.formatJsonc(connectionMetadata[e[1]]).replace(/\u200B/g, ''));
+										}
+									}
+								}
+								await Core.editEntity(_authorization, connectionCommon, `${uri}/connections/${clonedConnection.name}/common`);
+			
+								await Promise.all((modules || []).filter(module => module.typeId !== 10 || module.typeId !== 11).map(async module => {
+									module = (await Core.rpGet(`${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules/${module.name}`, _authorization))?.appModule
+									if (module.connection === connection.name) 
+										await Core.patchEntity(_authorization, { connection: clonedConnection.name }, `${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules/${module.name}`)
+								}));
+								await Promise.all((rpcs || []).map(async rpc => {
+									rpc = (await Core.rpGet(`${cloned_urn}/${cloned_app.name}/${cloned_app.version}/rpcs/${rpc.name}`, _authorization))?.appRpc
+									if (rpc.connection === connection.name) 
+										await Core.patchEntity(_authorization, { connection: clonedConnection.name}, `${cloned_urn}/${cloned_app.name}/${cloned_app.version}/rpcs/${rpc.name}`)
+								}));
+			
+								oldNewConnections.push({old:connection.name, new:clonedConnection.name});
+	
+								progress.report({
+									increment: (100 / connectionList.length),
+									message: connection.name
+								});
+	
+								await new Promise(resolve => setTimeout(resolve, 700));
+							}
+						});
+					}
+					
+					if (webhookList.length > 0) {
+						await vscode.window.withProgress({
+							location: vscode.ProgressLocation.Notification,
+							title: `Copying & Attaching webhooks to Instant Trigger Modules`,
+							cancellable: false
+						}, async (progress) => {
+							progress.report({
+								increment: 0
+							});
+							for (const hook of webhookList) {
+								const findConenction = oldNewConnections.find(connection => (connection.old === hook.name));
+								const clonedWebhook = (await Core.addEntity(_authorization, { 
+									label: hook.label, 
+									type: hook.type,
+									connection: findConenction ? findConenction.new : void 0
+								}, `${uri}/${cloned_app.name}/webhooks`))?.appWebhook;
+								const webhookMetadata = (await Core.rpGet(`${uri}/webhooks/${hook.name}`, _authorization, { "cols[0]": "name", "cols[1]": "label", "cols[2]": "type", "cols[3]": "apiJsonc", "cols[4]": "parametersJsonc", "cols[5]": "scopeJsonc", "cols[6]": "attachJsonc", "cols[7]": "detachJsonc", "cols[8]": "updateJsonc", "cols[9]": "connection", "cols[10]": "altConnection"})).appWebhook;
+								const webhookWraps = [["api", "apiJsonc"], ["parameters", "parametersJsonc"], ["scope", "scopeJsonc"], ["attach", "attachJsonc"], ["detach", "detachJsonc"], ["update", "updateJsonc"]];
+			
+			
+								webhookWraps.map(e => {
+									jsonc_rq_update(`${uri}/webhooks/${clonedWebhook.name}/${e[0]}`, Core.formatJsonc(webhookMetadata[e[1]]).replace(/\u200B/g, ''));
+								});
+			
+								/* await Promise.all((oldNewConnections || []).map(async connection => {
+									if (connection.old === hook.name) {
+										await Core.patchEntity(_authorization, { connection: connection.new}, `${cloned_urn}/webhooks/${clonedWebhook.name}`)
+									}
+								})); */
+			
+								await Promise.all((modules || []).filter(module => module.typeId == 10).map(async module => {
+									module = (await Core.rpGet(`${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules/${module.name}`, _authorization))?.appModule
+									if (module.webhook === hook.name) 
+										await Core.patchEntity(_authorization, { webhook: clonedWebhook.name }, `${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules/${module.name}`)
+								}));
+	
+								progress.report({
+									increment: (100 / webhookList.length),
+									message: hook.name
+								});
+	
+								await new Promise(resolve => setTimeout(resolve, 700));
+							}
+						});
+					}
+					
+				}
+
+				if (!_admin) {
+					if (connectionList) {
+						await swarm(connectionList, webhookList, modules, rpcs);
+					}
+				}
+				else {
+					if (form.newVersion == context.version) {
+						await swarm(connectionList, webhookList, modules, rpcs);
+					}
+					else if (connectionName) {
+						(modules || []).filter(module => module.typeId !== 10 || module.typeId !== 11).map(async module => {
+							if (module.name) await Core.patchEntity(_authorization, { connection: connectionName, altConnection: altConnectionName || null }, `${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules/${module.name}`)
+						});
+						(rpcs || []).map(async rpc => {
+							if (rpc.name) await Core.patchEntity(_authorization, { connection: connectionName, altConnection: altConnectionName || null }, `${cloned_urn}/${cloned_app.name}/${cloned_app.version}/rpcs/${rpc.name}`)
+						});
+					}
+				}
+				await appsProvider.refresh();
 			}
 			catch (err) {
 				vscode.window.showErrorMessage(err.error.message || err);
 			}
-
 		});
 	}
 }
