@@ -1634,12 +1634,6 @@ class AppCommands {
 									jsonc_rq_update(`${uri}/webhooks/${clonedWebhook.name}/${e[0]}`, Core.formatJsonc(webhookMetadata[e[1]]).replace(/\u200B/g, ''));
 								});
 			
-								/* await Promise.all((oldNewConnections || []).map(async connection => {
-									if (connection.old === hook.name) {
-										await Core.patchEntity(_authorization, { connection: connection.new}, `${cloned_urn}/webhooks/${clonedWebhook.name}`)
-									}
-								})); */
-			
 								await Promise.all((modules || []).filter(module => module.typeId == 10).map(async module => {
 									module = (await Core.rpGet(`${cloned_urn}/${cloned_app.name}/${cloned_app.version}/modules/${module.name}`, _authorization))?.appModule
 									if (module.webhook === hook.name) 
