@@ -1,10 +1,20 @@
-# Change Log
+​# Change Log
+
+​## 1.3.20
+​​​​​​
+### Fixed​
+
+- JSON formatter does not remove ​​​​​​​​​​​​empty lines​​
+​​​
+### Updated​
+
+- `jsonc-parser` library upgraded from ​v2 to v3
 
 ## 1.3.19
 
 ### Fixed
 
-- `vm2` library security patch
+- `vm2` library security patch​
 
 ## 1.3.18
 
@@ -74,8 +84,8 @@
 
 ## 1.3.7
 
-### Updated
-
+### Updated​
+​
 - Using Update instead of Publish on Web Hooks​​
 - Fixed Top Level string RPC calls in JSONCs
 - Fixed Export Command
