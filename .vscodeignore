@@ -6,3 +6,5 @@ local
 jsconfig.json
 vsc-extension-quickstart.md
 .eslintrc.json
+**/*.ts
+**/tsconfig.json
