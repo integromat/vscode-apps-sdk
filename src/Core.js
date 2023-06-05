@@ -215,7 +215,7 @@ module.exports = {
 	},
 
 	formatJsonc: function (text) {
-		let edits = jsoncParser.format(text, undefined, { insertSpaces: 4 })
+		let edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true })
 		let formatted = jsoncParser.applyEdits(text, edits)
 		return formatted
 	},
