@@ -120,12 +120,11 @@ class CoreCommands {
 		catch (err) {
 			showError(err, 'File saving/uploading failed');
 
-			// Mark the document content as dirty/modified/not-saved
+			// Mark the document as dirty (Adds a space and remove it)
 			const editor = vscode.window.activeTextEditor
 			await editor.edit((editBuilder)=> {
 				editBuilder.insert(new vscode.Position(0,0), " ");
 			}, {undoStopBefore:false, undoStopAfter:false });
-
 			await editor.edit((editBuilder)=> {
 				editBuilder.delete(new vscode.Range(new vscode.Position(0,0), new vscode.Position(0,1)));
 			}, {undoStopBefore:false, undoStopAfter:false });
