@@ -22,7 +22,7 @@ import PublicCommands = require('./commands/PublicCommands');
 import LanguageServersSettings = require('./LanguageServersSettings');
 
 import tempy = require('tempy');
-import path from 'path';
+import * as path from 'path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 

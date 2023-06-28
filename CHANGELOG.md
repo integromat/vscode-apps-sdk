@@ -5,6 +5,13 @@
 ### Fixed
 
 - JSON formatter does not remove empty lines
+- `vm2` library security patch
+- Error handling improved
+
+### Modified
+
+- `mkdirp` library refactorized to native function
+- `request`, `request-promise` library refactorized to `axios`
 
 ### Updated
 
@@ -324,7 +331,7 @@
 
 ### Modified
 
-- Updated API 
+- Updated API
 - POST/PUT swap
 
 ## 1.0.11

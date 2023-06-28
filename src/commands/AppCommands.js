@@ -1,3 +1,4 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode');
 
 const Core = require('../Core');
@@ -11,14 +12,14 @@ const kebabCase = require('lodash.kebabcase');
 const pick = require('lodash.pick');
 const download = require('image-downloader');
 const fs = require('fs');
-const request = require('request');
 const path = require('path');
-const rp = require('request-promise');
+const axios = require('axios');
 const asyncfile = require('async-file');
 const tempy = require('tempy');
 const compressing = require('compressing');
 const AdmZip = require('adm-zip');
 const camelCase = require('lodash.camelcase');
+const { showError } = require('../error-handling');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -225,7 +226,7 @@ class AppCommands {
 					}
 					appsProvider.refresh();
 				} catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err);
+					showError(err);
 				}
 			});
 		}
@@ -327,7 +328,7 @@ class AppCommands {
 				}
 				appsProvider.refresh();
 			} catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err);
+				showError(err);
 			}
 		});
 
@@ -358,18 +359,17 @@ class AppCommands {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
 					try {
-						await rp({
+						await axios({
 							method: 'DELETE',
-							uri: uri,
+							url: uri,
 							headers: {
 								'Authorization': _authorization,
 								'x-imt-apps-sdk-version': Meta.version
 							},
-							json: true
 						});
 						appsProvider.refresh();
 					} catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err);
+						vscode.window.showErrorMessage('Error in apps-sdk.app.delete: ' + (err.error.message || err));
 					}
 					break;
 			}
@@ -410,10 +410,14 @@ class AppCommands {
 			// Inject the theme color and the icon to the generated HTML
 			panel.webview.html = Core.getIconHtml(buff, app.theme, path.join(__dirname, '..', '..'));
 
-			/**
-			 * Change handler
-			 */
+
 			panel.webview.onDidReceiveMessage(async (message) => {
+
+				/**
+				 * The icon change (upload new one).
+				 *
+				 * Called when user clicks on the "Change icon" button, which calls command "change-icon".
+				 */
 				if (message.command === 'change-icon') {
 
 					// Show open file dialog and wait for a new file URI
@@ -431,37 +435,38 @@ class AppCommands {
 						return;
 					}
 
-					// Prepare request options
-					const options = {
-						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
-						headers: {
-							'Authorization': _authorization,
-							'x-imt-apps-sdk-version': Meta.version
-						}
-					};
-
-					// Read the new file and fire the request
-					fs.createReadStream(uri[0].fsPath).pipe(request.put(options, async (err, response) => {
-
-						// Parse the response
-						response = JSON.parse(response.body);
-
-						// If there was an error, show the message
-						if (response.name === 'Error') {
-							vscode.window.showErrorMessage(response.message);
-						} else {
-							// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
-							if (await asyncfile.exists(app.rawIcon.dark)) {
-								await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
+					// Upload the new icon via REST API.
+					try {
+						// Prepare request options
+						const options = {
+							url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
+							method: 'PUT',
+							headers: {
+								'Authorization': _authorization,
+								'x-imt-apps-sdk-version': Meta.version,
+								'Content-Type': 'image/png',
 							}
-							if (await asyncfile.exists(app.rawIcon.light)) {
-								await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
-							}
+						};
 
-							vscode.commands.executeCommand('apps-sdk.refresh');
-							panel.dispose();
+						// Read the new file and fire the request
+						await axios({
+							...options,
+							data: fs.createReadStream(uri[0].fsPath),
+						});
+
+						// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
+						if (await asyncfile.exists(app.rawIcon.dark)) {
+							await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
 						}
-					}));
+						if (await asyncfile.exists(app.rawIcon.light)) {
+							await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
+						}
+
+						vscode.commands.executeCommand('apps-sdk.refresh');
+						panel.dispose();
+					} catch (e) {
+						showError(e, 'Change icon failed');
+					}
 				}
 			}, undefined);
 		});
@@ -562,7 +567,7 @@ class AppCommands {
 						await Core.executePlain(_authorization, '', uri);
 						appsProvider.refresh();
 					} catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err);
+						showError(err);
 					}
 					break;
 			}
@@ -599,7 +604,7 @@ class AppCommands {
 						await Core.executePlain(_authorization, '', uri);
 						appsProvider.refresh();
 					} catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err);
+						showError(err);
 					}
 					break;
 			}
@@ -972,10 +977,10 @@ class AppCommands {
 					}
 					progress.report({ increment: 5, message: `${app.label} - Compressing output` });
 					await compressing.zip.compressDir(archive, storage.fsPath).catch((err) => {
-						vscode.window.showErrorMessage(`Saving failed: ${err}`);
+						showError(err, 'Saving failed');
 					});
 				} catch (err) {
-					vscode.window.showErrorMessage(err);
+					showError(err);
 				}
 			});
 			vscode.window.showInformationMessage(`Export of ${app.label} completed!`);
@@ -1377,29 +1382,33 @@ class AppCommands {
 							});
 							bodyProto = JSON.stringify(bodyProto);
 						}
-						const options = {
-							uri: uri,
+						/** @type {import('axios').AxiosRequestConfig} */
+						const requestConfig = {
+							url: uri,
 							headers: {
 								'Authorization': _authorization,
 								'x-imt-apps-sdk-version': Meta.version,
 								'content-type': r.type
 							},
 							method: r.method,
-							body: bodyProto
+							data: bodyProto,
+							transformRequest: (data) => (data),
+							transformResponse: (data) => (data),
 						};
 
-						if (_environment.version === 2 && options.method === 'POST' && options.headers['content-type'] === 'application/json') {
-							const j = JSON.parse(options.body);
-							options.body = JSON.stringify(Object.keys(j).reduce((p, c) => {
+						if (_environment.version === 2 && requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
+							// TODO Check, if it is ok to send data to Axios stringified
+							const j = JSON.parse(requestConfig.data);
+							requestConfig.data = JSON.stringify(Object.keys(j).reduce((p, c) => {
 								p[camelCase(c)] = j[c] === null ? undefined : j[c];
 								return p;
 							}, {}))
 						}
 
-						const response = await rp(options);
+						const axiosResponse = await axios(requestConfig);
 						if (r._store !== undefined) {
 							r._store.forEach(s => {
-								let parsed = JSON.parse(response);
+								let parsed = JSON.parse(axiosResponse.data);
 
 								// Autoparse the nested object
 								if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
@@ -1414,7 +1423,7 @@ class AppCommands {
 				});
 				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
 			} catch (err) {
-				vscode.window.showErrorMessage(err.message || err);
+				vscode.window.showErrorMessage('Error in apps-sdk.app.import: ' + (err.message || err));
 			}
 		});
 
@@ -1478,7 +1487,7 @@ class AppCommands {
 				appsProvider.refresh();
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err);
+				showError(err);
 			}
 
 		});

@@ -1,3 +1,4 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
@@ -12,10 +13,9 @@ const DataProvider = require('../providers/DataProvider')
 const GroupsProvider = require('../providers/GroupsProvider')
 
 const path = require('path')
-const fs = require('fs')
-const rp = require('request-promise')
-const mkdirp = require('mkdirp')
-const request = require('request')
+const { mkdir, writeFile } = require('fs/promises');
+const axios = require('axios');
+const { showError } = require('../error-handling')
 
 class CoreCommands {
 	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider, dataProvider, groupsProvider) {
@@ -76,15 +76,16 @@ class CoreCommands {
 		let uri = this._environment.baseUrl + url
 
 		// Prepare request options
-		var options = {
-			uri: uri,
+		const options = {
+			url: uri,
 			method: 'PUT',
-			body: file.replace(/\u200B/g, ''),
+			data: file,
 			headers: {
 				"Content-Type": "application/jsonc",
 				"Authorization": this._authorization,
 				'x-imt-apps-sdk-version': Meta.version
-			}
+			},
+			transformRequest: (data) => (data),
 		};
 		// ^^^ File Replace kicks off zerospaces which are used for marking the document edited
 
@@ -108,34 +109,27 @@ class CoreCommands {
          */
 		try {
 			// Get the response from server
-			let response = JSON.parse(await rp(options))
+			const axiosResponse = await axios(options);
 
 			// If there's no change to be displayed, end
-			if (!response.change || Object.keys(response.change).length === 0) { return }
+			if (!axiosResponse.data.change || Object.keys(axiosResponse.data.change).length === 0) { return; }
 
 			// Else refresh the tree, because there's a new change to be displayed
 			this.appsProvider.refresh()
 		}
 		catch (err) {
-			// Parse the error and display it
-			let e = JSON.parse(err.error)
+			showError(err, 'File saving/uploading failed');
 
-			// If name is undefined and environment version is 2, then try to use APIError message format instead of syntax error
-			if (e.name === undefined && this._environment.version === 2) {
-				vscode.window.showErrorMessage(`${e.message}: ${e.detail ? e.detail[0] : 'No further information available.'}`);
-			} else {
-				vscode.window.showErrorMessage(`${e.name}: ${e.message}`)
-			}
+			// Mark the document content as dirty/modified/not-saved
+			const editor = vscode.window.activeTextEditor
+			await editor.edit((editBuilder)=> {
+				editBuilder.insert(new vscode.Position(0,0), " ");
+			}, {undoStopBefore:false, undoStopAfter:false });
 
-			// Get active text editor, if exists, insert zero-space char -> mark changed
-			let editor = vscode.window.activeTextEditor
-			if (editor !== undefined) {
-				editor.insertSnippet(new vscode.SnippetString('\u200B'), editor.selection.anchor)
-				// If the code should be formatted, remove the zero-char again
-				if (vscode.workspace.getConfiguration('editor', 'formatOnSave').get('formatOnSave')) {
-					vscode.commands.executeCommand('editor.action.formatDocument')
-				}
-			}
+			await editor.edit((editBuilder)=> {
+				editBuilder.delete(new vscode.Range(new vscode.Position(0,0), new vscode.Position(0,1)));
+			}, {undoStopBefore:false, undoStopAfter:false });
+
 		}
 	}
 
@@ -181,7 +175,7 @@ class CoreCommands {
              *                 ####### #       #       #   #      #
              *   ###           #     # #       #       #    #     #
              *   ###           #     # ####### ####### #     #    #
-			 * 
+			 *
 			 * The version is fixed here, because we didn't know how to make it nonfixed at the time
 			 * This should be changed when the connection is separated from the app
 			 * It would require it's custom RPCs and custom IMLFunctions
@@ -559,15 +553,12 @@ class CoreCommands {
 				case "app":
 				case "apps":
 					// Prepared for more app-level codes
-					switch (item.name) {
-						case "readme":
+					if (item.name === "readme") {
 							urn += `/readme`
 							urnForFile += `/readme`
-							break
-						default:
+					} else {
 							urn += `/${item.name}`
 							urnForFile += `/${item.name}`
-							break;
 					}
 					break
 			}
@@ -581,14 +572,9 @@ class CoreCommands {
              * Code loader loads the requested code
              */
 
-			// Prepare the directory for the code 
-			mkdirp(path.join(_DIR, "opensource", dirname), function (err) {
-
-				// If something went wrong, throw an error and return
-				if (err) {
-					vscode.window.showErrorMessage(err.message)
-					return
-				}
+			// Prepare the directory for the code
+			try {
+				await mkdir(path.join(_DIR, "opensource", dirname), { recursive: true });
 
 				// Compose a download URL
 				let url = _environment.baseUrl + urn
@@ -597,33 +583,30 @@ class CoreCommands {
                  * GET THE SOURCE CODE
                  * Those lines are responsible straight for the download of code
                  */
-				request({
+				const axiosResponse = await axios({
 					url: url,
 					headers: {
 						'Authorization': _authorization,
 						'x-imt-apps-sdk-version': Meta.version
-					}
-				}, function (error, response, body) {
+					},
+					transformResponse: (res) => { return res; },  // Do not parse the response into JSON
+				})
 
-					// Prepare a stream to be saved
-					let write = (item.language === "js" || item.language === "md") ? body : Core.formatJsonc(body)
+				// Prepare a stream to be saved
+				const write = (item.language === "js" || item.language === "md") ? axiosResponse.data : Core.formatJsonc(axiosResponse.data);
 
-					// Save the received code to the temp directory
-					fs.writeFile(path.join(_DIR, "opensource", filepath), write, { mode: 440 }, function (err) {
+				// Save the received code to the temp directory
+				await writeFile(path.join(_DIR, "opensource", filepath), write, { mode: 440 });
 
-						// If there was an error, display it and return
-						if (err) {
-							return vscode.window.showErrorMessage(err.message);
-						}
-
-						// Open the downloaded code in the editor
-						vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, "opensource", filepath)), {
-							preview: false
-						})
-					});
-				});
-
-			})
+				// Open the downloaded code in the editor
+				vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, "opensource", filepath)), {
+					preview: false
+				})
+			} catch (err) {
+				// If something went wrong, throw an error and return
+				showError(err, 'apps-sdk.load-open-source');
+				return;
+			}
 		})
 
         /**
@@ -689,14 +672,10 @@ class CoreCommands {
              * Code loader loads the requested code
              */
 
-			// Prepare the directory for the code 
-			mkdirp(path.join(_DIR, dirname), function (err) {
+			try {
+				// Prepare the directory for the code
+				await mkdir(path.join(_DIR, dirname), { recursive: true });
 
-				// If something went wrong, throw an error and return
-				if (err) {
-					vscode.window.showErrorMessage(err.message)
-					return
-				}
 
 				// Compose a download URL
 				let url = _environment.baseUrl + urn
@@ -705,44 +684,45 @@ class CoreCommands {
                  * GET THE SOURCE CODE
                  * Those lines are responsible straight for the download of code
                  */
-				request({
+				const axiosResponse = await axios({
 					url: url,
 					headers: {
 						'Authorization': _authorization,
 						'x-imt-apps-sdk-version': Meta.version
-					}
-				}, function (error, response, body) {
+					},
+					transformResponse: (res) => { return res; },  // Do not parse the response into JSON
+				});
 
-					// Prepare a stream to be saved
-					let write = (item.language === "js" || item.language === "md") ? body : Core.formatJsonc(body)
+				// Prepare a stream to be saved
+				let write = (item.language === "js" || item.language === "md") ? axiosResponse.data : Core.formatJsonc(axiosResponse.data);
 
-					// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
-					if (write === "null") {
-						if (item.name === 'samples') {
-							write = '{}';
-						} else {
-							write = '[]';
-						}
+				// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
+				if (write === "null") {
+					if (item.name === 'samples') {
+						write = '{}';
+					} else {
+						write = '[]';
 					}
+				}
 
 
 					// Save the received code to the temp directory
-					fs.writeFile(path.join(_DIR, filepath), write, function (err) {
+				await writeFile(path.join(_DIR, filepath), write);
 
-						// If there was an error, display it and return
-						if (err) {
-							return vscode.window.showErrorMessage(err.message);
-						}
 
-						// Open the downloaded code in the editor
-						vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
-							preview: true
-						})
-					});
+
+				// Open the downloaded code in the editor
+				vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
+					preview: true
 				});
 
-			})
-		})
+
+			} catch (err) {
+				// If something went wrong, throw an error and return
+				showError(err, 'apps-sdk.load-source');
+				return;
+			}
+		});
 	}
 }
 
