@@ -1,3 +1,4 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode');
 
 const App = require('../tree/App');
@@ -8,12 +9,12 @@ const Core = require('../Core');
 const Meta = require('../Meta');
 
 const path = require('path')
-const mkdirp = require('mkdirp')
+const { mkdir } = require('fs/promises');
 const download = require('image-downloader')
 const asyncfile = require('async-file')
 const camelCase = require('lodash.camelcase');
 
-class AppsProvider {
+class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR, _admin) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -28,15 +29,15 @@ class AppsProvider {
 		this._onDidChangeTreeData.fire();
 	}
 
-	getParent(element) {
+	getParent(element /* : Dependency */) {
 		return element.parent
 	}
 
-	getTreeItem(element) {
+	getTreeItem(element /* : Dependency */) {
 		return element
 	}
 
-	async getChildren(element) {
+	async getChildren(element /* : Dependency */) {
         /*
          * LEVEL 0 - APPS
          */
@@ -57,7 +58,7 @@ class AppsProvider {
 			}
 			if (response === undefined) { return }
 			let iconDir = path.join(this._DIR, "icons")
-			mkdirp(iconDir)
+			await mkdir(iconDir, { recursive: true });
 			let apps = response.map(async (app) => {
 				let iconVersion = 1
 				let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
@@ -327,6 +328,8 @@ class AppsProvider {
 								}
 								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
 							})
+						default:
+							throw new Error(`Unknown or unsupported module type ${element.type}.`);
 					}
 				case "rpc":
 					return [

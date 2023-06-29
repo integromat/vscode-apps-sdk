@@ -1,8 +1,10 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
 const QuickPick = require('../QuickPick')
 const Enum = require('../Enum')
+const { showError } = require('../error-handling');
 
 class WebhookCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -51,7 +53,7 @@ class WebhookCommands {
 				appsProvider.refresh()
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+				showError(err);
 			}
 		})
 
@@ -79,7 +81,7 @@ class WebhookCommands {
 					appsProvider.refresh()
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err)
 				}
 			} else {
 				try {
@@ -87,7 +89,7 @@ class WebhookCommands {
 					appsProvider.refresh()
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			}
 		})
@@ -165,14 +167,14 @@ class WebhookCommands {
 							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					} else {
 						try {
 							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					}
 				}
@@ -218,7 +220,7 @@ class WebhookCommands {
 							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					} else {
 						try {
@@ -226,7 +228,7 @@ class WebhookCommands {
 							appsProvider.refresh()
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					}
 				}
@@ -252,7 +254,7 @@ class WebhookCommands {
 					}
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			}
 		})

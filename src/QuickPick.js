@@ -1,6 +1,8 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode');
 const Core = require('./Core');
 const camelCase = require('lodash.camelcase');
+const { showError } = require('./error-handling');
 
 module.exports = {
 	connections: async function (environment, authorization, app, allow_no) {
@@ -20,7 +22,7 @@ module.exports = {
 			return connections
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(err.error.message)
+			showError(err);
 		}
 	},
 
@@ -41,7 +43,7 @@ module.exports = {
 			return webhooks
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(err.error.message)
+			showError(err);
 		}
 	},
 
@@ -63,7 +65,7 @@ module.exports = {
 			})
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(err.error.message)
+			showError(err);
 		}
 	},
 
@@ -125,7 +127,7 @@ module.exports = {
 			return apps;
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(err.message || err.error.message)
+			showError(err);
 		}
 	},
 
@@ -145,7 +147,7 @@ module.exports = {
 			})
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(err.message || err.error.message)
+			showError(err);
 		}
 	}
 }

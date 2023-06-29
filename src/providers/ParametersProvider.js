@@ -1,10 +1,12 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
 const Meta = require('../Meta')
 
-const rp = require('request-promise')
+const axios = require('axios');
 const jsoncParser = require('jsonc-parser');
+const { showError } = require('../error-handling');
 
 class ParametersProvider {
 	constructor(_authorization, _environment) {
@@ -23,38 +25,46 @@ class ParametersProvider {
 		}
 		urn += `/${crumbs[3]}/${crumbs[4]}`
 
-        /*
-         * PARAMETERS
-         */
+		/*
+		 * PARAMETERS
+		 */
 		if (["connection", "webhook", "rpc", "module", "connections", "webhooks", "rpcs", "modules"].includes(crumbs[3])) {
 			let url = `${this._environment.baseUrl}${urn}/parameters`
-			let parameters = await rp({
-				url: url,
-				headers: {
-					'Authorization': this._authorization,
-					'x-imt-apps-sdk-version': Meta.version
-				}
-			}).catch(err => {
-				vscode.window.showErrorMessage(err.error.message || err)
-			})
-			this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), "parameters"))
+			try {
+				const parameters = (await axios({
+					url: url,
+					headers: {
+						'Authorization': this._authorization,
+						'x-imt-apps-sdk-version': Meta.version,
+					},
+					transformResponse: (res) => { return res; },  // Do not parse the response into JSON
+				})).data;
+				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), "parameters"))
+			} catch(err) {
+				showError(err);
+			}
+
 		}
 
-        /*
-         * EXPECT
-         */
+		/*
+		 * EXPECT
+		 */
 		if (crumbs[3] === "module" || crumbs[3] === "modules") {
 			let url = `${this._environment.baseUrl}${urn}/expect`
-			let expect = await rp({
-				url: url,
-				headers: {
-					'Authorization': this._authorization,
-					'x-imt-apps-sdk-version': Meta.version
-				}
-			}).catch(err => {
-				vscode.window.showErrorMessage(err.error.message || err)
-			})
-			this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), "parameters"))
+			try {
+				const expect = (await axios({
+					url: url,
+					headers: {
+						'Authorization': this._authorization,
+						'x-imt-apps-sdk-version': Meta.version
+					},
+					transformResponse: (res) => { return res; },  // Do not parse the response into JSON
+				})).data;
+				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), "parameters"))
+			} catch(err) {
+				showError(err);
+			}
+
 		}
 
 		this.parameters = this.availableParameters.map(parameter => { return new vscode.CompletionItem(parameter, vscode.CompletionItemKind.Variable) })

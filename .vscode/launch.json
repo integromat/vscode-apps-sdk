@@ -17,6 +17,7 @@
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
 			"args": [
+				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
@@ -28,7 +29,7 @@
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-//				"--disable-extensions",
+				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/test"
 			],

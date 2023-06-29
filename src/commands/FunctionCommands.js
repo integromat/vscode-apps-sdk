@@ -1,3 +1,4 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
@@ -5,6 +6,7 @@ const Validator = require('../Validator')
 
 const { VM, VMScript } = require('vm2')
 const { IML } = require('@integromat/iml')
+const { showError } = require('../error-handling');
 
 class FunctionCommands {
 	static async register(appsProvider, _authorization, _environment, _timezone) {
@@ -38,7 +40,7 @@ class FunctionCommands {
 				appsProvider.refresh()
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+				showError(err);
 			}
 		})
 

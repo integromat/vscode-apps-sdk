@@ -1,10 +1,12 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const Jimp = require('jimp');
-const rp = require('request-promise');
+const axios = require('axios');
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const jsoncParser = require('jsonc-parser');
 const Meta = require('./Meta');
+const { showError } = require('./error-handling');
 
 module.exports = {
 	invertPngAsync: async function (uri) {
@@ -33,17 +35,19 @@ module.exports = {
 	},
 
 	rpGet: async function (uri, authorization, qs) {
-		return rp({
-			url: uri,
-			json: true,
-			headers: {
-				'Authorization': authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-			qs: qs
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message || err)
-		})
+		try {
+			return (await axios({
+				url: uri,
+				headers: {
+					'Authorization': authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+				params: qs
+			})).data;
+		} catch (err) {
+			showError(err, 'rpGet');
+			throw err;
+		}
 	},
 
 	getApp: function (item) {
@@ -78,94 +82,106 @@ module.exports = {
 		return true
 	},
 
-	addEntity: function (authorization, body, uri) {
-		return rp({
-			method: 'POST',
-			uri: uri,
-			body: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-			json: true
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message)
-		})
+	addEntity: async function (authorization, body, url) {
+		try {
+			return (await axios({
+				method: 'POST',
+				url: url,
+				data: body,
+				headers: {
+					Authorization: authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+			})).data;
+		} catch (err) {
+			showError(err, 'addEntity');
+			throw err;
+		}
 	},
 
-	deleteEntity: function (authorization, body, uri) {
-		return rp({
-			method: 'DELETE',
-			uri: uri,
-			body: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-			json: true
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message)
-		})
+	deleteEntity: async function (authorization, body, url) {
+		try {
+			return (await axios({
+				method: 'DELETE',
+				url: url,
+				data: body,
+				headers: {
+					Authorization: authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+			})).data;
+		} catch (err) {
+			showError(err, 'deleteEntity');
+			throw err;
+		}
 	},
 
-	editEntity: function (authorization, body, uri) {
-		return rp({
-			method: 'PUT',
-			uri: uri,
-			body: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-			json: true
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message)
-		})
+	editEntity: async function (authorization, body, url) {
+		try {
+			return (await axios({
+				method: 'PUT',
+				url: url,
+				data: body,
+				headers: {
+					Authorization: authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+			})).data;
+		} catch (err) {
+			showError(err, 'editEntity');
+			throw err;
+		}
 	},
 
-	patchEntity: function (authorization, body, uri) {
-		return rp({
-			method: 'PATCH',
-			uri: uri,
-			body: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-			json: true
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message)
-		})
+	patchEntity: async function (authorization, body, url) {
+		try {
+			return (await axios({
+				method: 'PATCH',
+				url: url,
+				data: body,
+				headers: {
+					Authorization: authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+			})).data;
+		} catch (err) {
+			showError(err, 'patchEntity');
+			throw err;
+		}
 	},
 
-	editEntityPlain: function (authorization, value, uri) {
-		return rp({
-			method: 'PUT',
-			uri: uri,
-			body: value,
-			headers: {
-				Authorization: authorization,
-				"Content-Type": "text/plain",
-				'x-imt-apps-sdk-version': Meta.version
-			}
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message)
-		})
+	editEntityPlain: async function (authorization, value, url) {
+		try {
+			return (await axios({
+				method: 'PUT',
+				url: url,
+				data: value,
+				headers: {
+					Authorization: authorization,
+					"Content-Type": "text/plain",
+					'x-imt-apps-sdk-version': Meta.version
+				},
+			})).data;
+		} catch (err) {
+			showError(err, 'editEntityPlain');
+		}
 	},
 
-	executePlain: function (authorization, value, uri) {
-		return rp({
-			method: 'POST',
-			uri: uri,
-			body: value,
-			headers: {
-				Authorization: authorization,
-				"Content-Type": "text/plain",
-				'x-imt-apps-sdk-version': Meta.version
-			}
-		}).catch(err => {
-			vscode.window.showErrorMessage(err.error.message)
-		})
+	executePlain: async function (authorization, value, url) {
+		try {
+			return (await axios({
+				method: 'POST',
+				url: url,
+				data: value,
+				headers: {
+					Authorization: authorization,
+					"Content-Type": "text/plain",
+					'x-imt-apps-sdk-version': Meta.version
+				},
+			})).data;
+		} catch (err) {
+			showError(err, 'executePlain');
+		}
 	},
 
 	getAppObject: async function (environment, authorization, app) {
@@ -177,7 +193,7 @@ module.exports = {
 			}
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(err.error.message)
+			showError(err, 'getAppObject');
 		}
 	},
 
