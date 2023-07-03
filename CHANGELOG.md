@@ -2,20 +2,20 @@
 
 ## 1.3.20
 
-### Fixed
 
-- JSON formatter does not remove empty lines
-- `vm2` library security patch
-- Error handling improved
+### Changed
 
-### Modified
+- Prevent to remove empty JSON lines by autoformat
+- Update `vm2` library to `3.9.19`
+- Error handling improvement
+- Remove `mkdirp` library - refactorize to build-in function
+- Refactorize `request`, `request-promise` library to `axios`
+- Update `jsonc-parser` library from `v2` to `v3`
 
-- `mkdirp` library refactorized to native function
-- `request`, `request-promise` library refactorized to `axios`
+### Removed
 
-### Updated
+- Connection template "Digest auth"
 
-- `jsonc-parser` library upgraded from v2 to v3
 
 ## 1.3.19
 
