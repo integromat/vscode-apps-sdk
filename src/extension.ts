@@ -12,7 +12,7 @@ import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
 import ConnectionCommands = require('./commands/ConnectionCommands');
 import AppCommands = require('./commands/AppCommands');
-import CommonCommands = require('./commands/CommonCommands');
+import { CommonCommands } from './commands/CommonCommands';
 import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import CoreCommands = require('./commands/CoreCommands');
@@ -25,6 +25,7 @@ import tempy = require('tempy');
 import * as path from 'path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
+import { Environment } from './types/environment.types';
 
 
 let client: vscode_languageclient.LanguageClient;
@@ -34,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	log('debug', 'Extension starting...');
 
 	let _authorization: string|undefined = undefined;
-	let _environment: { baseUrl: string, version: number } | undefined = undefined;
+	let _environment: Environment | undefined = undefined;
 	let _admin = false;
 	let currentRpcProvider;
 	let currentImlProvider;
@@ -149,6 +150,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
+	if (!_environment) {
+		throw new Error("_environment not set.");  // This should never happen, it is here just for TypeScript to be happy.
+	}
+
 	/**
 	 * AUTHORIZED
 	 * Following stuff is done only when environment and API key are set correctly (_authorization variable was set -> it isn't undefined)
@@ -210,6 +215,7 @@ export function deactivate() {
 	if (!client) {
 		return undefined;
 	}
+	log('info', 'Deactivating the Extension ...');
 	return client.stop();
 }
 
