@@ -16,7 +16,7 @@ const path = require('path')
 const { mkdir, writeFile } = require('fs/promises');
 const axios = require('axios');
 const { showError } = require('../error-handling')
-const { sourceCodeLocalTempBasedir } = require('../temp-dir');
+const { sourceCodeLocalTempBasedir, isFileBelongsToExtension } = require('../temp-dir');
 const { log } = require('../output-channel')
 
 class CoreCommands {
@@ -44,7 +44,7 @@ class CoreCommands {
 	async sourceUpload(event /*: vscode.TextDocumentWillSaveEvent*/) {
 
 		// It it's not an APPS SDK file, don't do anything
-		if (!event.document.fileName.includes(sourceCodeLocalTempBasedir)) {
+		if (!isFileBelongsToExtension(event.document.fileName)) {
 			if (/[/\\]apps-sdk[/\\]/.test(event.document.fileName)) {
 				vscode.window.showWarningMessage(
 					'File upload to Make has been cancelled. You are trying to save some old file from previous run ' +
