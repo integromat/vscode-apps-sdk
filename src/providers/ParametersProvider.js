@@ -70,8 +70,20 @@ class ParametersProvider {
 		this.parameters = this.availableParameters.map(parameter => { return new vscode.CompletionItem(parameter, vscode.CompletionItemKind.Variable) })
 	}
 
+	/**
+	 * @param {Array|string} parameters
+	 *  - Array is used when parameters are defined staticaly.
+	 *  - String is used when parameters are loaded dynamicaly via "rpc://...".
+	 * @param {string} root
+	 * @returns {string[]}
+	 */
 	generateParametersMap(parameters, root) {
-		let out = []
+		// If parameters are loaded dynamicaly via rpc://, the extension cannot handle with it.
+		if (typeof parameters === 'string' && parameters.startsWith('rpc://')) {
+			return [];
+		}
+
+		let out/*:string[]*/ = [];
 		parameters.forEach(parameter => {
 			if (parameter.name !== undefined) {
 				out.push(`${root}.${parameter.name}`)

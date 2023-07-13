@@ -5,6 +5,7 @@
 ### Fixed
 
 - Module deletion
+- Error in case of parameters defined as rpc://
 
 ## 1.3.20
 
