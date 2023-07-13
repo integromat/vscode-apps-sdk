@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.21
+
+### Fixed
+
+- Module deletion
+
 ## 1.3.20
 
 
