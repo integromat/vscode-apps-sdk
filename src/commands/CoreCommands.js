@@ -6,7 +6,7 @@ const Meta = require('../Meta')
 
 const RpcProvider = require('../providers/RpcProvider')
 const ImlProvider = require('../providers/ImlProvider')
-const ParametersProvider = require('../providers/ParametersProvider')
+const { ParametersProvider } = require('../providers/ParametersProvider')
 const StaticImlProvider = require('../providers/StaticImlProvider')
 const TempProvider = require('../providers/TempProvider')
 const DataProvider = require('../providers/DataProvider')
