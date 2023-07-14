@@ -79,7 +79,13 @@ class ParametersProvider {
 	 */
 	generateParametersMap(parameters, root) {
 		// If parameters are loaded dynamicaly via rpc://, the extension cannot handle with it.
-		if (typeof parameters === 'string' && parameters.startsWith('rpc://')) {
+		if (typeof parameters === 'string') {
+			if (!parameters.startsWith('rpc://')) {
+				throw new Error(
+					'Invalid parameters definition: If parameters is a string, ' +
+					`it is expected to start with "rpc://". But got "${parameters}".`
+				);
+			}
 			return [];
 		}
 
