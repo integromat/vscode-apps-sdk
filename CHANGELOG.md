@@ -5,7 +5,12 @@
 ### Fixed
 
 - Module deletion
+- Attempts to upload files not belonging to extension
 - Error in case of parameters defined as rpc://
+
+# Changes
+
+- Temporary directory is removed on the end of extension lifecycle
 
 ## 1.3.20
 

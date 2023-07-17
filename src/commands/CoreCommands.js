@@ -16,6 +16,8 @@ const path = require('path')
 const { mkdir, writeFile } = require('fs/promises');
 const axios = require('axios');
 const { showError } = require('../error-handling')
+const { isFileBelongingToExtension } = require('../temp-dir');
+const { log } = require('../output-channel')
 
 class CoreCommands {
 	constructor(appsProvider, _authorization, _environment, rpcProvider, imlProvider, parametersProvider, staticImlProvider, tempProvider, dataProvider, groupsProvider) {
@@ -34,13 +36,26 @@ class CoreCommands {
 		this.tempListener = null
 	}
 
-    /**
-     * Source Uploader
-     */
-	async sourceUpload(event) {
+	/**
+	 * Source Uploader
+	 * @param {vscode.TextDocumentWillSaveEvent} event
+	 * @returns {Promise<void>}
+	 */
+	async sourceUpload(event /*: vscode.TextDocumentWillSaveEvent*/) {
 
 		// It it's not an APPS SDK file, don't do anything
-		if (!event.document.fileName.includes('apps-sdk')) { return }
+		if (!isFileBelongingToExtension(event.document.fileName)) {
+			if (/[/\\]apps-sdk[/\\]/.test(event.document.fileName)) {
+				vscode.window.showWarningMessage(
+					'File upload to Make has been cancelled. You are trying to save some old file from previous run ' +
+					'of the VS Code. File is not up-to-date, therefore Make Apps Extension ignores it now. ' +
+					'Please, reopen the file again from menu in Make Apps Extension, then you will be able to ' +
+					'edit and save it. ' +
+					`File: ${event.document.fileName}}`
+				);
+			} // Else // Everything is OK, user is saving some non SDK-App file, therefore ignore it silencely.
+			return;
+		}
 
 		// Load the content of the file that's about to be saved
 		let file = event.document.getText()
@@ -103,13 +118,15 @@ class CoreCommands {
 			options.headers["Content-Type"] = "application/json"
 		}
 
-        /**
-         * CODE-UPLOADER
-         * Those lines are directly responsible for the code being uploaded
-         */
+		/**
+		 * CODE-UPLOADER
+		 * Those lines are directly responsible for the code being uploaded
+		 */
 		try {
 			// Get the response from server
 			const axiosResponse = await axios(options);
+
+			log('info', `File ${right} saved/uploaded successfully`);
 
 			// If there's no change to be displayed, end
 			if (!axiosResponse.data.change || Object.keys(axiosResponse.data.change).length === 0) { return; }
@@ -118,7 +135,7 @@ class CoreCommands {
 			this.appsProvider.refresh()
 		}
 		catch (err) {
-			showError(err, 'File saving/uploading failed');
+			showError(err, `File ${event?.document?.fileName} saving/uploading failed`);
 
 			// Mark the document as dirty (Adds a space and remove it)
 			const editor = vscode.window.activeTextEditor
@@ -132,9 +149,9 @@ class CoreCommands {
 		}
 	}
 
-    /**
-     * Provider Keeper
-     */
+	/**
+	 * Provider Keeper
+	 */
 	async keepProviders(editor) {
 		{
 
@@ -169,11 +186,11 @@ class CoreCommands {
 			/**
 			 *   ###              #    #       ####### ######  #######
 			 *   ###             # #   #       #       #     #    #
-             *   ###            #   #  #       #       #     #    #
-             *    #            #     # #       #####   ######     #
-             *                 ####### #       #       #   #      #
-             *   ###           #     # #       #       #    #     #
-             *   ###           #     # ####### ####### #     #    #
+			 *   ###            #   #  #       #       #     #    #
+			 *    #            #     # #       #####   ######     #
+			 *                 ####### #       #       #   #      #
+			 *   ###           #     # #       #       #    #     #
+			 *   ###           #     # ####### ####### #     #    #
 			 *
 			 * The version is fixed here, because we didn't know how to make it nonfixed at the time
 			 * This should be changed when the connection is separated from the app
@@ -241,11 +258,11 @@ class CoreCommands {
 				name = crumbs[5].split(".")[0]
 			}
 
-            /**
-             * RPC-LOADER
-             * RpcLoader loads all RPCs available within the app
-             * Following condition specifies where are RPCs allowed
-             */
+			/**
+			 * RPC-LOADER
+			 * RpcLoader loads all RPCs available within the app
+			 * Following condition specifies where are RPCs allowed
+			 */
 			if (
 				((apiPath === "connections" || apiPath === "connection") && name === "parameters") ||
 				((apiPath === "webhook" || apiPath === "webhooks") && name === "parameters") ||
@@ -281,11 +298,11 @@ class CoreCommands {
 				}
 			}
 
-            /**
-             * IML-LOADER
-             * ImlLoader loads all IML functions available within the app
-             * Following condition specifies where are IML functions allowed
-             */
+			/**
+			 * IML-LOADER
+			 * ImlLoader loads all IML functions available within the app
+			 * Following condition specifies where are IML functions allowed
+			 */
 			if (
 				(name === "base" || name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach" || name === "update")
 			) {
@@ -318,11 +335,11 @@ class CoreCommands {
 				}
 			}
 
-            /**
-             * PARAMETERS-LOADER
-             * VariablesLoader will load all context-related and available IML variables
-             * Following condition specifies where and how should be the variables provided
-             */
+			/**
+			 * PARAMETERS-LOADER
+			 * VariablesLoader will load all context-related and available IML variables
+			 * Following condition specifies where and how should be the variables provided
+			 */
 
 			if (
 				apiPath !== 'base' && (name === "api" || name === "api-oauth" || name === "epoch" || name === "attach" || name === "detach" || name === "update")
@@ -349,10 +366,10 @@ class CoreCommands {
 				}
 			}
 
-            /**
-             * STATIC-IML-LOADER
-             * Static IML loader provides inbuilt IML functions and keywords.
-             */
+			/**
+			 * STATIC-IML-LOADER
+			 * Static IML loader provides inbuilt IML functions and keywords.
+			 */
 
 			if (this.sipInit === false) {
 				await this.staticImlProvider.initialize()
@@ -516,9 +533,9 @@ class CoreCommands {
 
 	static async register(_DIR, _authorization, _environment) {
 
-        /**
-         * OpenSource Loader
-         */
+		/**
+		 * OpenSource Loader
+		 */
 		vscode.commands.registerCommand('apps-sdk.load-open-source', async function (item) {
 
 			// Compose directory structure
@@ -566,10 +583,10 @@ class CoreCommands {
 			let filepath = `${urnForFile}.${item.language}`
 			let dirname = path.dirname(filepath)
 
-            /**
-             * CODE-LOADER
-             * Code loader loads the requested code
-             */
+			/**
+			 * CODE-LOADER
+			 * Code loader loads the requested code
+			 */
 
 			// Prepare the directory for the code
 			try {
@@ -578,10 +595,10 @@ class CoreCommands {
 				// Compose a download URL
 				let url = _environment.baseUrl + urn
 
-                /**
-                 * GET THE SOURCE CODE
-                 * Those lines are responsible straight for the download of code
-                 */
+				/**
+				 * GET THE SOURCE CODE
+				 * Those lines are responsible straight for the download of code
+				 */
 				const axiosResponse = await axios({
 					url: url,
 					headers: {
@@ -608,9 +625,9 @@ class CoreCommands {
 			}
 		})
 
-        /**
-         * Source Loader
-         */
+		/**
+		 * Source Loader
+		 */
 		vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {
 
 			// Compose directory structure
@@ -666,10 +683,10 @@ class CoreCommands {
 				filepath = `${urnForFile}-oauth.${item.language}`
 			}
 
-            /**
-             * CODE-LOADER
-             * Code loader loads the requested code
-             */
+			/**
+			 * CODE-LOADER
+			 * Code loader loads the requested code
+			 */
 
 			try {
 				// Prepare the directory for the code
@@ -679,10 +696,10 @@ class CoreCommands {
 				// Compose a download URL
 				let url = _environment.baseUrl + urn
 
-                /**
-                 * GET THE SOURCE CODE
-                 * Those lines are responsible straight for the download of code
-                 */
+				/**
+				 * GET THE SOURCE CODE
+				 * Those lines are responsible straight for the download of code
+				 */
 				const axiosResponse = await axios({
 					url: url,
 					headers: {

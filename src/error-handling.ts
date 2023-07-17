@@ -18,6 +18,10 @@ export function showError(err: Error | AxiosError<any> | string, title: string|u
 		e = `[${e.name}] ${e.message}`;
 	}
 
+	if (e instanceof Object || e instanceof Array) {
+		e = JSON.stringify(e);
+	}
+
 	e = (title ? title + ': ' : '') + String(e);
 
 	// Show error message in VS Code
