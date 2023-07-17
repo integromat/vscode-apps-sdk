@@ -17,7 +17,7 @@ export const sourceCodeLocalTempBasedir = join(tempy.directory(), "apps-sdk");
  * Checks if the given file name belongs to the local temporary directory
  * where the source code of this extension is placed during editation.
  */
-export function isFileBelongsToExtension(fileName: string): boolean {
+export function isFileBelongingToExtension(fileName: string): boolean {
 	return fileName.includes(sourceCodeLocalTempBasedir);
 }
 
@@ -33,7 +33,7 @@ export function rmCodeLocalTempBasedir() {
 
 	// Clean up the source code local temp basedir if nothing kept open
 	const someAppFileKeptOpen = vscode.workspace.textDocuments.some((textDocuments) => (
-		isFileBelongsToExtension(textDocuments.fileName)
+		isFileBelongingToExtension(textDocuments.fileName)
 	));
 	if (!someAppFileKeptOpen) {
 		log('info', 'Cleaning up the source code local temp basedir: ' + sourceCodeLocalTempBasedir);
