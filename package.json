@@ -773,7 +773,7 @@
 		"lodash.kebabcase": "^4.1.1",
 		"lodash.pick": "^4.4.0",
 		"lodash.union": "^4.6.0",
-		"request-light": "^0.2.5",
+		"request-light": "^0.7.0",
 		"tempy": "^0.2.1",
 		"uuid": "^7.0.3",
 		"vm2": "^3.9.19",
