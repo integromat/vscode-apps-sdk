@@ -6,6 +6,7 @@
 
 - Module deletion
 - Attempts to upload files not belonging to extension
+- Error in case of parameters defined as rpc://
 
 # Changes
 
