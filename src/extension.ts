@@ -21,11 +21,11 @@ import PublicCommands = require('./commands/PublicCommands');
 
 import LanguageServersSettings = require('./LanguageServersSettings');
 
-import tempy = require('tempy');
 import * as path from 'path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 import { Environment } from './types/environment.types';
+import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
 
 
 let client: vscode_languageclient.LanguageClient;
@@ -46,7 +46,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	let currentGroupsProvider;
 
 
-	const _DIR = path.join(tempy.directory(), "apps-sdk");
 	let _configuration = vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
 	console.log('Apps SDK active.');
 
@@ -164,16 +163,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		 * Registering providers
 		 */
 		vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider());
-		vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, _DIR));
+		vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, sourceCodeLocalTempBasedir));
 
-		const appsProvider = new AppsProvider(_authorization, _environment, _DIR, _admin);
+		const appsProvider = new AppsProvider(_authorization, _environment, sourceCodeLocalTempBasedir, _admin);
 		vscode.window.registerTreeDataProvider('apps', appsProvider);
 
 		/**
 		 * Registering commands
 		 */
 		const coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider, currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider);
-		await CoreCommands.register(_DIR, _authorization, _environment);
+		await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
 		await AppCommands.register(appsProvider, _authorization, _environment, _admin);
 		await ConnectionCommands.register(appsProvider, _authorization, _environment);
 		await WebhookCommands.register(appsProvider, _authorization, _environment);
@@ -211,6 +210,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 export function deactivate() {
+	// Delete local temp dir
+	rmCodeLocalTempBasedir();
+
 	//Stop the language server client
 	if (!client) {
 		return undefined;
