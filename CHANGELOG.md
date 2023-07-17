@@ -5,6 +5,11 @@
 ### Fixed
 
 - Module deletion
+- Attempts to upload files not belonging to extension
+
+# Changes
+
+- Temporary directory is removed on the end of extension lifecycle
 
 ## 1.3.20
 
