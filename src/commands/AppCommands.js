@@ -464,6 +464,8 @@ class AppCommands {
 
 						vscode.commands.executeCommand('apps-sdk.refresh');
 						panel.dispose();
+
+						vscode.window.showInformationMessage(`New icon saved.`);
 					} catch (e) {
 						showError(e, 'Change icon failed');
 					}
