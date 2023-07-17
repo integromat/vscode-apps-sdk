@@ -778,7 +778,7 @@
 		"uuid": "^7.0.3",
 		"vm2": "^3.9.19",
 		"vscode-json-languageservice": "^3.8.3",
-		"vscode-languageclient": "^5.2.1",
+		"vscode-languageclient": "^8.1.0",
 		"vscode-languageserver": "^5.2.1"
 	},
 	"overrides": {
