@@ -17,6 +17,7 @@
 - Remove `mkdirp` library - refactorize to build-in function
 - Refactorize `request`, `request-promise` library to `axios`
 - Update `jsonc-parser` library from `v2` to `v3`
+- Update `jimp` library from `0.10.3` to `0.22.8`
 
 ### Removed
 
