@@ -779,7 +779,7 @@
 		"vm2": "^3.9.19",
 		"vscode-json-languageservice": "^3.8.3",
 		"vscode-languageclient": "^5.2.1",
-		"vscode-languageserver": "^5.2.1"
+		"vscode-languageserver": "^8.1.0"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {
