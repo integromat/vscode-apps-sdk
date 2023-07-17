@@ -780,5 +780,14 @@
 		"vscode-json-languageservice": "^3.8.3",
 		"vscode-languageclient": "^5.2.1",
 		"vscode-languageserver": "^5.2.1"
-	}
+	},
+	"overrides": {
+		"jimp": {
+			"@jimp/plugins": {
+				"parse-bmfont-xml": {
+					"xml2js": "^0.5.0"
+				}
+			}
+		}
+	  }
 }
