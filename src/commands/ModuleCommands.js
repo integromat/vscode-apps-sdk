@@ -22,22 +22,22 @@ class ModuleCommands {
 
             // Context check
             if (!Core.contextGuard(context)) { return }
-			let app = context.parent
+            let app = context.parent
 
-			// Label prompt
-			let label = await vscode.window.showInputBox({ prompt: "Enter module label" })
-			if (!Core.isFilled("label", "module", label)) { return }
+            // Label prompt
+            let label = await vscode.window.showInputBox({ prompt: "Enter module label" })
+            if (!Core.isFilled("label", "module", label)) { return }
 
-			// Id prompt
-			let id = await vscode.window.showInputBox({
-				prompt: "Enter module Id",
-				value: camelCase(label),
-				validateInput: Validator.moduleName
-			})
-			if (!Core.isFilled("id", "module", id, "An")) { return }
+            // Id prompt
+            let id = await vscode.window.showInputBox({
+                prompt: "Enter module Id",
+                value: camelCase(label),
+                validateInput: Validator.moduleName
+            })
+            if (!Core.isFilled("id", "module", id, "An")) { return }
 
             // Form Data
-			/*
+            /*
             const form = await Felicia([{
                 name: 'label',
                 required: true,
@@ -90,7 +90,7 @@ class ModuleCommands {
             if (!form) {
                 return;
             }
-			*/
+            */
             // Description prompt
             let description = await vscode.window.showInputBox({ prompt: "Enter module description" })
             if (!Core.isFilled("description", "module", description)) { return }
@@ -135,16 +135,18 @@ class ModuleCommands {
                 case "1":
                 case "4":
                 case "9":
-                case "12":
+                case "12": {
                     let connection = await vscode.window.showQuickPick(QuickPick.connections(_environment, _authorization, app, true), { placeHolder: "Pick a connection for the module" })
                     if (!Core.isFilled("connection", "module", connection)) { return }
                     body.connection = connection.label === "--- Without connection ---" ? "" : connection.description
                     break
-                case "10":
+                }
+                case "10": {
                     let webhook = await vscode.window.showQuickPick(QuickPick.webhooks(_environment, _authorization, app, false), { placeHolder: "Pick a webhook for the module" })
                     if (!Core.isFilled("webhook", "module", webhook)) { return }
                     body.webhook = webhook.label === "--- Without webhook ---" ? "" : webhook.description
                     break
+                }
             }
 
             // Send the request
@@ -159,7 +161,7 @@ class ModuleCommands {
         /**
          * Edit module
          */
-        vscode.commands.registerCommand('apps-sdk.module.edit-metadata', async function(context) {
+        vscode.commands.registerCommand('apps-sdk.module.edit-metadata', async (context) => {
 
             // Context check
             if (!Core.contextGuard(context)) { return }
@@ -230,7 +232,7 @@ class ModuleCommands {
             switch (context.type) {
                 case 1:
                 case 4:
-                case 9:
+                case 9: {
                     let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true);
 
                     // There's a "Without Connection" option, so that's why there's +1
@@ -355,7 +357,8 @@ class ModuleCommands {
                         }
                         break;
                     }
-                case 10:
+                }
+                case 10: {
                     let webhooks = await QuickPick.webhooks(_environment, _authorization, context.parent.parent, false)
                     webhooks = [{ label: "Don't change", description: "keep" }].concat(webhooks)
                     let webhook = await vscode.window.showQuickPick(webhooks, { placeHolder: "Change webhook or keep existing." })
@@ -379,6 +382,7 @@ class ModuleCommands {
                         }
                     }
                     break
+                }
             }
         })
 
@@ -392,7 +396,7 @@ class ModuleCommands {
 
             switch (context.type) {
                 case 9:
-                case 4:
+                case 4: {
                     let newType = await vscode.window.showQuickPick(Enum.moduleTypeActionSearch, { placeHolder: "Change the type or keep existing." })
                     if (!Core.isFilled("type", "module", module)) { return }
                     if (_environment.version === 2) {
@@ -421,6 +425,7 @@ class ModuleCommands {
                         }
                     }
                     break;
+                }
                 default:
                     await vscode.window.showInformationMessage(`This type of module can't be changed to any other.`);
                     break;
@@ -502,7 +507,7 @@ class ModuleCommands {
                 case "No":
                     vscode.window.showInformationMessage(`The module has been kept as public.`)
                     break
-                case "Yes":
+                case "Yes": {
                     // Set URI and send the request
                     let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/private`
                     try {
@@ -512,6 +517,7 @@ class ModuleCommands {
                         showError(err);
                     }
                     break
+                }
             }
 
         })
@@ -536,7 +542,7 @@ class ModuleCommands {
                 case "No":
                     vscode.window.showInformationMessage(`The module has been kept as private.`)
                     break
-                case "Yes":
+                case "Yes": {
                     // Set URI and send the request
                     let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/public`
                     try {
@@ -546,6 +552,7 @@ class ModuleCommands {
                         showError(err);
                     }
                     break
+                }
             }
         })
 

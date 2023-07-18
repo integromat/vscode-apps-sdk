@@ -19,7 +19,7 @@ const tempy = require('tempy');
 const compressing = require('compressing');
 const AdmZip = require('adm-zip');
 const camelCase = require('lodash.camelcase');
-const { showError } = require('../error-handling');
+const { showError, catchError } = require('../error-handling');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -29,8 +29,7 @@ class AppCommands {
 			/**
 			 * NEW APP - ADMIN MODE
 			 */
-			vscode.commands.registerCommand('apps-sdk.app.new', async () => {
-
+			vscode.commands.registerCommand('apps-sdk.app.new', catchError('New app creation', async () => {
 				// Get list of all apps
 				const allApps = await QuickPick.allApps(_environment, _authorization);
 
@@ -112,13 +111,12 @@ class AppCommands {
 				if (changes === true) {
 					appsProvider.refresh();
 				}
-			});
+			}));
 		} else {
 			/**
 			 * New APP - NORMAL MODE
 			 */
-			vscode.commands.registerCommand('apps-sdk.app.new', async () => {
-
+			vscode.commands.registerCommand('apps-sdk.app.new', catchError('New app creation', async () => {
 				// Label prompt
 				const label = await vscode.window.showInputBox({
 					prompt:
@@ -200,41 +198,38 @@ class AppCommands {
 				});
 
 				// Send the request
-				try {
-					if (_environment.version === 2) {
-						// TODO : Language not sent, formula tweak needed
-						await Core.addEntity(_authorization, {
-							'name': id,
-							'label': label,
-							'version': parseInt(version) || 1,
-							'description': description,
-							'theme': theme,
-							'language': language.description,
-							'audience': countries.length === 0 ? 'global' : 'countries',
-							'countries': countries.length === 0 ? undefined : countries
-						}, uri);
-					} else {
-						await Core.addEntity(_authorization, {
-							'name': id,
-							'label': label,
-							'description': description,
-							'theme': theme,
-							'language': language.description,
-							'private': true,
-							'countries': countries
-						}, uri);
-					}
-					appsProvider.refresh();
-				} catch (err) {
-					showError(err);
+				if (_environment.version === 2) {
+					// TODO : Language not sent, formula tweak needed
+					await Core.addEntity(_authorization, {
+						'name': id,
+						'label': label,
+						'version': parseInt(version) || 1,
+						'description': description,
+						'theme': theme,
+						'language': language.description,
+						'audience': countries.length === 0 ? 'global' : 'countries',
+						'countries': countries.length === 0 ? undefined : countries
+					}, uri);
+				} else {
+					await Core.addEntity(_authorization, {
+						'name': id,
+						'label': label,
+						'description': description,
+						'theme': theme,
+						'language': language.description,
+						'private': true,
+						'countries': countries
+					}, uri);
 				}
-			});
+				appsProvider.refresh();
+
+			}));
 		}
 
 		/**
 		 * Edit app
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.edit-metadata', async (context) => {
+		vscode.commands.registerCommand('apps-sdk.app.edit-metadata', catchError('Edit metadata', async (context) => {
 
 			// Context check
 			if (!Core.contextGuard(context)) {
@@ -307,44 +302,39 @@ class AppCommands {
 			countries = countries.length > 0 ? countries : undefined;
 
 			// Send the request
-			try {
-				if (_environment.version === 2) {
-					await Core.patchEntity(_authorization, {
-						label: label,
-						theme: theme,
-						description: description,
-						language: language.description,
-						audience: countries === undefined ? 'global' : 'countries',
-						countries: countries
-					}, uri);
-				} else {
-					await Core.editEntity(_authorization, {
-						label: label,
-						theme: theme,
-						description: description,
-						language: language.description,
-						countries: countries
-					}, uri);
-				}
-				appsProvider.refresh();
-			} catch (err) {
-				showError(err);
+			if (_environment.version === 2) {
+				await Core.patchEntity(_authorization, {
+					label: label,
+					theme: theme,
+					description: description,
+					language: language.description,
+					audience: countries === undefined ? 'global' : 'countries',
+					countries: countries
+				}, uri);
+			} else {
+				await Core.editEntity(_authorization, {
+					label: label,
+					theme: theme,
+					description: description,
+					language: language.description,
+					countries: countries
+				}, uri);
 			}
-		});
+			appsProvider.refresh();
+		}));
 
 		/**
 		 * Delete app
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.delete', async (context) => {
+		vscode.commands.registerCommand('apps-sdk.app.delete', catchError('Delete app', async (context) => {
 
 			// Context check
 			if (!Core.contextGuard(context)) {
 				return;
 			}
-			const app = context;
 
 			// Wait for confirmation
-			const answer = await vscode.window.showQuickPick(Enum.delete, { placeHolder: `Do you really want to delete this app?` });
+			const answer = await vscode.window.showQuickPick(Enum.delete, { placeHolder: `Do you really want to delete the app "${context.label}"?` });
 			if (answer === undefined || answer === null) {
 				vscode.window.showWarningMessage('No answer has been recognized.');
 				return;
@@ -354,31 +344,29 @@ class AppCommands {
 			switch (answer.label) {
 				case 'No':
 					vscode.window.showInformationMessage(`Stopped. No apps were deleted.`);
-					break;
-				case 'Yes':
+					return;
+				case 'Yes': {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
-					try {
-						await axios({
-							method: 'DELETE',
-							url: uri,
-							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version
-							},
-						});
-						appsProvider.refresh();
-					} catch (err) {
-						vscode.window.showErrorMessage('Error in apps-sdk.app.delete: ' + (err.error.message || err));
-					}
+					await axios({
+						method: 'DELETE',
+						url: uri,
+						headers: {
+							'Authorization': _authorization,
+							'x-imt-apps-sdk-version': Meta.version
+						},
+					});
+					appsProvider.refresh();
+					vscode.window.showInformationMessage(`App "${context.label}" deleted.`);
 					break;
+				}
 			}
-		});
+		}));
 
 		/**
 		 * Edit app icon
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.get-icon', (app) => {
+		vscode.commands.registerCommand('apps-sdk.app.get-icon', catchError('Get/change icon', async (app) => {
 
 			// If called directly (by using a command pallete) -> die
 			if (!Core.contextGuard(app)) {
@@ -410,9 +398,7 @@ class AppCommands {
 			// Inject the theme color and the icon to the generated HTML
 			panel.webview.html = Core.getIconHtml(buff, app.theme, path.join(__dirname, '..', '..'));
 
-
-			panel.webview.onDidReceiveMessage(async (message) => {
-
+			panel.webview.onDidReceiveMessage(catchError('Icon change', async (message) => {
 				/**
 				 * The icon change (upload new one).
 				 *
@@ -436,47 +422,44 @@ class AppCommands {
 					}
 
 					// Upload the new icon via REST API.
-					try {
-						// Prepare request options
-						const options = {
-							url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
-							method: 'PUT',
-							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version,
-								'Content-Type': 'image/png',
-							}
-						};
 
-						// Read the new file and fire the request
-						await axios({
-							...options,
-							data: fs.createReadStream(uri[0].fsPath),
-						});
-
-						// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
-						if (await asyncfile.exists(app.rawIcon.dark)) {
-							await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
+					// Prepare request options
+					const options = {
+						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
+						method: 'PUT',
+						headers: {
+							'Authorization': _authorization,
+							'x-imt-apps-sdk-version': Meta.version,
+							'Content-Type': 'image/png',
 						}
-						if (await asyncfile.exists(app.rawIcon.light)) {
-							await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
-						}
+					};
 
-						vscode.commands.executeCommand('apps-sdk.refresh');
-						panel.dispose();
+					// Read the new file and fire the request
+					await axios({
+						...options,
+						data: fs.createReadStream(uri[0].fsPath),
+					});
 
-						vscode.window.showInformationMessage(`New icon saved.`);
-					} catch (e) {
-						showError(e, 'Change icon failed');
+					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
+					if (await asyncfile.exists(app.rawIcon.dark)) {
+						await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
 					}
+					if (await asyncfile.exists(app.rawIcon.light)) {
+						await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
+					}
+
+					vscode.commands.executeCommand('apps-sdk.refresh');
+					panel.dispose();
+
+					vscode.window.showInformationMessage(`New icon saved.`);
 				}
-			}, undefined);
-		});
+			}), undefined);
+		}));
 
 		/**
 		 * Show app detail
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.show-detail', async (context) => {
+		vscode.commands.registerCommand('apps-sdk.app.show-detail', catchError('Show app detail', async (context) => {
 
 			// If called directly (by using a command pallete) -> die
 			if (!Core.contextGuard(context)) {
@@ -537,7 +520,7 @@ class AppCommands {
 
 			panel.webview.postMessage(app);
 
-		});
+		}));
 
 		/**
 		 * Mark app as private
@@ -562,7 +545,7 @@ class AppCommands {
 				case 'No':
 					vscode.window.showInformationMessage(`The app has been kept as public.`);
 					break;
-				case 'Yes':
+				case 'Yes': {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/private`;
 					try {
@@ -572,6 +555,7 @@ class AppCommands {
 						showError(err);
 					}
 					break;
+				}
 			}
 
 		});
@@ -599,7 +583,7 @@ class AppCommands {
 				case 'No':
 					vscode.window.showInformationMessage(`The app has been kept as private.`);
 					break;
-				case 'Yes':
+				case 'Yes': {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/public`;
 					try {
@@ -609,6 +593,7 @@ class AppCommands {
 						showError(err);
 					}
 					break;
+				}
 			}
 		});
 

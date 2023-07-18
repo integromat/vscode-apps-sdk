@@ -6,7 +6,7 @@ const Validator = require('../Validator')
 
 const { VM, VMScript } = require('vm2')
 const { IML } = require('@integromat/iml')
-const { showError } = require('../error-handling');
+const { showError, catchError } = require('../error-handling');
 
 class FunctionCommands {
 	static async register(appsProvider, _authorization, _environment, _timezone) {
@@ -16,7 +16,7 @@ class FunctionCommands {
         /**
          * New function
          */
-		vscode.commands.registerCommand('apps-sdk.function.new', async function (context) {
+		vscode.commands.registerCommand('apps-sdk.function.new', catchError('Function creation', async (context) => {
 
 			// If called out of context -> die
 			if (!Core.contextGuard(context)) { return }
@@ -35,14 +35,9 @@ class FunctionCommands {
 			if (!Core.isFilled("name", "function", name)) { return }
 
 			// Add the new entity. Refresh the tree or show the error
-			try {
-				await Core.addEntity(_authorization, { "name": name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
-				appsProvider.refresh()
-			}
-			catch (err) {
-				showError(err);
-			}
-		})
+			await Core.addEntity(_authorization, { "name": name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
+			appsProvider.refresh()
+		}));
 
         /**
          * Run function test
