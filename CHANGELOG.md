@@ -1,4 +1,29 @@
-# Change Log
+Change Log
+==========
+
+1.3.22
+------
+
+### Fixed
+
+- Module deletion
+- Attempts to upload files not belonging to extension
+- Error in case of parameters defined as rpc://
+
+# Changes
+
+- Temporary directory is removed on the end of extension lifecycle
+- Prevent to remove empty JSON lines by autoformat
+- Update `vm2` library to `3.9.19`
+- Error handling improvement
+- Remove `mkdirp` library - refactorize to build-in function
+- Refactorize `request`, `request-promise` library to `axios`
+- Update `jsonc-parser` library from `v2` to `v3`
+- Update `jimp` library from `0.10.3` to `0.22.8`
+
+### Removed
+
+- Connection template "Digest auth"
 
 ## 1.3.19
 
@@ -76,7 +101,7 @@
 
 ### Updated
 
-- Using Update instead of Publish on Web Hooks​​
+- Using Update instead of Publish on Web Hooks
 - Fixed Top Level string RPC calls in JSONCs
 - Fixed Export Command
 
@@ -314,7 +339,7 @@
 
 ### Modified
 
-- Updated API 
+- Updated API
 - POST/PUT swap
 
 ## 1.0.11

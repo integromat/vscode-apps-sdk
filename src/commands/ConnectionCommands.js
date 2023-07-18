@@ -2,6 +2,7 @@ const vscode = require('vscode')
 
 const Core = require('../Core')
 const Enum = require('../Enum')
+const { showError } = require('../error-handling')
 
 class ConnectionCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -35,7 +36,7 @@ class ConnectionCommands {
 				appsProvider.refresh()
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+				showError(err);
 			}
 		})
 
@@ -64,7 +65,7 @@ class ConnectionCommands {
 					appsProvider.refresh()
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			} else {
 				let uri = `${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${context.name}/label`
@@ -73,7 +74,7 @@ class ConnectionCommands {
 					appsProvider.refresh()
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			}
 		})

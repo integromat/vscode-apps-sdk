@@ -1,5 +1,6 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
-const rp = require('request-promise')
+const axios = require('axios');
 
 const Core = require('../Core')
 const QuickPick = require('../QuickPick')
@@ -62,9 +63,8 @@ class EnvironmentCommands {
 			if (version.description === '2') {
 				let uri = `https://${url}/v2/users/me`
 				try {
-					await rp({
+					await axios({
 						url: uri,
-						json: true,
 						headers: {
 							'Authorization': `Token ${apikey}`,
 							'x-imt-apps-sdk-version': Meta.version
@@ -114,7 +114,7 @@ class EnvironmentCommands {
 				placeHolder: "Choose an environment to use"
 			})
 
-			// Check if filled 
+			// Check if filled
 			if (!environment) { return }
 
 			if (environment.description === "add") {

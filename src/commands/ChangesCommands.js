@@ -1,4 +1,6 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
+const axios = require('axios');
 
 const Core = require('../Core')
 const Enum = require('../Enum')
@@ -7,7 +9,7 @@ const Validator = require('../Validator')
 
 const tempy = require('tempy');
 const asyncfile = require('async-file')
-const rp = require('request-promise');
+const { showError } = require('../error-handling');
 
 class ChangesCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -37,7 +39,7 @@ class ChangesCommands {
 
 				// Display diff between the files
 				vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(old), vscode.Uri.file(cur), `Changes of ${code.name} in ${code.parent.name}`).catch(err => {
-					vscode.window.showErrorMessage(err)
+					showError(err);
 				})
 			})
 		})
@@ -79,23 +81,22 @@ class ChangesCommands {
 					// Compose URI
 					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/commit`
 					try {
-						await rp({
+						await axios({
 							method: 'POST',
-							uri: uri,
+							url: uri,
 							headers: {
 								Authorization: _authorization,
 								'x-imt-apps-sdk-version': Meta.version
 							},
-							body: {
+							data: {
 								notify: notify,
 								message: commitMessage
 							},
-							json: true
 						})
 						appsProvider.refresh()
 					}
 					catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err)
+						showError(err, 'apps-sdk.changes.commit');
 					}
 					break
 			}
@@ -125,19 +126,18 @@ class ChangesCommands {
 					// Compose URI
 					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/rollback`
 					try {
-						await rp({
+						await axios({
 							method: 'POST',
-							uri: uri,
+							url: uri,
 							headers: {
 								Authorization: _authorization,
 								'x-imt-apps-sdk-version': Meta.version
 							},
-							json: true
 						})
 						appsProvider.refresh()
 					}
 					catch (err) {
-						vscode.window.showErrorMessage(err.error.message || err)
+						showError(err, 'apps-sdk.changes.rollback');
 					}
 					break
 			}

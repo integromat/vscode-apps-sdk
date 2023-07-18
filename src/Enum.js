@@ -75,10 +75,6 @@ module.exports = {
 			"description": "basic"
 		},
 		{
-			"label": "Digest auth",
-			"description": "digest"
-		},
-		{
 			"label": "Other",
 			"description": "other"
 		}

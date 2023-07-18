@@ -78,7 +78,7 @@ var workspaceContext = {
 };
 var schemaRequestService = function (uri) {
     if (strings_1.startsWith(uri, 'file://')) {
-        var fsPath_1 = vscode_uri_1["default"].parse(uri).fsPath;
+        var fsPath_1 = vscode_uri_1.URI.parse(uri).fsPath;
         return new Promise(function (c, e) {
             fs.readFile(fsPath_1, 'UTF-8', function (err, result) {
                 err ? e(err.message || err.toString()) : c(result.toString());

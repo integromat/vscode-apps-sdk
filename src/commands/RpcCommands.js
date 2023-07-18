@@ -1,3 +1,4 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
@@ -5,7 +6,8 @@ const Validator = require('../Validator')
 const QuickPick = require('../QuickPick')
 
 const camelCase = require('lodash.camelcase');
-const path = require('path')
+const path = require('path');
+const { showError } = require('../error-handling');
 
 class RpcCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -49,7 +51,7 @@ class RpcCommands {
 				appsProvider.refresh()
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(err.error.message || err)
+				showError(err);
 			}
 		})
 
@@ -76,7 +78,7 @@ class RpcCommands {
 					appsProvider.refresh()
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			} else {
 				try {
@@ -84,7 +86,7 @@ class RpcCommands {
 					appsProvider.refresh()
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			}
 		})
@@ -144,14 +146,14 @@ class RpcCommands {
 							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					} else {
 						try {
 							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					}
 				}
@@ -195,7 +197,7 @@ class RpcCommands {
 							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					} else {
 						try {
@@ -203,7 +205,7 @@ class RpcCommands {
 							appsProvider.refresh()
 						}
 						catch (err) {
-							vscode.window.showErrorMessage(err.error.message || err)
+							showError(err);
 						}
 					}
 				}
@@ -227,7 +229,7 @@ class RpcCommands {
 					}
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(err.error.message || err)
+					showError(err);
 				}
 			}
 		})

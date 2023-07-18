@@ -1,9 +1,11 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
-const rp = require('request-promise')
+const axios = require('axios');
 
 const Core = require('../Core')
 const Enum = require('../Enum')
-const Meta = require('../Meta')
+const Meta = require('../Meta');
+const { showError } = require('../error-handling');
 
 class AccountCommands {
 	static async register(_configuration) {
@@ -26,16 +28,15 @@ class AccountCommands {
 			if (environment.version === 2) {
 				let uri = `http${environment.unsafe === true ? '' : 's'}://${environment.url}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/users/me`
 				try {
-					await rp({
+					await axios({
 						url: uri,
-						json: true,
 						headers: {
 							'Authorization': `Token ${apikey}`,
 							'x-imt-apps-sdk-version': Meta.version
 						}
 					})
 				} catch (err) {
-					vscode.window.showErrorMessage(err.error ? err.error.message : err)
+					showError(err, 'apps-sdk.login');
 					return;
 				}
 			} else {
@@ -55,9 +56,9 @@ class AccountCommands {
 			})
 		})
 
-        /**
-         * Logout command
-         */
+		/**
+		 * Logout command
+		 */
 		vscode.commands.registerCommand('apps-sdk.logout', async () => {
 
 			// Confirmation prompt

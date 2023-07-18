@@ -9,3 +9,4 @@ node_modules
 .idea/inspectionProfiles/Project_Default.xml
 .DS_Store
 local
+out

@@ -1,3 +1,4 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
@@ -9,6 +10,7 @@ const Felicia = require('../Felicia');
 const camelCase = require('lodash.camelcase');
 const path = require('path');
 const fs = require('fs');
+const { showError } = require('../error-handling');
 
 class ModuleCommands {
     static async register(appsProvider, _authorization, _environment) {
@@ -150,7 +152,7 @@ class ModuleCommands {
                 await Core.addEntity(_authorization, body, uri)
                 appsProvider.refresh()
             } catch (err) {
-                vscode.window.showErrorMessage(err.error.message || err)
+                showError(err);
             }
         })
 
@@ -202,7 +204,7 @@ class ModuleCommands {
                     await Core.patchEntity(_authorization, body, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
                     appsProvider.refresh()
                 } catch (err) {
-                    vscode.window.showErrorMessage(err.error.message || err)
+                    showError(err);
                 }
             } else {
                 // Send the request
@@ -211,7 +213,7 @@ class ModuleCommands {
                     await Core.editEntity(_authorization, body, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
                     appsProvider.refresh()
                 } catch (err) {
-                    vscode.window.showErrorMessage(err.error.message || err)
+                    showError(err);
                 }
             }
         })
@@ -270,13 +272,13 @@ class ModuleCommands {
                                         connection: connection
                                     }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
                                 } catch (err) {
-                                    vscode.window.showErrorMessage(err.error.message || err)
+                                    showError(err);
                                 }
                             } else {
                                 try {
                                     await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
                                 } catch (err) {
-                                    vscode.window.showErrorMessage(err.error.message || err)
+                                    showError(err);
                                 }
                             }
                         }
@@ -316,14 +318,14 @@ class ModuleCommands {
                                         altConnection: connection
                                     }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
                                 } catch (err) {
-                                    vscode.window.showErrorMessage(err.error.message || err)
+                                    showError(err);
                                 }
                             } else {
                                 try {
                                     await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
                                     appsProvider.refresh()
                                 } catch (err) {
-                                    vscode.window.showErrorMessage(err.error.message || err)
+                                    showError(err);
                                 }
                             }
                         }
@@ -340,14 +342,14 @@ class ModuleCommands {
                                         connection: connection
                                     }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
                                 } catch (err) {
-                                    vscode.window.showErrorMessage(err.error.message || err)
+                                    showError(err);
                                 }
                             } else {
                                 try {
                                     await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
                                     appsProvider.refresh()
                                 } catch (err) {
-                                    vscode.window.showErrorMessage(err.error.message || err)
+                                    showError(err);
                                 }
                             }
                         }
@@ -365,14 +367,14 @@ class ModuleCommands {
                                     webhook: webhook.description
                                 }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
                             } catch (err) {
-                                vscode.window.showErrorMessage(err.error.message || err)
+                                showError(err);
                             }
                         } else {
                             try {
                                 await Core.editEntityPlain(_authorization, webhook.description, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/webhook`)
                                 appsProvider.refresh()
                             } catch (err) {
-                                vscode.window.showErrorMessage(err.error.message || err)
+                                showError(err);
                             }
                         }
                     }
@@ -400,7 +402,7 @@ class ModuleCommands {
                                     typeId: parseInt(newType.description)
                                 }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
                             } catch (err) {
-                                vscode.window.showErrorMessage(err.error.message || err)
+                                showError(err);
                             }
                         }
                     } else {
@@ -414,7 +416,7 @@ class ModuleCommands {
                                 }, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
                                 appsProvider.refresh()
                             } catch (err) {
-                                vscode.window.showErrorMessage(err.error.message || err)
+                                showError(err);
                             }
                         }
                     }
@@ -507,7 +509,7 @@ class ModuleCommands {
                         await Core.executePlain(_authorization, "", uri)
                         appsProvider.refresh()
                     } catch (err) {
-                        vscode.window.showErrorMessage(err.error.message || err)
+                        showError(err);
                     }
                     break
             }
@@ -541,7 +543,7 @@ class ModuleCommands {
                         await Core.executePlain(_authorization, "", uri)
                         appsProvider.refresh()
                     } catch (err) {
-                        vscode.window.showErrorMessage(err.error.message || err)
+                        showError(err);
                     }
                     break
             }
@@ -575,7 +577,7 @@ class ModuleCommands {
                 await Core.addEntity(_authorization, form, uri);
                 appsProvider.refresh();
             } catch (err) {
-                vscode.window.showErrorMessage(err.error.message || err);
+                showError(err);
             }
 
         });
