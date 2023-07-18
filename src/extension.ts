@@ -26,13 +26,14 @@ import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 import { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
+import { version } from './Meta';
 
 
 let client: vscode_languageclient.LanguageClient;
 
 
 export async function activate(context: vscode.ExtensionContext) {
-	log('debug', 'Extension starting...');
+	log('debug', `Extension ${version} starting...`);
 
 	let _authorization: string|undefined = undefined;
 	let _environment: Environment | undefined = undefined;
