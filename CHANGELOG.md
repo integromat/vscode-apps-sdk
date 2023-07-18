@@ -1,6 +1,8 @@
-# Change Log
+Change Log
+==========
 
-## 1.3.21
+1.3.22
+------
 
 ### Fixed
 
@@ -11,12 +13,6 @@
 # Changes
 
 - Temporary directory is removed on the end of extension lifecycle
-
-## 1.3.20
-
-
-### Changed
-
 - Prevent to remove empty JSON lines by autoformat
 - Update `vm2` library to `3.9.19`
 - Error handling improvement
@@ -28,7 +24,6 @@
 ### Removed
 
 - Connection template "Digest auth"
-
 
 ## 1.3.19
 
