@@ -754,8 +754,8 @@
 		"@types/tempy": "^0.2.0",
 		"@types/uuid": "^9.0.1",
 		"@types/vscode": "^1.80.0",
-		"@typescript-eslint/eslint-plugin": "^5.59.7",
-		"@typescript-eslint/parser": "^5.59.7",
+		"@typescript-eslint/eslint-plugin": "^6.1.0",
+		"@typescript-eslint/parser": "^6.1.0",
 		"@vscode/test-electron": "^2.3.2",
 		"eslint": "^8.44.0",
 		"glob": "^10.3.3",
@@ -776,13 +776,13 @@
 		"lodash.kebabcase": "^4.1.1",
 		"lodash.pick": "^4.4.0",
 		"lodash.union": "^4.6.0",
-		"request-light": "^0.2.5",
+		"request-light": "^0.7.0",
 		"tempy": "^0.2.1",
-		"uuid": "^7.0.3",
+		"uuid": "^9.0.0",
 		"vm2": "^3.9.19",
-		"vscode-json-languageservice": "^3.8.3",
-		"vscode-languageclient": "^5.2.1",
-		"vscode-languageserver": "^5.2.1"
+		"vscode-json-languageservice": "^5.3.5",
+		"vscode-languageclient": "^8.1.0",
+		"vscode-languageserver": "^8.1.0"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {

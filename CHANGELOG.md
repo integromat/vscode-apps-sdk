@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+1.3.23 (pre-release)
+--------------------
+
+# Changes
+
+- Update dependencies `request-light`, `uuid`, `scode-json-languageservice`, `vscode-languageclient`, `vscode-languageserver`
+
 1.3.22
 ------
 
