@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 /**
  * Displays an error message in the VSCode window.
  */
-export function showError(err: Error | AxiosError<any> | string, title: string|undefined) {
+export function showError(err: Error | AxiosError<any> | string, title?: string|undefined) {
 
 	let e: any = (err as AxiosError<any>).response?.data || err;
 
@@ -30,3 +30,20 @@ export function showError(err: Error | AxiosError<any> | string, title: string|u
 	// Log to VS Code console
 	log('error', e, false);
 }
+
+
+/**
+ * Function wrapper, which catches errors in async functions and displays them in the VSCode window.
+ */
+export function catchError<T extends (...args: any[]) => Promise<any>>(
+	errorTitle: string,
+	asyncFunc: T
+): T {
+	return <T>(async (...args:any[]) => {
+		try {
+			return await asyncFunc(...args);
+		} catch (err: any) {
+			showError(err, errorTitle);
+		}
+	});
+  }

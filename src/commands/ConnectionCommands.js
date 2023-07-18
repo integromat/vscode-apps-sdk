@@ -1,8 +1,9 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode')
 
 const Core = require('../Core')
 const Enum = require('../Enum')
-const { showError } = require('../error-handling')
+const { showError, catchError } = require('../error-handling')
 
 class ConnectionCommands {
 	static async register(appsProvider, _authorization, _environment) {
@@ -43,7 +44,7 @@ class ConnectionCommands {
         /**
          * Edit connection
          */
-		vscode.commands.registerCommand('apps-sdk.connection.edit-metadata', async function (context) {
+		vscode.commands.registerCommand('apps-sdk.connection.edit-metadata', catchError('Edit metadata', async (context) => {
 
 			// Context check
 			if (!Core.contextGuard(context)) { return }
@@ -58,26 +59,15 @@ class ConnectionCommands {
 
 			if (_environment.version === 2) {
 				let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'connection')}/${context.name}`
-				try {
-					await Core.patchEntity(_authorization, {
-						label: label
-					}, uri)
-					appsProvider.refresh()
-				}
-				catch (err) {
-					showError(err);
-				}
+				await Core.patchEntity(_authorization, {
+					label: label
+				}, uri);
 			} else {
 				let uri = `${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${context.name}/label`
-				try {
-					await Core.editEntityPlain(_authorization, label, uri)
-					appsProvider.refresh()
-				}
-				catch (err) {
-					showError(err);
-				}
+				await Core.editEntityPlain(_authorization, label, uri)
 			}
-		})
+			appsProvider.refresh();
+		}));
 	}
 }
 
