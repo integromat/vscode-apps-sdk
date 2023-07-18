@@ -1,7 +1,7 @@
 .vscode/**
 .vscode-test/**
 .github/**
-test/**
+out/test/**
 local
 .gitignore
 jsconfig.json
