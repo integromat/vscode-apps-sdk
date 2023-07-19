@@ -20,6 +20,7 @@ const compressing = require('compressing');
 const AdmZip = require('adm-zip');
 const camelCase = require('lodash.camelcase');
 const { showError, catchError } = require('../error-handling');
+const { promisify2 } = require('../utils');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -976,7 +977,7 @@ class AppCommands {
 		/**
 		 * Import app
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.import', async () => {
+		vscode.commands.registerCommand('apps-sdk.app.import', catchError('Import app from ZIP', async () => {
 
 			const deduplicate = (arr) => {
 				const out = [];
@@ -998,13 +999,14 @@ class AppCommands {
 					.map(async (internalName) => {
 						const component = {};
 						if (requireMetadata === true) {
-							component.metadata = JSON.parse((await new Promise(resolve => {
-								entries
-									.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
-									.getDataAsync((data => {
-										resolve(data);
-									}));
-							})).toString());
+							const metadataEntry = entries.find(entry => (
+								entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
+							);
+							if (!metadataEntry) {
+								throw new Error('File metadata.json not found in ZIP, but required.');
+							}
+							const data/*: Buffer*/ = await promisify2(metadataEntry.getDataAsync)();
+							component.metadata = JSON.parse(data.toString());
 
 							// Universal module subtype
 							if (key === 'modules' && component.metadata.type === 'universal') {
@@ -1045,13 +1047,16 @@ class AppCommands {
 					}));
 			};
 
+			/**
+			 * @returns {Promise<Buffer>}
+			 */
 			const getData = async (validator, entries, searchPath) => {
-				return new Promise(resolve => {
-					entries.find(entry => entry.entryName === searchPath).getDataAsync((data) => {
-						validator.count++;
-						resolve(data);
-					});
-				});
+				const entry = entries.find(entry => entry.entryName === searchPath);
+				if (!entry) {
+					throw new Error(`ZIP entry "${searchPath}" not found, but required.`);
+				}
+				validator.count++;
+				return promisify2(entry.getDataAsync)();
 			};
 
 			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined) => {
@@ -1090,17 +1095,15 @@ class AppCommands {
 				const app = {};
 
 				// Try to get app metadata from the raw zip path
-				app.metadata = JSON.parse((await new Promise(resolve => {
-					const e = entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/));
-					if (e) {
-						e.getDataAsync((data => {
-							validator.count++;
-							resolve(data);
-						}));
-					} else {
-						vscode.window.showErrorMessage(`App archive corrupted. (metadata.json not resolved correctly)`);
-					}
-				})).toString());
+				const e = entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/));
+				if (!e) {
+					throw new Error('App archive corrupted. (metadata.json not resolved correctly)');
+				}
+				const data/*: Buffer*/ = await promisify2(e.getDataAsync)();
+				validator.count++;
+				/** JSON content of `metadata.json` file */
+				app.metadata = JSON.parse(data.toString());
+
 
 				// Get .sdk metadata raw directly
 				const _sdk = JSON.parse((await new Promise(resolve => {
@@ -1290,129 +1293,129 @@ class AppCommands {
 				// requests.length should equal entries.lenght - 1 (because app create preflight is not in queue)
 			};
 
-			try {
-				const source = await vscode.window.showOpenDialog({
-					filters: { 'IMT App Archive': ['zip'] },
-					openLabel: 'Import',
-					canSelectFolders: false,
-					canSelectMany: false
-				});
-				if (!source || source.length === 0 || !source[0]) {
-					vscode.window.showWarningMessage('No Archive specified.');
-					return;
-				}
-				const zip = new AdmZip(source[0].fsPath);
-				const entries = zip.getEntries();
-				const app = await parseApp(entries);
-
-				if (_environment.version === 2) {
-					app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
-					if (app.metadata.audience === 'global') {
-						delete app.metadata.countries;
-					}
-					delete app.metadata.version;
-					if (!app.metadata.description) {
-						app.metadata.description = `Imported app ${app.metadata.label}.`
-					}
-				}
-
-				// Name prompt
-				app.metadata.name = await vscode.window.showInputBox({
-					prompt: 'Enter name of the imported app',
-					value: app.metadata.name,
-					validateInput: Validator.appName
-				});
-				if (!Core.isFilled('name', 'imported app', app.metadata.name, 'A')) {
-					return;
-				}
-
-				let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
-				if (!remoteApp) {
-					return;
-				}
-				if (_environment.version === 2) { remoteApp = remoteApp.app }
-				const requests = buildRequestQueue(app, remoteApp);
-
-				let shouldStop = false;
-				await vscode.window.withProgress({
-					location: vscode.ProgressLocation.Notification,
-					title: `Importing ${app.metadata.label}`,
-					cancellable: true
-				}, async (progress, token) => {
-
-					token.onCancellationRequested(() => {
-						vscode.window.showWarningMessage(`Import terminated.`);
-						shouldStop = true;
-					});
-					progress.report({
-						increment: 0
-					});
-
-					const store = {};
-					for (const r of requests) {
-						if (shouldStop) {
-							return;
-						}
-						const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${r.endpoint}`);
-						progress.report({
-							increment: (100 / requests.length),
-							message: r._label
-						});
-
-						let bodyProto = r.body;
-						if (r._replaceInBody !== undefined) {
-							bodyProto = JSON.parse(bodyProto);
-							r._replaceInBody.forEach(replacement => {
-								if (bodyProto[replacement.key]) {
-									bodyProto[replacement.key] = store[replacement.slug];
-								}
-							});
-							bodyProto = JSON.stringify(bodyProto);
-						}
-						/** @type {import('axios').AxiosRequestConfig} */
-						const requestConfig = {
-							url: uri,
-							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version,
-								'content-type': r.type
-							},
-							method: r.method,
-							data: bodyProto,
-							transformRequest: (data) => (data),
-							transformResponse: (data) => (data),
-						};
-
-						if (_environment.version === 2 && requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
-							// TODO Check, if it is ok to send data to Axios stringified
-							const j = JSON.parse(requestConfig.data);
-							requestConfig.data = JSON.stringify(Object.keys(j).reduce((p, c) => {
-								p[camelCase(c)] = j[c] === null ? undefined : j[c];
-								return p;
-							}, {}))
-						}
-
-						const axiosResponse = await axios(requestConfig);
-						if (r._store !== undefined) {
-							r._store.forEach(s => {
-								let parsed = JSON.parse(axiosResponse.data);
-
-								// Autoparse the nested object
-								if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
-									parsed = parsed[Object.keys(parsed)[0]];
-								}
-
-								store[s.slug] = parsed[s.key];
-							});
-						}
-						await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
-					}
-				});
-				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
-			} catch (err) {
-				vscode.window.showErrorMessage('Error in apps-sdk.app.import: ' + (err.message || err));
+			const source = await vscode.window.showOpenDialog({
+				filters: { 'IMT App Archive': ['zip'] },
+				openLabel: 'Import',
+				canSelectFolders: false,
+				canSelectMany: false
+			});
+			if (!source || source.length === 0 || !source[0]) {
+				vscode.window.showWarningMessage('No Archive specified.');
+				return;
 			}
-		});
+			const zip = new AdmZip(source[0].fsPath);
+			/** File names in ZIPed app */
+			const entries = zip.getEntries();
+			const app = await parseApp(entries);
+
+			if (_environment.version === 2) {
+				app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
+				if (app.metadata.audience === 'global') {
+					delete app.metadata.countries;
+				}
+				delete app.metadata.version;
+				if (!app.metadata.description) {
+					app.metadata.description = `Imported app ${app.metadata.label}.`
+				}
+			}
+
+			// Name prompt
+			app.metadata.name = await vscode.window.showInputBox({
+				prompt: 'Enter name of the imported app',
+				value: app.metadata.name,
+				validateInput: Validator.appName
+			});
+			if (!Core.isFilled('name', 'imported app', app.metadata.name, 'A')) {
+				return;
+			}
+
+			let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
+			if (!remoteApp) {
+				return;
+			}
+			if (_environment.version === 2) { remoteApp = remoteApp.app }
+
+			/** API requests list to push all app parts to Make */
+			const requests = buildRequestQueue(app, remoteApp);
+
+			let shouldStop = false;
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Importing ${app.metadata.label}`,
+				cancellable: true
+			}, async (progress, token) => {
+
+				token.onCancellationRequested(() => {
+					vscode.window.showWarningMessage(`Import terminated.`);
+					shouldStop = true;
+				});
+				progress.report({
+					increment: 0
+				});
+
+				const store = {};
+				for (const r of requests) {
+					if (shouldStop) {
+						return;
+					}
+					const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${r.endpoint}`);
+					progress.report({
+						increment: (100 / requests.length),
+						message: r._label
+					});
+
+					let bodyProto = r.body;
+					if (r._replaceInBody !== undefined) {
+						bodyProto = JSON.parse(bodyProto);
+						r._replaceInBody.forEach(replacement => {
+							if (bodyProto[replacement.key]) {
+								bodyProto[replacement.key] = store[replacement.slug];
+							}
+						});
+						bodyProto = JSON.stringify(bodyProto);
+					}
+					/** @type {import('axios').AxiosRequestConfig} */
+					const requestConfig = {
+						url: uri,
+						headers: {
+							'Authorization': _authorization,
+							'x-imt-apps-sdk-version': Meta.version,
+							'content-type': r.type
+						},
+						method: r.method,
+						data: bodyProto,
+						transformRequest: (data) => (data),
+						transformResponse: (data) => (data),
+					};
+
+					if (_environment.version === 2 && requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
+						// TODO Check, if it is ok to send data to Axios stringified
+						const j = JSON.parse(requestConfig.data);
+						requestConfig.data = JSON.stringify(Object.keys(j).reduce((p, c) => {
+							p[camelCase(c)] = j[c] === null ? undefined : j[c];
+							return p;
+						}, {}))
+					}
+
+					const axiosResponse = await axios(requestConfig);
+					if (r._store !== undefined) {
+						r._store.forEach(s => {
+							let parsed = JSON.parse(axiosResponse.data);
+
+							// Autoparse the nested object
+							if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
+								parsed = parsed[Object.keys(parsed)[0]];
+							}
+
+							store[s.slug] = parsed[s.key];
+						});
+					}
+					await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
+				}
+			});
+			appsProvider.refresh();
+			vscode.window.showInformationMessage(`App "${app.metadata.label}" has been imported.`);
+		}));
 
 		/**
 		 * Clone app
