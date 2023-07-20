@@ -4,7 +4,6 @@ import axios from 'axios';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as jsoncParser from 'jsonc-parser';
 import * as Meta from './Meta';
 import { showError } from './error-handling';
 
@@ -193,12 +192,6 @@ export function compareCountries(a: { picked: boolean, label: string }, b: { pic
 
 export function compareApps(a: { bareLabel: string }, b: { bareLabel: string }) {
 	return a.bareLabel.localeCompare(b.bareLabel);
-}
-
-export function formatJsonc(text: any) {
-	const edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true });
-	const formatted = jsoncParser.applyEdits(text, edits);
-	return formatted;
 }
 
 export function jsonString(text: any, sectionGuard: string|undefined): string {

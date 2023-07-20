@@ -1028,6 +1028,7 @@ class AppCommands {
 							})).toString();
 
 							// Fix null value -- DON'T FORGET TO CHANGE IN CORE COMMANDS WHEN CHANGING THIS
+							// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"
 							if (component[code] === "null") {
 								if (code === "samples") {
 									component[code] = '{}';

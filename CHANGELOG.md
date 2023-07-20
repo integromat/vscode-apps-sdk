@@ -10,6 +10,7 @@ Change Log
 
 ### Changes
 
+- Keep original indent of JSON files. Do not execute the auto format automatically.
 - Update dependencies `request-light`, `uuid`, `scode-json-languageservice`, `vscode-languageclient`, `vscode-languageserver`
 
 1.3.22
