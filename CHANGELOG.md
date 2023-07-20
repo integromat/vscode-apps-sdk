@@ -4,7 +4,11 @@ Change Log
 1.3.23 (pre-release)
 --------------------
 
-# Changes
+### Fixed
+
+- Error during app import (issue #21)
+
+### Changes
 
 - Update dependencies `request-light`, `uuid`, `scode-json-languageservice`, `vscode-languageclient`, `vscode-languageserver`
 

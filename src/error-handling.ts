@@ -9,6 +9,10 @@ import { AxiosError } from 'axios';
 export function showError(err: Error | AxiosError<any> | string, title?: string|undefined) {
 
 	let e: any = (err as AxiosError<any>).response?.data || err;
+	// Axios can return JSON error message stringified, so try to parse them.
+	try {
+		e = JSON.parse(e);
+	} catch(e) { /* ignore */ }
 
 	// Try to use APIError message format instead of syntax error
 	if (e.message && e.detail) {
@@ -24,8 +28,13 @@ export function showError(err: Error | AxiosError<any> | string, title?: string|
 
 	e = (title ? title + ': ' : '') + String(e);
 
+	// Log Axios request URL
+	if (err instanceof AxiosError) {
+		e += ' Requested ' + err.request?.method + ' ' + err.request?.path;
+	}
+
 	// Show error message in VS Code
-	vscode.window.showErrorMessage(e);
+	vscode.window.showErrorMessage('ERROR: ' + e);
 
 	// Log to VS Code console
 	log('error', e, false);
