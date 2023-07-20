@@ -2,7 +2,7 @@ const path = require('path')
 const EnhancedTreeItem = require('./EnhancedTreeItem')
 
 class App extends EnhancedTreeItem {
-	constructor(name, label, description, version, isPublic, isApproved, iconDir, theme, changes, iconVersion) {
+	constructor(name, label, description, version, isPublic, isApproved, iconDir, theme, changes, iconVersion, isOpensource  = false) {
 		super(label + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "") + (version > 1 ? ` (version ${version})` : ""))
 		this.bareLabel = label
 		this.id = `${name}@${version}`
@@ -17,14 +17,21 @@ class App extends EnhancedTreeItem {
 		this.iconVersion = iconVersion
 		this.changes = changes
 		this.tooltip = this.makeTooltip()
-		this.iconPath = this.makeIconPath(iconDir)
+		this.iconPath = this.makeIconPath(iconDir, isOpensource);
 		this.rawIcon = {
 			dark: path.join(iconDir, `${this.name}.${this.iconVersion}.png`),
 			light: path.join(iconDir, `${this.name}.${this.iconVersion}.dark.png`)
 		}
 	}
-	makeIconPath(iconDir) {
-		if (!this.public) {
+
+	/**
+	 * Get path to icon file.
+	 * @param {string} iconDir Basedir of icons.
+	 * @param {boolean} isOpensource Is the app opensource?
+	 * @returns {string}
+	 */
+	makeIconPath(iconDir, isOpensource) {
+		if (!this.public || isOpensource) {
 			return {
 				dark: path.join(iconDir, `${this.name}.${this.iconVersion}.png`),
 				light: path.join(iconDir, `${this.name}.${this.iconVersion}.dark.png`)

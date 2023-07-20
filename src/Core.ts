@@ -8,28 +8,6 @@ import * as Meta from './Meta';
 import { showError } from './error-handling';
 
 
-export async function invertPngAsync(uri: string) {
-
-	return Jimp
-		.read(uri)
-		.then(icon => {
-			icon
-				.invert()
-				.writeAsync(`${uri.slice(0, -4)}.dark.png`);
-		})
-		.catch(err => {
-			showError(err, 'invertPngAsync');
-			throw undefined;
-		});
-}
-
-export async function generatePublicIcon(uri: string) {
-	const icon = await Jimp.read(uri);
-	const mask = await Jimp.read(path.join(__dirname, '..', 'resources', 'icons', 'masks', 'public.png'));
-	icon.blit(mask, 320, 320);
-	await icon.writeAsync(`${uri.slice(0, -4)}.public.png`);
-}
-
 export async function rpGet(uri: string, authorization: string, qs?: Record<string, string>) {
 	try {
 		return (await axios({

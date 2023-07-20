@@ -7,7 +7,8 @@ class EnhancedTreeItem extends vscode.TreeItem {
 	}
 
     /**
-     * COMMON FUNCTIONS
+     * Return path to generic icon, which are placed statically in resouce dir.
+	 * @param {string} name Examples: "base", "code", "connection", "module, "rpc", "readme", "refresh", ...
      */
 	makeIconPath(name, inject = "") {
 		return {

@@ -13,8 +13,9 @@ const { mkdir } = require('fs/promises');
 const download = require('image-downloader')
 const asyncfile = require('async-file')
 const camelCase = require('lodash.camelcase');
+const { downloadAndStoreAppIcon } = require('../libs/app-icon');
 
-class AppsProvider {
+class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -58,44 +59,13 @@ class AppsProvider {
 					break;
 			}
 			if (response === undefined) { return }
-			let iconDir = path.join(this._DIR, "icons")
+
+			const iconDir = path.join(this._DIR, "icons");
 			await mkdir(iconDir, { recursive: true });
-			let apps = response.map(async (app) => {
-				let iconVersion = 1
-				let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
-				while (await asyncfile.exists(`${dest}.old`)) {
-					iconVersion++
-					dest = path.join(iconDir, `${app.name}.${iconVersion}.png`)
-				}
-				if (!await asyncfile.exists(dest)) {
-					try {
-						await download.image({
-							headers: {
-								"Authorization": this._authorization,
-								'x-imt-apps-sdk-version': Meta.version
-							},
-							url: (() => {
-								switch (this._environment.version) {
-									case 2:
-										return `${this._baseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`
-									case 1:
-									default:
-										return `${this._baseUrl}/app/${app.name}/${app.version}/icon/512`
-								}
-							})(),
-							dest: dest
-						})
-						await Core.invertPngAsync(dest);
-					}
-					catch (err) {
-						if (err != undefined) {
-							iconVersion = 0
-						}
-					}
-				}
-				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion)
-			})
-			apps = await Promise.all(apps)
+			const apps = await Promise.all(response.map(async (app) => {
+				const iconVersion = await downloadAndStoreAppIcon(app, iconDir, this._baseUrl, this._authorization, this._environment, true);
+				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion, true);
+			}));
 			apps.sort(Core.compareApps)
 			return apps
 		}
@@ -159,7 +129,7 @@ class AppsProvider {
 						new Code(`scope`, "Default scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
 						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true)
 					]
-				case "webhook":
+				case "webhook": {
 					const out = [
 						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
 						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
@@ -171,6 +141,7 @@ class AppsProvider {
 						out.push(new Code(`update`, "Update", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true));
 					}
 					return out;
+				}
 				case "module":
 					switch (element.type) {
 						// Action or search
@@ -210,6 +181,7 @@ class AppsProvider {
 								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true)
 							]
 					}
+					break;
 				case "rpc":
 					return [
 						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), true),
