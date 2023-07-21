@@ -11,3 +11,6 @@ vsc-extension-quickstart.md
 **/*.ts
 **/tsconfig.json
 src/**
+resources/readme/**
+resources/extension-icon.png
+resources/imt-icon.svg
