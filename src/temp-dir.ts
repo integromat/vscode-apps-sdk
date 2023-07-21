@@ -4,21 +4,26 @@ import * as fs from "fs";
 import { log } from "./output-channel";
 import * as vscode from "vscode";
 
+const TEMPDIR_PREFIX = "apps-sdk";
 
 /**
  * The path to the local temporary directory where the source code of the SDK is placed during editation.
  *
  * Note: Path is unique for each run of the extension.
  */
-export const sourceCodeLocalTempBasedir = join(tempy.directory(), "apps-sdk");
+export const sourceCodeLocalTempBasedir = join(tempy.directory(), TEMPDIR_PREFIX);
 
 
 /**
  * Checks if the given file name belongs to the local temporary directory
  * where the source code of this extension is placed during editation.
+ *
+ * Note: The temp directory is unique for each run of the extension, but user can keep file open during multiple VS Code runs.
+ *       It is the reason why we need to check the TEMPDIR_PREFIX, to match also all previous temp directories.
  */
 export function isFileBelongingToExtension(fileName: string): boolean {
-	return fileName.includes(sourceCodeLocalTempBasedir);
+	const tempdirPrefixTester = new RegExp(`[/\\\\]${TEMPDIR_PREFIX}[/\\\\]`);
+	return tempdirPrefixTester.test(fileName);
 }
 
 
