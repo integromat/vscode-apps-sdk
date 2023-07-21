@@ -13,7 +13,12 @@ suite('Extension Test Suite', () => {
 
 	vscode.window.showInformationMessage('Start all tests.');
 
-	test('Extension is installed with correct ID', () => {
+	test('Extension is present and has correct ID', () => {
 		assert.ok(vscode.extensions.getExtension('Integromat.apps-sdk'));
 	});
+
+	// test('Extension can be activated', async () => {
+	// 	await vscode.extensions.getExtension('Integromat.apps-sdk')?.activate();
+	// 	assert.ok(vscode.extensions.getExtension('Integromat.apps-sdk')?.isActive);
+	// }).timeout(10000);
 });
