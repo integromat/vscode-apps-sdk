@@ -1,7 +1,8 @@
 .vscode/**
 .vscode-test/**
 .github/**
-test/**
+out/test/**
+out/types/**
 local
 .gitignore
 jsconfig.json
@@ -9,3 +10,7 @@ vsc-extension-quickstart.md
 .eslintrc.json
 **/*.ts
 **/tsconfig.json
+src/**
+resources/readme/**
+resources/extension-icon.png
+resources/imt-icon.svg

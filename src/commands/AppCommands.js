@@ -19,7 +19,8 @@ const tempy = require('tempy');
 const compressing = require('compressing');
 const AdmZip = require('adm-zip');
 const camelCase = require('lodash.camelcase');
-const { showError } = require('../error-handling');
+const { showError, catchError } = require('../error-handling');
+const { promisify2 } = require('../utils');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -29,8 +30,7 @@ class AppCommands {
 			/**
 			 * NEW APP - ADMIN MODE
 			 */
-			vscode.commands.registerCommand('apps-sdk.app.new', async () => {
-
+			vscode.commands.registerCommand('apps-sdk.app.new', catchError('New app creation', async () => {
 				// Get list of all apps
 				const allApps = await QuickPick.allApps(_environment, _authorization);
 
@@ -112,13 +112,12 @@ class AppCommands {
 				if (changes === true) {
 					appsProvider.refresh();
 				}
-			});
+			}));
 		} else {
 			/**
 			 * New APP - NORMAL MODE
 			 */
-			vscode.commands.registerCommand('apps-sdk.app.new', async () => {
-
+			vscode.commands.registerCommand('apps-sdk.app.new', catchError('New app creation', async () => {
 				// Label prompt
 				const label = await vscode.window.showInputBox({
 					prompt:
@@ -200,41 +199,38 @@ class AppCommands {
 				});
 
 				// Send the request
-				try {
-					if (_environment.version === 2) {
-						// TODO : Language not sent, formula tweak needed
-						await Core.addEntity(_authorization, {
-							'name': id,
-							'label': label,
-							'version': parseInt(version) || 1,
-							'description': description,
-							'theme': theme,
-							'language': language.description,
-							'audience': countries.length === 0 ? 'global' : 'countries',
-							'countries': countries.length === 0 ? undefined : countries
-						}, uri);
-					} else {
-						await Core.addEntity(_authorization, {
-							'name': id,
-							'label': label,
-							'description': description,
-							'theme': theme,
-							'language': language.description,
-							'private': true,
-							'countries': countries
-						}, uri);
-					}
-					appsProvider.refresh();
-				} catch (err) {
-					showError(err);
+				if (_environment.version === 2) {
+					// TODO : Language not sent, formula tweak needed
+					await Core.addEntity(_authorization, {
+						'name': id,
+						'label': label,
+						'version': parseInt(version) || 1,
+						'description': description,
+						'theme': theme,
+						'language': language.description,
+						'audience': countries.length === 0 ? 'global' : 'countries',
+						'countries': countries.length === 0 ? undefined : countries
+					}, uri);
+				} else {
+					await Core.addEntity(_authorization, {
+						'name': id,
+						'label': label,
+						'description': description,
+						'theme': theme,
+						'language': language.description,
+						'private': true,
+						'countries': countries
+					}, uri);
 				}
-			});
+				appsProvider.refresh();
+
+			}));
 		}
 
 		/**
 		 * Edit app
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.edit-metadata', async (context) => {
+		vscode.commands.registerCommand('apps-sdk.app.edit-metadata', catchError('Edit metadata', async (context) => {
 
 			// Context check
 			if (!Core.contextGuard(context)) {
@@ -307,44 +303,39 @@ class AppCommands {
 			countries = countries.length > 0 ? countries : undefined;
 
 			// Send the request
-			try {
-				if (_environment.version === 2) {
-					await Core.patchEntity(_authorization, {
-						label: label,
-						theme: theme,
-						description: description,
-						language: language.description,
-						audience: countries === undefined ? 'global' : 'countries',
-						countries: countries
-					}, uri);
-				} else {
-					await Core.editEntity(_authorization, {
-						label: label,
-						theme: theme,
-						description: description,
-						language: language.description,
-						countries: countries
-					}, uri);
-				}
-				appsProvider.refresh();
-			} catch (err) {
-				showError(err);
+			if (_environment.version === 2) {
+				await Core.patchEntity(_authorization, {
+					label: label,
+					theme: theme,
+					description: description,
+					language: language.description,
+					audience: countries === undefined ? 'global' : 'countries',
+					countries: countries
+				}, uri);
+			} else {
+				await Core.editEntity(_authorization, {
+					label: label,
+					theme: theme,
+					description: description,
+					language: language.description,
+					countries: countries
+				}, uri);
 			}
-		});
+			appsProvider.refresh();
+		}));
 
 		/**
 		 * Delete app
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.delete', async (context) => {
+		vscode.commands.registerCommand('apps-sdk.app.delete', catchError('Delete app', async (context) => {
 
 			// Context check
 			if (!Core.contextGuard(context)) {
 				return;
 			}
-			const app = context;
 
 			// Wait for confirmation
-			const answer = await vscode.window.showQuickPick(Enum.delete, { placeHolder: `Do you really want to delete this app?` });
+			const answer = await vscode.window.showQuickPick(Enum.delete, { placeHolder: `Do you really want to delete the app "${context.label}"?` });
 			if (answer === undefined || answer === null) {
 				vscode.window.showWarningMessage('No answer has been recognized.');
 				return;
@@ -354,31 +345,29 @@ class AppCommands {
 			switch (answer.label) {
 				case 'No':
 					vscode.window.showInformationMessage(`Stopped. No apps were deleted.`);
-					break;
-				case 'Yes':
+					return;
+				case 'Yes': {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
-					try {
-						await axios({
-							method: 'DELETE',
-							url: uri,
-							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version
-							},
-						});
-						appsProvider.refresh();
-					} catch (err) {
-						vscode.window.showErrorMessage('Error in apps-sdk.app.delete: ' + (err.error.message || err));
-					}
+					await axios({
+						method: 'DELETE',
+						url: uri,
+						headers: {
+							'Authorization': _authorization,
+							'x-imt-apps-sdk-version': Meta.version
+						},
+					});
+					appsProvider.refresh();
+					vscode.window.showInformationMessage(`App "${context.label}" deleted.`);
 					break;
+				}
 			}
-		});
+		}));
 
 		/**
 		 * Edit app icon
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.get-icon', (app) => {
+		vscode.commands.registerCommand('apps-sdk.app.get-icon', catchError('Get/change icon', async (app) => {
 
 			// If called directly (by using a command pallete) -> die
 			if (!Core.contextGuard(app)) {
@@ -410,9 +399,7 @@ class AppCommands {
 			// Inject the theme color and the icon to the generated HTML
 			panel.webview.html = Core.getIconHtml(buff, app.theme, path.join(__dirname, '..', '..'));
 
-
-			panel.webview.onDidReceiveMessage(async (message) => {
-
+			panel.webview.onDidReceiveMessage(catchError('Icon change', async (message) => {
 				/**
 				 * The icon change (upload new one).
 				 *
@@ -436,47 +423,44 @@ class AppCommands {
 					}
 
 					// Upload the new icon via REST API.
-					try {
-						// Prepare request options
-						const options = {
-							url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
-							method: 'PUT',
-							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version,
-								'Content-Type': 'image/png',
-							}
-						};
 
-						// Read the new file and fire the request
-						await axios({
-							...options,
-							data: fs.createReadStream(uri[0].fsPath),
-						});
-
-						// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
-						if (await asyncfile.exists(app.rawIcon.dark)) {
-							await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
+					// Prepare request options
+					const options = {
+						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
+						method: 'PUT',
+						headers: {
+							'Authorization': _authorization,
+							'x-imt-apps-sdk-version': Meta.version,
+							'Content-Type': 'image/png',
 						}
-						if (await asyncfile.exists(app.rawIcon.light)) {
-							await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
-						}
+					};
 
-						vscode.commands.executeCommand('apps-sdk.refresh');
-						panel.dispose();
+					// Read the new file and fire the request
+					await axios({
+						...options,
+						data: fs.createReadStream(uri[0].fsPath),
+					});
 
-						vscode.window.showInformationMessage(`New icon saved.`);
-					} catch (e) {
-						showError(e, 'Change icon failed');
+					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
+					if (await asyncfile.exists(app.rawIcon.dark)) {
+						await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
 					}
+					if (await asyncfile.exists(app.rawIcon.light)) {
+						await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
+					}
+
+					vscode.commands.executeCommand('apps-sdk.refresh');
+					panel.dispose();
+
+					vscode.window.showInformationMessage(`New icon saved.`);
 				}
-			}, undefined);
-		});
+			}), undefined);
+		}));
 
 		/**
 		 * Show app detail
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.show-detail', async (context) => {
+		vscode.commands.registerCommand('apps-sdk.app.show-detail', catchError('Show app detail', async (context) => {
 
 			// If called directly (by using a command pallete) -> die
 			if (!Core.contextGuard(context)) {
@@ -537,7 +521,7 @@ class AppCommands {
 
 			panel.webview.postMessage(app);
 
-		});
+		}));
 
 		/**
 		 * Mark app as private
@@ -562,7 +546,7 @@ class AppCommands {
 				case 'No':
 					vscode.window.showInformationMessage(`The app has been kept as public.`);
 					break;
-				case 'Yes':
+				case 'Yes': {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/private`;
 					try {
@@ -572,6 +556,7 @@ class AppCommands {
 						showError(err);
 					}
 					break;
+				}
 			}
 
 		});
@@ -599,7 +584,7 @@ class AppCommands {
 				case 'No':
 					vscode.window.showInformationMessage(`The app has been kept as private.`);
 					break;
-				case 'Yes':
+				case 'Yes': {
 					// Set URI and send the request
 					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/public`;
 					try {
@@ -609,6 +594,7 @@ class AppCommands {
 						showError(err);
 					}
 					break;
+				}
 			}
 		});
 
@@ -991,7 +977,7 @@ class AppCommands {
 		/**
 		 * Import app
 		 */
-		vscode.commands.registerCommand('apps-sdk.app.import', async () => {
+		vscode.commands.registerCommand('apps-sdk.app.import', catchError('Import app from ZIP', async () => {
 
 			const deduplicate = (arr) => {
 				const out = [];
@@ -1013,13 +999,14 @@ class AppCommands {
 					.map(async (internalName) => {
 						const component = {};
 						if (requireMetadata === true) {
-							component.metadata = JSON.parse((await new Promise(resolve => {
-								entries
-									.find(entry => entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
-									.getDataAsync((data => {
-										resolve(data);
-									}));
-							})).toString());
+							const metadataEntry = entries.find(entry => (
+								entry.entryName === `${metadata.name}/${key}/${internalName}/metadata.json`)
+							);
+							if (!metadataEntry) {
+								throw new Error('File metadata.json not found in ZIP, but required.');
+							}
+							const data/*: Buffer*/ = await promisify2(metadataEntry.getDataAsync)();
+							component.metadata = JSON.parse(data.toString());
 
 							// Universal module subtype
 							if (key === 'modules' && component.metadata.type === 'universal') {
@@ -1041,6 +1028,7 @@ class AppCommands {
 							})).toString();
 
 							// Fix null value -- DON'T FORGET TO CHANGE IN CORE COMMANDS WHEN CHANGING THIS
+							// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"
 							if (component[code] === "null") {
 								if (code === "samples") {
 									component[code] = '{}';
@@ -1060,13 +1048,16 @@ class AppCommands {
 					}));
 			};
 
+			/**
+			 * @returns {Promise<Buffer>}
+			 */
 			const getData = async (validator, entries, searchPath) => {
-				return new Promise(resolve => {
-					entries.find(entry => entry.entryName === searchPath).getDataAsync((data) => {
-						validator.count++;
-						resolve(data);
-					});
-				});
+				const entry = entries.find(entry => entry.entryName === searchPath);
+				if (!entry) {
+					throw new Error(`ZIP entry "${searchPath}" not found, but required.`);
+				}
+				validator.count++;
+				return promisify2(entry.getDataAsync)();
 			};
 
 			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined) => {
@@ -1105,17 +1096,15 @@ class AppCommands {
 				const app = {};
 
 				// Try to get app metadata from the raw zip path
-				app.metadata = JSON.parse((await new Promise(resolve => {
-					const e = entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/));
-					if (e) {
-						e.getDataAsync((data => {
-							validator.count++;
-							resolve(data);
-						}));
-					} else {
-						vscode.window.showErrorMessage(`App archive corrupted. (metadata.json not resolved correctly)`);
-					}
-				})).toString());
+				const e = entries.find(entry => entry.entryName.match(/^([a-z][0-9a-z-]+[0-9a-z]\/metadata\.json)/));
+				if (!e) {
+					throw new Error('App archive corrupted. (metadata.json not resolved correctly)');
+				}
+				const data/*: Buffer*/ = await promisify2(e.getDataAsync)();
+				validator.count++;
+				/** JSON content of `metadata.json` file */
+				app.metadata = JSON.parse(data.toString());
+
 
 				// Get .sdk metadata raw directly
 				const _sdk = JSON.parse((await new Promise(resolve => {
@@ -1305,129 +1294,129 @@ class AppCommands {
 				// requests.length should equal entries.lenght - 1 (because app create preflight is not in queue)
 			};
 
-			try {
-				const source = await vscode.window.showOpenDialog({
-					filters: { 'IMT App Archive': ['zip'] },
-					openLabel: 'Import',
-					canSelectFolders: false,
-					canSelectMany: false
-				});
-				if (!source || source.length === 0 || !source[0]) {
-					vscode.window.showWarningMessage('No Archive specified.');
-					return;
-				}
-				const zip = new AdmZip(source[0].fsPath);
-				const entries = zip.getEntries();
-				const app = await parseApp(entries);
-
-				if (_environment.version === 2) {
-					app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
-					if (app.metadata.audience === 'global') {
-						delete app.metadata.countries;
-					}
-					delete app.metadata.version;
-					if (!app.metadata.description) {
-						app.metadata.description = `Imported app ${app.metadata.label}.`
-					}
-				}
-
-				// Name prompt
-				app.metadata.name = await vscode.window.showInputBox({
-					prompt: 'Enter name of the imported app',
-					value: app.metadata.name,
-					validateInput: Validator.appName
-				});
-				if (!Core.isFilled('name', 'imported app', app.metadata.name, 'A')) {
-					return;
-				}
-
-				let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
-				if (!remoteApp) {
-					return;
-				}
-				if (_environment.version === 2) { remoteApp = remoteApp.app }
-				const requests = buildRequestQueue(app, remoteApp);
-
-				let shouldStop = false;
-				await vscode.window.withProgress({
-					location: vscode.ProgressLocation.Notification,
-					title: `Importing ${app.metadata.label}`,
-					cancellable: true
-				}, async (progress, token) => {
-
-					token.onCancellationRequested(() => {
-						vscode.window.showWarningMessage(`Import terminated.`);
-						shouldStop = true;
-					});
-					progress.report({
-						increment: 0
-					});
-
-					const store = {};
-					for (const r of requests) {
-						if (shouldStop) {
-							return;
-						}
-						const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${r.endpoint}`);
-						progress.report({
-							increment: (100 / requests.length),
-							message: r._label
-						});
-
-						let bodyProto = r.body;
-						if (r._replaceInBody !== undefined) {
-							bodyProto = JSON.parse(bodyProto);
-							r._replaceInBody.forEach(replacement => {
-								if (bodyProto[replacement.key]) {
-									bodyProto[replacement.key] = store[replacement.slug];
-								}
-							});
-							bodyProto = JSON.stringify(bodyProto);
-						}
-						/** @type {import('axios').AxiosRequestConfig} */
-						const requestConfig = {
-							url: uri,
-							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version,
-								'content-type': r.type
-							},
-							method: r.method,
-							data: bodyProto,
-							transformRequest: (data) => (data),
-							transformResponse: (data) => (data),
-						};
-
-						if (_environment.version === 2 && requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
-							// TODO Check, if it is ok to send data to Axios stringified
-							const j = JSON.parse(requestConfig.data);
-							requestConfig.data = JSON.stringify(Object.keys(j).reduce((p, c) => {
-								p[camelCase(c)] = j[c] === null ? undefined : j[c];
-								return p;
-							}, {}))
-						}
-
-						const axiosResponse = await axios(requestConfig);
-						if (r._store !== undefined) {
-							r._store.forEach(s => {
-								let parsed = JSON.parse(axiosResponse.data);
-
-								// Autoparse the nested object
-								if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
-									parsed = parsed[Object.keys(parsed)[0]];
-								}
-
-								store[s.slug] = parsed[s.key];
-							});
-						}
-						await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
-					}
-				});
-				vscode.window.showInformationMessage(`${app.metadata.label} has been imported!`);
-			} catch (err) {
-				vscode.window.showErrorMessage('Error in apps-sdk.app.import: ' + (err.message || err));
+			const source = await vscode.window.showOpenDialog({
+				filters: { 'IMT App Archive': ['zip'] },
+				openLabel: 'Import',
+				canSelectFolders: false,
+				canSelectMany: false
+			});
+			if (!source || source.length === 0 || !source[0]) {
+				vscode.window.showWarningMessage('No Archive specified.');
+				return;
 			}
-		});
+			const zip = new AdmZip(source[0].fsPath);
+			/** File names in ZIPed app */
+			const entries = zip.getEntries();
+			const app = await parseApp(entries);
+
+			if (_environment.version === 2) {
+				app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
+				if (app.metadata.audience === 'global') {
+					delete app.metadata.countries;
+				}
+				delete app.metadata.version;
+				if (!app.metadata.description) {
+					app.metadata.description = `Imported app ${app.metadata.label}.`
+				}
+			}
+
+			// Name prompt
+			app.metadata.name = await vscode.window.showInputBox({
+				prompt: 'Enter name of the imported app',
+				value: app.metadata.name,
+				validateInput: Validator.appName
+			});
+			if (!Core.isFilled('name', 'imported app', app.metadata.name, 'A')) {
+				return;
+			}
+
+			let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
+			if (!remoteApp) {
+				return;
+			}
+			if (_environment.version === 2) { remoteApp = remoteApp.app }
+
+			/** API requests list to push all app parts to Make */
+			const requests = buildRequestQueue(app, remoteApp);
+
+			let shouldStop = false;
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Importing ${app.metadata.label}`,
+				cancellable: true
+			}, async (progress, token) => {
+
+				token.onCancellationRequested(() => {
+					vscode.window.showWarningMessage(`Import terminated.`);
+					shouldStop = true;
+				});
+				progress.report({
+					increment: 0
+				});
+
+				const store = {};
+				for (const r of requests) {
+					if (shouldStop) {
+						return;
+					}
+					const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${r.endpoint}`);
+					progress.report({
+						increment: (100 / requests.length),
+						message: r._label
+					});
+
+					let bodyProto = r.body;
+					if (r._replaceInBody !== undefined) {
+						bodyProto = JSON.parse(bodyProto);
+						r._replaceInBody.forEach(replacement => {
+							if (bodyProto[replacement.key]) {
+								bodyProto[replacement.key] = store[replacement.slug];
+							}
+						});
+						bodyProto = JSON.stringify(bodyProto);
+					}
+					/** @type {import('axios').AxiosRequestConfig} */
+					const requestConfig = {
+						url: uri,
+						headers: {
+							'Authorization': _authorization,
+							'x-imt-apps-sdk-version': Meta.version,
+							'content-type': r.type
+						},
+						method: r.method,
+						data: bodyProto,
+						transformRequest: (data) => (data),
+						transformResponse: (data) => (data),
+					};
+
+					if (_environment.version === 2 && requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
+						// TODO Check, if it is ok to send data to Axios stringified
+						const j = JSON.parse(requestConfig.data);
+						requestConfig.data = JSON.stringify(Object.keys(j).reduce((p, c) => {
+							p[camelCase(c)] = j[c] === null ? undefined : j[c];
+							return p;
+						}, {}))
+					}
+
+					const axiosResponse = await axios(requestConfig);
+					if (r._store !== undefined) {
+						r._store.forEach(s => {
+							let parsed = JSON.parse(axiosResponse.data);
+
+							// Autoparse the nested object
+							if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
+								parsed = parsed[Object.keys(parsed)[0]];
+							}
+
+							store[s.slug] = parsed[s.key];
+						});
+					}
+					await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
+				}
+			});
+			appsProvider.refresh();
+			vscode.window.showInformationMessage(`App "${app.metadata.label}" has been imported.`);
+		}));
 
 		/**
 		 * Clone app

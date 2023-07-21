@@ -4,7 +4,6 @@ import axios from 'axios';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as jsoncParser from 'jsonc-parser';
 import * as Meta from './Meta';
 import { showError } from './error-handling';
 
@@ -80,117 +79,85 @@ export function isFilled(subject: string, object: string, thing: any, article: s
 }
 
 export async function addEntity(authorization: string, body: any, url: string) {
-	try {
-		return (await axios({
-			method: 'POST',
-			url: url,
-			data: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-		})).data;
-	} catch (err: any) {
-		showError(err, 'addEntity');
-		throw err;
-	}
+	return (await axios({
+		method: 'POST',
+		url: url,
+		data: body,
+		headers: {
+			Authorization: authorization,
+			'x-imt-apps-sdk-version': Meta.version
+		},
+	})).data;
 }
 
 export async function deleteEntity(authorization: string, body: any, url: string) {
-	try {
-		return (await axios({
-			method: 'DELETE',
-			url: url,
-			data: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-		})).data;
-	} catch (err: any) {
-		showError(err, 'deleteEntity');
-		throw err;
-	}
+	return (await axios({
+		method: 'DELETE',
+		url: url,
+		data: body,
+		headers: {
+			Authorization: authorization,
+			'x-imt-apps-sdk-version': Meta.version
+		},
+	})).data;
 }
 
 export async function editEntity(authorization: string, body: any, url: string) {
-	try {
-		return (await axios({
-			method: 'PUT',
-			url: url,
-			data: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-		})).data;
-	} catch (err: any) {
-		showError(err, 'editEntity');
-		throw err;
-	}
+	return (await axios({
+		method: 'PUT',
+		url: url,
+		data: body,
+		headers: {
+			Authorization: authorization,
+			'x-imt-apps-sdk-version': Meta.version
+		},
+	})).data;
 }
 
 export async function patchEntity(authorization: string, body: any, url: string) {
-	try {
-		return (await axios({
-			method: 'PATCH',
-			url: url,
-			data: body,
-			headers: {
-				Authorization: authorization,
-				'x-imt-apps-sdk-version': Meta.version
-			},
-		})).data;
-	} catch (err: any) {
-		showError(err, 'patchEntity');
-		throw err;
-	}
+	return (await axios({
+		method: 'PATCH',
+		url: url,
+		data: body,
+		headers: {
+			Authorization: authorization,
+			'x-imt-apps-sdk-version': Meta.version
+		},
+	})).data;
+
 }
 
 export async function editEntityPlain(authorization: string, value: string|undefined, url: string) {
-	try {
-		return (await axios({
-			method: 'PUT',
-			url: url,
-			data: value,
-			headers: {
-				Authorization: authorization,
-				"Content-Type": "text/plain",
-				'x-imt-apps-sdk-version': Meta.version
-			},
-		})).data;
-	} catch (err: any) {
-		showError(err, 'editEntityPlain');
-	}
+	return (await axios({
+		method: 'PUT',
+		url: url,
+		data: value,
+		headers: {
+			Authorization: authorization,
+			"Content-Type": "text/plain",
+			'x-imt-apps-sdk-version': Meta.version
+		},
+	})).data;
 }
 
 export async function executePlain(authorization: string, value: string, url: string) {
-	try {
-		return (await axios({
-			method: 'POST',
-			url: url,
-			data: value,
-			headers: {
-				Authorization: authorization,
-				"Content-Type": "text/plain",
-				'x-imt-apps-sdk-version': Meta.version
-			},
-		})).data;
-	} catch (err: any) {
-		showError(err, 'executePlain');
-	}
+	return (await axios({
+		method: 'POST',
+		url: url,
+		data: value,
+		headers: {
+			Authorization: authorization,
+			"Content-Type": "text/plain",
+			'x-imt-apps-sdk-version': Meta.version
+		},
+	})).data;
 }
 
 export async function getAppObject(environment: Environment, authorization: string, app: SdkApp) {
-	try {
-		if (environment.version === 2) {
-			return (await rpGet(`${environment.baseUrl}/sdk/apps/${app.name}/${app.version}`, authorization)).app;
-		} else {
-			return await rpGet(`${environment.baseUrl}/app/${app.name}/${app.version}`, authorization);
-		}
-	}
-	catch (err: any) {
-		showError(err, 'getAppObject');
+	if (environment.version === 2) {
+		return (await rpGet(`${environment.baseUrl}/sdk/apps/${app.name}/${app.version}`, authorization)).app;
+	} else {
+		return await rpGet(`${environment.baseUrl}/app/${app.name}/${app.version}`, authorization);
 	}
 }
 
@@ -225,12 +192,6 @@ export function compareCountries(a: { picked: boolean, label: string }, b: { pic
 
 export function compareApps(a: { bareLabel: string }, b: { bareLabel: string }) {
 	return a.bareLabel.localeCompare(b.bareLabel);
-}
-
-export function formatJsonc(text: any) {
-	const edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true });
-	const formatted = jsoncParser.applyEdits(text, edits);
-	return formatted;
 }
 
 export function jsonString(text: any, sectionGuard: string|undefined): string {

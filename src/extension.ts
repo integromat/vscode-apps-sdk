@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import vscode_languageclient = require("vscode-languageclient");
+import vscode_languageclient = require("vscode-languageclient/node");
 import { log } from './output-channel';
 
 import AppsProvider = require('./providers/AppsProvider');
@@ -83,12 +83,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	client = new vscode_languageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
 
 	// Start the client. This will also launch the server
-	client.start();
+	await client.start();
 
 	// When the client is ready, send IMLJSON schemas to the server
-	client.onReady().then(() => {
-		client.sendNotification(new vscode_languageclient.NotificationType('imljson/schemaAssociations'), LanguageServersSettings.getJsonSchemas());
-	});
+
+	await client.sendNotification(
+		new vscode_languageclient.NotificationType('imljson/schemaAssociations'),
+		LanguageServersSettings.getJsonSchemas()
+	);
 
 	// Environment commands and envChanger
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10);
@@ -210,7 +212,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 
-export function deactivate() {
+export async function deactivate() {
 	// Delete local temp dir
 	rmCodeLocalTempBasedir();
 
@@ -219,7 +221,7 @@ export function deactivate() {
 		return undefined;
 	}
 	log('info', 'Deactivating the Extension ...');
-	return client.stop();
+	await client.stop();
 }
 
 

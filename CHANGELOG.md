@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+1.3.24
+------
+
+### Fixed
+
+- Error during app import (issue #21)
+- Fail to save file kept open during VS Code restart
+
+### Changes
+
+- Keep original indent of JSON files. Do not execute the auto format automatically.
+- Update dependencies `request-light`, `uuid`, `vscode-json-languageservice`, `vscode-languageclient`, `vscode-languageserver`, `tempy`
+
 1.3.22
 ------
 

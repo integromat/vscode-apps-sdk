@@ -1,5 +1,5 @@
 const vscode = require('vscode')
-const vscode_languageclient = require("vscode-languageclient");
+const vscode_languageclient = require("vscode-languageclient/node");
 
 const path = require('path')
 

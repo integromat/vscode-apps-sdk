@@ -15,7 +15,7 @@ const GroupsProvider = require('../providers/GroupsProvider')
 const path = require('path')
 const { mkdir, writeFile } = require('fs/promises');
 const axios = require('axios');
-const { showError } = require('../error-handling')
+const { showError, catchError } = require('../error-handling')
 const { isFileBelongingToExtension } = require('../temp-dir');
 const { log } = require('../output-channel')
 
@@ -43,18 +43,9 @@ class CoreCommands {
 	 */
 	async sourceUpload(event /*: vscode.TextDocumentWillSaveEvent*/) {
 
-		// It it's not an APPS SDK file, don't do anything
-		if (!isFileBelongingToExtension(event.document.fileName)) {
-			if (/[/\\]apps-sdk[/\\]/.test(event.document.fileName)) {
-				vscode.window.showWarningMessage(
-					'File upload to Make has been cancelled. You are trying to save some old file from previous run ' +
-					'of the VS Code. File is not up-to-date, therefore Make Apps Extension ignores it now. ' +
-					'Please, reopen the file again from menu in Make Apps Extension, then you will be able to ' +
-					'edit and save it. ' +
-					`File: ${event.document.fileName}}`
-				);
-			} // Else // Everything is OK, user is saving some non SDK-App file, therefore ignore it silencely.
-			return;
+		// Check if the file is belonging to this Make extension
+		if (!/[/\\]apps-sdk[/\\]/.test(event.document.fileName)) {
+			return; // Do not handle this file by `sourceUpload()`
 		}
 
 		// Load the content of the file that's about to be saved
@@ -536,7 +527,7 @@ class CoreCommands {
 		/**
 		 * OpenSource Loader
 		 */
-		vscode.commands.registerCommand('apps-sdk.load-open-source', async function (item) {
+		vscode.commands.registerCommand('apps-sdk.load-open-source', catchError('Load open source app file from API', async (item) => {
 
 			// Compose directory structure
 			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${(_environment.version !== 2) ? `/${Core.getApp(item).name}` : ''}`
@@ -552,9 +543,6 @@ class CoreCommands {
 			switch (item.apiPath) {
 				case "function":
 				case "functions":
-					urn += `/${item.apiPath}/${item.parent.name}/code`
-					urnForFile += `/${item.apiPath}/${item.parent.name}/code`
-					break
 				case "rpc":
 				case "rpcs":
 				case "module":
@@ -589,46 +577,38 @@ class CoreCommands {
 			 */
 
 			// Prepare the directory for the code
-			try {
-				await mkdir(path.join(_DIR, "opensource", dirname), { recursive: true });
 
-				// Compose a download URL
-				let url = _environment.baseUrl + urn
+			await mkdir(path.join(_DIR, "opensource", dirname), { recursive: true });
 
-				/**
-				 * GET THE SOURCE CODE
-				 * Those lines are responsible straight for the download of code
-				 */
-				const axiosResponse = await axios({
-					url: url,
-					headers: {
-						'Authorization': _authorization,
-						'x-imt-apps-sdk-version': Meta.version
-					},
-					transformResponse: (res) => { return res; },  // Do not parse the response into JSON
-				})
+			// Compose a download URL
+			let url = _environment.baseUrl + urn
 
-				// Prepare a stream to be saved
-				const write = (item.language === "js" || item.language === "md") ? axiosResponse.data : Core.formatJsonc(axiosResponse.data);
+			/**
+			 * GET THE SOURCE CODE
+			 * Those lines are responsible straight for the download of code
+			 */
+			const axiosResponse = await axios({
+				url: url,
+				headers: {
+					'Authorization': _authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+				transformResponse: (res) => (res),  // Do not parse the response into JSON
+			})
 
-				// Save the received code to the temp directory
-				await writeFile(path.join(_DIR, "opensource", filepath), write, { mode: 440 });
+			// Save the received code to the temp directory
+			await writeFile(path.join(_DIR, "opensource", filepath), axiosResponse.data, { mode: 440 });
 
-				// Open the downloaded code in the editor
-				vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, "opensource", filepath)), {
-					preview: false
-				})
-			} catch (err) {
-				// If something went wrong, throw an error and return
-				showError(err, 'apps-sdk.load-open-source');
-				return;
-			}
-		})
+			// Open the downloaded code in the editor
+			vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, "opensource", filepath)), {
+				preview: false
+			})
+		}));
 
 		/**
 		 * Source Loader
 		 */
-		vscode.commands.registerCommand('apps-sdk.load-source', async function (item) {
+		vscode.commands.registerCommand('apps-sdk.load-source', catchError('Load My Apps file from API', async (item) => {
 
 			// Compose directory structure
 			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${(_environment.version !== 2) ? `/${Core.getApp(item).name}` : ''}`
@@ -644,9 +624,6 @@ class CoreCommands {
 			switch (item.apiPath) {
 				case "function":
 				case "functions":
-					urn += `/${item.apiPath}/${item.parent.name}/${item.name}`
-					urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`
-					break
 				case "rpc":
 				case "rpcs":
 				case "module":
@@ -688,57 +665,50 @@ class CoreCommands {
 			 * Code loader loads the requested code
 			 */
 
-			try {
-				// Prepare the directory for the code
-				await mkdir(path.join(_DIR, dirname), { recursive: true });
+
+			// Prepare the directory for the code
+			await mkdir(path.join(_DIR, dirname), { recursive: true });
 
 
-				// Compose a download URL
-				let url = _environment.baseUrl + urn
+			// Compose a download URL
+			let url = _environment.baseUrl + urn
 
-				/**
-				 * GET THE SOURCE CODE
-				 * Those lines are responsible straight for the download of code
-				 */
-				const axiosResponse = await axios({
-					url: url,
-					headers: {
-						'Authorization': _authorization,
-						'x-imt-apps-sdk-version': Meta.version
-					},
-					transformResponse: (res) => { return res; },  // Do not parse the response into JSON
-				});
+			/**
+			 * GET THE SOURCE CODE
+			 * Those lines are responsible straight for the download of code
+			 */
+			const axiosResponse = await axios({
+				url: url,
+				headers: {
+					'Authorization': _authorization,
+					'x-imt-apps-sdk-version': Meta.version
+				},
+				transformResponse: (res) => { return res; },  // Do not parse the response into JSON
+			});
 
-				// Prepare a stream to be saved
-				let write = (item.language === "js" || item.language === "md") ? axiosResponse.data : Core.formatJsonc(axiosResponse.data);
+			// Prepare a stream to be saved
+			let write = axiosResponse.data;
 
-				// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
-				if (write === "null") {
-					if (item.name === 'samples') {
-						write = '{}';
-					} else {
-						write = '[]';
-					}
+			// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
+			// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"
+			if (write === "null") {
+				if (item.name === 'samples') {
+					write = '{}';
+				} else {
+					write = '[]';
 				}
-
-
-					// Save the received code to the temp directory
-				await writeFile(path.join(_DIR, filepath), write);
-
-
-
-				// Open the downloaded code in the editor
-				vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
-					preview: true
-				});
-
-
-			} catch (err) {
-				// If something went wrong, throw an error and return
-				showError(err, 'apps-sdk.load-source');
-				return;
 			}
-		});
+
+			// Save the received code to the temp directory
+			await writeFile(path.join(_DIR, filepath), write);
+
+			// Open the downloaded code in the editor
+			vscode.window.showTextDocument(vscode.workspace.openTextDocument(path.join(_DIR, filepath)), {
+				preview: true
+			});
+
+
+		}));
 	}
 }
 

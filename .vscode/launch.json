@@ -6,12 +6,6 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"type": "node",
-			"request": "attach",
-			"name": "Language Server",
-			"port": 6009
-		},
-		{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
@@ -24,18 +18,23 @@
 			"preLaunchTask": "npm: watch"
 		},
 		{
-			"name": "Extension Tests",
+			"name": "Test Extension",
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
+			"internalConsoleOptions": "openOnSessionStart",
 			"args": [
 				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/test"
+				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
 			],
-			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: compile"
-
+			"outFiles": ["${workspaceFolder}/out/test/**/*.js"]
+		},
+		{
+			"type": "node",
+			"request": "attach",
+			"name": "Language Server",
+			"port": 6009
 		}
 	]
 }
