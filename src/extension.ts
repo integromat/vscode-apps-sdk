@@ -25,7 +25,7 @@ import * as path from 'path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 import { Environment } from './types/environment.types';
-import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
+import { rmCodeLocalTempBasedir, tempRootdir } from './temp-dir';
 import { version } from './Meta';
 
 
@@ -45,7 +45,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	let currentTempProvider;
 	let currentDataProvider;
 	let currentGroupsProvider;
-
 
 	let _configuration = vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
 	console.log('Apps SDK active.');
@@ -166,16 +165,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		 * Registering providers
 		 */
 		vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider());
-		vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, sourceCodeLocalTempBasedir));
+		vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, tempRootdir));
 
-		const appsProvider = new AppsProvider(_authorization, _environment, sourceCodeLocalTempBasedir, _admin);
+		const appsProvider = new AppsProvider(_authorization, _environment, tempRootdir, _admin);
 		vscode.window.registerTreeDataProvider('apps', appsProvider);
 
 		/**
 		 * Registering commands
 		 */
 		const coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider, currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider);
-		await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
+		await CoreCommands.register(tempRootdir, _authorization, _environment);
 		await AppCommands.register(appsProvider, _authorization, _environment, _admin);
 		await ConnectionCommands.register(appsProvider, _authorization, _environment);
 		await WebhookCommands.register(appsProvider, _authorization, _environment);

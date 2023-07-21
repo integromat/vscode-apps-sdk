@@ -1,17 +1,10 @@
 /* eslint-disable semi,@typescript-eslint/no-var-requires */
 const vscode = require('vscode');
-
 const App = require('../tree/App');
 const Group = require('../tree/Group')
 const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
-const Meta = require('../Meta');
-
-const path = require('path')
-const { mkdir } = require('fs/promises');
-const download = require('image-downloader')
-const asyncfile = require('async-file')
 const camelCase = require('lodash.camelcase');
 const { downloadAndStoreAppIcon } = require('../libs/app-icon');
 
@@ -60,11 +53,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			}
 			if (response === undefined) { return }
 
-			const iconDir = path.join(this._DIR, "icons");
-			await mkdir(iconDir, { recursive: true });
 			const apps = await Promise.all(response.map(async (app) => {
-				const iconVersion = await downloadAndStoreAppIcon(app, iconDir, this._baseUrl, this._authorization, this._environment, true);
-				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, iconDir, app.theme, app.changes, iconVersion, true);
+				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, true);
+				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion, true);
 			}));
 			apps.sort(Core.compareApps)
 			return apps

@@ -3,24 +3,23 @@ import * as asyncfile from "async-file";
 import * as download from "image-downloader";
 import * as Meta from "../Meta";
 import { Environment } from "../types/environment.types";
-import { showError } from "../error-handling";
 import Jimp from "jimp";
-import App from "../tree/App";
 import { log } from "../output-channel";
+import { appsIconTempDir } from "../temp-dir";
 
 /**
  * @returns Icon version. Zero if no icon.
  */
 export async function downloadAndStoreAppIcon(
-	app: IApp, iconDir: string, apiBaseUrl: string, apiAuthorization: string, environment: Environment, isAppOpensource: boolean
+	app: IApp, apiBaseUrl: string, apiAuthorization: string, environment: Environment, isAppOpensource: boolean
 ): Promise<number> {
 	try {
 		let iconVersion = 1;
-		let dest = path.join(iconDir, `${app.name}.${iconVersion}.png`);
+		let dest = path.join(appsIconTempDir, `${app.name}.${iconVersion}.png`);
 		// Backup old icon
 		while (await asyncfile.exists(`${dest}.old`)) {
 			iconVersion++;
-			dest = path.join(iconDir, `${app.name}.${iconVersion}.png`);
+			dest = path.join(appsIconTempDir, `${app.name}.${iconVersion}.png`);
 		}
 
 		if (!await asyncfile.exists(dest)) {
@@ -50,7 +49,7 @@ export async function downloadAndStoreAppIcon(
 
 		// Invert icon
 		try {
-			const success = await invertPngAsync(dest);
+			await invertPngAsync(dest);
 		} catch (err: any) {
 			log('warn', `Failed to invert icon with URI ${dest}. Original error: ${err.message}`);
 		}
