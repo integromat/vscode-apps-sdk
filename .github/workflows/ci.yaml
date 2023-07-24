@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test:
-    name: "Unit tests"
+    name: "Automated mocha tests"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
