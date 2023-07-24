@@ -1,4 +1,3 @@
-import Jimp from "jimp";
 import { Environment } from "./types/environment.types";
 import axios from 'axios';
 import * as vscode from 'vscode';

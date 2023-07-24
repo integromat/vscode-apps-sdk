@@ -51,7 +51,7 @@ export async function downloadAndStoreAppIcon(
 		try {
 			await invertPngAsync(dest);
 		} catch (err: any) {
-			log('warn', `Failed to invert icon with URI ${dest}. Original error: ${err.message}`);
+			log('error', `Failed to invert icon with URI ${dest}. Original error: ${err.message}`);
 		}
 
 		// Generate public icon
@@ -78,9 +78,25 @@ export async function downloadAndStoreAppIcon(
  * and saved to the same directory ar origin with the updated name by `.dark.png` suffix.
  */
 async function invertPngAsync(uri: string): Promise<void> {
-	const icon = await Jimp.read(uri);
+	// TODO REMOVE DEBUG and TRY/CATCH PARTS. It was there for debug only.
+	log('debug', `Inverting icon with URI ${uri} started`);
+	let icon: Jimp;
+	// TODO This try/catch are here for debug only. Remove them when error resolved.
+	try {
+		icon = await Jimp.read(uri);
+	} catch (err: any) {
+		err.message = 'Failed invertPngAsync->Jimp.read(). ' + err.message;
+		throw err;
+	}
 	icon.invert();
-	await icon.writeAsync(`${uri.slice(0, -4)}.dark.png`);
+	// TODO This try/catch are here for debug only. Remove them when error resolved.
+	try {
+		await icon.writeAsync(`${uri.slice(0, -4)}.dark.png`);
+	} catch (err: any) {
+		err.message = 'Failed invertPngAsync->icon.writeAsync(). ' + err.message;
+		throw err;
+	}
+	log('debug', `Inverting icon with URI ${uri} done`);
 }
 
 
