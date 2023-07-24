@@ -18,8 +18,10 @@ class App extends EnhancedTreeItem {
 		this.theme = theme
 		this.iconVersion = iconVersion
 		this.changes = changes
+		/** Is the app opensource? If app is opensource, then green square is not added to icon.  */
+		this.isOpensource = isOpensource;
 		this.tooltip = this.makeTooltip()
-		this.iconPath = this.makeIconPath(isOpensource);
+		this.iconPath = this.makeIconPath();
 		this.rawIcon = {
 			dark: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.png`),
 			light: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.dark.png`)
@@ -30,11 +32,10 @@ class App extends EnhancedTreeItem {
 	 * Get path to icon file.
 	 * If appp is public, then used public icon (it means icon with small green square in right bottom corner).
 	 * @param {string} iconDir Basedir of icons.
-	 * @param {boolean} isOpensource Is the app opensource? If app is opensource, then green square is not added to icon.
 	 * @returns {string}
 	 */
-	makeIconPath(isOpensource) {
-		if (!this.public || isOpensource) {
+	makeIconPath() {
+		if (!this.public || this.isOpensource) {
 			return {
 				dark: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.png`),
 				light: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.dark.png`)
