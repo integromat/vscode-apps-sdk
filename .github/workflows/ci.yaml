@@ -26,4 +26,6 @@ jobs:
           npm ci
 
       - name: Run tests
-        run: xvfb-run --auto-servernum npm run test
+        run: |
+          unset DBUS_SESSION_BUS_ADDRESS
+          xvfb-run --auto-servernum npm run test
