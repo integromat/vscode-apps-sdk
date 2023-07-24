@@ -48,7 +48,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 	let _configuration = vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
-	console.log('Apps SDK active.');
 
 	// Backward Compatibility Layer - Transform Old Config Format to the New One
 	if (typeof _configuration.environments === 'object' && !(Array.isArray(_configuration.environments))) {
