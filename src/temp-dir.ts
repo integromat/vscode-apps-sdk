@@ -4,28 +4,35 @@ import * as fs from "fs";
 import { log } from "./output-channel";
 import * as vscode from "vscode";
 
+const TEMPDIR_PREFIX = "apps-sdk";
+
 /**
  * The path to the local Extesion temporary directory where the source code + icons of SDK apps
  * are placed during editation.
  *
  * Note: Path is unique for each run of the extension.
  */
-export const tempRootdir = join(tempy.directory(), "apps-sdk");
+export const sourceCodeLocalTempBasedir = join(tempy.directory(), TEMPDIR_PREFIX);
 
 /**
  * Temporary directory, where are icons of SDK apps placed (cached).
  */
-export const appsIconTempDir = join(tempRootdir, "icons");
+export const appsIconTempDir = join(sourceCodeLocalTempBasedir, "icons");
 
-fs.mkdirSync(tempRootdir, { recursive: true });
+
+fs.mkdirSync(sourceCodeLocalTempBasedir, { recursive: true });
 fs.mkdirSync(appsIconTempDir, { recursive: true });
 
 /**
  * Checks if the given file name belongs to the local temporary directory
  * where the source code of this extension is placed during editation.
+ *
+ * Note: The temp directory is unique for each run of the extension, but user can keep file open during multiple VS Code runs.
+ *       It is the reason why we need to check the TEMPDIR_PREFIX, to match also all previous temp directories.
  */
 export function isFileBelongingToExtension(fileName: string): boolean {
-	return fileName.includes(tempRootdir);
+	const tempdirPrefixTester = new RegExp(`[/\\\\]${TEMPDIR_PREFIX}[/\\\\]`);
+	return tempdirPrefixTester.test(fileName);
 }
 
 
@@ -33,9 +40,9 @@ export function isFileBelongingToExtension(fileName: string): boolean {
  * Remove the local temporary directory from disk.
  */
 export function rmCodeLocalTempBasedir() {
-	if (!tempRootdir.includes("apps-sdk")) {
+	if (!sourceCodeLocalTempBasedir.includes("apps-sdk")) {
 		// Make sure, that the subdir is defined correctly (to prevent accidental deletion of another data on disk)
-		throw new Error('Unexpected sourceCodeLocalTempBasedir value: ' + tempRootdir);
+		throw new Error('Unexpected sourceCodeLocalTempBasedir value: ' + sourceCodeLocalTempBasedir);
 	}
 
 	// Clean up the source code local temp basedir if nothing kept open
@@ -43,7 +50,7 @@ export function rmCodeLocalTempBasedir() {
 		isFileBelongingToExtension(textDocuments.fileName)
 	));
 	if (!someAppFileKeptOpen) {
-		log('info', 'Cleaning up the source code local temp basedir: ' + tempRootdir);
-		fs.rmSync(tempRootdir, {recursive: true});
+		log('info', 'Cleaning up the source code local temp basedir: ' + sourceCodeLocalTempBasedir);
+		fs.rmSync(sourceCodeLocalTempBasedir, {recursive: true});
 	}
 }

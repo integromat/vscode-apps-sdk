@@ -43,18 +43,9 @@ class CoreCommands {
 	 */
 	async sourceUpload(event /*: vscode.TextDocumentWillSaveEvent*/) {
 
-		// It it's not an APPS SDK file, don't do anything
-		if (!isFileBelongingToExtension(event.document.fileName)) {
-			if (/[/\\]apps-sdk[/\\]/.test(event.document.fileName)) {
-				vscode.window.showWarningMessage(
-					'File upload to Make has been cancelled. You are trying to save some old file from previous run ' +
-					'of the VS Code. File is not up-to-date, therefore Make Apps Extension ignores it now. ' +
-					'Please, reopen the file again from menu in Make Apps Extension, then you will be able to ' +
-					'edit and save it. ' +
-					`File: ${event.document.fileName}}`
-				);
-			} // Else // Everything is OK, user is saving some non SDK-App file, therefore ignore it silencely.
-			return;
+		// Check if the file is belonging to this Make extension
+		if (!/[/\\]apps-sdk[/\\]/.test(event.document.fileName)) {
+			return; // Do not handle this file by `sourceUpload()`
 		}
 
 		// Load the content of the file that's about to be saved
