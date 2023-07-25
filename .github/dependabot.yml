@@ -12,3 +12,11 @@ updates:
     target-branch: 'development'
     commit-message:
       prefix: 'build'
+    ignore:
+      # Reason: Depends on the minimal supported VS Code version specified in package.json
+      - dependency-name: "@types/vscode"
+      # Reason: Depends on the Node.js version used in VS Code
+      - dependency-name: "@types/node"
+      # Reason: Tempy 2+ is written as ESM module, which is not directly supported by CommonJS
+      - dependency-name: "tempy"
+        update-types: ["version-update:semver-major"]
