@@ -26,7 +26,12 @@ async function main() {
 			 *
 			 * See `code --help` for possible arguments.
 			 */
-			launchArgs: ['--disable-extensions']
+			launchArgs: ['--disable-extensions'],
+			extensionTestsEnv: {
+				// Pass custom parameter into Mocha
+				MOCHA_OUTPUT_FILE: process.env.MOCHA_OUTPUT_FILE,
+			},
+
 		});
 	} catch (err) {
 		console.error(err);
