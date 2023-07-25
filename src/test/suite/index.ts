@@ -4,13 +4,14 @@ import { glob } from "glob";
 import * as vscode from "vscode";
 
 export async function run(...argv2: any): Promise<void> {
+	// Use a report JSON file if specified by the environment `MOCHA_OUTPUT_FILE=filenam.json`
 	const mochaOutputFile = process.env.MOCHA_OUTPUT_FILE ? path.join(__dirname, "..", "..", process.env.MOCHA_OUTPUT_FILE) : undefined;
 
 	// Create the mocha test
 	const mocha = new Mocha({
 		ui: "tdd",
 		color: true,
-		// Use JSON output if requested by the environment `MOCHA_OUTPUT_FILE=filenam.json`
+		// Use JSON output if requested
 		reporter: mochaOutputFile ? "json" : "spec",
 		reporterOptions: mochaOutputFile ? { output: mochaOutputFile } : undefined,
 	});

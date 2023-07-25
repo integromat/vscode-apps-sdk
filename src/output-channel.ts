@@ -14,8 +14,10 @@ export function log(level: 'debug'|'info'|'warn'|'error', errorMessage: string, 
 
 	const rawLogLine = level.toUpperCase() + ': ' + errorMessage;
 
-	// Because of Mocha tests, send the log to console as well.
-	console.log(extensionDisplayName + ' ' + rawLogLine);
+	// To display error in Github Action logs, send message to console as well.
+	if (level === 'error') {
+		console.log(extensionDisplayName + ' ' + rawLogLine);
+	}
 
 	outputChannel.appendLine((new Date()).toLocaleString() + ': ' + rawLogLine);
 
