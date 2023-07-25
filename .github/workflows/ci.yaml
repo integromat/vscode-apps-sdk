@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test:
-    name: "Automated mocha tests"
+    name: "Integration tests"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,14 +25,14 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc && \
           npm ci
 
-      - name: Run Tests
+      - name: Run tests
         run: |
           xvfb-run npm run testToJsonFile
 
-      - name: Report
+      - name: Report to GitHub job
         uses: dorny/test-reporter@v1
         if: success() || failure()     # run this step even if previous step failed
         with:
-          name: Mocha Tests            # Name of the check run which will be created
+          name: Integration tests      # Name of the check run which will be created
           path: out/tests-report.json  # Path to test results
           reporter: mocha-json         # Format of test results
