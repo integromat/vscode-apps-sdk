@@ -60,6 +60,7 @@ class EnvironmentCommands {
 			// Check if filled
 			if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
 
+			// Check the new token validity
 			if (version.description === '2') {
 				let uri = `https://${url}/v2/users/me`
 				try {
@@ -71,8 +72,13 @@ class EnvironmentCommands {
 						}
 					})
 				} catch (err) {
-					vscode.window.showWarningMessage(err.error ? err.error.message : err)
-					vscode.window.showInformationMessage('Environment probe failed. You can try to set the environment in VSCode settings.json manually.');
+					const input = await vscode.window.showWarningMessage(
+						"Your token was probably not valid or some error ocured. Please try again to start using Make Apps SDK.",
+						"Add environment"
+					);
+					if (input === "Add environment") {
+						vscode.commands.executeCommand('apps-sdk.env.add');
+					}
 					return;
 				}
 			} else {

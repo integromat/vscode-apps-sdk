@@ -47,8 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	let currentGroupsProvider;
 
 
-	let _configuration = vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
-	console.log('Apps SDK active.');
+	let _configuration = getConfiguration();
 
 	// Backward Compatibility Layer - Transform Old Config Format to the New One
 	if (typeof _configuration.environments === 'object' && !(Array.isArray(_configuration.environments))) {
@@ -71,17 +70,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		// Store
 		await Promise.all([_configuration.update('environments', newEnvironments, 1), _configuration.update('environment', currentEnvUuid, 1)]);
 		// Reload
-		_configuration = vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
+		_configuration = getConfiguration();
 	}
 
-	/**
-	 * IMLJSON language server
-	 */
 
-	// Prepare the server module and create a new language client
+	// Prepare the IMLJSON language server module and create a new language client
 	const serverModule = context.asAbsolutePath(path.join('syntaxes', 'languageServers', 'imlJsonServerMain.js'));
 	client = new vscode_languageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
-
 	// Start the client. This will also launch the server
 	await client.start();
 
@@ -111,10 +106,19 @@ export async function activate(context: vscode.ExtensionContext) {
 	 * First launch -> there are no environments
 	 */
 	if (Object.keys(_configuration.environments).length === 0) {
-		const input = await vscode.window.showWarningMessage("You have no environments set up yet. If you want to start using Apps SDK, you have to add a new one.", "Add environment");
-		if (input === "Add environment") {
-			vscode.commands.executeCommand('apps-sdk.env.add');
-		}
+		setImmediate(() => {  // Run after the extension activation (because of automated tests)
+			(async() => {
+				const input = await vscode.window.showWarningMessage(
+					"You have no environments set up yet. If you want to start using Apps SDK, you have to add a new one.",
+					"Add environment"
+				);
+				if (input === "Add environment") {
+					vscode.commands.executeCommand('apps-sdk.env.add');
+				}
+			})();
+		});
+		log('info', 'Extension activated in limited mode (no environment set, user asked to add one).');
+		return;
 	}
 
 	if (getCurrentEnvironmentOrUndefined()) {
@@ -152,63 +156,67 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	if (!_environment) {
-		throw new Error("_environment not set.");  // This should never happen, it is here just for TypeScript to be happy.
+	// For new users, who don't have any environment set up yet
+	if (!_environment || !_authorization) {
+		log('info', 'Extension activated in limited mode (no active environment set).');
+		return;
+		// Note: Environment commands are registered, so user can add new environment (or choose exiting) and activate it.
+		//       Then command `apps-sdk.env.change` will execute the extension reload to register all other below.
 	}
+
 
 	/**
 	 * AUTHORIZED
 	 * Following stuff is done only when environment and API key are set correctly (_authorization variable was set -> it isn't undefined)
 	 */
-	if (_authorization) {
-
-		/**
-		 * Registering providers
-		 */
-		vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider());
-		vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, sourceCodeLocalTempBasedir));
-
-		const appsProvider = new AppsProvider(_authorization, _environment, sourceCodeLocalTempBasedir, _admin);
-		vscode.window.registerTreeDataProvider('apps', appsProvider);
-
-		/**
-		 * Registering commands
-		 */
-		const coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider, currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider);
-		await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
-		await AppCommands.register(appsProvider, _authorization, _environment, _admin);
-		await ConnectionCommands.register(appsProvider, _authorization, _environment);
-		await WebhookCommands.register(appsProvider, _authorization, _environment);
-		await ModuleCommands.register(appsProvider, _authorization, _environment);
-		await RpcCommands.register(appsProvider, _authorization, _environment);
-		await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
-		await CommonCommands.register(appsProvider, _authorization, _environment);
-		await ChangesCommands.register(appsProvider, _authorization, _environment);
-
-		/**
-		 * Registering events
-		 */
-		vscode.workspace.onWillSaveTextDocument(event => coreCommands.sourceUpload(event));
-		vscode.window.onDidChangeActiveTextEditor(editor => coreCommands.keepProviders(editor));
 
 
-		/**
-		 * Registering JSONC formatter
-		 */
-		vscode.languages.registerDocumentFormattingEditProvider({ language: 'imljson', scheme: 'file' }, {
-			provideDocumentFormattingEdits(document) {
-				const text = document.getText();
-				const edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true });
-				return edits.map(edit => {
-					const start = document.positionAt(edit.offset);
-					const end = document.positionAt(edit.offset + edit.length);
-					return vscode.TextEdit.replace(new vscode.Range(start, end), edit.content);
-				});
-			}
-		});
-	}
+	/**
+	 * Registering providers
+	 */
+	vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider());
+	vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, sourceCodeLocalTempBasedir));
 
-	log('info', 'Extension activated');
+	const appsProvider = new AppsProvider(_authorization, _environment, sourceCodeLocalTempBasedir, _admin);
+	vscode.window.registerTreeDataProvider('apps', appsProvider);
+
+	/**
+	 * Registering commands
+	 */
+	const coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider, currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider);
+	await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
+	await AppCommands.register(appsProvider, _authorization, _environment, _admin);
+	await ConnectionCommands.register(appsProvider, _authorization, _environment);
+	await WebhookCommands.register(appsProvider, _authorization, _environment);
+	await ModuleCommands.register(appsProvider, _authorization, _environment);
+	await RpcCommands.register(appsProvider, _authorization, _environment);
+	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
+	await CommonCommands.register(appsProvider, _authorization, _environment);
+	await ChangesCommands.register(appsProvider, _authorization, _environment);
+
+	/**
+	 * Registering events
+	 */
+	vscode.workspace.onWillSaveTextDocument(event => coreCommands.sourceUpload(event));
+	vscode.window.onDidChangeActiveTextEditor(editor => coreCommands.keepProviders(editor));
+
+
+	/**
+	 * Registering JSONC formatter
+	 */
+	vscode.languages.registerDocumentFormattingEditProvider({ language: 'imljson', scheme: 'file' }, {
+		provideDocumentFormattingEdits(document) {
+			const text = document.getText();
+			const edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true });
+			return edits.map(edit => {
+				const start = document.positionAt(edit.offset);
+				const end = document.positionAt(edit.offset + edit.length);
+				return vscode.TextEdit.replace(new vscode.Range(start, end), edit.content);
+			});
+		}
+	});
+
+	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }
 
 
@@ -230,7 +238,7 @@ export async function deactivate() {
  * Function returns the one that is currently selected by user.
  */
 function getCurrentEnvironmentOrUndefined(): AppsSdkConfigurationEnvironment | undefined {
-	const _configuration = vscode.workspace.getConfiguration('apps-sdk');
+	const _configuration = getConfiguration();
 	return _configuration
 		.get<AppsSdkConfiguration['environments']>('environments')
 		?.find((e: any) => e.uuid === _configuration.environment);
@@ -244,7 +252,7 @@ function getCurrentEnvironmentOrUndefined(): AppsSdkConfigurationEnvironment | u
  * @throws {Error} If no environment is selected or if selected environment is not found in the configuration.
  */
 function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
-	const _configuration = vscode.workspace.getConfiguration('apps-sdk');
+	const _configuration = getConfiguration();
 	const environments = _configuration.get<AppsSdkConfiguration['environments']>('environments');
 	if (!environments) {
 		const err = "No configuration found in 'apps-sdk.environments'. Check your configuration.";
@@ -256,6 +264,14 @@ function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
 		throw new Error("Selected environment ('apps-sdk.environment') not found in 'apps-sdk.environments'. Check your configuration.");
 	}
 	return selectedEnvironment;
+}
+
+
+/**
+ * Gets the extension configuration stored in VS Code settings.json file under keys `apps-sdk.*`.
+*/
+function getConfiguration(): AppsSdkConfiguration {
+	return vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
 }
 
 
