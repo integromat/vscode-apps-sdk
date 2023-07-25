@@ -20,5 +20,5 @@ suite('Extension Test Suite', () => {
 	test('Extension can be activated', async () => {
 		await vscode.extensions.getExtension('Integromat.apps-sdk')?.activate();
 		assert.ok(vscode.extensions.getExtension('Integromat.apps-sdk')?.isActive);
-	}).timeout(30000);
+	}).timeout(5000);
 });

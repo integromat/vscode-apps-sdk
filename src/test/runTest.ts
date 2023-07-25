@@ -26,8 +26,7 @@ async function main() {
 			 *
 			 * See `code --help` for possible arguments.
 			 */
-			launchArgs: ['--disable-extensions'],
-			version: '1.78.2'  // TODO not needed probably
+			launchArgs: ['--disable-extensions']
 		});
 	} catch (err) {
 		console.error(err);
