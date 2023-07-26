@@ -8,13 +8,16 @@ import { log } from "../output-channel";
 import { appsIconTempDir } from "../temp-dir";
 
 /**
- * @returns Icon version. Zero if no icon.
+ * Downloads PNG icon from Make API and stores it in local temp dir.
+ * Also creates the inverted icon and (optionally) public icon.
+ * @returns Icon version. Is is used for icon filemame postfix.
+ *          0 = no icon.
  */
 export async function downloadAndStoreAppIcon(
 	app: IApp, apiBaseUrl: string, apiAuthorization: string, environment: Environment, isAppOpensource: boolean
 ): Promise<number> {
 	try {
-		let iconVersion = 0;
+		let iconVersion = 0;  // TODO Investigate usage of iconVersion. Remove if not needed.
 		let dest: string;
 		do {
 			iconVersion++;
@@ -83,10 +86,17 @@ async function invertPngAsync(originalImgUri: string): Promise<void> {
 }
 
 
+/**
+ * From existing locally stored icon it generates the same one with added small green square in the bottom right corner.
+ * new file is stored in the same directory as `{originalFilename}.public.png`.
+ */
 async function generatePublicIcon(uri: string) {
+	// Load original icon
 	const icon = await Jimp.read(uri);
+	// Load the green square
 	const mask = await Jimp.read(path.join(__dirname, '..','..', 'resources', 'icons', 'masks', 'public.png'));
 	icon.blit(mask, 320, 320);
+	// Save the new file with `.public.png` suffix
 	await icon.writeAsync(`${uri.slice(0, -4)}.public.png`);
 }
 
