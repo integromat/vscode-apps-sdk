@@ -14,13 +14,12 @@ export async function downloadAndStoreAppIcon(
 	app: IApp, apiBaseUrl: string, apiAuthorization: string, environment: Environment, isAppOpensource: boolean
 ): Promise<number> {
 	try {
-		let iconVersion = 1;
-		let dest = path.join(appsIconTempDir, `${app.name}.${iconVersion}.png`);
-		// Backup old icon
-		while (await asyncfile.exists(`${dest}.old`)) {
+		let iconVersion = 0;
+		let dest: string;
+		do {
 			iconVersion++;
 			dest = path.join(appsIconTempDir, `${app.name}.${iconVersion}.png`);
-		}
+		} while (await asyncfile.exists(`${dest}.old`));  // TODO Investigate the usage of `.old` files. Remove if not needed.
 
 		if (!await asyncfile.exists(dest)) {
 			// Download new icon from API to localdir
