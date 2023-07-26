@@ -7,12 +7,21 @@ import * as vscode from "vscode";
 const TEMPDIR_PREFIX = "apps-sdk";
 
 /**
- * The path to the local temporary directory where the source code of the SDK is placed during editation.
+ * The path to the local Extesion temporary directory where the source code + icons of SDK apps
+ * are placed during editation.
  *
  * Note: Path is unique for each run of the extension.
  */
 export const sourceCodeLocalTempBasedir = join(tempy.directory(), TEMPDIR_PREFIX);
 
+/**
+ * Temporary directory, where are icons of SDK apps placed (cached).
+ */
+export const appsIconTempDir = join(sourceCodeLocalTempBasedir, "icons");
+
+
+fs.mkdirSync(sourceCodeLocalTempBasedir, { recursive: true });
+fs.mkdirSync(appsIconTempDir, { recursive: true });
 
 /**
  * Checks if the given file name belongs to the local temporary directory

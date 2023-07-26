@@ -9,6 +9,7 @@ Change Log
 - Error during app import (#21)
 - Fail to save file kept open during VS Code restart
 - Fail to activate the extension for new users with no settings (#87)
+- Fail to display opensource app icons in treeview (#82)
 
 ### Changes
 
