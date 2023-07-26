@@ -76,26 +76,10 @@ export async function downloadAndStoreAppIcon(
  * Icon is loaded from the URI (local temp dir)
  * and saved to the same directory ar origin with the updated name by `.dark.png` suffix.
  */
-async function invertPngAsync(uri: string): Promise<void> {
-	// TODO REMOVE DEBUG and TRY/CATCH PARTS. It was there for debug only.
-	log('debug', `Inverting icon with URI ${uri} started`);
-	let icon: Jimp;
-	// TODO This try/catch are here for debug only. Remove them when error resolved.
-	try {
-		icon = await Jimp.read(uri);
-	} catch (err: any) {
-		err.message = 'Failed invertPngAsync->Jimp.read(). ' + err.message;
-		throw err;
-	}
+async function invertPngAsync(originalImgUri: string): Promise<void> {
+	const icon: Jimp = await Jimp.read(originalImgUri);
 	icon.invert();
-	// TODO This try/catch are here for debug only. Remove them when error resolved.
-	try {
-		await icon.writeAsync(`${uri.slice(0, -4)}.dark.png`);
-	} catch (err: any) {
-		err.message = 'Failed invertPngAsync->icon.writeAsync(). ' + err.message;
-		throw err;
-	}
-	log('debug', `Inverting icon with URI ${uri} done`);
+	await icon.writeAsync(`${originalImgUri.slice(0, -4)}.dark.png`);
 }
 
 
