@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - "**"
+#  push:
+#    branches:
+#      - "**"
+
+# Cancel the previously running job when new Git commit has been received.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: "Integration tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install modules
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc && \
+          npm ci
+
+      - name: Run tests
+        run: |
+          xvfb-run npm run testToJsonFile
+
+      - name: Report to GitHub job
+        uses: dorny/test-reporter@v1
+        if: success() || failure()     # run this step even if previous step failed
+        with:
+          name: Integration tests report  # Name of the check run which will be created
+          path: out/tests-report.json  # Path to test results
+          reporter: mocha-json         # Format of test results
