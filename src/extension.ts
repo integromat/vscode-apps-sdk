@@ -46,6 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	let currentDataProvider;
 	let currentGroupsProvider;
 
+
 	let _configuration = vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
 	console.log('Apps SDK active.');
 
