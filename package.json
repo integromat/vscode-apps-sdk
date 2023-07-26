@@ -745,7 +745,8 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
-		"test": "npm run compile && node ./out/test/runTest.js"
+		"test": "npm run compile && node ./out/test/runTest.js",
+		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
 	},
 	"devDependencies": {
 		"@types/glob": "^8.1.0",
