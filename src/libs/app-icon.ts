@@ -10,7 +10,7 @@ import { appsIconTempDir } from "../temp-dir";
 /**
  * Downloads PNG icon from Make API and stores it in local temp dir.
  * Also creates the inverted icon and (optionally) public icon.
- * @returns Icon version. Is is used for icon filemame postfix.
+ * @returns Icon version. Used for icon filemame postfix.
  *          0 = no icon.
  */
 export async function downloadAndStoreAppIcon(
