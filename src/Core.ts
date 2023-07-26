@@ -7,7 +7,7 @@ import * as Meta from './Meta';
 import { showError } from './error-handling';
 
 
-export async function rpGet(uri: string, authorization: string, qs?: Record<string, string>) {
+export async function rpGet(uri: string, authorization: string, qs?: Record<string, string|string[]>) {
 	try {
 		return (await axios({
 			url: uri,

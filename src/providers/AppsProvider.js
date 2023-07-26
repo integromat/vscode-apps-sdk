@@ -36,6 +36,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
          * LEVEL 0 - APPS
          */
 		if (element === undefined) {
+			//#region Get apps list
 			let response;
 			switch (this._environment.version) {
 				case 2:
@@ -51,6 +52,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 					break;
 			}
 			if (response === undefined) { return }
+			//#endregion Get apps list
 
 			const apps = await Promise.all(response.map(async (app) => {
 				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
@@ -140,7 +142,8 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			// REST
 			else {
 				for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
-					if (element.id.includes(`_${needle}`)) {
+					// TODO Convert to `getAppEntitySummary`
+					if (element.id.includes(`_${needle}`)) {  // Filters `needle` to the right part.
 						let name = needle.slice(0, -1);
 						let uri = ["connection", "webhook"].includes(name) ?
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :

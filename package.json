@@ -25,6 +25,7 @@
 		"Extension Packs"
 	],
 	"activationEvents": [
+		"onStartupFinished",
 		"onCommand:apps-sdk.refresh",
 		"onCommand:apps-sdk.function.new",
 		"onCommand:apps-sdk.rpc.new",
@@ -383,6 +384,30 @@
 					"dark": "./resources/icons/dark/import.png",
 					"light": "./resources/icons/light/import.png"
 				}
+			},
+			{
+				"command": "apps-sdk.file.upload",
+				"title": "Deploy to Make",
+				"icon": {
+					"dark": "resources/icons/dark/refresh.png",
+					"light": "resources/icons/light/refresh.png"
+				}
+			},
+			{
+				"command": "apps-sdk.file.download",
+				"title": "Download from Make",
+				"icon": {
+					"dark": "resources/icons/dark/refresh.png",
+					"light": "resources/icons/light/refresh.png"
+				}
+			},
+			{
+				"command": "apps-sdk.app.download-to-workspace",
+				"title": "Download to local workspace",
+				"icon": {
+					"dark": "resources/icons/dark/refresh.png",
+					"light": "resources/icons/light/refresh.png"
+				}
 			}
 		],
 		"viewsContainers": {
@@ -607,6 +632,10 @@
 					"when": "viewItem == app && view == apps"
 				},
 				{
+					"command": "apps-sdk.app.download-to-workspace",
+					"when": "viewItem == app && view == apps"
+				},
+				{
 					"command": "apps-sdk.app.export",
 					"when": "viewItem == app_public && view == apps"
 				},
@@ -698,6 +727,16 @@
 					"command": "apps-sdk.app.clone",
 					"when": "viewItem == app_approved_changed && view == apps"
 				}
+			],
+			"explorer/context": [
+				{
+					"command": "apps-sdk.file.upload",
+					"group": "7_modification"
+				},
+				{
+					"command": "apps-sdk.file.download",
+					"group": "7_modification"
+				}
 			]
 		},
 		"keybindings": [
@@ -744,12 +783,14 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
+		"cleanup": "rm -rf ./out",
 		"watch": "tsc -watch -p ./",
 		"test": "npm run compile && node ./out/test/runTest.js",
 		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
 	},
 	"devDependencies": {
 		"@types/glob": "^8.1.0",
+		"@types/lodash.camelcase": "^4.3.7",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "^16.18.38",
 		"@types/uuid": "^9.0.1",
