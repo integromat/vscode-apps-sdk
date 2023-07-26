@@ -5,7 +5,11 @@ const { appsIconTempDir } = require('../temp-dir');
 
 class App extends EnhancedTreeItem {
 	constructor(name, label, description, version, isPublic, isApproved, theme, changes, iconVersion, isOpensource  = false) {
-		super(label + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "") + (version > 1 ? ` (version ${version})` : ""))
+		super(
+			label
+			+ (changes?.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "")
+			+ (version > 1 ? ` (version ${version})` : "")
+		)
 		this.bareLabel = label
 		this.id = `${name}@${version}`
 		this.name = name
@@ -14,9 +18,13 @@ class App extends EnhancedTreeItem {
 		this.public = isPublic
 		this.approved = isApproved
 		this.level = 0
-		this.contextValue = "app" + (this.approved ? "_approved" : this.public ? "_public" : "") + (changes !== undefined ? (changes.length !== 0 ? "_changed" : "") : "")
+		this.contextValue = "app"
+			+ (isApproved ? "_approved" : "")
+			+ (!isApproved && isPublic ? "_public" : "")
+			+ (changes?.length !== 0 ? "_changed" : "");
 		this.theme = theme
-		this.iconVersion = iconVersion
+		/** Defines the final png icon filename. */
+		this.iconVersion = iconVersion;
 		this.changes = changes
 		/** Is the app opensource? If app is opensource, then green square is not added to icon.  */
 		this.isOpensource = isOpensource;
@@ -51,12 +59,13 @@ class App extends EnhancedTreeItem {
 	makeTooltip() {
 		let tooltip = `${this.bareLabel}
 -----------------------
-Name: ${this.name}
+ID (Name): ${this.name}
 Description: ${this.description}
 Theme: ${this.theme}
 Version: ${this.version}
 Public: ${this.public}
-Approved: ${this.approved}`
+Approved: ${this.approved}`;
+
 		return tooltip
 	}
 }
