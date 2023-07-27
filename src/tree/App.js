@@ -2,6 +2,7 @@
 const path = require('path')
 const EnhancedTreeItem = require('./EnhancedTreeItem')
 const { appsIconTempDir } = require('../temp-dir');
+const { getIconLocalPath } = require('../libs/app-icon');
 
 class App extends EnhancedTreeItem {
 	constructor(name, label, description, version, isPublic, isApproved, theme, changes, iconVersion, isOpensource  = false) {
@@ -30,10 +31,7 @@ class App extends EnhancedTreeItem {
 		this.isOpensource = isOpensource;
 		this.tooltip = this.makeTooltip()
 		this.iconPath = this.makeIconPath();
-		this.rawIcon = {
-			dark: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.png`),
-			light: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.dark.png`)
-		}
+		this.rawIcon = getIconLocalPath(name, version, iconVersion, false);  // TODO here never used public icon. Why this exception?
 	}
 
 	/**
@@ -43,18 +41,7 @@ class App extends EnhancedTreeItem {
 	 * @returns {string}
 	 */
 	makeIconPath() {
-		if (!this.public || this.isOpensource) {
-			return {
-				dark: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.png`),
-				light: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.dark.png`)
-			}
-		}
-		else {
-			return {
-				dark: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.public.png`),
-				light: path.join(appsIconTempDir, `${this.name}.${this.iconVersion}.dark.public.png`)
-			}
-		}
+		return getIconLocalPath(this.name, this.version, this.iconVersion, this.public && !this.isOpensource);
 	}
 	makeTooltip() {
 		let tooltip = `${this.bareLabel}
