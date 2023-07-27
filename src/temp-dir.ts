@@ -50,7 +50,13 @@ export function rmCodeLocalTempBasedir() {
 		isFileBelongingToExtension(textDocuments.fileName)
 	));
 	if (!someAppFileKeptOpen) {
+		// Full tempdir cleanup
 		log('info', 'Cleaning up the source code local temp basedir: ' + sourceCodeLocalTempBasedir);
 		fs.rmSync(sourceCodeLocalTempBasedir, {recursive: true});
+	} {
+		// Some file kept open, do not delete the whole temp dir.
+		// Partial tempdir cleanup only: Delete subdir with icons only.
+		log('info', 'Cleaning up the local temp icon dir: ' + appsIconTempDir);
+		fs.rmSync(appsIconTempDir, {recursive: true});
 	}
 }
