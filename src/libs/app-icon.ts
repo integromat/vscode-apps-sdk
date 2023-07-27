@@ -26,6 +26,7 @@ export async function downloadAndStoreAppIcon(
 
 		if (!existsSync(iconLocalPath.dark)) {
 			// Download new icon from API to localdir
+			// TODO Do not wait for icon download. Load the tree without icons and download on the background.
 			try {
 				await download.image({
 					headers: {
@@ -47,29 +48,42 @@ export async function downloadAndStoreAppIcon(
 				// App icon not saved in Make
 				return 0; // Version 0 = No icon
 			}
+
+			await generateAlternativeIcons(iconLocalPath, getIconLocalPath(app.name, app.version, iconVersion, true));
 		}
 
-		// Invert icon
-		try {
-			await invertPngAsync(iconLocalPath.dark, iconLocalPath.light);
-		} catch (err: any) {
-			log('error', `Failed to invert icon file ${iconLocalPath.dark}. Original error: ${err.message}`);
-		}
-
-		// Generate public icon (icon with green square in the bottom right corner)
-		const publicIconLocalPath = getIconLocalPath(app.name, app.version, iconVersion, true);
-		if (existsSync(iconLocalPath.dark) && !existsSync(publicIconLocalPath.dark)) {
-			await generatePublicIcon(iconLocalPath.dark, publicIconLocalPath.dark);
-		}
-		if (existsSync(iconLocalPath.light) && !existsSync(publicIconLocalPath.light)) {
-			await generatePublicIcon(iconLocalPath.light, publicIconLocalPath.light);
-		}
 
 		return iconVersion;
 	} catch (err: any) {
 		err.message = `Failed to download and store icon for app "${app.name}" with version ${app.version}. ${err.message}`;
 		throw err;
 	}
+}
+
+/**
+ * From original dark-mode icon, it generates the same one with:
+ *  - light-mode icon (inverted colors)
+ *  - public icon (icon with green square in the bottom right corner)
+ *  - public light-mode icon (inverted colors + green square in the bottom right corner)
+ */
+export async function generateAlternativeIcons(
+	iconLocalPath: { dark: string, light: string },
+	publicIconLocalPath: { dark: string, light: string },
+) {
+	if (!existsSync(iconLocalPath.dark)) {
+		throw new Error(`Icon file ${iconLocalPath.dark} alternatives cannot be generated. File does not exist.`);
+	}
+	// Generate public dark-mode icon
+	await generatePublicIcon(iconLocalPath.dark, publicIconLocalPath.dark);
+	// Generate light-mode icon (Inverted icon)
+	try {
+		await invertPngAsync(iconLocalPath.dark, iconLocalPath.light);
+	} catch (err: any) {
+		log('error', `Failed to invert icon file ${iconLocalPath.dark}. Original error: ${err.message}`);
+		return;
+	}
+	// Generate public light-mode icon
+	await generatePublicIcon(iconLocalPath.light, publicIconLocalPath.light);
 }
 
 /**
