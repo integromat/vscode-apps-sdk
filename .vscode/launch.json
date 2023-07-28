@@ -14,8 +14,10 @@
 				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
+			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: watch"
+			"preLaunchTask": "npm: compile",
+			"postDebugTask": "npm: cleanup"
 		},
 		{
 			"name": "Test Extension",
@@ -28,7 +30,10 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
 			],
-			"outFiles": ["${workspaceFolder}/out/test/**/*.js"]
+			"sourceMaps": true,
+			"outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+			"preLaunchTask": "npm: compile",
+			"postDebugTask": "npm: cleanup"
 		},
 		{
 			"type": "node",
