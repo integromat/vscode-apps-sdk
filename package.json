@@ -770,7 +770,7 @@
 		"axios": "^1.4.0",
 		"compressing": "^1.5.1",
 		"image-downloader": "^4.3.0",
-		"jimp": "^0.22.8",
+		"jimp": "^0.22.10",
 		"jsonc-parser": "^3.2.0",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.kebabcase": "^4.1.1",
