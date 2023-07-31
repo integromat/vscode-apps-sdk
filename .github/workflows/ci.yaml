@@ -19,6 +19,8 @@ jobs:
   test:
     name: "Integration tests"
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
