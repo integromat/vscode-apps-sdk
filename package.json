@@ -25,7 +25,7 @@
 		"Extension Packs"
 	],
 	"activationEvents": [
-		"onStartupFinished",
+		"workspaceContains:**/makecomapp.json",
 		"onCommand:apps-sdk.refresh",
 		"onCommand:apps-sdk.function.new",
 		"onCommand:apps-sdk.rpc.new",
