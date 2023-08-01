@@ -12,6 +12,7 @@ import { ComponentSummary, getAppComponents } from '../services/get-app-componen
 import { existsSync } from 'fs';
 import { getAppComponentCodeDefinition, getAppComponentDefinition, getAppComponentTypes } from '../services/component-code-def';
 import { AppComponentType as AppComponentTypeMetadata } from '../types/app-component-type.types';
+import { camelToKebab } from '../utils/camel-to-kebab';
 
 const MAKECOMAPP_FILENAME = 'makecomapp.json';
 
@@ -90,8 +91,9 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 			const codeNames = Object.keys(getAppComponentDefinition(appComponentType));
 			for(const codeName of codeNames) {
 				const codeDef = getAppComponentCodeDefinition(appComponentType, codeName);
-				const filebasename = codeDef.filename ? codeDef.filename : appComponentSummary.name + '.' + codeName;
-				const codeLocalRelativePath = path.join(appComponentType + 's', appComponentSummary.name, filebasename + '.' + codeDef.fileext);  // Relative to app rootdir
+				// Local file path generator
+				const filebasename = camelToKebab(appComponentSummary.name) + '.' + (codeDef.filename ? codeDef.filename : codeName);
+				const codeLocalRelativePath = path.join(appComponentType + 's', camelToKebab(appComponentSummary.name), filebasename + '.' + codeDef.fileext);  // Relative to app rootdir
 				const codeLocalAbsolutePath = vscode.Uri.joinPath(srcDir, codeLocalRelativePath);
 				// Download code from API to local file
 				await downloadSource({ appName, appVersion, appComponentType, appComponentName: appComponentSummary.name, codeName, environment, destinationPath: codeLocalAbsolutePath.fsPath});
@@ -104,17 +106,7 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 	}
 
 	// Write makecomapp.json app metadata file
-	await fs.writeFile(makeappJsonPath.fsPath, JSON.stringify(makecomappJson, null, 2));
-
-	// Load app list
-	// const appList: AppsListItem[] = (await Core.rpGet(`https://${environment.url}/v2/sdk/apps`, 'Token ' + environment.apikey, {
-	// 	'cols[]': [
-	// 		'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
-	// 	]
-	// })).apps;
-	// await fs.writeFile(join(modulesDir.fsPath, '.apps.json'), JSON.stringify(appList, null, 2));x`
-
-	// Load module list
+	await fs.writeFile(makeappJsonPath.fsPath, JSON.stringify(makecomappJson, null, 4));
 
 	vscode.window.showInformationMessage(`Downloaded to local workspace into "/src".`);
 }

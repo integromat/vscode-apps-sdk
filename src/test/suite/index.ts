@@ -16,7 +16,7 @@ export async function run(...argv2: any): Promise<void> {
 		reporterOptions: mochaOutputFile ? { output: mochaOutputFile } : undefined,
 	});
 
-	const testsRoot = path.resolve(__dirname, "..");
+	const testsRoot = path.resolve(__dirname, "../..");
 
 	const files = await glob("**/**.test.js", { cwd: testsRoot });
 
