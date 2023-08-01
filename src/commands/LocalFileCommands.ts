@@ -177,13 +177,24 @@ async function localFileDownload(file: vscode.Uri) {
 	log ('debug', `Downloading/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in ${file.fsPath} from ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
 
 	const environment = getCurrentEnvironment();
+	// Download the cloud file version into temp file
+	const newTmpFile = vscode.Uri.file(tempFilename(file.fsPath));
+	await downloadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, destinationPath: newTmpFile.fsPath});
+	// Keep user to approve changes
+	await vscode.commands.executeCommand("vscode.diff", newTmpFile, file);
+	// Delete temp file
+	await vscode.workspace.fs.delete(newTmpFile);
 
-	await downloadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, destinationPath: file.fsPath});
-
-	vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} rewritten by version in Make.`);
+	// vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} rewritten by version in Make.`);
 }
 
-
+/**
+ * From absolute file path it generates the same one, but with ".tmp" postfix before file extension.
+ */
+function tempFilename(filename: string): string {
+	const parsed = path.parse(filename);
+	return path.join(parsed.dir, parsed.name + '.tmp' + parsed.ext);
+}
 
 function getCurrentWorkspace(): vscode.WorkspaceFolder {
 	if (!vscode.workspace.workspaceFolders) {
