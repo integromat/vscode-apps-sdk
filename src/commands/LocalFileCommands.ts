@@ -7,11 +7,11 @@ import { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
 import App from '../tree/App';
 import { getCurrentEnvironment } from '../providers/configuration';
-import { downloadSource, getEndpointUrl, uploadSource } from '../services/get-code';
-import { ComponentSummary, ModuleComponentSummary, getAppComponents } from '../services/get-app-components';
+import { downloadSource, uploadSource } from '../services/get-code';
+import { ComponentSummary, getAppComponents } from '../services/get-app-components';
 import { existsSync } from 'fs';
 import { getAppComponentCodeDefinition, getAppComponentDefinition, getAppComponentTypes } from '../services/component-code-def';
-import { AppComponentType } from '../types/app-component-type.types';
+import { AppComponentType as AppComponentTypeMetadata } from '../types/app-component-type.types';
 
 const MAKECOMAPP_FILENAME = 'makecomapp.json';
 
@@ -50,7 +50,6 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 	const makeappJsonPath = vscode.Uri.joinPath(srcDir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
 		components: {
-			app:  {},
 			module: {},
 		},
 		origins: [
@@ -65,6 +64,14 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 	if (existsSync(makeappJsonPath.fsPath)) {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Download cancelled.');
 	}
+
+	// Create src directory
+	await vscode.workspace.fs.createDirectory(srcDir);
+
+	// Common
+	// const commonLocalPath = vscode.Uri.joinPath(srcDir, 'common.json');
+	// await downloadSource({appName, appVersion, appComponentType: 'app', appComponentName: '', codeName: 'common', environment, destinationPath: commonLocalPath.fsPath});
+
 
 	for (const appComponentType of getAppComponentTypes()) {
 		const appComponentSummaryList = await getAppComponents<ComponentSummary>(appComponentType, appName, appVersion, environment);
@@ -130,7 +137,7 @@ async function localFileUpload(file: vscode.Uri) {
 
 	const environment = getCurrentEnvironment();
 
-	// await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, sourcePath: file.fsPath});
+	await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, sourcePath: file.fsPath});
 
 	vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} deployed to Make app ${origin.appId}.`);
 }
@@ -183,18 +190,19 @@ async function getMakecomappJson(startingPath: vscode.Uri): Promise<MakecomappJs
 }
 
 
-function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComponentTypesDef): {
-	componentType: AppComponentType,
+function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComponentTypesMetadata): {
+	componentType: AppComponentTypeMetadata,
 	componentName: string,
 	codeName: string,
 } {
 	for (const componentType in appComponentTypes) {
-		for (const componentName in appComponentTypes[componentType as AppComponentType]) {
-			for (const codeName in appComponentTypes[componentType as AppComponentType][componentName]) {
-				const codeDef = appComponentTypes[componentType as AppComponentType][componentName].codes[codeName];
-				if (codeDef.file === fileRelativePath) {
+		for (const componentName in appComponentTypes[componentType as AppComponentTypeMetadata]) {
+			const codesMetadata: CodesMetadata = appComponentTypes[componentType as AppComponentTypeMetadata][componentName].codes || {};
+			for (const codeName in codesMetadata) {
+				const codeMetadata = codesMetadata[codeName];
+				if (codeMetadata.file === fileRelativePath) {
 					return {
-						componentType: componentType as AppComponentType,
+						componentType: componentType as AppComponentTypeMetadata,
 						componentName,
 						codeName,
 					};
@@ -206,7 +214,7 @@ function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComp
 }
 
 interface MakecomappJson {
-	components: AppComponentTypesDef;
+	components: AppComponentTypesMetadata;
 
 	origins: {
 		url: string,
@@ -215,17 +223,17 @@ interface MakecomappJson {
 	}[];
 }
 
-type AppComponentTypesDef = Record<AppComponentType, AppComponentsDef>;
+type AppComponentTypesMetadata = Record<AppComponentTypeMetadata, AppComponentsMetadata>;
 
 /** Component ID => def */
-type AppComponentsDef = Record<string, AppComponentDef>
+type AppComponentsMetadata = Record<string, AppComponentMetadata>
 
-interface AppComponentDef {
+interface AppComponentMetadata {
 	label?: string,
-	codes: CodesDef;
+	codes: CodesMetadata;
 }
 
-type CodesDef = Record<string, CodeDef>;
-interface CodeDef {
+type CodesMetadata = Record<string, CodeMetadata>;
+interface CodeMetadata {
 	file: string,
 }

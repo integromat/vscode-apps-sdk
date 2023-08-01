@@ -9,18 +9,7 @@ const json = {
 	mimetype: 'application/json',
 };
 
-const modulesDefinition: Record<AppComponentType, Record<string, any>> = {
-	app: {
-		content: {
-			filename: 'readme',
-			fileext: 'md',
-			mimetype: 'text/markdown',
-		},
-		common: {
-			fileext: 'imljson',
-			mimetype: 'application/json',
-		},
-	},
+const componentsDefinition: Record<AppComponentType, Record<string, any>> = {
 	module: {
 		'api': imljsonc,
 		'parameters': imljsonc,
@@ -37,14 +26,29 @@ const modulesDefinition: Record<AppComponentType, Record<string, any>> = {
 	// webhook: // TODO
 };
 
+// Not used yet
+const appBaseDefinition = {
+	app: {
+		content: {
+			filename: 'readme',
+			fileext: 'md',
+			mimetype: 'text/markdown',
+		},
+	// 	common: {
+	// 		fileext: 'imljson',
+	// 		mimetype: 'application/json',
+	// 	},
+	},
+};
+
 
 export function getAppComponentDefinition(appComponentType: AppComponentType) {
 
-	if (!modulesDefinition[appComponentType]) {
+	if (!componentsDefinition[appComponentType]) {
 		throw new Error(`Unsupported component name: ${appComponentType}`);
 	}
 
-	return modulesDefinition[appComponentType];
+	return componentsDefinition[appComponentType];
 }
 
 
@@ -64,5 +68,5 @@ export function getAppComponentCodeDefinition(appComponentType: AppComponentType
 
 
 export function getAppComponentTypes(): AppComponentType[] {
-	return Object.keys(modulesDefinition) as AppComponentType[];
+	return Object.keys(componentsDefinition) as AppComponentType[];
 }

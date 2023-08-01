@@ -18,7 +18,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 export async function downloadSource({appName, appVersion, appComponentType, appComponentName, codeName, environment, destinationPath}: {
 	appName: string,
 	appVersion: number,
-	appComponentType: AppComponentType,
+	appComponentType: AppComponentType | 'app',
 	appComponentName: string,
 	codeName: string,
 	environment: AppsSdkConfigurationEnvironment,
@@ -26,7 +26,7 @@ export async function downloadSource({appName, appVersion, appComponentType, app
 }): Promise<void> {
 	// Get the code from the API
 	const axiosResponse = await axios({
-		url: getEndpointUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}),
+		url: getCodeApiUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}),
 		headers: {
 			'Authorization': 'Token ' + environment.apikey,
 			// TODO 'x-imt-apps-sdk-version': Meta.version
@@ -57,11 +57,13 @@ export async function downloadSource({appName, appVersion, appComponentType, app
 
 /**
  * Gets endpoint URL for CRUD of the the given component's code.
+ *
+ * Note: `appComponentType` === `app` is the special name for the app-level code (like readme, base, common, ...)
  */
-export function getEndpointUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}: {
+export function getCodeApiUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}: {
 	appName: string,
 	appVersion: number,
-	appComponentType: AppComponentType,
+	appComponentType: AppComponentType | 'app',
 	appComponentName: string,
 	codeName: string,
 	environment: AppsSdkConfigurationEnvironment
@@ -121,7 +123,7 @@ export async function uploadSource({appName, appVersion, appComponentType, appCo
 
 		// Get the code from the API
 		const axiosConfig: AxiosRequestConfig = {
-			url: getEndpointUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}),
+			url: getCodeApiUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}),
 			method: "PUT",
 			headers: {
 				'Authorization': 'Token ' + environment.apikey,
@@ -129,9 +131,7 @@ export async function uploadSource({appName, appVersion, appComponentType, appCo
 				// TODO 'x-imt-apps-sdk-version': Meta.version
 			},
 			data: sourceContent,
-			transformResponse: (res) => { return res; },  // Do not parse the response into JSON
+			transformRequest: (data) => (data),  // Do not expect the `data` to be JSON
 		};
 		await axios(axiosConfig);
-
-		vscode.window.showInformationMessage(`Code ${codeName} of ${appComponentType} ${appComponentName} of ${appName} ${appVersion} succesfully deployed to Make.`);
 }
