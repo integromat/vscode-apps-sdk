@@ -1,21 +1,21 @@
 import * as Core from '../Core';
 import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import camelCase from 'lodash.camelcase';
+import { AppComponentType } from '../types/app-component-type.types';
 
-export async function getAppComponents<T extends EntitySummary>(
-	componentTypePlural: "connections" | "webhooks" | "modules" | "rpcs" | "functions",
+export async function getAppComponents<T extends ComponentSummary>(
+	componentType: AppComponentType,
 	appName: string,
 	appVersion: number,
 	environment: AppsSdkConfigurationEnvironment,
 ): Promise<T[]> {
-	const entityType = componentTypePlural.slice(0, -1); // converts to singular
 	const apiURL = `https://${environment.url}/v2/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${appName}/`
-		+ (["connection", "webhook"].includes(entityType)
-			? Core.pathDeterminer(environment.version, entityType)
-			: `${appVersion}/${Core.pathDeterminer(environment.version, entityType)}`
+		+ (["connection", "webhook"].includes(componentType)
+			? Core.pathDeterminer(environment.version, componentType)
+			: `${appVersion}/${Core.pathDeterminer(environment.version, componentType)}`
 		);
 	const apiResponse = await Core.rpGet(apiURL, 'Token ' + environment.apikey);
-	const items: T[] = apiResponse[camelCase(`app_${componentTypePlural}`)];
+	const items: T[] = apiResponse[camelCase(`app_${componentType}s`)];
 	return items;
 }
 
@@ -63,4 +63,4 @@ interface FunctionComponentSummary {
 	args: string;
 }
 
-type EntitySummary = ModuleComponentSummary | ConnectionComponentSummary | WebhookComponentSummary | RpcComponentSummary | FunctionComponentSummary;
+export type ComponentSummary = ModuleComponentSummary | ConnectionComponentSummary | WebhookComponentSummary | RpcComponentSummary | FunctionComponentSummary;

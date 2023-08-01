@@ -7,10 +7,10 @@ import { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
 import App from '../tree/App';
 import { getCurrentEnvironment } from '../providers/configuration';
-import { downloadSource, uploadSource } from '../services/get-code';
-import { ModuleComponentSummary, getAppComponents } from '../services/get-app-components';
+import { downloadSource, getEndpointUrl, uploadSource } from '../services/get-code';
+import { ComponentSummary, ModuleComponentSummary, getAppComponents } from '../services/get-app-components';
 import { existsSync } from 'fs';
-import { getAppComponentCodeDefinition, getAppComponentDefinition } from '../services/component-code-def';
+import { getAppComponentCodeDefinition, getAppComponentDefinition, getAppComponentTypes } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 
 const MAKECOMAPP_FILENAME = 'makecomapp.json';
@@ -46,13 +46,12 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 
 	// Component types are: functions, rpcs, modules, connections, webhooks, (apps)
 
-	const appModules = await getAppComponents<ModuleComponentSummary>('modules', appName, appVersion, environment);
-
 	// makecomapp.json
 	const makeappJsonPath = vscode.Uri.joinPath(srcDir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
 		components: {
-			module: [],
+			app:  {},
+			module: {},
 		},
 		origins: [
 			{
@@ -67,36 +66,33 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Download cancelled.');
 	}
 
-	// Common
-	vscode.workspace.fs.createDirectory(srcDir);
-	// const baseLocalPath = vscode.Uri.joinPath(srcDir, 'base.imljson');
-	// await downloadSource(appName, appVersion, 'app', '', 'api', environment, baseLocalPath.fsPath);
-	const commonLocalPath = vscode.Uri.joinPath(srcDir, 'common.json');
-	await downloadSource({appName, appVersion, appComponentType: 'app', appComponentName: '', codeName: 'common', environment, destinationPath: commonLocalPath.fsPath});
+	for (const appComponentType of getAppComponentTypes()) {
+		const appComponentSummaryList = await getAppComponents<ComponentSummary>(appComponentType, appName, appVersion, environment);
 
-	const appComponentType: AppComponentType = 'module'; // TODO Loop over all component types
+		for (const appComponentSummary of appComponentSummaryList) {
 
-	for (const appModule of appModules) {
-		// create module directory
-		const modulesDir = vscode.Uri.joinPath(srcDir, appComponentType + 's');
-		vscode.workspace.fs.createDirectory(modulesDir);
-		// save codes into .imljson files
-		const codeNames = Object.keys(getAppComponentDefinition(appComponentType));
-		for(const codeName of codeNames) {
-			const codeDef = getAppComponentCodeDefinition(appComponentType, codeName);
-			const moduleLocalRelativeFilename = path.join(appComponentType + 's', appModule.name, codeName + '.' + codeDef.fileext);  // Relative to app rootdir
-			const moduleLocalFilename = vscode.Uri.joinPath(srcDir, appModule.name, codeName + '.' + codeDef.fileext);
-			await downloadSource({ appName, appVersion, appComponentType, appComponentName: appModule.name, codeName, environment, destinationPath: moduleLocalFilename.fsPath});
-			makecomappJson.components[appComponentType].push({
-				id: appModule.name,
-				label: appModule.label,
-				codes: {
-					[codeName]: {
-						codeName: codeName,
-						file: moduleLocalRelativeFilename,
-					}
-				}
-			});
+			// create module directory
+			const modulesDir = vscode.Uri.joinPath(srcDir, appComponentType + 's');
+			vscode.workspace.fs.createDirectory(modulesDir);
+			// Create section in makecomapp.json
+			makecomappJson.components[appComponentType][appComponentSummary.name] = {
+				// label: appComponentSummary.label,   // todo enable and change type above to ModuleComponentSummary, ... based on componentType
+				codes: {},
+			};
+			// Process all codes
+			const codeNames = Object.keys(getAppComponentDefinition(appComponentType));
+			for(const codeName of codeNames) {
+				const codeDef = getAppComponentCodeDefinition(appComponentType, codeName);
+				const filebasename = codeDef.filename ? codeDef.filename : appComponentSummary.name + '.' + codeName;
+				const codeLocalRelativePath = path.join(appComponentType + 's', appComponentSummary.name, filebasename + '.' + codeDef.fileext);  // Relative to app rootdir
+				const codeLocalAbsolutePath = vscode.Uri.joinPath(srcDir, codeLocalRelativePath);
+				// Download code from API to local file
+				await downloadSource({ appName, appVersion, appComponentType, appComponentName: appComponentSummary.name, codeName, environment, destinationPath: codeLocalAbsolutePath.fsPath});
+				// Add to makecomapp.json
+				makecomappJson.components[appComponentType][appComponentSummary.name].codes[codeName] = {
+					file: codeLocalRelativePath,
+				};
+			}
 		}
 	}
 
@@ -119,30 +115,25 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 
 async function localFileUpload(file: vscode.Uri) {
 
-	const makeappRootdir = getMakecomappRootDir(file);
 	const makeappJson = await getMakecomappJson(file);
-	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
-	const moduleMetadata = makeappJson.components.module.find(module => module.file === fileRelativePath);  // TODO seach globally in all component types
-	if (!moduleMetadata) {
-		throw new Error(`Module for file ${file.fsPath} is not defined in ${MAKECOMAPP_FILENAME}.`);
-	}
-
 	const origin = makeappJson.origins[0];
 	if (!origin) {
 		throw new Error(`Origin is not defined in ${MAKECOMAPP_FILENAME}.`);
 	}
 
+	const makeappRootdir = getMakecomappRootDir(file);
+
+	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
+	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson.components);
+
+	log ('debug', `Deploying ${componentDetails.componentType} ${componentDetails.componentName} from ${file.fsPath} to ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
+
 	const environment = getCurrentEnvironment();
 
-	log ('debug', `Deploying module ${moduleMetadata.id} from ${file.fsPath} to ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
+	// await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, sourcePath: file.fsPath});
 
-
-	await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: 'module', appComponentName: moduleMetadata.id, codeName: moduleMetadata.codeName, environment, sourcePath: file.fsPath});
-
-
-	vscode.window.showInformationMessage(`Module ${moduleMetadata.id} deployed to Make app ${origin.appId}.`);
+	vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} deployed to Make app ${origin.appId}.`);
 }
-
 
 
 function getCurrentWorkspace(): vscode.WorkspaceFolder {
@@ -191,8 +182,31 @@ async function getMakecomappJson(startingPath: vscode.Uri): Promise<MakecomappJs
 	return makecomappJson;
 }
 
+
+function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComponentTypesDef): {
+	componentType: AppComponentType,
+	componentName: string,
+	codeName: string,
+} {
+	for (const componentType in appComponentTypes) {
+		for (const componentName in appComponentTypes[componentType as AppComponentType]) {
+			for (const codeName in appComponentTypes[componentType as AppComponentType][componentName]) {
+				const codeDef = appComponentTypes[componentType as AppComponentType][componentName].codes[codeName];
+				if (codeDef.file === fileRelativePath) {
+					return {
+						componentType: componentType as AppComponentType,
+						componentName,
+						codeName,
+					};
+				}
+			}
+		}
+	}
+	throw new Error(`Code file ${fileRelativePath} is not defined in ${MAKECOMAPP_FILENAME}.`);
+}
+
 interface MakecomappJson {
-	components: Record<AppComponentType, ModuleDef[]>;
+	components: AppComponentTypesDef;
 
 	origins: {
 		url: string,
@@ -201,8 +215,17 @@ interface MakecomappJson {
 	}[];
 }
 
-interface ModuleDef {
-	id: string,
-	label: string,
-	codes: Record<string, {codeName: string /* TODO REMOVE codeName duplication from definition */, file: string}>;
+type AppComponentTypesDef = Record<AppComponentType, AppComponentsDef>;
+
+/** Component ID => def */
+type AppComponentsDef = Record<string, AppComponentDef>
+
+interface AppComponentDef {
+	label?: string,
+	codes: CodesDef;
+}
+
+type CodesDef = Record<string, CodeDef>;
+interface CodeDef {
+	file: string,
 }

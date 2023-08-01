@@ -58,7 +58,7 @@ export async function downloadSource({appName, appVersion, appComponentType, app
 /**
  * Gets endpoint URL for CRUD of the the given component's code.
  */
-function getEndpointUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}: {
+export function getEndpointUrl({appName, appVersion, appComponentType, appComponentName, codeName, environment}: {
 	appName: string,
 	appVersion: number,
 	appComponentType: AppComponentType,

@@ -15,14 +15,14 @@ const modulesDefinition: Record<AppComponentType, Record<string, any>> = {
 			filename: 'readme',
 			fileext: 'md',
 			mimetype: 'text/markdown',
-		}
-	},
-	module: {
-		'api': imljsonc,
-		'common': {
+		},
+		common: {
 			fileext: 'imljson',
 			mimetype: 'application/json',
 		},
+	},
+	module: {
+		'api': imljsonc,
 		'parameters': imljsonc,
 		'expect': imljsonc,
 		'interface': imljsonc,
@@ -38,7 +38,7 @@ const modulesDefinition: Record<AppComponentType, Record<string, any>> = {
 };
 
 
-export function getAppComponentDefinition(appComponentType: AppComponentType): Record<string, any> {
+export function getAppComponentDefinition(appComponentType: AppComponentType) {
 
 	if (!modulesDefinition[appComponentType]) {
 		throw new Error(`Unsupported component name: ${appComponentType}`);
@@ -53,7 +53,6 @@ export function getAppComponentCodeDefinition(appComponentType: AppComponentType
 	fileext: string,
 	filename?: string,
 } {
-
 	const componentDef = getAppComponentDefinition(appComponentType);
 
 	if (!componentDef[codeName]) {
@@ -61,4 +60,9 @@ export function getAppComponentCodeDefinition(appComponentType: AppComponentType
 	}
 
 	return componentDef[codeName];
+}
+
+
+export function getAppComponentTypes(): AppComponentType[] {
+	return Object.keys(modulesDefinition) as AppComponentType[];
 }
