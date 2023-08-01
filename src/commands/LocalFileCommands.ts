@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { catchError, showError } from '../error-handling';
+import { catchError, showError, withProgress } from '../error-handling';
 import AppsProvider from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
@@ -24,15 +24,35 @@ export class LocalFileCommands {
 		_environment: Environment
 	): void {
 
-		vscode.commands.registerCommand('apps-sdk.file.upload', catchError('File deploy to Make', localFileUpload));
+		vscode.commands.registerCommand('apps-sdk.file.upload', catchError(
+			'File deploy to Make',
+			withProgress(
+				{ title: 'Deploying to Make...' },
+				localFileUpload
+			)
+		));
 
-		vscode.commands.registerCommand('apps-sdk.file.download', catchError('File download from Make', async function (context) {
+		vscode.commands.registerCommand('apps-sdk.file.download', catchError(
+			'File download from Make',
+			withProgress(
+				{ title: 'Updating local file from Make...' },
+				localFileDownload
+			)
+		));
+
+		vscode.commands.registerCommand('apps-sdk.file.download', catchError(
+			'File download from Make', async function (context) {
 			log('debug', 'Download context:' + JSON.stringify(context, null, 2));
 			showError('Sorry, not implemented', 'apps-sdk.file.download');
 		}));
 
-		// Success UI message
-		vscode.commands.registerCommand('apps-sdk.app.download-to-workspace', catchError('Download app to workspace', downloadAppToWorkspace));
+		vscode.commands.registerCommand('apps-sdk.app.download-to-workspace', catchError(
+			'Download app to workspace',
+			withProgress(
+				{ title: 'Downloading app to workspace...' },
+				downloadAppToWorkspace
+			)
+		));
 	}
 }
 
@@ -112,6 +132,9 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 }
 
 
+/**
+ * Uploads the local file defined in makecomapp.json to the Make cloud.
+ */
 async function localFileUpload(file: vscode.Uri) {
 
 	const makeappJson = await getMakecomappJson(file);
@@ -133,6 +156,33 @@ async function localFileUpload(file: vscode.Uri) {
 
 	vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} deployed to Make app ${origin.appId}.`);
 }
+
+
+/**
+ * Rewrites the local file defined in makecomapp.json by version from the Make cloud.
+ */
+async function localFileDownload(file: vscode.Uri) {
+
+	const makeappJson = await getMakecomappJson(file);
+	const origin = makeappJson.origins[0];
+	if (!origin) {
+		throw new Error(`Origin is not defined in ${MAKECOMAPP_FILENAME}.`);
+	}
+
+	const makeappRootdir = getMakecomappRootDir(file);
+
+	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
+	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson.components);
+
+	log ('debug', `Downloading/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in ${file.fsPath} from ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
+
+	const environment = getCurrentEnvironment();
+
+	await downloadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, destinationPath: file.fsPath});
+
+	vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} rewritten by version in Make.`);
+}
+
 
 
 function getCurrentWorkspace(): vscode.WorkspaceFolder {
