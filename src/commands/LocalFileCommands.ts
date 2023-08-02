@@ -134,7 +134,15 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				const codeLocalRelativePath = path.join(appComponentType + 's', camelToKebab(appComponentSummary.name), filebasename + '.' + codeDef.fileext);  // Relative to app rootdir
 				const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 				// Download code from API to local file
+				await downloadSource({
+					appName,
+					appVersion,
+					appComponentType,
+					appComponentName: appComponentSummary.name,
+					codeName,
 					environment,
+					destinationPath: codeLocalAbsolutePath,
+				});
 				// Add to makecomapp.json
 				makecomappJson.components[appComponentType][appComponentSummary.name].codes[codeName] = {
 					file: codeLocalRelativePath,
@@ -173,7 +181,15 @@ async function localFileUpload(file: vscode.Uri) {
 	/** @deprecated */
 	const environment = getCurrentEnvironment();
 
-	await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, sourcePath: file.fsPath});
+	await uploadSource({
+		appName: origin.appId,
+		appVersion: origin.appVersion,
+		appComponentType: componentDetails.componentType,
+		appComponentName: componentDetails.componentName,
+		codeName: componentDetails.codeName,
+		environment,
+		sourcePath: file,
+	});
 
 	log('debug', `Deployed ${componentDetails.componentType} ${componentDetails.componentName} to ${origin.url} app ${origin.appId} ${origin.appVersion}`);
 }
@@ -202,7 +218,15 @@ async function localFileDownload(file: vscode.Uri) {
 	const environment = getCurrentEnvironment();
 	// Download the cloud file version into temp file
 	const newTmpFile = vscode.Uri.file(tempFilename(file.fsPath));
-	await downloadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, destinationPath: newTmpFile.fsPath});
+	await downloadSource({
+		appName: origin.appId,
+		appVersion: origin.appVersion,
+		appComponentType: componentDetails.componentType,
+		appComponentName: componentDetails.componentName,
+		codeName: componentDetails.codeName,
+		environment,
+		destinationPath: newTmpFile,
+	});
 	// Keep user to approve changes
 	const relativeFilepath = path.relative(makeappRootdir.fsPath, file.fsPath);
 	await vscode.commands.executeCommand("vscode.diff", newTmpFile, file, `Remote ${origin.label ?? 'Origin'} ↔ ${relativeFilepath}`);
