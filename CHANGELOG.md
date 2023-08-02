@@ -17,7 +17,7 @@ Change Log
 - Keep original indent of JSON files. Do not execute the auto format automatically.
 - Update dependencies `request-light`, `uuid`, `vscode-json-languageservice`, `vscode-languageclient`, `vscode-languageserver`, `tempy`
 - First environment configuration process is more friendly (#87)
-- Opensource apps rename to "Examples"
+- Opensource apps rename to "Examples" (#95)
 
 1.3.22
 ------
