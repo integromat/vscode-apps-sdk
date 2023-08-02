@@ -40,12 +40,6 @@ export class LocalFileCommands {
 			)
 		));
 
-		vscode.commands.registerCommand('apps-sdk.file.download', catchError(
-			'File download from Make', async function (context) {
-			log('debug', 'Download context:' + JSON.stringify(context, null, 2));
-			showError('Sorry, not implemented', 'apps-sdk.file.download');
-		}));
-
 		vscode.commands.registerCommand('apps-sdk.app.download-to-workspace', catchError(
 			'Download app to workspace',
 			withProgress(
@@ -138,18 +132,21 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 async function localFileUpload(file: vscode.Uri) {
 
 	const makeappJson = await getMakecomappJson(file);
-	const origin = makeappJson.origins[0];
-	if (!origin) {
-		throw new Error(`Origin is not defined in ${MAKECOMAPP_FILENAME}.`);
-	}
 
 	const makeappRootdir = getMakecomappRootDir(file);
 
 	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
 	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson.components);
 
+	const origin = await askForOrigin(makeappJson.origins);
+	if (!origin) {
+		return;
+	}
+
 	log ('debug', `Deploying ${componentDetails.componentType} ${componentDetails.componentName} from ${file.fsPath} to ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
 
+
+	/** @deprecated */
 	const environment = getCurrentEnvironment();
 
 	await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, sourcePath: file.fsPath});
@@ -164,18 +161,20 @@ async function localFileUpload(file: vscode.Uri) {
 async function localFileDownload(file: vscode.Uri) {
 
 	const makeappJson = await getMakecomappJson(file);
-	const origin = makeappJson.origins[0];
-	if (!origin) {
-		throw new Error(`Origin is not defined in ${MAKECOMAPP_FILENAME}.`);
-	}
 
 	const makeappRootdir = getMakecomappRootDir(file);
 
 	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
 	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson.components);
 
+	const origin = await askForOrigin(makeappJson.origins);
+	if (!origin) {
+		return;
+	}
+
 	log ('debug', `Downloading/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in ${file.fsPath} from ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
 
+	/** @deprecated */
 	const environment = getCurrentEnvironment();
 	// Download the cloud file version into temp file
 	const newTmpFile = vscode.Uri.file(tempFilename(file.fsPath));
@@ -207,6 +206,39 @@ function getCurrentWorkspace(): vscode.WorkspaceFolder {
 	return vscode.workspace.workspaceFolders[0];
 }
 
+/**
+ *
+ * @param origins
+ * @param purposeLabel If defined, the text is integrated into dialog message as "Choose ... for ${purposeLabel}:"
+ * @returns Return undefined, when there are multiple origins, but user cancels the selection dialog.
+ */
+async function askForOrigin(origins: LocalAppOrigin[], purposeLabel?: string): Promise<LocalAppOrigin|undefined> {
+	if (!origins?.length) {
+		throw new Error('Missing "origins" in makecomapp.json.');
+	}
+
+	if (origins.length === 1) {
+		return origins[0];
+	}
+
+	const selectedOrigin = await vscode.window.showQuickPick(
+		origins.map((origin, index) => {
+			const label = origin.label || (origin.appId + ' ' + origin.appVersion);
+			return <{ origin: LocalAppOrigin } & vscode.QuickPickItem>{
+				label,
+				description: 'server: ' + origin.url,
+				picked: (index === 0),
+				origin: origin
+			};
+		}), {
+			ignoreFocusOut: true,
+			title: "Select the app origin"
+				+ (purposeLabel ? `for ${purposeLabel}` : '')
+				+ ":"
+		}
+	);
+	return selectedOrigin?.origin;
+}
 
 function getSdkAppRoot(): vscode.Uri {
 	const workspace = getCurrentWorkspace();
@@ -268,12 +300,15 @@ function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComp
 
 interface MakecomappJson {
 	components: AppComponentTypesMetadata;
+	origins: LocalAppOrigin[];
+}
 
-	origins: {
-		url: string,
-		appId: string,
-		appVersion: number,
-	}[];
+interface LocalAppOrigin {
+	/** User friendly title */
+	label?: string;
+	url: string;
+	appId: string;
+	appVersion: number;
 }
 
 type AppComponentTypesMetadata = Record<AppComponentTypeMetadata, AppComponentsMetadata>;
