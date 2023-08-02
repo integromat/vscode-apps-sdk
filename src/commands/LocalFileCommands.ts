@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { TextEncoder } from 'util';
-import { catchError, showError, withProgress } from '../error-handling';
+import { catchError, withProgress } from '../error-handling';
 import AppsProvider from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
@@ -57,9 +57,13 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const appName = context.name;
 	const appVersion = context.version;
 	const workspaceRoot = getCurrentWorkspace().uri;
-	const localAppRootdir = getSdkAppRoot();
 	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 	const apikeyFileUri = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME, 'apikey1');
+
+	const localAppRootdir = await askForAppDirToClone();
+	if (!localAppRootdir) {
+		return;
+	}
 
 	// const configuration = getConfiguration();
 	const environment = getCurrentEnvironment();
@@ -81,7 +85,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	};
 
 	if (existsSync(makeappJsonPath.fsPath)) {
-		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Download cancelled.');
+		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
 	}
 
 	// Save .gitignore: exclude secrets dir
@@ -111,8 +115,6 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		const appComponentSummaryList = await getAppComponents<ComponentSummary>(appComponentType, appName, appVersion, environment);
 
 		for (const appComponentSummary of appComponentSummaryList) {
-
-			const modulesDir = vscode.Uri.joinPath(localAppRootdir, appComponentType + 's');
 			// Create section in makecomapp.json
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {
 				// label: appComponentSummary.label,   // todo enable and change type above to ModuleComponentSummary, ... based on componentType
@@ -138,8 +140,9 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	// Write makecomapp.json app metadata file
 	await fs.writeFile(makeappJsonPath.fsPath, JSON.stringify(makecomappJson, null, 4));
-
-	vscode.window.showInformationMessage(`Downloaded to local workspace into "/src".`);
+	// VSCode show makecomapp.json and open explorer
+	await vscode.commands.executeCommand('vscode.open', makeappJsonPath);
+	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 }
 
 
@@ -197,11 +200,10 @@ async function localFileDownload(file: vscode.Uri) {
 	const newTmpFile = vscode.Uri.file(tempFilename(file.fsPath));
 	await downloadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, destinationPath: newTmpFile.fsPath});
 	// Keep user to approve changes
-	await vscode.commands.executeCommand("vscode.diff", newTmpFile, file);
+	const relativeFilepath = path.relative(makeappRootdir.fsPath, file.fsPath);
+	await vscode.commands.executeCommand("vscode.diff", newTmpFile, file, `Remote ${origin.label ?? 'Origin'} ↔ ${relativeFilepath}`);
 	// Delete temp file
 	await vscode.workspace.fs.delete(newTmpFile);
-
-	// vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} rewritten by version in Make.`);
 }
 
 /**
@@ -257,9 +259,22 @@ async function askForOrigin(origins: LocalAppOrigin[], purposeLabel?: string): P
 	return selectedOrigin?.origin;
 }
 
-function getSdkAppRoot(): vscode.Uri {
+/**
+ * Opens vs code directory selector and returns the selected directory.
+ * Returns undefined, when user cancels the dialog.
+ */
+async function askForAppDirToClone(): Promise<vscode.Uri | undefined> {
 	const workspace = getCurrentWorkspace();
-	return vscode.Uri.joinPath(workspace.uri, 'src');
+	const directory = await vscode.window.showInputBox({
+		ignoreFocusOut: true,
+		prompt: 'Enter the current workspace subdirectory, where the app will be cloned to.',
+		value: 'src',
+		title: 'Destination, where to clone the app',
+	});
+	if (!directory) {
+		return undefined;
+	}
+	return vscode.Uri.joinPath(workspace.uri, directory);
 }
 
 /**
