@@ -76,6 +76,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		},
 		origins: [
 			{
+				label: 'Origin',
 				url: environment.url,   /// TODO it is not actually the url, it is without https://
 				appId: context.name,
 				appVersion: context.version,
@@ -245,7 +246,7 @@ async function askForOrigin(origins: LocalAppOrigin[], purposeLabel?: string): P
 			const label = origin.label || (origin.appId + ' ' + origin.appVersion);
 			return <{ origin: LocalAppOrigin } & vscode.QuickPickItem>{
 				label,
-				description: 'server: ' + origin.url,
+				description: 'at ' + origin.url,
 				picked: (index === 0),
 				origin: origin
 			};
