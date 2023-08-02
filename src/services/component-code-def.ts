@@ -10,20 +10,32 @@ const json = {
 };
 
 const componentsDefinition: Record<AppComponentType, Record<string, any>> = {
-	module: {
-		'api': imljsonc,
-		'parameters': imljsonc,
-		'expect': imljsonc,
-		'interface': imljsonc,
-		'samples': imljsonc,
-		'scope': imljsonc,
+	connection: {
+		api: imljsonc,
+		parameters: imljsonc,
 	},
-
-	// function: // TODO
-	// rpc: // TODO
-	// module: // TODO
-	// connection: // TODO
-	// webhook: // TODO
+	webhook: {
+		api: imljsonc,
+		parameters: imljsonc,
+		attach: imljsonc,
+		detach: imljsonc,
+		update: imljsonc,
+	},
+	module: {
+		api: imljsonc,
+		parameters: imljsonc,
+		expect: imljsonc,
+		interface: imljsonc,
+		samples: imljsonc,
+		scope: imljsonc,
+	},
+	rpc: {
+		api: imljsonc,
+		parameters: imljsonc,
+	},
+	function: {
+		code: { fileext: 'js', mimetype: 'application/javascript' },
+	}
 };
 
 // Not used yet

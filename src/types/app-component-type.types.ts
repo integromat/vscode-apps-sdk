@@ -1,1 +1,1 @@
-export type AppComponentType = 'module' ;  // TODO ADD: | 'function' | 'rpc' | 'connection' | 'webhook';
+export type AppComponentType = 'connection' | 'webhook' | 'module' | 'rpc' | 'function';

@@ -72,7 +72,11 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
 		components: {
+			connection: {},
+			webhook: {},
 			module: {},
+			rpc: {},
+			function: {},
 		},
 		origins: [
 			{
@@ -130,7 +134,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				const codeLocalRelativePath = path.join(appComponentType + 's', camelToKebab(appComponentSummary.name), filebasename + '.' + codeDef.fileext);  // Relative to app rootdir
 				const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 				// Download code from API to local file
-				await downloadSource({ appName, appVersion, appComponentType, appComponentName: appComponentSummary.name, codeName, environment, destinationPath: codeLocalAbsolutePath.fsPath});
+					environment,
 				// Add to makecomapp.json
 				makecomappJson.components[appComponentType][appComponentSummary.name].codes[codeName] = {
 					file: codeLocalRelativePath,
@@ -166,13 +170,12 @@ async function localFileUpload(file: vscode.Uri) {
 
 	log ('debug', `Deploying ${componentDetails.componentType} ${componentDetails.componentName} from ${file.fsPath} to ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`);
 
-
 	/** @deprecated */
 	const environment = getCurrentEnvironment();
 
 	await uploadSource({ appName: origin.appId, appVersion: origin.appVersion, appComponentType: componentDetails.componentType, appComponentName: componentDetails.componentName, codeName: componentDetails.codeName, environment, sourcePath: file.fsPath});
 
-	vscode.window.showInformationMessage(`${componentDetails.componentType} ${componentDetails.componentName} deployed to Make app ${origin.appId}.`);
+	log('debug', `Deployed ${componentDetails.componentType} ${componentDetails.componentName} to ${origin.url} app ${origin.appId} ${origin.appVersion}`);
 }
 
 

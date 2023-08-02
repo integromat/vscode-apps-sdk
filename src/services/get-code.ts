@@ -69,35 +69,31 @@ export function getCodeApiUrl({appName, appVersion, appComponentType, appCompone
 	environment: AppsSdkConfigurationEnvironment
 }): string {
 	// Compose directory structure
-	let urn = `/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}${(environment.version !== 2) ? `/${appName}` : ''}`;
-	// let urnForFile = `/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${appName}`;
+	let urn = `/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}${(environment.version !== 2) ? '/' + appName : ''}`;
 
 	// Add version to URN for versionable items
 	if (Core.isVersionable(appComponentType)) {
-		urn += `${(environment.version === 2) ? `/${appName}` : ''}/${appVersion}`;
-		// urnForFile += `/${appVersion}`;
+		urn += `${(environment.version === 2) ? '/' + appName : ''}/${appVersion}`;
 	}
 
 	// Complete the URN by the type of item
 	switch (appComponentType) {
-		// case "function":   // TODO Implementation is correct here, but type is not implemented yet in other places
-		// case "rpc":   // TODO Implementation is correct here, but type is not implemented yet in other places
+		case "connection":
+		case "webhook":
 		case "module":
-		// case "connection":   // TODO Implementation is correct here, but type is not implemented yet in other places
-		// case "webhook":   // TODO Implementation is correct here, but type is not implemented yet in other places
+		case "rpc":
+		case "function":
 			urn += `/${appComponentType}s/${appComponentName}/${codeName}`;
-			// urnForFile += `/${appComponentType}/${appComponentName}/${codeName}`;
 			break;
+		// Base, common, readme, group
 		case "app":
 			// Prepared for more app-level codes
 			switch (codeName) {
 				case "content":
 					urn += `/readme`;
-					// urnForFile += `/readme`;
 					break;
 				default:
 					urn += `/${codeName}`;
-					// urnForFile += `/${codeName}`;
 					break;
 			}
 			break;
