@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { TextEncoder } from 'util';
 import { catchError, showError, withProgress } from '../error-handling';
 import AppsProvider from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
@@ -15,6 +16,7 @@ import { AppComponentType as AppComponentTypeMetadata } from '../types/app-compo
 import { camelToKebab } from '../utils/camel-to-kebab';
 
 const MAKECOMAPP_FILENAME = 'makecomapp.json';
+const APIKEY_DIRNAME = '.secrets';
 
 export class LocalFileCommands {
 
@@ -40,29 +42,30 @@ export class LocalFileCommands {
 			)
 		));
 
-		vscode.commands.registerCommand('apps-sdk.app.download-to-workspace', catchError(
+		vscode.commands.registerCommand('apps-sdk.app.clone-to-workspace', catchError(
 			'Download app to workspace',
 			withProgress(
 				{ title: 'Downloading app to workspace...' },
-				downloadAppToWorkspace
+				cloneAppToWorkspace
 			)
 		));
 	}
 }
 
 
-async function downloadAppToWorkspace(context: App): Promise<void> {
+async function cloneAppToWorkspace(context: App): Promise<void> {
 	const appName = context.name;
 	const appVersion = context.version;
-	const srcDir = getSdkAppRoot();
+	const workspaceRoot = getCurrentWorkspace().uri;
+	const localAppRootdir = getSdkAppRoot();
+	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
+	const apikeyFileUri = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME, 'apikey1');
 
 	// const configuration = getConfiguration();
 	const environment = getCurrentEnvironment();
 
-	// Component types are: functions, rpcs, modules, connections, webhooks, (apps)
-
 	// makecomapp.json
-	const makeappJsonPath = vscode.Uri.joinPath(srcDir, MAKECOMAPP_FILENAME);
+	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
 		components: {
 			module: {},
@@ -72,6 +75,7 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 				url: environment.url,   /// TODO it is not actually the url, it is without https://
 				appId: context.name,
 				appVersion: context.version,
+				apikeyFile: path.relative(makeappJsonPath.fsPath, apikeyFileUri.fsPath),
 			}
 		]
 	};
@@ -80,8 +84,23 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Download cancelled.');
 	}
 
-	// Create src directory
-	await vscode.workspace.fs.createDirectory(srcDir);
+	// Save .gitignore: exclude secrets dir
+	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
+	const secretsDirRelativeToWorkspaceRoot = path.relative(workspaceRoot.fsPath, apikeyDir.fsPath);
+	const gitignoreContent = new TextEncoder().encode(secretsDirRelativeToWorkspaceRoot + '\n');
+	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
+	// Create apikey file
+	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
+	await vscode.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
+
+	// Create .vscode/settings.json with exclude secrets dir
+	// const settingsJsonUri = vscode.Uri.joinPath(workspaceRoot, '.vscode', 'settings.json');
+	// const settingsJsonContent = new TextEncoder().encode(JSON.stringify({
+	// 	"files.exclude": {
+	// 		[secretsDirRelativeToWorkspaceRoot]: true
+	// 	}
+	// }, null, 4));
+	// await vscode.workspace.fs.writeFile(settingsJsonUri, settingsJsonContent);
 
 	// Common
 	// const commonLocalPath = vscode.Uri.joinPath(srcDir, 'common.json');
@@ -93,9 +112,7 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 
 		for (const appComponentSummary of appComponentSummaryList) {
 
-			// create module directory
-			const modulesDir = vscode.Uri.joinPath(srcDir, appComponentType + 's');
-			vscode.workspace.fs.createDirectory(modulesDir);
+			const modulesDir = vscode.Uri.joinPath(localAppRootdir, appComponentType + 's');
 			// Create section in makecomapp.json
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {
 				// label: appComponentSummary.label,   // todo enable and change type above to ModuleComponentSummary, ... based on componentType
@@ -108,7 +125,7 @@ async function downloadAppToWorkspace(context: App): Promise<void> {
 				// Local file path generator
 				const filebasename = camelToKebab(appComponentSummary.name) + '.' + (codeDef.filename ? codeDef.filename : codeName);
 				const codeLocalRelativePath = path.join(appComponentType + 's', camelToKebab(appComponentSummary.name), filebasename + '.' + codeDef.fileext);  // Relative to app rootdir
-				const codeLocalAbsolutePath = vscode.Uri.joinPath(srcDir, codeLocalRelativePath);
+				const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 				// Download code from API to local file
 				await downloadSource({ appName, appVersion, appComponentType, appComponentName: appComponentSummary.name, codeName, environment, destinationPath: codeLocalAbsolutePath.fsPath});
 				// Add to makecomapp.json
@@ -309,6 +326,7 @@ interface LocalAppOrigin {
 	url: string;
 	appId: string;
 	appVersion: number;
+	apikeyFile: string;
 }
 
 type AppComponentTypesMetadata = Record<AppComponentTypeMetadata, AppComponentsMetadata>;

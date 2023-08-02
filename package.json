@@ -402,8 +402,8 @@
 				}
 			},
 			{
-				"command": "apps-sdk.app.download-to-workspace",
-				"title": "Download to local workspace",
+				"command": "apps-sdk.app.clone-to-workspace",
+				"title": "Clone to local workspace",
 				"icon": {
 					"dark": "resources/icons/dark/refresh.png",
 					"light": "resources/icons/light/refresh.png"
@@ -632,7 +632,7 @@
 					"when": "viewItem == app && view == apps"
 				},
 				{
-					"command": "apps-sdk.app.download-to-workspace",
+					"command": "apps-sdk.app.clone-to-workspace",
 					"when": "viewItem == app && view == apps"
 				},
 				{
