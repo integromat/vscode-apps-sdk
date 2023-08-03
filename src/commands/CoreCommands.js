@@ -59,7 +59,7 @@ class CoreCommands {
 
 		// If it's an open-source app, don't try to save anything
 		if (right.startsWith("/opensource/")) {
-			vscode.window.showWarningMessage("Opensource Apps can not be modified.")
+			vscode.window.showWarningMessage("Examples can not be modified.")
 			return
 		}
 
@@ -525,9 +525,9 @@ class CoreCommands {
 	static async register(_DIR, _authorization, _environment) {
 
 		/**
-		 * OpenSource Loader
+		 * Examples (formerly "OpenSource") Loader
 		 */
-		vscode.commands.registerCommand('apps-sdk.load-open-source', catchError('Load open source app file from API', async (item) => {
+		vscode.commands.registerCommand('apps-sdk.load-open-source', catchError('Example code load from API', async (item) => {
 
 			// Compose directory structure
 			let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${(_environment.version !== 2) ? `/${Core.getApp(item).name}` : ''}`
