@@ -7,11 +7,15 @@ import { AppComponentType } from '../types/app-component-type.types';
  * Gets list of components summaries of the given type for the given app.
  */
 export async function getAppComponents<T extends ComponentSummary>(
-	componentType: AppComponentType/* | 'app' */,
+	componentType: AppComponentType,
 	appName: string,
 	appVersion: number,
 	environment: AppsSdkConfigurationEnvironment,
 ): Promise<T[]> {
+
+	if (componentType === 'app') {
+		return [<T>{ name: '' }];
+	}
 
 	// Special case, when 'app' is not the real component type, but the app itself. Then there is no list of multiple components.
 	// if (componentType === 'app') {

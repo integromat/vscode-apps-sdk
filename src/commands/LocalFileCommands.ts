@@ -72,6 +72,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
 		components: {
+			app: {},
 			connection: {},
 			webhook: {},
 			module: {},

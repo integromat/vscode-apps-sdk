@@ -4,25 +4,39 @@ const imljsonc = {
 	fileext: 'imljson',
 	mimetype: 'application/jsonc',
 };
-const json = {
-	fileext: 'json',
-	mimetype: 'application/json',
+const appBaseDefinition = {
+	base: {
+		filename: 'base',
+		fileext: 'imljson',
+		mimetype: 'application/jsonc',
+	},
+	common: {
+		fileext: 'json',
+		mimetype: 'application/json',
+	},
+	content: {
+		filename: 'readme',
+		fileext: 'md',
+		mimetype: 'text/markdown',
+	},
 };
 
 const componentsDefinition: Record<AppComponentType, Record<string, any>> = {
+	app: appBaseDefinition,
 	connection: {
-		api: imljsonc,
+		api: { ...imljsonc, filename: 'base' },
 		parameters: imljsonc,
 	},
 	webhook: {
-		api: imljsonc,
+		api: { ...imljsonc, filename: 'base' },
 		parameters: imljsonc,
 		attach: imljsonc,
 		detach: imljsonc,
 		update: imljsonc,
 	},
 	module: {
-		api: imljsonc,
+		api: { ...imljsonc, filename: 'base' },
+		// TODO Static vs mappable parameters
 		parameters: imljsonc,
 		expect: imljsonc,
 		interface: imljsonc,
@@ -30,28 +44,15 @@ const componentsDefinition: Record<AppComponentType, Record<string, any>> = {
 		scope: imljsonc,
 	},
 	rpc: {
-		api: imljsonc,
+		api: { ...imljsonc, filename: 'base' },
 		parameters: imljsonc,
 	},
 	function: {
 		code: { fileext: 'js', mimetype: 'application/javascript' },
+		test: { fileext: 'js', mimetype: 'application/javascript' },
 	}
 };
 
-// Not used yet
-const appBaseDefinition = {
-	app: {
-		content: {
-			filename: 'readme',
-			fileext: 'md',
-			mimetype: 'text/markdown',
-		},
-	// 	common: {
-	// 		fileext: 'imljson',
-	// 		mimetype: 'application/json',
-	// 	},
-	},
-};
 
 
 export function getAppComponentDefinition(appComponentType: AppComponentType) {
