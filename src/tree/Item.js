@@ -44,7 +44,8 @@ class Item extends EnhancedTreeItem {
 	}
 
 	/**
-	 * Returns info, if app (parent of this item) is opensource or regular user's app.
+	 * @return True, if app (parent of this item) is example (formerly Opensource).
+	 *         False for regular user's app.
 	 */
 	get isAppOpensource()/*:boolean */ {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias

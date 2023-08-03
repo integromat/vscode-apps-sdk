@@ -27,7 +27,7 @@ class App extends EnhancedTreeItem {
 		/** Defines the final png icon filename. */
 		this.iconVersion = iconVersion;
 		this.changes = changes
-		/** Is the app opensource? If app is opensource, then green square is not added to icon.  */
+		/** Is the app example (formerly opensource)? If app is an example, then green square is not added to icon.  */
 		this.isOpensource = isOpensource;
 		this.tooltip = this.makeTooltip()
 		this.iconPath = this.makeIconPath();
