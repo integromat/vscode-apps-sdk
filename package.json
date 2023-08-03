@@ -768,7 +768,7 @@
 		"adm-zip": "^0.5.10",
 		"async-file": "^2.0.2",
 		"axios": "^1.4.0",
-		"compressing": "^1.5.1",
+		"compressing": "^1.9.1",
 		"image-downloader": "^4.3.0",
 		"jimp": "^0.22.10",
 		"jsonc-parser": "^3.2.0",
