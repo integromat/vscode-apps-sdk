@@ -27,7 +27,7 @@ class Item extends EnhancedTreeItem {
 		this.bareDescription = description
 		this.crud = crud
 		this.tooltip = this.makeTooltip(label, description) || description || label
-		this.iconPath = this.makeIconPath(this.supertype, this.public ? ".public" : "");
+		this.iconPath = this.makeIconPath(this.supertype, (this.public && !this.isAppOpensource) ? ".public" : "");
 	}
 
 	makeTooltip() {
@@ -41,6 +41,17 @@ class Item extends EnhancedTreeItem {
 		}
 		tooltip += `Public: ${this.public}\r\nApproved: ${this.approved}`
 		return tooltip
+	}
+
+	/**
+	 * @return True, if app (parent of this item) is example (formerly Opensource).
+	 *         False for regular user's app.
+	 */
+	get isAppOpensource()/*:boolean */ {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let app/*:EnhancedTreeItem*/ = this;
+		while (app.parent) { app = app.parent; }
+		return app.isOpensource ;
 	}
 }
 

@@ -1,18 +1,23 @@
 Change Log
 ==========
 
-1.3.24
+1.3.27
 ------
 
 ### Fixed
 
-- Error during app import (issue #21)
+- Error during app import (#21)
 - Fail to save file kept open during VS Code restart
+- Fail to activate the extension for new users with no settings (#87)
+- Fail to display opensource app icons in treeview (#82)
+- Fail to load apps list if there is single app with multiple versions (#91)
 
 ### Changes
 
 - Keep original indent of JSON files. Do not execute the auto format automatically.
 - Update dependencies `request-light`, `uuid`, `vscode-json-languageservice`, `vscode-languageclient`, `vscode-languageserver`, `tempy`
+- First environment configuration process is more friendly (#87)
+- Opensource apps rename to "Examples" (#95)
 
 1.3.22
 ------
