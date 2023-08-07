@@ -27,22 +27,23 @@
 			"plugin:@typescript-eslint/recommended",
 			"google"
 		  ],
-		  // Override some Google rules
 		  "rules": {
 			"indent": ["error", "tab", {
 				"FunctionDeclaration": {"body": 1, "parameters": 1},
 				"SwitchCase": 1
 			}],
-			// Line width 80 -> 120
-			"max-len": ["warn", 120, { "ignoreStrings": true, "ignoreComments": true }],
-			"no-tabs": "off",
+			"max-len": ["warn", 120, { "ignoreStrings": true, "ignoreComments": true }],  // Line width 80 -> 120
+			"no-tabs": "off",  // This project uses tabs instead of spaces as default.
 			"quote-props": ["error", "as-needed"],
 			// "object-curly-spacing" is not aligned in Google with Typescript default used style
 			"object-curly-spacing": ["error", "always", { "objectsInObjects": false }],
 			"require-jsdoc": "off",
 			"valid-jsdoc":"off",
-			// Allow to used double-quotes if inner string has single-quote.
-			"quotes": ["error", "single", { "avoidEscape": true }]
+			"quotes": ["error", "single", { "avoidEscape": true }],  // Allow to used double-quotes if inner string has single-quote.
+			"block-spacing": ["error", "always"],  // Rollback from Google style to ESLint default.
+			"padded-blocks": "off", // Allow to start and end block ith blank lines.
+			"no-multi-spaces": ["error", { "ignoreEOLComments": true }]  // Ignore multiple spaces before comments that occur at the end of lines
+
 		  }
 		},
 		// For old JSfiles add couple of additional rules, which are included also in "google".
