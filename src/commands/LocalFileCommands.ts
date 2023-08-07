@@ -11,9 +11,10 @@ import { getCurrentEnvironment } from '../providers/configuration';
 import { downloadSource, uploadSource } from '../services/get-code';
 import { ComponentSummary, getAppComponents } from '../services/get-app-components';
 import { existsSync } from 'fs';
-import { getAppComponentCodeDefinition, getAppComponentDefinition, getAppComponentTypes } from '../services/component-code-def';
-import { AppComponentType as AppComponentTypeMetadata } from '../types/app-component-type.types';
+import { appCodesDefinition, getAppComponentCodeDefinition, getAppComponentDefinition, getAppComponentTypes } from '../services/component-code-def';
+import { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
+import { AppCodeName } from '../types/app-code-name.types';
 
 const MAKECOMAPP_FILENAME = 'makecomapp.json';
 const APIKEY_DIRNAME = '.secrets';
@@ -71,8 +72,8 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	// makecomapp.json
 	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
+		codes: {} as any, // Missing mandatory values are filled in loop below.
 		components: {
-			app: {},
 			connection: {},
 			webhook: {},
 			module: {},
@@ -112,11 +113,28 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	// }, null, 4));
 	// await vscode.workspace.fs.writeFile(settingsJsonUri, settingsJsonContent);
 
-	// Common
-	// const commonLocalPath = vscode.Uri.joinPath(srcDir, 'common.json');
-	// await downloadSource({appName, appVersion, appComponentType: 'app', appComponentName: '', codeName: 'common', environment, destinationPath: commonLocalPath.fsPath});
+	// Process all app's direct codes
+	for (const [codeName, codeDef] of Object.entries(appCodesDefinition)) {
+		const filebasename = codeDef.filename ? codeDef.filename : codeName;
+		const codeLocalRelativePath = filebasename + '.' + codeDef.fileext;  // Relative to app rootdir
+		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
+		// Download code from API to local file
+		await downloadSource({
+			appName,
+			appVersion,
+			appComponentType: 'app',  // The `app` type with name `` is the special
+			appComponentName: '',     //
+			codeName,
+			environment,
+			destinationPath: codeLocalAbsolutePath,
+		});
+		// Add to makecomapp.json
+		makecomappJson.codes[codeName as AppCodeName] = {
+			file: codeLocalRelativePath,
+		};
+	}
 
-
+	// Process all app's compoments
 	for (const appComponentType of getAppComponentTypes()) {
 		const appComponentSummaryList = await getAppComponents<ComponentSummary>(appComponentType, appName, appVersion, environment);
 
@@ -170,7 +188,7 @@ async function localFileUpload(file: vscode.Uri) {
 	const makeappRootdir = getMakecomappRootDir(file);
 
 	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
-	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson.components);
+	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson);
 
 	const origin = await askForOrigin(makeappJson.origins);
 	if (!origin) {
@@ -206,7 +224,7 @@ async function localFileDownload(file: vscode.Uri) {
 	const makeappRootdir = getMakecomappRootDir(file);
 
 	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath);  // Relative to makecomapp.json
-	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson.components);
+	const componentDetails = findCodeByFilename(fileRelativePath, makeappJson);
 
 	const origin = await askForOrigin(makeappJson.origins);
 	if (!origin) {
@@ -336,19 +354,35 @@ async function getMakecomappJson(startingPath: vscode.Uri): Promise<MakecomappJs
 }
 
 
-function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComponentTypesMetadata): {
-	componentType: AppComponentTypeMetadata,
+function findCodeByFilename(
+	fileRelativePath: string,
+	makecomappJson: MakecomappJson,
+): {
+	componentType: AppComponentType | 'app',
 	componentName: string,
 	codeName: string,
 } {
-	for (const componentType in appComponentTypes) {
-		for (const componentName in appComponentTypes[componentType as AppComponentTypeMetadata]) {
-			const codesMetadata: CodesMetadata = appComponentTypes[componentType as AppComponentTypeMetadata][componentName].codes || {};
+	// Try to find in app's direct configuration codes
+	for (const [appCodeName, appCodeMetadata] of Object.entries(makecomappJson.codes)) {
+		if (appCodeMetadata.file === fileRelativePath) {
+			return {
+				componentType: 'app',
+				componentName: '',
+				codeName: appCodeName,
+			};
+		}
+	}
+
+	// Try to find in compoments
+	const appComponentsMetadata: AppComponentTypesMetadata = makecomappJson.components;
+	for (const componentType in appComponentsMetadata) {
+		for (const componentName in appComponentsMetadata[componentType as AppComponentType]) {
+			const codesMetadata: CodesMetadata = appComponentsMetadata[componentType as AppComponentType][componentName].codes || {};
 			for (const codeName in codesMetadata) {
 				const codeMetadata = codesMetadata[codeName];
 				if (codeMetadata.file === fileRelativePath) {
 					return {
-						componentType: componentType as AppComponentTypeMetadata,
+						componentType: componentType as AppComponentType,
 						componentName,
 						codeName,
 					};
@@ -360,6 +394,7 @@ function findCodeByFilename(fileRelativePath: string, appComponentTypes: AppComp
 }
 
 interface MakecomappJson {
+	codes: Record<AppCodeName, CodeMetadata>
 	components: AppComponentTypesMetadata;
 	origins: LocalAppOrigin[];
 }
@@ -373,7 +408,7 @@ interface LocalAppOrigin {
 	apikeyFile: string;
 }
 
-type AppComponentTypesMetadata = Record<AppComponentTypeMetadata, AppComponentsMetadata>;
+type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMetadata>;
 
 /** Component ID => def */
 type AppComponentsMetadata = Record<string, AppComponentMetadata>
@@ -383,6 +418,7 @@ interface AppComponentMetadata {
 	codes: CodesMetadata;
 }
 
+/** Code Name => Code metadata */
 type CodesMetadata = Record<string, CodeMetadata>;
 interface CodeMetadata {
 	file: string,

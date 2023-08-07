@@ -13,15 +13,6 @@ export async function getAppComponents<T extends ComponentSummary>(
 	environment: AppsSdkConfigurationEnvironment,
 ): Promise<T[]> {
 
-	if (componentType === 'app') {
-		return [<T>{ name: '' }];
-	}
-
-	// Special case, when 'app' is not the real component type, but the app itself. Then there is no list of multiple components.
-	// if (componentType === 'app') {
-	// 	return [{ name: '' }] as T[];
-	// }
-
 	const apiURL = `https://${environment.url}/v2/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${appName}/`
 		+ (["connection", "webhook"].includes(componentType) ? '' : `${appVersion}`)
 		+ '/' + Core.pathDeterminer(environment.version, componentType);

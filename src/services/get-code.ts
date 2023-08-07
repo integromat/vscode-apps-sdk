@@ -2,9 +2,10 @@ import * as vscode from "vscode";
 import { AppsSdkConfigurationEnvironment } from "../providers/configuration";
 import * as Core from "../Core";
 import axios, { AxiosRequestConfig } from "axios";
-import { getAppComponentCodeDefinition } from "./component-code-def";
+import { getAppCodeDefinition, getAppComponentCodeDefinition } from "./component-code-def";
 import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from "util";
+import { AppCodeName } from "../types/app-code-name.types";
 
 /**
  * Download the code from the API and save it to the local destination
@@ -102,13 +103,15 @@ export function getCodeApiUrl({appName, appVersion, appComponentType, appCompone
 export async function uploadSource({appName, appVersion, appComponentType, appComponentName, codeName, environment, sourcePath}: {
 	appName: string,
 	appVersion: number,
-	appComponentType: AppComponentType,
+	appComponentType: AppComponentType | 'app',
 	appComponentName: string,
 	codeName: string,
 	environment: AppsSdkConfigurationEnvironment,
 	sourcePath: vscode.Uri,
 }): Promise<void> {
-		const codeDef = getAppComponentCodeDefinition(appComponentType, codeName);
+		const codeDef = (appComponentType === 'app')
+			? getAppCodeDefinition(codeName as AppCodeName)
+			: getAppComponentCodeDefinition(appComponentType, codeName);
 
 		const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 		const sourceContent = new TextDecoder().decode(sourceContentUint8);

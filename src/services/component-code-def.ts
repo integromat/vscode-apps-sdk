@@ -1,10 +1,12 @@
+import { AppCodeName } from "../types/app-code-name.types";
 import { AppComponentType } from "../types/app-component-type.types";
 
 const imljsonc = {
 	fileext: 'imljson',
 	mimetype: 'application/jsonc',
 };
-const appBaseDefinition = {
+
+export const appCodesDefinition: Record<AppCodeName, CodeDef> = {
 	base: {
 		filename: 'base',
 		fileext: 'imljson',
@@ -21,8 +23,7 @@ const appBaseDefinition = {
 	},
 };
 
-const componentsDefinition: Record<AppComponentType, Record<string, any>> = {
-	app: appBaseDefinition,
+const componentsDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
 	connection: {
 		api: { ...imljsonc, filename: 'base' },
 		parameters: imljsonc,
@@ -65,21 +66,37 @@ export function getAppComponentDefinition(appComponentType: AppComponentType) {
 }
 
 
-export function getAppComponentCodeDefinition(appComponentType: AppComponentType, codeName: string): {
-	mimetype: string,
-	fileext: string,
-	filename?: string,
-} {
+export function getAppComponentCodeDefinition(appComponentType: AppComponentType, codeName: string): CodeDef {
 	const componentDef = getAppComponentDefinition(appComponentType);
 
 	if (!componentDef[codeName]) {
-		throw new Error(`Unsupported code name: ${appComponentType}->${codeName}`);
+		throw new Error(`Unsupported component code name: ${appComponentType}->${codeName}`);
 	}
 
 	return componentDef[codeName];
 }
 
+/**
+ * Returns definition of app's direct codes
+ */
+export function getAppCodeDefinition(appCodeName: AppCodeName): CodeDef {
+	const componentDef: CodeDef|undefined = appCodesDefinition[appCodeName];
+
+	if (!componentDef) {
+		throw new Error(`Unsupported app base code name: ${appCodeName}`);
+	}
+
+	return componentDef;
+}
+
 
 export function getAppComponentTypes(): AppComponentType[] {
 	return Object.keys(componentsDefinition) as AppComponentType[];
+}
+
+
+interface CodeDef {
+	mimetype: string,
+	fileext: string,
+	filename?: string,
 }
