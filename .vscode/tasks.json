@@ -2,6 +2,35 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "TSC: Watch for all problems",
+			"command": "tsc",
+			"type": "shell",
+			"args": ["-w", "-p", ".", "--noEmit"],
+			"presentation": {
+			  "reveal": "silent",
+			},
+			"options": {
+			  "cwd": "${workspaceRoot}",
+			},
+			"isBackground": true,
+			"problemMatcher": {
+			  "base": "$tsc-watch",
+			  "fileLocation": ["relative", "${workspaceRoot}"],
+			}
+		},
+		{
+			"label": "ESLINT: Check for all problems",
+			"command": "eslint",
+			"type": "shell",
+			"args": ["-c", "./.eslintrc.json", "${workspaceRoot}/src/**/*.ts"],
+			"options": {
+			  "cwd": "${workspaceRoot}",
+			},
+			"problemMatcher": {
+			  "base": "$eslint-stylish",
+			}
+		},
+		{
 			"type": "npm",
 			"script": "watch",
 			"problemMatcher": "$tsc-watch",
