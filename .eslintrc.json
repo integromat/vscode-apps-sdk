@@ -17,5 +17,40 @@
 		"@typescript-eslint/no-explicit-any": 0,
 		"@typescript-eslint/explicit-module-boundary-types": 0,
 		"@typescript-eslint/no-non-null-assertion": 0
-	}
+	},
+	"overrides": [
+		// Be more strict to new TypeScript files.
+		{
+		  "files": ["**/*.ts", "**/*.tsx"],
+		  "extends": [
+			"eslint:recommended",
+			"plugin:@typescript-eslint/recommended",
+			"google"
+		  ],
+		  // Override some Google rules
+		  "rules": {
+			"indent": ["error", "tab", {
+				"FunctionDeclaration": {"body": 1, "parameters": 1},
+				"SwitchCase": 1
+			}],
+			// Line width 80 -> 120
+			"max-len": ["warn", 120, { "ignoreStrings": true, "ignoreComments": true }],
+			"no-tabs": "off",
+			"quote-props": ["error", "as-needed"],
+			// "object-curly-spacing" is not aligned in Google with Typescript default used style
+			"object-curly-spacing": ["error", "always", { "objectsInObjects": false }],
+			"require-jsdoc": "off",
+			"valid-jsdoc":"off",
+			// Allow to used double-quotes if inner string has single-quote.
+			"quotes": ["error", "single", { "avoidEscape": true }]
+		  }
+		},
+		// For old JSfiles add couple of additional rules, which are included also in "google".
+		{
+			"files": ["**/*.js"],
+			"rules": {
+				"no-unused-vars": "error"
+			}
+		}
+	]
 }
