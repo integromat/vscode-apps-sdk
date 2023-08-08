@@ -195,7 +195,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);
-	LocalFileCommands.register(appsProvider, _authorization, _environment);
+	LocalFileCommands.register();
 
 	/**
 	 * Registering events
