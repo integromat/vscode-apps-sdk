@@ -7,8 +7,8 @@ const imljsonc = {
 };
 
 const json = {
-	fileext: 'imljson',
-	mimetype: 'application/jsonc',
+	fileext: 'json',
+	mimetype: 'application/json',
 };
 
 export const appCodesDefinition: Record<GeneralCodeName, CodeDef> = {
@@ -18,19 +18,13 @@ export const appCodesDefinition: Record<GeneralCodeName, CodeDef> = {
 		fileext: 'imljson',
 		mimetype: 'application/jsonc',
 	},
-	common: {
-		fileext: 'json',
-		mimetype: 'application/json',
-	},
+	common: json,
 	content: {
 		filename: 'readme',
 		fileext: 'md',
 		mimetype: 'text/markdown',
 	},
-	groups: {
-		fileext: 'json',
-		mimetype: 'application/json',
-	},
+	groups: json,
 };
 
 const componentsDefinition: Record<AppComponentType, Record<string, CodeDef>> = {

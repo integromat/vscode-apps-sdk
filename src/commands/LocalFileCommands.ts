@@ -90,10 +90,12 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
 	}
 
-	// Save .gitignore: exclude secrets dir
+	// Save .gitignore: exclude secrets dir, common data.
 	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
 	const secretsDirRelativeToWorkspaceRoot = path.relative(workspaceRoot.fsPath, apikeyDir.fsPath);
-	const gitignoreContent = new TextEncoder().encode(secretsDirRelativeToWorkspaceRoot + '\n');
+	const gitignoreLines: string[] = ['*.common.json', secretsDirRelativeToWorkspaceRoot];
+	gitignoreLines.push(secretsDirRelativeToWorkspaceRoot);
+	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
 	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
 	// Create apikey file
 	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
