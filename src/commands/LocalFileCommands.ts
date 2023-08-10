@@ -17,7 +17,13 @@ import {
 } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
-import { AppCodeName } from '../types/app-code-name.types';
+import { GeneralCodeName } from '../types/general-code-name.types';
+import {
+	AppComponentTypesMetadata,
+	ComponentCodeFilesMetadata,
+	LocalAppOrigin,
+	MakecomappJson,
+} from '../local-development/types/makecomapp.types';
 
 const MAKECOMAPP_FILENAME = 'makecomapp.json';
 const APIKEY_DIRNAME = '.secrets';
@@ -49,20 +55,19 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const appVersion = context.version;
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
-	const apikeyFileUri = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME, 'apikey1');
+	const apikeyFileUri = vscode.Uri.joinPath(apikeyDir, 'apikey1');
 
 	const localAppRootdir = await askForAppDirToClone();
 	if (!localAppRootdir) {
 		return;
 	}
 
-	// const configuration = getConfiguration();
 	const environment = getCurrentEnvironment();
 
 	// makecomapp.json
 	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
-		codes: {} as any, // Missing mandatory values are filled in loop below.
+		codeFiles: {} as any, // Missing mandatory values are filled in loop below.
 		components: {
 			connection: {},
 			webhook: {},
@@ -76,7 +81,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				url: environment.url, // TODO it is not actually the url, it is without https://
 				appId: context.name,
 				appVersion: context.version,
-				apikeyFile: path.relative(makeappJsonPath.fsPath, apikeyFileUri.fsPath),
+				apikeyFile: path.relative(path.dirname(makeappJsonPath.fsPath), apikeyFileUri.fsPath),
 			},
 		],
 	};
@@ -119,9 +124,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			destinationPath: codeLocalAbsolutePath,
 		});
 		// Add to makecomapp.json
-		makecomappJson.codes[codeName as AppCodeName] = {
-			file: codeLocalRelativePath,
-		};
+		makecomappJson.codeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
 	}
 
 	// Process all app's compoments
@@ -137,7 +140,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			// Create section in makecomapp.json
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {
 				// label: appComponentSummary.label,   // todo enable and change type above to ModuleComponentSummary, ... based on componentType
-				codes: {},
+				codeFiles: {},
 			};
 			// Process all codes
 			const codeNames = Object.keys(getAppComponentDefinition(appComponentType));
@@ -163,17 +166,17 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 					destinationPath: codeLocalAbsolutePath,
 				});
 				// Add to makecomapp.json
-				makecomappJson.components[appComponentType][appComponentSummary.name].codes[codeName] = {
-					file: codeLocalRelativePath,
-				};
+				makecomappJson.components[appComponentType][appComponentSummary.name].codeFiles[codeName] =
+					codeLocalRelativePath;
 			}
 		}
 	}
 
 	// Write makecomapp.json app metadata file
 	await fs.writeFile(makeappJsonPath.fsPath, JSON.stringify(makecomappJson, null, 4));
-	// VSCode show makecomapp.json and open explorer
-	await vscode.commands.executeCommand('vscode.open', makeappJsonPath);
+	// VSCode show readme.md and open explorer
+	const readme = vscode.Uri.joinPath(localAppRootdir, 'readme.md');
+	await vscode.commands.executeCommand('vscode.open', readme);
 	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 }
 
@@ -209,8 +212,7 @@ async function localFileUpload(file: vscode.Uri) {
 				canceled = true;
 			});
 
-			for (let i = 0; i < components.length; i++) {
-				const component = components[i];
+			for (const component of components) {
 				// Update the progress bar
 				progress.report({
 					increment: 100 / components.length,
@@ -429,15 +431,15 @@ function findCodesByPath(relativePath: string, makecomappJson: MakecomappJson, m
 	const ret: CodePath[] = [];
 
 	// Try to find in app's direct configuration codes
-	for (const [appCodeName, appCodeMetadata] of Object.entries(makecomappJson.codes)) {
-		const codeIsInSubdir = appCodeMetadata.file.startsWith(relativePath);
-		const codeExactMatch = appCodeMetadata.file === relativePath;
+	for (const [appCodeName, codeFilePath] of Object.entries(makecomappJson.codeFiles)) {
+		const codeIsInSubdir = codeFilePath.startsWith(relativePath);
+		const codeExactMatch = codeFilePath === relativePath;
 		if (codeIsInSubdir || codeExactMatch) {
 			const codePath: CodePath = {
 				componentType: 'app',
 				componentName: '',
 				codeName: appCodeName,
-				localFile: vscode.Uri.joinPath(makeappRootdir, appCodeMetadata.file),
+				localFile: vscode.Uri.joinPath(makeappRootdir, codeFilePath),
 			};
 			if (codeExactMatch) {
 				// In case of exact match, it is impossible to find another match. So we can immediatelly return it.
@@ -452,18 +454,18 @@ function findCodesByPath(relativePath: string, makecomappJson: MakecomappJson, m
 	/* eslint-disable guard-for-in */
 	for (const componentType in appComponentsMetadata) {
 		for (const componentName in appComponentsMetadata[componentType as AppComponentType]) {
-			const codesMetadata: CodesMetadata =
-				appComponentsMetadata[componentType as AppComponentType][componentName].codes || {};
-			for (const codeName in codesMetadata) {
-				const codeMetadata = codesMetadata[codeName];
-				const codeIsInSubdir = codeMetadata.file.startsWith(relativePath);
-				const codeExactMatch = codeMetadata.file === relativePath;
+			const codeFilesMetadata: ComponentCodeFilesMetadata =
+				appComponentsMetadata[componentType as AppComponentType][componentName].codeFiles || {};
+			for (const codeName in codeFilesMetadata) {
+				const codeFilePath = codeFilesMetadata[codeName];
+				const codeIsInSubdir = codeFilePath.startsWith(relativePath);
+				const codeExactMatch = codeFilePath === relativePath;
 				if (codeIsInSubdir || codeExactMatch) {
 					const codePath: CodePath = {
 						componentType: componentType as AppComponentType,
 						componentName,
 						codeName,
-						localFile: vscode.Uri.joinPath(makeappRootdir, codeMetadata.file),
+						localFile: vscode.Uri.joinPath(makeappRootdir, codeFilePath),
 					};
 					if (codeExactMatch) {
 						// In case of exact match, it is impossible to find another match. So we can immediatelly return it.
@@ -476,35 +478,4 @@ function findCodesByPath(relativePath: string, makecomappJson: MakecomappJson, m
 	}
 	/* eslint-enable guard-for-in */
 	return ret;
-}
-
-interface MakecomappJson {
-	codes: Record<AppCodeName, CodeMetadata>;
-	components: AppComponentTypesMetadata;
-	origins: LocalAppOrigin[];
-}
-
-interface LocalAppOrigin {
-	/** User friendly title */
-	label?: string;
-	url: string;
-	appId: string;
-	appVersion: number;
-	apikeyFile: string;
-}
-
-type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMetadata>;
-
-/** Component ID => def */
-type AppComponentsMetadata = Record<string, AppComponentMetadata>;
-
-interface AppComponentMetadata {
-	label?: string;
-	codes: CodesMetadata;
-}
-
-/** Code Name => Code metadata */
-type CodesMetadata = Record<string, CodeMetadata>;
-interface CodeMetadata {
-	file: string;
 }

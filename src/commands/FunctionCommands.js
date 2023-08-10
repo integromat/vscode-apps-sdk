@@ -6,7 +6,7 @@ const Validator = require('../Validator')
 
 const { VM, VMScript } = require('vm2')
 const { IML } = require('@integromat/iml')
-const { showError, catchError } = require('../error-handling');
+const { catchError } = require('../error-handling');
 
 class FunctionCommands {
 	static async register(appsProvider, _authorization, _environment, _timezone) {
