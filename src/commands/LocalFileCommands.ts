@@ -1,32 +1,21 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs/promises';
-import { TextEncoder } from 'util';
 import { catchError, withProgress } from '../error-handling';
 import { log } from '../output-channel';
-import App from '../tree/App';
 import { getCurrentEnvironment } from '../providers/configuration';
 import { downloadSource, uploadSource } from '../services/get-code';
-import { ComponentSummary, getAppComponents } from '../services/get-app-components';
-import { existsSync } from 'fs';
-import {
-	appCodesDefinition,
-	getAppComponentCodeDefinition,
-	getAppComponentDefinition,
-	getAppComponentTypes,
-} from '../services/component-code-def';
+
 import { AppComponentType } from '../types/app-component-type.types';
-import { camelToKebab } from '../utils/camel-to-kebab';
-import { GeneralCodeName } from '../types/general-code-name.types';
 import {
 	AppComponentTypesMetadata,
 	ComponentCodeFilesMetadata,
 	LocalAppOrigin,
 	MakecomappJson,
 } from '../local-development/types/makecomapp.types';
+import { MAKECOMAPP_FILENAME } from '../local-development/consts';
+import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
+import { cloneAppToWorkspace } from '../local-development/clone';
 
-const MAKECOMAPP_FILENAME = 'makecomapp.json';
-const APIKEY_DIRNAME = '.secrets';
 
 export class LocalFileCommands {
 	static register(): void {
@@ -48,138 +37,6 @@ export class LocalFileCommands {
 			)
 		);
 	}
-}
-
-async function cloneAppToWorkspace(context: App): Promise<void> {
-	const appName = context.name;
-	const appVersion = context.version;
-	const workspaceRoot = getCurrentWorkspace().uri;
-	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
-	const apikeyFileUri = vscode.Uri.joinPath(apikeyDir, 'apikey1');
-
-	const localAppRootdir = await askForAppDirToClone();
-	if (!localAppRootdir) {
-		return;
-	}
-
-	const environment = getCurrentEnvironment();
-
-	// makecomapp.json
-	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
-	const makecomappJson: MakecomappJson = {
-		codeFiles: {} as any, // Missing mandatory values are filled in loop below.
-		components: {
-			connection: {},
-			webhook: {},
-			module: {},
-			rpc: {},
-			function: {},
-		},
-		origins: [
-			{
-				label: 'Origin',
-				url: environment.url, // TODO it is not actually the url, it is without https://
-				appId: context.name,
-				appVersion: context.version,
-				apikeyFile: path.relative(path.dirname(makeappJsonPath.fsPath), apikeyFileUri.fsPath),
-			},
-		],
-	};
-
-	if (existsSync(makeappJsonPath.fsPath)) {
-		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
-	}
-
-	// Save .gitignore: exclude secrets dir, common data.
-	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
-	const secretsDirRelativeToWorkspaceRoot = path.relative(workspaceRoot.fsPath, apikeyDir.fsPath);
-	const gitignoreLines: string[] = ['*.common.json', secretsDirRelativeToWorkspaceRoot];
-	gitignoreLines.push(secretsDirRelativeToWorkspaceRoot);
-	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
-	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
-	// Create apikey file
-	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
-	await vscode.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
-
-	// Create .vscode/settings.json with exclude secrets dir
-	// const settingsJsonUri = vscode.Uri.joinPath(workspaceRoot, '.vscode', 'settings.json');
-	// const settingsJsonContent = new TextEncoder().encode(JSON.stringify({
-	// 	"files.exclude": {
-	// 		[secretsDirRelativeToWorkspaceRoot]: true
-	// 	}
-	// }, null, 4));
-	// await vscode.workspace.fs.writeFile(settingsJsonUri, settingsJsonContent);
-
-	// Process all app's direct codes
-	for (const [codeName, codeDef] of Object.entries(appCodesDefinition)) {
-		const filebasename = codeDef.filename ? codeDef.filename : codeName;
-		const codeLocalRelativePath = filebasename + '.' + codeDef.fileext; // Relative to app rootdir
-		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-		// Download code from API to local file
-		await downloadSource({
-			appName,
-			appVersion,
-			appComponentType: 'app', // The `app` type with name `` is the special
-			appComponentName: '', //
-			codeName,
-			environment,
-			destinationPath: codeLocalAbsolutePath,
-		});
-		// Add to makecomapp.json
-		makecomappJson.codeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
-	}
-
-	// Process all app's compoments
-	for (const appComponentType of getAppComponentTypes()) {
-		const appComponentSummaryList = await getAppComponents<ComponentSummary>(
-			appComponentType,
-			appName,
-			appVersion,
-			environment
-		);
-
-		for (const appComponentSummary of appComponentSummaryList) {
-			// Create section in makecomapp.json
-			makecomappJson.components[appComponentType][appComponentSummary.name] = {
-				// label: appComponentSummary.label,   // todo enable and change type above to ModuleComponentSummary, ... based on componentType
-				codeFiles: {},
-			};
-			// Process all codes
-			const codeNames = Object.keys(getAppComponentDefinition(appComponentType));
-			for (const codeName of codeNames) {
-				const codeDef = getAppComponentCodeDefinition(appComponentType, codeName);
-				// Local file path generator
-				const filebasename =
-					camelToKebab(appComponentSummary.name) + '.' + (codeDef.filename ? codeDef.filename : codeName);
-				const codeLocalRelativePath = path.join(
-					appComponentType + 's',
-					camelToKebab(appComponentSummary.name),
-					filebasename + '.' + codeDef.fileext
-				); // Relative to app rootdir
-				const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-				// Download code from API to local file
-				await downloadSource({
-					appName,
-					appVersion,
-					appComponentType,
-					appComponentName: appComponentSummary.name,
-					codeName,
-					environment,
-					destinationPath: codeLocalAbsolutePath,
-				});
-				// Add to makecomapp.json
-				makecomappJson.components[appComponentType][appComponentSummary.name].codeFiles[codeName] =
-					codeLocalRelativePath;
-			}
-		}
-	}
-
-	// Write makecomapp.json app metadata file
-	await fs.writeFile(makeappJsonPath.fsPath, JSON.stringify(makecomappJson, null, 4));
-	// VSCode show readme.md and open explorer
-	const readme = vscode.Uri.joinPath(localAppRootdir, 'readme.md');
-	await vscode.commands.executeCommand('vscode.open', readme);
-	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 }
 
 /**
@@ -306,17 +163,6 @@ function tempFilename(filename: string): string {
 	return path.join(parsed.dir, parsed.name + '.tmp' + parsed.ext);
 }
 
-function getCurrentWorkspace(): vscode.WorkspaceFolder {
-	if (!vscode.workspace.workspaceFolders) {
-		throw new Error('No workspace opened');
-	}
-	if (vscode.workspace.workspaceFolders.length > 1) {
-		throw new Error('More than one workspace opened. Cannot decide, where to download app.');
-	}
-
-	return vscode.workspace.workspaceFolders[0];
-}
-
 /**
  *
  * @param origins
@@ -350,52 +196,6 @@ async function askForOrigin(origins: LocalAppOrigin[], purposeLabel?: string): P
 	return selectedOrigin?.origin;
 }
 
-/**
- * Opens vs code directory selector and returns the selected directory.
- * Returns undefined, when user cancels the dialog.
- */
-async function askForAppDirToClone(): Promise<vscode.Uri | undefined> {
-	const workspace = getCurrentWorkspace();
-	const directory = await vscode.window.showInputBox({
-		ignoreFocusOut: true,
-		prompt: 'Enter the current workspace subdirectory, where the app will be cloned to.',
-		value: 'src',
-		title: 'Destination, where to clone the app',
-	});
-	if (!directory) {
-		return undefined;
-	}
-	return vscode.Uri.joinPath(workspace.uri, directory);
-}
-
-/**
- * FinSd the nearest parent dir, where makecomapp.json is located.
- * File must be located in the workspace.
- * @return Directory, where makecomapp.json is located.
- */
-function getMakecomappRootDir(startingPath: vscode.Uri): vscode.Uri {
-	const workspace = getCurrentWorkspace();
-	const startDirRelative = path.relative(workspace.uri.fsPath, startingPath.fsPath);
-	if (startDirRelative.startsWith('..') || startingPath.fsPath === path.parse(startingPath.fsPath).root) {
-		throw new Error(`Appropriate ${MAKECOMAPP_FILENAME} file not found in the workspace.`);
-	}
-
-	if (existsSync(path.join(startingPath.fsPath, MAKECOMAPP_FILENAME))) {
-		return startingPath;
-	} else {
-		return getMakecomappRootDir(vscode.Uri.joinPath(startingPath, '..'));
-	}
-}
-
-/**
- * Gets makecomapp.json content from the nearest parent dir, where makecomapp.json is located.
- */
-async function getMakecomappJson(startingPath: vscode.Uri): Promise<MakecomappJson> {
-	const makecomappRootdir = getMakecomappRootDir(startingPath);
-	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
-	const makecomappJson = JSON.parse((await fs.readFile(makecomappJsonPath.fsPath)).toString()) as MakecomappJson;
-	return makecomappJson;
-}
 
 interface CodePath {
 	componentType: AppComponentType | 'app';

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import * as Core from '../Core';
 import axios, { AxiosRequestConfig } from 'axios';
-import { getAppCodeDefinition, getAppComponentCodeDefinition } from './component-code-def';
+import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from './component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
 import { GeneralCodeName } from '../types/general-code-name.types';
@@ -134,7 +134,7 @@ export async function uploadSource({
 }): Promise<void> {
 	const codeDef =
 		appComponentType === 'app'
-			? getAppCodeDefinition(codeName as GeneralCodeName)
+			? getGeneralCodeDefinition(codeName as GeneralCodeName)
 			: getAppComponentCodeDefinition(appComponentType, codeName);
 
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);

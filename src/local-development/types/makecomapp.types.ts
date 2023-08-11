@@ -1,5 +1,6 @@
 import { GeneralCodeName } from '../../types/general-code-name.types';
 import { AppComponentType } from '../../types/app-component-type.types';
+import { Crud } from './crud.types';
 
 export interface MakecomappJson {
 	codeFiles: GeneralCodeFilesMetadata;
@@ -25,7 +26,16 @@ export type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMe
 type AppComponentsMetadata = Record<string, AppComponentMetadata>;
 
 interface AppComponentMetadata {
-	label?: string;
+	metadata: {
+		label?: string;
+		description?: string,
+		type?: string,
+		actionCrud?: Crud;
+		/** Valid for modules */
+		connection?: string | null;
+		/** Valid for modules */
+		altConnection?: string | null;
+	},
 	codeFiles: ComponentCodeFilesMetadata;
 }
 

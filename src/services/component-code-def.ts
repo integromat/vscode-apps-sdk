@@ -1,5 +1,6 @@
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { AppComponentType } from '../types/app-component-type.types';
+import { CodeDef } from '../local-development/types/code-def.types';
 
 const imljsonc = {
 	fileext: 'imljson',
@@ -11,20 +12,19 @@ const json = {
 	mimetype: 'application/json',
 };
 
-export const appCodesDefinition: Record<GeneralCodeName, CodeDef> = {
-	// TODO rename to General
+export const generalCodesDefinition: Record<GeneralCodeName, CodeDef> = {
 	base: {
-		filename: 'base',
+		filename: 'general/base',
 		fileext: 'imljson',
 		mimetype: 'application/jsonc',
 	},
-	common: json,
+	common: { ...json, filename: 'general/common' },
 	content: {
 		filename: 'readme',
 		fileext: 'md',
 		mimetype: 'text/markdown',
 	},
-	groups: json,
+	groups: { ...json, filename: 'modules/groups' },
 };
 
 const componentsDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
@@ -89,8 +89,8 @@ export function getAppComponentCodeDefinition(appComponentType: AppComponentType
 /**
  * Returns definition of app's direct codes
  */
-export function getAppCodeDefinition(appCodeName: GeneralCodeName): CodeDef {
-	const componentDef: CodeDef | undefined = appCodesDefinition[appCodeName];
+export function getGeneralCodeDefinition(appCodeName: GeneralCodeName): CodeDef {
+	const componentDef: CodeDef | undefined = generalCodesDefinition[appCodeName];
 
 	if (!componentDef) {
 		throw new Error(`Unsupported app base code name: ${appCodeName}`);
@@ -99,12 +99,9 @@ export function getAppCodeDefinition(appCodeName: GeneralCodeName): CodeDef {
 	return componentDef;
 }
 
+/**
+ * Returns list: ['function', 'module, 'rpc', ...]
+ */
 export function getAppComponentTypes(): AppComponentType[] {
 	return Object.keys(componentsDefinition) as AppComponentType[];
-}
-
-interface CodeDef {
-	mimetype: string;
-	fileext: string;
-	filename?: string;
 }
