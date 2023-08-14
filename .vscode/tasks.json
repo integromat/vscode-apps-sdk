@@ -2,12 +2,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "TSC: Watch for all problems",
+			"label": "Watch for all Typescript problems",
 			"command": "tsc",
 			"type": "shell",
 			"args": ["-w", "-p", ".", "--noEmit"],
 			"presentation": {
-			  "reveal": "silent",
+			  "revealProblems": "onProblem"
 			},
 			"options": {
 			  "cwd": "${workspaceRoot}",
@@ -19,7 +19,7 @@
 			}
 		},
 		{
-			"label": "ESLINT: Check for all problems",
+			"label": "Check for all ESLint problems in *.ts",
 			"command": "eslint",
 			"type": "shell",
 			"args": ["-c", "./.eslintrc.json", "${workspaceRoot}/src/**/*.ts"],
