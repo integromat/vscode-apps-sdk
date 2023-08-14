@@ -11,6 +11,7 @@ const camelCase = require('lodash.camelcase');
 const path = require('path');
 const fs = require('fs');
 const { showError } = require('../error-handling');
+const { translateModuleTypeId } = require('../services/module-types-naming')
 
 class ModuleCommands {
     static async register(appsProvider, _authorization, _environment) {
@@ -450,7 +451,7 @@ class ModuleCommands {
 
                 module.type = {
                     id: module.typeId,
-                    label: Core.translateModuleTypeId(module.typeId)
+                    label: translateModuleTypeId(module.typeId)
                 }
                 delete module.type_id;
             } else {
@@ -460,7 +461,7 @@ class ModuleCommands {
 
                 module.type = {
                     id: module.type_id,
-                    label: Core.translateModuleTypeId(module.type_id)
+                    label: translateModuleTypeId(module.type_id)
                 }
                 delete module.type_id;
             }
