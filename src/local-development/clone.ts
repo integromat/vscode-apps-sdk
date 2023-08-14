@@ -15,7 +15,7 @@ import {
 import { CodeDef } from './types/code-def.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { GeneralCodeName } from '../types/general-code-name.types';
-import { downloadSource } from '../services/get-code';
+import { downloadSource } from '../services/code-deploy-download';
 import {
 	ComponentSummary,
 	ConnectionComponentSummary,

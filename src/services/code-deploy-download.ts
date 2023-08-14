@@ -60,10 +60,10 @@ export async function downloadSource({
 
 /**
  * Gets endpoint URL for CRUD of the the given component's code.
- *
  * Note: `appComponentType` === `app` is the special name for the app-level code (like readme, base, common, ...)
+ * @private
  */
-export function getCodeApiUrl({
+function getCodeApiUrl({
 	appName,
 	appVersion,
 	appComponentType,

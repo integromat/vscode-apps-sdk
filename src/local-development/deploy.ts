@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { log } from '../output-channel';
 import { getCurrentEnvironment } from '../providers/configuration';
-import { uploadSource } from '../services/get-code';
+import { uploadSource } from '../services/code-deploy-download';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { askForOrigin } from './dialog-select-origin';
