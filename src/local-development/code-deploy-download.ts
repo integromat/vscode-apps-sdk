@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import * as Core from '../Core';
 import axios, { AxiosRequestConfig } from 'axios';
-import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from './component-code-def';
+import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
 import { GeneralCodeName } from '../types/general-code-name.types';

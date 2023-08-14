@@ -3,7 +3,7 @@ import * as path from 'path';
 import { catchError, withProgress } from '../error-handling';
 import { log } from '../output-channel';
 import { getCurrentEnvironment } from '../providers/configuration';
-import { downloadSource } from '../services/code-deploy-download';
+import { downloadSource } from '../local-development/code-deploy-download';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { cloneAppToWorkspace } from '../local-development/clone';
 import { findCodeByFilePath } from '../local-development/find-code-by-filepath';
