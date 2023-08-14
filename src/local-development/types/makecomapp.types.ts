@@ -1,9 +1,11 @@
 import { GeneralCodeName } from '../../types/general-code-name.types';
 import { AppComponentType } from '../../types/app-component-type.types';
 import { Crud } from './crud.types';
+import { ConnectionType, ModuleType, WebhookType } from '../../types/module-type.types';
 
 export interface MakecomappJson {
-	codeFiles: GeneralCodeFilesMetadata;
+	fileVersion: number;
+	generalCodeFiles: GeneralCodeFilesMetadata;
 	components: AppComponentTypesMetadata;
 	origins: LocalAppOrigin[];
 }
@@ -23,20 +25,23 @@ export interface LocalAppOrigin {
 export type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMetadata>;
 
 /** Component ID => Component metadata */
-type AppComponentsMetadata = Record<string, AppComponentMetadata>;
+type AppComponentsMetadata = Record<string, AppComponentMetadataWithCodeFiles>;
 
-interface AppComponentMetadata {
-	metadata: {
-		label?: string;
-		description?: string,
-		type?: string,
-		actionCrud?: Crud;
-		/** Valid for modules */
-		connection?: string | null;
-		/** Valid for modules */
-		altConnection?: string | null;
-	},
+
+export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
 	codeFiles: ComponentCodeFilesMetadata;
+}
+export interface AppComponentMetadata {
+	label?: string;
+	description?: string;
+	connectionType?: ConnectionType;
+	webhookType?: WebhookType;
+	moduleType?: ModuleType;
+	actionCrud?: Crud;
+	/** Valid for modules, webhooks, rpcs */
+	// connection?: string | null;
+	/** Valid for modules, webhooks, rpcs */
+	// altConnection?: string | null;
 }
 
 /** General Code Name => Code Local File Path */

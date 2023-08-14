@@ -1,4 +1,8 @@
-export const moduleTypes = [
+import { ModuleType } from '../types/module-type.types';
+
+export const moduleTypes: {
+	type_id: number, type: ModuleType, label: string
+}[] = [
 	{
 		type_id: 1,
 		type: 'trigger',

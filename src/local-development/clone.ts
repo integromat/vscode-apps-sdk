@@ -3,24 +3,30 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { getCurrentWorkspace } from '../services/workspace';
 import { AppsSdkConfigurationEnvironment, getCurrentEnvironment } from '../providers/configuration';
-import { ComponentCodeFilesMetadata, MakecomappJson } from './types/makecomapp.types';
+import { AppComponentMetadata, ComponentCodeFilesMetadata, MakecomappJson } from './types/makecomapp.types';
 import App from '../tree/App';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import {
 	generalCodesDefinition,
-	getAppComponentCodeDefinition,
-	getAppComponentDefinition,
+	getAppComponentCodesDefinition,
 	getAppComponentTypes,
 } from '../services/component-code-def';
 import { CodeDef } from './types/code-def.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from '../services/get-code';
-import { ComponentSummary, getAppComponents } from '../services/get-app-components';
+import {
+	ComponentSummary,
+	ConnectionComponentSummary,
+	ModuleComponentSummary,
+	WebhookComponentSummary,
+	getAppComponents,
+} from '../services/get-app-components';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { existsSync } from 'fs';
 import { TextEncoder } from 'util';
+import { getModuleDefFromId } from '../services/module-types-naming';
 
 export async function cloneAppToWorkspace(context: App): Promise<void> {
 	const appName = context.name;
@@ -39,7 +45,8 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 	// makecomapp.json
 	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
 	const makecomappJson: MakecomappJson = {
-		codeFiles: {} as any, // Missing mandatory values are filled in loop below.
+		fileVersion: 1,
+		generalCodeFiles: {} as any, // Missing mandatory values are filled in loop below.
 		components: {
 			connection: {},
 			webhook: {},
@@ -103,7 +110,7 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 			destinationPath: codeLocalAbsolutePath,
 		});
 		// Add to makecomapp.json
-		makecomappJson.codeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
+		makecomappJson.generalCodeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
 	}
 
 	// Process all app's compoments
@@ -118,20 +125,42 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 
 		for (const appComponentSummary of appComponentSummaryList) {
 			// Create section in makecomapp.json
+			const componentMetadata: AppComponentMetadata = {
+				label: appComponentSummary.label,
+				description: appComponentSummary.description,
+			};
+			switch (appComponentType) {
+				case 'connection':
+					componentMetadata['connectionType'] = (
+						appComponentSummary as ConnectionComponentSummary
+					).type;
+					break;
+				case 'webhook':
+					componentMetadata['webhookType'] = (appComponentSummary as WebhookComponentSummary).type;
+					// TODO Issue: It is missing in API response
+					// componentMetadata['connection'] = appComponentSummary.connection;
+					// componentMetadata['altConnection'] = appComponentSummary.altConnection;
+					break;
+				case 'module':
+					componentMetadata['moduleType'] = getModuleDefFromId(
+						(appComponentSummary as ModuleComponentSummary).typeId,
+					).type;
+					if (componentMetadata['moduleType'] === 'action') {
+						componentMetadata['actionCrud'] = (appComponentSummary as ModuleComponentSummary).crud;
+					}
+					// TODO Issue: It is missing in API response
+					// componentMetadata['connection'] = (appComponentSummary as ModuleComponentSummary).connection;
+					// componentMetadata['altConnection'] = (appComponentSummary as ModuleComponentSummary).altConnection;
+					break;
+				case 'rpc':
+					// TODO Issue: It is missing in API response
+					// componentMetadata['connection'] = (appComponentSummary as RpcComponentSummary).connection;
+					// componentMetadata['altConnection'] = (appComponentSummary as RpcComponentSummary).altConnection;
+					break;
+			}
+
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {
-				metadata: {
-					label: appComponentSummary.label,
-					description: appComponentSummary.description,
-					type: appComponentSummary.type,
-					...(appComponentSummary.crud !== undefined ? { actionCrud: appComponentSummary.crud } : {}),
-					...(appComponentSummary.connection !== undefined
-						? { connection: appComponentSummary.connection }
-						: {}),
-					...(appComponentSummary.altConnection !== undefined
-						? { altConnection: appComponentSummary.altConnection }
-						: {}),
-				},
-				// label: appComponentSummary.label,   // todo enable and change type above to ModuleComponentSummary, ... based on componentType
+				...componentMetadata,
 				codeFiles: await cloneComponent(
 					appName,
 					appVersion,
@@ -139,6 +168,7 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 					appComponentSummary.name,
 					localAppRootdir,
 					environment,
+					componentMetadata,
 				),
 			};
 		}
@@ -190,12 +220,15 @@ async function cloneComponent(
 	appComponentName: string,
 	localAppRootdir: vscode.Uri,
 	environment: AppsSdkConfigurationEnvironment,
+	componentMetadata: AppComponentMetadata,
 ): Promise<ComponentCodeFilesMetadata> {
+	// Detect, which codes are appropriate to the component
+	const componentCodesDef = Object.entries(getAppComponentCodesDefinition(appComponentType)).
+		filter(([_codeName, codeDef]) => (!codeDef.onlyFor || codeDef.onlyFor(componentMetadata)));
+
 	const componentCodeMetadata: ComponentCodeFilesMetadata = {};
 	// Process all codes
-	const codeNames = Object.keys(getAppComponentDefinition(appComponentType));
-	for (const codeName of codeNames) {
-		const codeDef = getAppComponentCodeDefinition(appComponentType, codeName);
+	for (const [codeName, codeDef] of componentCodesDef) {
 		// Local file path (Relative to app rootdir)
 		const codeLocalRelativePath = generateDefaultLocalFilePath(
 			codeDef,

@@ -3,6 +3,7 @@ import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import camelCase from 'lodash.camelcase';
 import { AppComponentType } from '../types/app-component-type.types';
 import { Crud } from '../local-development/types/crud.types';
+import { ConnectionType, WebhookType } from '../types/module-type.types';
 
 /**
  * Gets list of components summaries of the given type for the given app.
@@ -52,28 +53,28 @@ export interface ModuleComponentSummary {
 	webhook: string | null;
 }
 
-interface ConnectionComponentSummary {
+export interface ConnectionComponentSummary {
 	name: string;
 	label: string;
-	type: 'oauth' | 'basic';
+	type: ConnectionType;
 }
 
-interface WebhookComponentSummary {
+export interface WebhookComponentSummary {
 	name: string;
 	label: string;
-	type: 'web' | 'web-shared';
+	type: WebhookType;
 	connection: string | null;
 	altConnection: string | null;
 }
 
-interface RpcComponentSummary {
+export interface RpcComponentSummary {
 	name: string;
 	label: string;
 	connection: string | null;
 	altConnection: string | null;
 }
 
-interface FunctionComponentSummary {
+export interface FunctionComponentSummary {
 	name: string;
 	args: string;
 }

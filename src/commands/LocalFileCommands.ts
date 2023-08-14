@@ -233,7 +233,7 @@ function findCodesByPath(relativePath: string, makecomappJson: MakecomappJson, m
 	const ret: CodePath[] = [];
 
 	// Try to find in app's direct configuration codes
-	for (const [appCodeName, codeFilePath] of Object.entries(makecomappJson.codeFiles)) {
+	for (const [appCodeName, codeFilePath] of Object.entries(makecomappJson.generalCodeFiles)) {
 		const codeIsInSubdir = codeFilePath.startsWith(relativePath);
 		const codeExactMatch = codeFilePath === relativePath;
 		if (codeIsInSubdir || codeExactMatch) {

@@ -27,19 +27,31 @@ export const generalCodesDefinition: Record<GeneralCodeName, CodeDef> = {
 	groups: { ...json, filename: 'modules/groups' },
 };
 
-const componentsDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
+const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
 	connection: {
 		api: { ...imljsonc, filename: 'communication' },
 		parameters: imljsonc,
 		common: json,
-		/** Scope list. Visible for `type='oauth'` only. */
-		scopes: { ...imljsonc, filename: 'scope-list' },
-		/** Default scope. Visible for `type='oauth'` only.*/
-		scope: { ...imljsonc, filename: 'default-scope' },
-		/** Install specification parameters. Visible for `type='oauth'` only. */
-		installSpec: { ...imljsonc, filename: 'install-spec' },
-		/** Install directives. Visible for `type='oauth'` only. */
-		install: { ...imljsonc, filename: 'install-directives' },
+		scopes: {
+			...imljsonc,
+			filename: 'scope-list',
+			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
+		},
+		scope: {
+			...imljsonc,
+			filename: 'default-scope',
+			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
+		},
+		installSpec: {
+			...imljsonc,
+			filename: 'install-spec',
+			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
+		},
+		install: {
+			...imljsonc,
+			filename: 'install-directives',
+			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
+		},
 	},
 	webhook: {
 		api: { ...imljsonc, filename: 'communication' },
@@ -51,12 +63,15 @@ const componentsDefinition: Record<AppComponentType, Record<string, CodeDef>> = 
 	},
 	module: {
 		api: { ...imljsonc, filename: 'communication' },
-		epoch: imljsonc, // TODO Looks like visible in pooling trigger only
+		epoch: {
+			...imljsonc,
+			onlyFor: (componentMetadata) => componentMetadata.moduleType === 'trigger',
+		},
 		parameters: { ...imljsonc, filename: 'static-params' },
 		expect: { ...imljsonc, filename: 'mappable-params' },
 		interface: imljsonc,
 		samples: imljsonc,
-		scope: imljsonc, // TODO: Not visible in trigger, search, action, universal. Looks like not visible anywhere.
+		// scope: imljsonc, // Looks like not visible anywhere, so disabling.
 	},
 	rpc: {
 		api: { ...imljsonc, filename: 'communication' },
@@ -68,22 +83,22 @@ const componentsDefinition: Record<AppComponentType, Record<string, CodeDef>> = 
 	},
 };
 
-export function getAppComponentDefinition(appComponentType: AppComponentType) {
-	if (!componentsDefinition[appComponentType]) {
+export function getAppComponentCodesDefinition(appComponentType: AppComponentType) {
+	if (!componentsCodesDefinition[appComponentType]) {
 		throw new Error(`Unsupported component name: ${appComponentType}`);
 	}
 
-	return componentsDefinition[appComponentType];
+	return componentsCodesDefinition[appComponentType];
 }
 
 export function getAppComponentCodeDefinition(appComponentType: AppComponentType, codeName: string): CodeDef {
-	const componentDef = getAppComponentDefinition(appComponentType);
+	const componentCodesDef = getAppComponentCodesDefinition(appComponentType);
 
-	if (!componentDef[codeName]) {
+	if (!componentCodesDef[codeName]) {
 		throw new Error(`Unsupported component code name: ${appComponentType}->${codeName}`);
 	}
 
-	return componentDef[codeName];
+	return componentCodesDef[codeName];
 }
 
 /**
@@ -103,5 +118,5 @@ export function getGeneralCodeDefinition(appCodeName: GeneralCodeName): CodeDef 
  * Returns list: ['function', 'module, 'rpc', ...]
  */
 export function getAppComponentTypes(): AppComponentType[] {
-	return Object.keys(componentsDefinition) as AppComponentType[];
+	return Object.keys(componentsCodesDefinition) as AppComponentType[];
 }
