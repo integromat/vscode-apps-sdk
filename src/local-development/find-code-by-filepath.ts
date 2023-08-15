@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { AppComponentType } from '../types/app-component-type.types';
 import {
+	AppComponentMetadataWithCodeFiles,
 	AppComponentTypesMetadata,
 	ComponentCodeFilesMetadata,
 	MakecomappJson,
@@ -42,7 +43,7 @@ export function findCodesByFilePath(
 
 	// Try to find in app's direct configuration codes
 	for (const [appCodeName, codeFilePath] of Object.entries(makecomappJson.generalCodeFiles)) {
-		const codeIsInSubdir = codeFilePath.startsWith(relativePath);
+		const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 		const codeExactMatch = codeFilePath === relativePath;
 		if (codeIsInSubdir || codeExactMatch) {
 			const codePath: CodePath = {
@@ -60,7 +61,8 @@ export function findCodesByFilePath(
 	}
 
 	// Try to find in compoments
-	const appComponentsMetadata: AppComponentTypesMetadata = makecomappJson.components;
+	const appComponentsMetadata: AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles> =
+		makecomappJson.components;
 	/* eslint-disable guard-for-in */
 	for (const componentType in appComponentsMetadata) {
 		for (const componentName in appComponentsMetadata[componentType as AppComponentType]) {
@@ -68,7 +70,7 @@ export function findCodesByFilePath(
 				appComponentsMetadata[componentType as AppComponentType][componentName].codeFiles || {};
 			for (const codeName in codeFilesMetadata) {
 				const codeFilePath = codeFilesMetadata[codeName];
-				const codeIsInSubdir = codeFilePath.startsWith(relativePath);
+				const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 				const codeExactMatch = codeFilePath === relativePath;
 				if (codeIsInSubdir || codeExactMatch) {
 					const codePath: CodePath = {

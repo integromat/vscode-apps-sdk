@@ -6,7 +6,7 @@ import { ConnectionType, ModuleType, WebhookType } from '../../types/module-type
 export interface MakecomappJson {
 	fileVersion: number;
 	generalCodeFiles: GeneralCodeFilesMetadata;
-	components: AppComponentTypesMetadata;
+	components: AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>;
 	origins: LocalAppOrigin[];
 }
 
@@ -22,10 +22,10 @@ export interface LocalAppOrigin {
 	apikeyFile: string;
 }
 
-export type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMetadata>;
+export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
 
 /** Component ID => Component metadata */
-type AppComponentsMetadata = Record<string, AppComponentMetadataWithCodeFiles>;
+export type AppComponentsMetadata<T> = Record<string, T>;
 
 
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {

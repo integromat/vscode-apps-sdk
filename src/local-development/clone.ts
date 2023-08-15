@@ -3,7 +3,13 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { getCurrentWorkspace } from '../services/workspace';
 import { AppsSdkConfigurationEnvironment, getCurrentEnvironment } from '../providers/configuration';
-import { AppComponentMetadata, ComponentCodeFilesMetadata, MakecomappJson } from './types/makecomapp.types';
+import {
+	AppComponentMetadata,
+	AppComponentMetadataWithCodeFiles,
+	AppComponentTypesMetadata,
+	ComponentCodeFilesMetadata,
+	MakecomappJson,
+} from './types/makecomapp.types';
 import App from '../tree/App';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
@@ -27,6 +33,7 @@ import { camelToKebab } from '../utils/camel-to-kebab';
 import { existsSync } from 'fs';
 import { TextEncoder } from 'util';
 import { getModuleDefFromId } from '../services/module-types-naming';
+import { getAllComponentsSummaries } from './component-summaries';
 
 export async function cloneAppToWorkspace(context: App): Promise<void> {
 	const appName = context.name;
@@ -44,16 +51,21 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	// makecomapp.json
 	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
+	// If manifest exists, cancel this task.
+	if (existsSync(makeappJsonPath.fsPath)) {
+		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
+	}
+
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,
 		generalCodeFiles: {} as any, // Missing mandatory values are filled in loop below.
-		components: {
-			connection: {},
-			webhook: {},
-			module: {},
-			rpc: {},
-			function: {},
-		},
+		components: await cloneAllFilesToLocal(
+			await getAllComponentsSummaries(appName, appVersion, environment),
+			appName,
+			appVersion,
+			environment,
+			localAppRootdir,
+		),
 		origins: [
 			{
 				label: 'Origin',
@@ -64,10 +76,6 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 			},
 		],
 	};
-
-	if (existsSync(makeappJsonPath.fsPath)) {
-		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
-	}
 
 	// Save .gitignore: exclude secrets dir, common data.
 	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
@@ -131,9 +139,7 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 			};
 			switch (appComponentType) {
 				case 'connection':
-					componentMetadata['connectionType'] = (
-						appComponentSummary as ConnectionComponentSummary
-					).type;
+					componentMetadata['connectionType'] = (appComponentSummary as ConnectionComponentSummary).type;
 					break;
 				case 'webhook':
 					componentMetadata['webhookType'] = (appComponentSummary as WebhookComponentSummary).type;
@@ -223,8 +229,9 @@ async function cloneComponent(
 	componentMetadata: AppComponentMetadata,
 ): Promise<ComponentCodeFilesMetadata> {
 	// Detect, which codes are appropriate to the component
-	const componentCodesDef = Object.entries(getAppComponentCodesDefinition(appComponentType)).
-		filter(([_codeName, codeDef]) => (!codeDef.onlyFor || codeDef.onlyFor(componentMetadata)));
+	const componentCodesDef = Object.entries(getAppComponentCodesDefinition(appComponentType)).filter(
+		([_codeName, codeDef]) => !codeDef.onlyFor || codeDef.onlyFor(componentMetadata),
+	);
 
 	const componentCodeMetadata: ComponentCodeFilesMetadata = {};
 	// Process all codes
@@ -252,4 +259,44 @@ async function cloneComponent(
 		componentCodeMetadata[codeName] = codeLocalRelativePath;
 	}
 	return componentCodeMetadata;
+}
+
+async function cloneAllFilesToLocal(
+	allComponentSummaries: AppComponentTypesMetadata<AppComponentMetadata>,
+	appName: string,
+	appVersion: number,
+	environment: AppsSdkConfigurationEnvironment,
+	localAppRootdir: vscode.Uri,
+): Promise<AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>> {
+	const ret = Object.fromEntries(
+		await Promise.all(
+			Object.entries(allComponentSummaries).map(async ([componentType, components]) => {
+				return [
+					<AppComponentType>componentType,
+					Object.fromEntries(
+						await Promise.all(
+							Object.entries(components).map(async ([componentName, componentMetadata]) => {
+								return [
+									componentName,
+									<AppComponentMetadataWithCodeFiles>{
+										...componentMetadata,
+										codeFiles: await cloneComponent(
+											appName,
+											appVersion,
+											componentType as AppComponentType,
+											componentName,
+											localAppRootdir,
+											environment,
+											componentMetadata,
+										),
+									},
+								];
+							}),
+						),
+					),
+				];
+			}),
+		),
+	);
+	return <Record<AppComponentType, (typeof ret)[string]>>ret; // Force retype, because `fromEntries` loses a keys type.
 }
