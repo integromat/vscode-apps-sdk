@@ -44,31 +44,57 @@ export async function localFileDeploy(file: vscode.Uri) {
 				canceled = true;
 			});
 
-			// Compare cloud with local makecomapp.json and find components to add and delete.
-			const allComponentSummaryInCloud = await getAllComponentsSummaries(
+			const allComponentsSummariesInCloud = await getAllComponentsSummaries(
 				origin.appId,
 				origin.appVersion,
 				environment,
 			);
-			const componentAddingRemoving = diffComponentsPresence(allComponentSummaryInCloud, makeappJson.components);
-			if (componentAddingRemoving.newComponents.length > 0) {
+			// Compare cloud component list with local makecomapp.json
+			const componentAddingRemoving = diffComponentsPresence(
+				makeappJson.components,
+				allComponentsSummariesInCloud,
+			);
+			// New components = new components in makecomapp.json & components to deploy
+			const newComponentsToCreate = componentAddingRemoving.newComponents.filter((newComponentInMakecomappjson) =>
+				codesToDeploy.find(
+					(codeToDeploy) =>
+						codeToDeploy.componentType === newComponentInMakecomappjson.componentType &&
+						codeToDeploy.componentName === newComponentInMakecomappjson.componentName,
+				),
+			);
+			if (
+				componentAddingRemoving.newComponents.length > 0 ||
+				componentAddingRemoving.missingComponents.length > 0
+			) {
 				// Ask for continue in case of new component(s) found
 				const confirmAnswer = await vscode.window.showWarningMessage(
-					`There are ${
-						componentAddingRemoving.newComponents.length > 0
-					} new component(s) in your local project. Continue and deploy it as new components to the Make?`,
+					'Components asymetry found between local files and Make',
 					{
 						modal: true,
-						detail:
-							'New components: ' +
-							componentAddingRemoving.newComponents
-								.map((newC) => newC.componentType + ' ' + newC.componentName)
-								.join(', '),
+						detail: [
+							newComponentsToCreate.length > 0
+								? `New ${newComponentsToCreate.length} local components\n` +
+								  '(will be created at Make):\n' +
+								  newComponentsToCreate
+										.map((newC) => '➕\xA0' + newC.componentType + '\xA0' + newC.componentName)
+										.join(', ')
+								: '',
+							componentAddingRemoving.missingComponents.length > 0
+								? `NOTE: Missing ${componentAddingRemoving.missingComponents.length} local components:\n` +
+								  '(exists in Make, but missing in local project):\n' +
+								  componentAddingRemoving.missingComponents
+										.map(
+											(missingC) =>
+												'➖\xA0' + missingC.componentType + '\xA0' + missingC.componentName,
+										)
+										.join(', ')
+								: '',
+							'MAKE SURE THIS IS SOMETHING YOU ARE INTENDINT and there is no typo in component ID.',
+						].join('\n\n'),
 					},
-					{ title: 'OK' },
-					{ title: 'Cancel' },
+					{ title: 'Continue' },
 				);
-				if (confirmAnswer?.title !== 'OK') {
+				if (confirmAnswer?.title !== 'Continue') {
 					return;
 				}
 				// Add new components in Make
@@ -81,10 +107,24 @@ export async function localFileDeploy(file: vscode.Uri) {
 					increment: 100 / codesToDeploy.length,
 					message: `${component.componentType} ${component.componentName} ${component.codeName}`,
 				});
-				// Log to console
+				// Skip if component removed from cloud
+				if (
+					componentAddingRemoving.newComponents.find(
+						(newComponent) =>
+							newComponent.componentType === component.componentType &&
+							newComponent.componentName === component.componentName,
+					)
+				) {
+					log(
+						'debug',
+						`Skipping to deploy ${component.componentType} ${component.componentName} ${component.codeName} because does not exist on Make yet.`,
+					);
+					continue;
+				}
+
 				log(
 					'debug',
-					`Deploying ${component.componentType} ${component.componentName} ${component.codeName} from ${file.fsPath} to ${origin.url} app ${origin.appId} version ${origin.appVersion}`,
+					`Deploying ${component.componentType} ${component.componentName} ${component.codeName} from ${file.fsPath}`,
 				);
 
 				/** @deprecated */
