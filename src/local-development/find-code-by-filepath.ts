@@ -33,6 +33,7 @@ export function findCodeByFilePath(
  *                       Else horrible things can happen when some another directory has similar name
  *                       starting with same string as first one.
  * @param limit - Limits the maximum count of results. Used if expected the exact one result only. Default is unlimited.
+ * @return in correct order to upload to Make without breaking some dependency.
  */
 export function findCodesByFilePath(
 	relativePath: string,
@@ -89,5 +90,18 @@ export function findCodesByFilePath(
 		}
 	}
 	/* eslint-enable guard-for-in */
-	return ret;
+	return ret
+		// Sort codes to correct order to avoid break some dependency/relation
+		.sort((codePath1, codePath2) => {
+			return orderToDeploy[codePath1.componentType] - orderToDeploy[codePath2.componentType];
+		});
 }
+
+const orderToDeploy: Record<AppComponentType | 'app', number> = {
+	app: 0, // Generic codes
+	connection: 1,
+	rpc: 2,
+	webhook: 3,
+	module: 4,
+	function: 5,
+};
