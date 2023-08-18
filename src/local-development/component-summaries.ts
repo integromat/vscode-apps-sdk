@@ -1,13 +1,10 @@
-import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import { getAppComponentTypes } from '../services/component-code-def';
 import { ComponentSummary, ConnectionComponentSummary, ModuleComponentSummary, WebhookComponentSummary, getAppComponents } from '../services/get-app-components';
 import { getModuleDefFromId } from '../services/module-types-naming';
-import { AppComponentMetadata, AppComponentTypesMetadata } from './types/makecomapp.types';
+import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 
 export async function getAllComponentsSummaries(
-	appName: string,
-	appVersion: number,
-	environment: AppsSdkConfigurationEnvironment,
+	origin: LocalAppOriginWithSecret,
 ): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {
 	const components: Awaited<ReturnType<typeof getAllComponentsSummaries>> = {
 		connection: {},
@@ -21,9 +18,7 @@ export async function getAllComponentsSummaries(
 	for (const appComponentType of getAppComponentTypes()) {
 		const appComponentSummaryList = await getAppComponents<ComponentSummary>(
 			appComponentType,
-			appName,
-			appVersion,
-			environment,
+			origin,
 		);
 
 		for (const appComponentSummary of appComponentSummaryList) {
@@ -43,10 +38,10 @@ export async function getAllComponentsSummaries(
 					// componentMetadata['altConnection'] = appComponentSummary.altConnection;
 					break;
 				case 'module':
-					componentMetadata['moduleType'] = getModuleDefFromId(
+					componentMetadata['moduleSubtype'] = getModuleDefFromId(
 						(appComponentSummary as ModuleComponentSummary).typeId,
 					).type;
-					if (componentMetadata['moduleType'] === 'action') {
+					if (componentMetadata['moduleSubtype'] === 'action') {
 						componentMetadata['actionCrud'] = (appComponentSummary as ModuleComponentSummary).crud;
 					}
 					// TODO Issue: It is missing in API response

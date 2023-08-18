@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { catchError, withProgress } from '../error-handling';
 import { log } from '../output-channel';
-import { getCurrentEnvironment } from '../providers/configuration';
 import { downloadSource } from '../local-development/code-deploy-download';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { cloneAppToWorkspace } from '../local-development/clone';
@@ -44,27 +43,23 @@ async function localFileDownload(file: vscode.Uri) {
 	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath); // Relative to makecomapp.json
 	const componentDetails = findCodeByFilePath(fileRelativePath, makeappJson, makeappRootdir);
 
-	const origin = await askForOrigin(makeappJson.origins);
+	const origin = await askForOrigin(makeappJson.origins, makeappRootdir, 'app cloning to local');
 	if (!origin) {
 		return;
 	}
 
 	log(
 		'debug',
-		`Downloading/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in ${file.fsPath} from ${origin.url} app ${origin.appId} version ${origin.appVersion} ...`
+		`Downloading/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in ${file.fsPath} from ${origin.baseUrl} app ${origin.appId} version ${origin.appVersion} ...`
 	);
 
-	/** @deprecated */
-	const environment = getCurrentEnvironment();
 	// Download the cloud file version into temp file
 	const newTmpFile = vscode.Uri.file(tempFilename(file.fsPath));
 	await downloadSource({
-		appName: origin.appId,
-		appVersion: origin.appVersion,
 		appComponentType: componentDetails.componentType,
 		appComponentName: componentDetails.componentName,
 		codeName: componentDetails.codeName,
-		environment,
+		origin,
 		destinationPath: newTmpFile,
 	});
 	// Keep user to approve changes

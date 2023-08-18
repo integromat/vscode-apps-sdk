@@ -1,28 +1,28 @@
 import * as Core from '../Core';
-import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import camelCase from 'lodash.camelcase';
 import { AppComponentType } from '../types/app-component-type.types';
 import { Crud } from '../local-development/types/crud.types';
 import { ConnectionType, WebhookType } from '../types/module-type.types';
+import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
+
+const ENVIRONMENT_VERSION = 2;
 
 /**
  * Gets list of components summaries of the given type for the given app.
  */
 export async function getAppComponents<T extends ComponentSummary>(
 	componentType: AppComponentType,
-	appName: string,
-	appVersion: number,
-	environment: AppsSdkConfigurationEnvironment,
+	origin: LocalAppOriginWithSecret,
 ): Promise<T[]> {
 	const apiURL =
-		`https://${environment.url}/v2/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(
-			environment.version,
+		`${origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
+			ENVIRONMENT_VERSION,
 			'app',
-		)}/${appName}/` +
-		(['connection', 'webhook'].includes(componentType) ? '' : `${appVersion}`) +
+		)}/${origin.appId}/` +
+		(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}`) +
 		'/' +
-		Core.pathDeterminer(environment.version, componentType);
-	const apiResponse = await Core.rpGet(apiURL, 'Token ' + environment.apikey);
+		Core.pathDeterminer(ENVIRONMENT_VERSION, componentType);
+	const apiResponse = await Core.rpGet(apiURL, 'Token ' + origin.apikey);
 	const items: T[] = apiResponse[camelCase(`app_${componentType}s`)];
 	return items;
 }

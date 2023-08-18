@@ -2,7 +2,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
-import { getCurrentEnvironment } from '../providers/configuration';
 import { uploadSource } from './code-deploy-download';
 import { getAllComponentsSummaries } from './component-summaries';
 import { askForOrigin } from './dialog-select-origin';
@@ -21,13 +20,11 @@ export async function localFileDeploy(file: vscode.Uri) {
 
 	const codesToDeploy = findCodesByFilePath(fileRelativePath, makeappJson, makeappRootdir);
 
-	const environment = getCurrentEnvironment();
-
 	if (codesToDeploy.length === 0) {
 		throw new Error('Sorry, no associated component code with this file/path found.');
 	}
 
-	const origin = await askForOrigin(makeappJson.origins);
+	const origin = await askForOrigin(makeappJson.origins, makeappRootdir, 'deployment to Make');
 	if (!origin) {
 		return;
 	}
@@ -45,9 +42,7 @@ export async function localFileDeploy(file: vscode.Uri) {
 			});
 
 			const allComponentsSummariesInCloud = await getAllComponentsSummaries(
-				origin.appId,
-				origin.appVersion,
-				environment,
+				origin,
 			);
 			// Compare cloud component list with local makecomapp.json
 			const componentAddingRemoving = diffComponentsPresence(
@@ -127,22 +122,18 @@ export async function localFileDeploy(file: vscode.Uri) {
 					`Deploying ${component.componentType} ${component.componentName} ${component.codeName} from ${file.fsPath}`,
 				);
 
-				/** @deprecated */
-				const environment = getCurrentEnvironment();
 				// Upload via API
 				await uploadSource({
-					appName: origin.appId,
-					appVersion: origin.appVersion,
 					appComponentType: component.componentType,
 					appComponentName: component.componentName,
 					codeName: component.codeName,
-					environment,
+					origin,
 					sourcePath: component.localFile,
 				});
 				// Log 'done' to console
 				log(
 					'debug',
-					`Deployed ${component.componentType} ${component.componentName} ${component.codeName} to ${origin.url} app ${origin.appId} ${origin.appVersion}`,
+					`Deployed ${component.componentType} ${component.componentName} ${component.codeName} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
 				// Handle the user "cancel" button press
 				if (canceled) {

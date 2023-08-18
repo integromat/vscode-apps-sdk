@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
-import { AppsSdkConfigurationEnvironment } from '../providers/configuration';
 import * as Core from '../Core';
 import axios, { AxiosRequestConfig } from 'axios';
 import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
 import { GeneralCodeName } from '../types/general-code-name.types';
+import { LocalAppOriginWithSecret } from './types/makecomapp.types';
+
+const ENVIRONMENT_VERSION = 2;
 
 /**
  * Download the code from the API and save it to the local destination
@@ -14,27 +16,23 @@ import { GeneralCodeName } from '../types/general-code-name.types';
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function downloadSource({
-	appName,
-	appVersion,
 	appComponentType,
 	appComponentName,
 	codeName,
-	environment,
+	origin,
 	destinationPath,
 }: {
-	appName: string;
-	appVersion: number;
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
 	codeName: string;
-	environment: AppsSdkConfigurationEnvironment;
+	origin: LocalAppOriginWithSecret,
 	destinationPath: vscode.Uri;
 }): Promise<void> {
 	// Get the code from the API
 	const axiosResponse = await axios({
-		url: getCodeApiUrl({ appName, appVersion, appComponentType, appComponentName, codeName, environment }),
+		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),
 		headers: {
-			Authorization: 'Token ' + environment.apikey,
+			Authorization: 'Token ' + origin.apikey,
 			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},
 		transformResponse: (res) => res, // Do not parse the response into JSON
@@ -64,28 +62,24 @@ export async function downloadSource({
  * @private
  */
 function getCodeApiUrl({
-	appName,
-	appVersion,
 	appComponentType,
 	appComponentName,
 	codeName,
-	environment,
+	origin,
 }: {
-	appName: string;
-	appVersion: number;
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
 	codeName: string;
-	environment: AppsSdkConfigurationEnvironment;
+	origin: LocalAppOriginWithSecret;
 }): string {
 	// Compose directory structure
-	let urn = `/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}${
-		environment.version !== 2 ? '/' + appName : ''
+	let urn = `/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(ENVIRONMENT_VERSION, 'app')}${
+		ENVIRONMENT_VERSION !== 2 ? '/' + origin.appId : ''
 	}`;
 
 	// Add version to URN for versionable items
 	if (Core.isVersionable(appComponentType)) {
-		urn += `${environment.version === 2 ? '/' + appName : ''}/${appVersion}`;
+		urn += `${ENVIRONMENT_VERSION === 2 ? '/' + origin.appId : ''}/${origin.appVersion}`;
 	}
 
 	// Complete the URN by the type of item
@@ -112,24 +106,20 @@ function getCodeApiUrl({
 		default:
 			throw new Error(`Unsupported component type: ${appComponentType} by getEndpointUrl().`);
 	}
-	return 'https://' + environment.url + '/v2' + urn;
+	return origin.baseUrl + '/v2' + urn;
 }
 
 export async function uploadSource({
-	appName,
-	appVersion,
 	appComponentType,
 	appComponentName,
 	codeName,
-	environment,
+	origin,
 	sourcePath,
 }: {
-	appName: string;
-	appVersion: number;
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
 	codeName: string;
-	environment: AppsSdkConfigurationEnvironment;
+	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
 }): Promise<void> {
 	const codeDef =
@@ -142,10 +132,10 @@ export async function uploadSource({
 
 	// Get the code from the API
 	const axiosConfig: AxiosRequestConfig = {
-		url: getCodeApiUrl({ appName, appVersion, appComponentType, appComponentName, codeName, environment }),
+		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),
 		method: 'PUT',
 		headers: {
-			Authorization: 'Token ' + environment.apikey,
+			Authorization: 'Token ' + origin.apikey,
 			'Content-Type': codeDef.mimetype,
 			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},

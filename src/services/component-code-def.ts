@@ -65,7 +65,7 @@ const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef
 		api: { ...imljsonc, filename: 'communication' },
 		epoch: {
 			...imljsonc,
-			onlyFor: (componentMetadata) => componentMetadata.moduleType === 'trigger',
+			onlyFor: (componentMetadata) => componentMetadata.moduleSubtype === 'trigger',
 		},
 		parameters: { ...imljsonc, filename: 'static-params' },
 		expect: { ...imljsonc, filename: 'mappable-params' },

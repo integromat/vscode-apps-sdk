@@ -1,7 +1,7 @@
 import { GeneralCodeName } from '../../types/general-code-name.types';
 import { AppComponentType } from '../../types/app-component-type.types';
 import { Crud } from './crud.types';
-import { ConnectionType, ModuleType, WebhookType } from '../../types/module-type.types';
+import { ConnectionType, ModuleSubtype, WebhookType } from '../../types/module-type.types';
 
 export interface MakecomappJson {
 	fileVersion: number;
@@ -16,10 +16,14 @@ export interface MakecomappJson {
 export interface LocalAppOrigin {
 	/** User friendly title */
 	label?: string;
-	url: string;
+	baseUrl: string;
 	appId: string;
 	appVersion: number;
 	apikeyFile: string;
+}
+
+export interface LocalAppOriginWithSecret extends LocalAppOrigin {
+	apikey: string;
 }
 
 export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
@@ -36,7 +40,7 @@ export interface AppComponentMetadata {
 	description?: string;
 	connectionType?: ConnectionType;
 	webhookType?: WebhookType;
-	moduleType?: ModuleType;
+	moduleSubtype?: ModuleSubtype;
 	actionCrud?: Crud;
 	/** Valid for modules, webhooks, rpcs */
 	// connection?: string | null;

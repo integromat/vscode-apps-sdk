@@ -2,12 +2,13 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { getCurrentWorkspace } from '../services/workspace';
-import { AppsSdkConfigurationEnvironment, getCurrentEnvironment } from '../providers/configuration';
+import { getCurrentEnvironment } from '../providers/configuration';
 import {
 	AppComponentMetadata,
 	AppComponentMetadataWithCodeFiles,
 	AppComponentTypesMetadata,
 	ComponentCodeFilesMetadata,
+	LocalAppOriginWithSecret,
 	MakecomappJson,
 } from './types/makecomapp.types';
 import App from '../tree/App';
@@ -36,8 +37,6 @@ import { getModuleDefFromId } from '../services/module-types-naming';
 import { getAllComponentsSummaries } from './component-summaries';
 
 export async function cloneAppToWorkspace(context: App): Promise<void> {
-	const appName = context.name;
-	const appVersion = context.version;
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 	const apikeyFileUri = vscode.Uri.joinPath(apikeyDir, 'apikey1');
@@ -56,24 +55,25 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
 	}
 
+	const origin: LocalAppOriginWithSecret = {
+		label: 'Origin',
+		baseUrl: 'https://' + environment.url,
+		appId: context.name,
+		appVersion: context.version,
+		apikeyFile: path.relative(path.dirname(makeappJsonPath.fsPath), apikeyFileUri.fsPath),
+		apikey: environment.apikey,
+	};
+
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,
 		generalCodeFiles: {} as any, // Missing mandatory values are filled in loop below.
 		components: await cloneAllFilesToLocal(
-			await getAllComponentsSummaries(appName, appVersion, environment),
-			appName,
-			appVersion,
-			environment,
+			await getAllComponentsSummaries(origin),
+			origin,
 			localAppRootdir,
 		),
 		origins: [
-			{
-				label: 'Origin',
-				url: environment.url, // TODO it is not actually the url, it is without https://
-				appId: context.name,
-				appVersion: context.version,
-				apikeyFile: path.relative(path.dirname(makeappJsonPath.fsPath), apikeyFileUri.fsPath),
-			},
+			origin
 		],
 	};
 
@@ -109,12 +109,10 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		// Download code from API to local file
 		await downloadSource({
-			appName,
-			appVersion,
 			appComponentType: 'app', // The `app` type with name `` is the special
 			appComponentName: '', //
 			codeName,
-			environment,
+			origin,
 			destinationPath: codeLocalAbsolutePath,
 		});
 		// Add to makecomapp.json
@@ -125,9 +123,7 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 	for (const appComponentType of getAppComponentTypes()) {
 		const appComponentSummaryList = await getAppComponents<ComponentSummary>(
 			appComponentType,
-			appName,
-			appVersion,
-			environment,
+			origin,
 		);
 		// TODO Extrahovat stazeni jednotlivych komponent jako samotnou funkci
 
@@ -148,10 +144,10 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 					// componentMetadata['altConnection'] = appComponentSummary.altConnection;
 					break;
 				case 'module':
-					componentMetadata['moduleType'] = getModuleDefFromId(
+					componentMetadata['moduleSubtype'] = getModuleDefFromId(
 						(appComponentSummary as ModuleComponentSummary).typeId,
 					).type;
-					if (componentMetadata['moduleType'] === 'action') {
+					if (componentMetadata['moduleSubtype'] === 'action') {
 						componentMetadata['actionCrud'] = (appComponentSummary as ModuleComponentSummary).crud;
 					}
 					// TODO Issue: It is missing in API response
@@ -168,12 +164,10 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {
 				...componentMetadata,
 				codeFiles: await cloneComponent(
-					appName,
-					appVersion,
 					appComponentType,
 					appComponentSummary.name,
 					localAppRootdir,
-					environment,
+					origin,
 					componentMetadata,
 				),
 			};
@@ -220,12 +214,10 @@ function generateDefaultLocalFilePath(
 }
 
 async function cloneComponent(
-	appName: string,
-	appVersion: number,
 	appComponentType: AppComponentType,
 	appComponentName: string,
 	localAppRootdir: vscode.Uri,
-	environment: AppsSdkConfigurationEnvironment,
+	origin: LocalAppOriginWithSecret,
 	componentMetadata: AppComponentMetadata,
 ): Promise<ComponentCodeFilesMetadata> {
 	// Detect, which codes are appropriate to the component
@@ -247,12 +239,10 @@ async function cloneComponent(
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		// Download code from API to local file
 		await downloadSource({
-			appName,
-			appVersion,
 			appComponentType,
 			appComponentName,
 			codeName,
-			environment,
+			origin,
 			destinationPath: codeLocalAbsolutePath,
 		});
 		// Add to makecomapp.json
@@ -263,9 +253,7 @@ async function cloneComponent(
 
 async function cloneAllFilesToLocal(
 	allComponentSummaries: AppComponentTypesMetadata<AppComponentMetadata>,
-	appName: string,
-	appVersion: number,
-	environment: AppsSdkConfigurationEnvironment,
+	origin: LocalAppOriginWithSecret,
 	localAppRootdir: vscode.Uri,
 ): Promise<AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>> {
 	const ret = Object.fromEntries(
@@ -281,12 +269,10 @@ async function cloneAllFilesToLocal(
 									<AppComponentMetadataWithCodeFiles>{
 										...componentMetadata,
 										codeFiles: await cloneComponent(
-											appName,
-											appVersion,
 											componentType as AppComponentType,
 											componentName,
 											localAppRootdir,
-											environment,
+											origin,
 											componentMetadata,
 										),
 									},
