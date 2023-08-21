@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs/promises';
 import { getCurrentWorkspace } from '../services/workspace';
 import { getCurrentEnvironment } from '../providers/configuration';
 import {
@@ -67,14 +66,8 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,
 		generalCodeFiles: {} as any, // Missing mandatory values are filled in loop below.
-		components: await cloneAllFilesToLocal(
-			await getAllComponentsSummaries(origin),
-			origin,
-			localAppRootdir,
-		),
-		origins: [
-			origin
-		],
+		components: await cloneAllFilesToLocal(await getAllComponentsSummaries(origin), origin, localAppRootdir),
+		origins: [origin],
 	};
 
 	// Save .gitignore: exclude secrets dir, common data.
@@ -121,10 +114,7 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	// Process all app's compoments
 	for (const appComponentType of getAppComponentTypes()) {
-		const appComponentSummaryList = await getAppComponents<ComponentSummary>(
-			appComponentType,
-			origin,
-		);
+		const appComponentSummaryList = await getAppComponents<ComponentSummary>(appComponentType, origin);
 		// TODO Extrahovat stazeni jednotlivych komponent jako samotnou funkci
 
 		for (const appComponentSummary of appComponentSummaryList) {
@@ -175,7 +165,10 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 	}
 
 	// Write makecomapp.json app metadata file
-	await fs.writeFile(makeappJsonPath.fsPath, JSON.stringify(makecomappJson, null, 4));
+	await vscode.workspace.fs.writeFile(
+		makeappJsonPath,
+		new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
+	);
 	// VSCode show readme.md and open explorer
 	const readme = vscode.Uri.joinPath(localAppRootdir, 'readme.md');
 	await vscode.commands.executeCommand('vscode.open', readme);
