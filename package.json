@@ -765,7 +765,7 @@
 		"typescript": "^5.0.4"
 	},
 	"dependencies": {
-		"@integromat/iml": "^1.22.5",
+		"@integromat/iml": "^2.19.11",
 		"@integromat/udt": "^1.2.0",
 		"adm-zip": "^0.5.10",
 		"async-file": "^2.0.2",

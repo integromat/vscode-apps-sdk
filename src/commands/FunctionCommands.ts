@@ -4,7 +4,7 @@ import * as Core from '../Core';
 import * as Validator from '../Validator';
 
 import { VM, VMOptions, VMScript } from 'vm2';
-const { IML } = require('@integromat/iml');
+import { IML } from '@integromat/iml';
 import { catchError } from '../error-handling';
 import { Environment } from '../types/environment.types';
 import AppsProvider from '../providers/AppsProvider';
