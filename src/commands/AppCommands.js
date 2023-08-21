@@ -1054,6 +1054,9 @@ class AppCommands {
 				};
 			};
 
+			/**
+			 * Pick properties `keys` from the object and returns as new object.
+			 */
 			const extract = (obj, keys) => {
 				const out = {};
 				keys.forEach(key => {
@@ -1062,6 +1065,9 @@ class AppCommands {
 				return out;
 			};
 
+			/**
+			 * In URI it replaces variables (defined by `store`)
+			 */
 			const replaceSlugs = (store, uri) => {
 				Object.keys(store).forEach(key => {
 					if (uri.includes(key)) {
@@ -1127,17 +1133,24 @@ class AppCommands {
 				// validator.count should equal entries.length;
 			};
 
+			/**
+			 * Returns list of all API request configs, which will upload all codes&icon of new SDK app.
+			 * @returns ReturnType<typeof makeRequestProto>[]
+			 */
 			const buildRequestQueue = (app, remoteApp) => {
+				/** @type ReturnType<typeof makeRequestProto>[] */
 				const requests = [];
 
+				// Upload generic codes
 				requests.push(makeRequestProto(`Base`, `${remoteApp.name}/${remoteApp.version}/base`, 'PUT', 'application/jsonc', app.base));
 				requests.push(makeRequestProto(`Readme`, `${remoteApp.name}/${remoteApp.version}/readme`, 'PUT', 'text/markdown', app.readme));
-
+				// Upload icon
 				if (app.icon !== undefined) {
 					requests.push(makeRequestProto(`Icon`, `${remoteApp.name}/${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
 				}
-
+				// Create and upload connections
 				app.connections.forEach((connection) => {
+					// Create connection component in Make
 					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'connection')}`, 'POST', 'application/json',
 						JSON.stringify(extract(connection.metadata, ['label', 'type'])),
 						[
@@ -1150,6 +1163,7 @@ class AppCommands {
 								slug: `connection-${connection.metadata.name}`
 							}
 						]));
+					// Upload connection's codes
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
@@ -1159,8 +1173,9 @@ class AppCommands {
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 				});
-
+				// Create and Upload RPCs
 				app.rpcs.forEach((rpc) => {
+					// Create new RPC in Make
 					requests.push(makeRequestProto(`RPC ${rpc.metadata.label}`,
 						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
 						[
@@ -1169,13 +1184,15 @@ class AppCommands {
 								slug: `connection-${rpc.metadata.connection}`
 							}
 						]));
+					// Upload RPC's codes
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`RPC ${rpc.metadata.label} - ${code}`,
 							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
 					});
 				});
-
+				// Create and Upload Webhooks to Make
 				app.webhooks.forEach((webhook) => {
+					// Create new webhook in Make
 					requests.push(makeRequestProto(`Webhook ${webhook.metadata.label}`,
 						`${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
 							['label', 'type', 'connection'])),
@@ -1195,15 +1212,17 @@ class AppCommands {
 								slug: `connection-${webhook.metadata.connection}`
 							}
 						]));
+					// Upload webhooks's codes
 					([`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])).forEach(code => {
 						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
 				});
-
+				// Create and Upload Modules
 				app.modules.forEach((appModule) => {
 					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook', 'subtype']);
 					body.type_id = getModuleDefFromType(appModule.metadata.type).type_id;
+					// Create module in Make
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
 						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
 						[
@@ -1216,6 +1235,7 @@ class AppCommands {
 								slug: `webhook-${appModule.metadata.webhook}`
 							}
 						]));
+					// Upload module's codes
 					let codes;
 					switch (body.type_id) {
 						case 4:
@@ -1239,7 +1259,7 @@ class AppCommands {
 							'PUT', 'application/jsonc', appModule[code]));
 					});
 				});
-
+				// Create & upload functions
 				app.functions.forEach(appFunction => {
 					const functionName = /(?:function )(.+)(?:\()/.exec(appFunction.code)[1];
 					requests.push(makeRequestProto(`Function ${functionName}`,
@@ -1257,6 +1277,7 @@ class AppCommands {
 				// requests.length should equal entries.lenght - 1 (because app create preflight is not in queue)
 			};
 
+			// Ask for ZIP file
 			const source = await vscode.window.showOpenDialog({
 				filters: { 'IMT App Archive': ['zip'] },
 				openLabel: 'Import',
@@ -1283,7 +1304,7 @@ class AppCommands {
 				}
 			}
 
-			// Name prompt
+			// App ID (Name) prompt
 			app.metadata.name = await vscode.window.showInputBox({
 				prompt: 'Enter name of the imported app',
 				value: app.metadata.name,
@@ -1293,6 +1314,7 @@ class AppCommands {
 				return;
 			}
 
+			// Create new app in Make cloud
 			let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
 			if (!remoteApp) {
 				return;
@@ -1317,7 +1339,9 @@ class AppCommands {
 					increment: 0
 				});
 
+				/** Key-value list of dynamic variables and it's values */
 				const store = {};
+				// Execute all planned API requests (one by one)
 				for (const r of requests) {
 					if (shouldStop) {
 						return;
@@ -1329,6 +1353,7 @@ class AppCommands {
 					});
 
 					let bodyProto = r.body;
+					// Fill all dynamic variables defined in request body by it's current values (stored in `store`)
 					if (r._replaceInBody !== undefined) {
 						bodyProto = JSON.parse(bodyProto);
 						r._replaceInBody.forEach(replacement => {
@@ -1362,6 +1387,8 @@ class AppCommands {
 					}
 
 					const axiosResponse = await axios(requestConfig);
+
+					// Store defined key-values from api response into `store`. It can be used in following requests.
 					if (r._store !== undefined) {
 						r._store.forEach(s => {
 							let parsed = JSON.parse(axiosResponse.data);
@@ -1374,6 +1401,7 @@ class AppCommands {
 							store[s.slug] = parsed[s.key];
 						});
 					}
+					// To avoid reach the API limit, slow down the request queue.
 					await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
 				}
 			});
