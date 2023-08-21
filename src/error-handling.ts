@@ -38,6 +38,10 @@ export function showError(err: Error | AxiosError<any> | string, title?: string|
 
 	// Log to VS Code console
 	log('error', e, false);
+
+	if (err instanceof Error) {
+		log('error', `STACK: ${err.stack}`, false);
+	}
 }
 
 
