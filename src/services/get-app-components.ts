@@ -1,11 +1,10 @@
-import * as Core from '../Core';
 import camelCase from 'lodash.camelcase';
 import { AppComponentType } from '../types/app-component-type.types';
 import { Crud } from '../local-development/types/crud.types';
 import { ConnectionType, WebhookType } from '../types/module-type.types';
 import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
-
-const ENVIRONMENT_VERSION = 2;
+import axios from 'axios';
+import { apiV2SdkAppsBasePath } from './consts';
 
 /**
  * Gets list of components summaries of the given type for the given app.
@@ -15,15 +14,19 @@ export async function getAppComponents<T extends ComponentSummary>(
 	origin: LocalAppOriginWithSecret,
 ): Promise<T[]> {
 	const apiURL =
-		`${origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-			ENVIRONMENT_VERSION,
-			'app',
-		)}/${origin.appId}/` +
+		`${origin.baseUrl}/${apiV2SdkAppsBasePath}/${origin.appId}/` +
 		(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}`) +
-		'/' +
-		Core.pathDeterminer(ENVIRONMENT_VERSION, componentType);
-	const apiResponse = await Core.rpGet(apiURL, 'Token ' + origin.apikey);
-	const items: T[] = apiResponse[camelCase(`app_${componentType}s`)];
+		'/' + componentType + 's';
+
+		const responseData = (await axios({
+			url: apiURL,
+			headers: {
+				Authorization: 'Token ' + origin.apikey,
+// TODO				'x-imt-apps-sdk-version': Meta.version
+			},
+		})).data;
+
+	const items: T[] = responseData[camelCase(`app_${componentType}s`)];
 	return items;
 }
 

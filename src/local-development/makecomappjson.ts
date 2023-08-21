@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs/promises';
 import { getCurrentWorkspace } from '../services/workspace';
 import * as path from 'path';
 import { MakecomappJson } from './types/makecomapp.types';
 import { existsSync } from 'fs';
 import { MAKECOMAPP_FILENAME } from './consts';
+import { TextDecoder, TextEncoder } from 'util';
+import { log } from '../output-channel';
 
 /**
  * FinSd the nearest parent dir, where makecomapp.json is located.
@@ -31,6 +32,54 @@ export function getMakecomappRootDir(startingPath: vscode.Uri): vscode.Uri {
 export async function getMakecomappJson(startingPath: vscode.Uri): Promise<MakecomappJson> {
 	const makecomappRootdir = getMakecomappRootDir(startingPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
-	const makecomappJson = JSON.parse((await fs.readFile(makecomappJsonPath.fsPath)).toString()) as MakecomappJson;
+	const makecomappJson = JSON.parse(
+		new TextDecoder().decode(await vscode.workspace.fs.readFile(makecomappJsonPath)),
+	) as MakecomappJson;
 	return makecomappJson;
+}
+
+/**
+ * Writes new content into `makecomapp.json` file.
+ */
+export async function updateMakecomappJson(
+	makecomappRootdir: vscode.Uri,
+	newMakecomappJson: MakecomappJson,
+): Promise<void> {
+	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
+	await vscode.workspace.fs.writeFile(
+		makecomappJsonPath,
+		new TextEncoder().encode(JSON.stringify(newMakecomappJson, null, 4)),
+	);
+}
+
+/**
+ * Renames connection ID in makecomapp.json. Renames also all references of the connection.
+ * Note: It does NOT rename connection in Make, it edits the 'makecomapp.json' content only.
+ *
+ * SIDEEFFECT: edits original object in param `makeappJson`.
+ */
+export function renameConnection(makecomappJson: MakecomappJson, oldId: string, newId: string): void {
+	log('debug', `makecomapp.json: Rename connetion ${oldId} => ${newId}`);
+
+	// Rename the connection itself
+	const connections = makecomappJson.components.connection;
+	const newConnections = Object.fromEntries(
+		Object.entries(connections).map(([connectionName, connectionMetadata]) => {
+			return [connectionName === oldId ? newId : connectionName, connectionMetadata];
+		}),
+	);
+	makecomappJson.components.connection = newConnections;
+
+	// Rename referecne: connections mentioned in modules
+	//
+	// TODO Enable after implementation of "moduleConnection" and "moduleAltConnection".
+	//
+	// Object.values(makeappJson.components.module).forEach((moduleMetadata) => {
+	// 	if (moduleMetadata.moduleConnection === oldId) {
+	// 		moduleMetadata.moduleConnection === newId;
+	// 	}
+	// 	if (moduleMetadata.moduleAltConnection === oldId) {
+	// 		moduleMetadata.moduleAltConnection === newId;
+	// 	}
+	// });
 }

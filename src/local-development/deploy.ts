@@ -1,30 +1,37 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
+import {
+	getMakecomappJson,
+	getMakecomappRootDir,
+	renameConnection,
+	updateMakecomappJson,
+} from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { uploadSource } from './code-deploy-download';
 import { getAllComponentsSummaries } from './component-summaries';
 import { askForOrigin } from './dialog-select-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { diffComponentsPresence } from './diff-components-presence';
+import { createAppComponent } from './create-component';
+import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 
 /**
  * Uploads the local file defined in makecomapp.json to the Make cloud.
  */
 export async function localFileDeploy(file: vscode.Uri) {
-	const makeappJson = await getMakecomappJson(file);
+	const makecomappJson = await getMakecomappJson(file);
 	const makeappRootdir = getMakecomappRootDir(file);
 	const stat = await vscode.workspace.fs.stat(file);
 	const fileIsDirectory = stat.type === vscode.FileType.Directory;
 	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath) + (fileIsDirectory ? '/' : ''); // Relative to makecomapp.json
 
-	const codesToDeploy = findCodesByFilePath(fileRelativePath, makeappJson, makeappRootdir);
+	const codesToDeploy = findCodesByFilePath(fileRelativePath, makecomappJson, makeappRootdir);
 
 	if (codesToDeploy.length === 0) {
 		throw new Error('Sorry, no associated component code with this file/path found.');
 	}
 
-	const origin = await askForOrigin(makeappJson.origins, makeappRootdir, 'deployment to Make');
+	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'deployment to Make');
 	if (!origin) {
 		return;
 	}
@@ -41,12 +48,10 @@ export async function localFileDeploy(file: vscode.Uri) {
 				canceled = true;
 			});
 
-			const allComponentsSummariesInCloud = await getAllComponentsSummaries(
-				origin,
-			);
+			const allComponentsSummariesInCloud = await getAllComponentsSummaries(origin);
 			// Compare cloud component list with local makecomapp.json
 			const componentAddingRemoving = diffComponentsPresence(
-				makeappJson.components,
+				makecomappJson.components,
 				allComponentsSummariesInCloud,
 			);
 			// New components = new components in makecomapp.json & components to deploy
@@ -92,10 +97,39 @@ export async function localFileDeploy(file: vscode.Uri) {
 				if (confirmAnswer?.title !== 'Continue') {
 					return;
 				}
-				// Add new components in Make
-				// TODO
 			}
 
+			// Create new components in cloud
+			const postActions: CreateAppComponentPostAction[] = [];
+			for (const componentToCreate of newComponentsToCreate) {
+				const postActions2 = await createAppComponent({
+					appName: origin.appId,
+					appVersion: origin.appVersion,
+					...componentToCreate,
+					origin,
+				});
+				postActions.push(...postActions2);
+			}
+
+			// #region Process all post-actions
+			let isMakecomappUpdated = false;
+			for (const postAction of postActions) {
+				if (postAction.renameConnection) {
+					renameConnection(
+						makecomappJson,
+						postAction.renameConnection.oldId,
+						postAction.renameConnection.newId,
+					);
+					isMakecomappUpdated = true;
+				}
+			}
+			// Write post-action changes back into makecomapp.json file
+			if (isMakecomappUpdated) {
+				updateMakecomappJson(makeappRootdir, makecomappJson);
+			}
+			// #endregion Process all post-actions
+
+			// Deploy codes one-by-one
 			for (const component of codesToDeploy) {
 				// Update the progress bar
 				progress.report({
