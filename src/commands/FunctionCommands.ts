@@ -103,7 +103,7 @@ export class FunctionCommands {
 			const test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
 
 			// Get users' functions
-			let userFunctions: any[] = await Core.rpGet(`${urn}?cols[]=code`, _authorization, { code: true })
+			let userFunctions: { name: string, code: string }[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
 			if (_environment.version === 2) {
 				userFunctions = (<any>userFunctions).appFunctions;
 			}
