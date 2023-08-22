@@ -15,17 +15,12 @@ import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import {
 	generalCodesDefinition,
-	getAppComponentCodesDefinition,
 	getAppComponentTypes,
 } from '../services/component-code-def';
-import { CodeDef } from './types/code-def.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from './code-deploy-download';
-import {
-	getAppComponentDetails,
-	getAppComponents,
-} from '../services/get-app-components';
+import { getAppComponentDetails, getAppComponents } from '../services/get-app-components';
 import {
 	ComponentsApiResponseItem,
 	ComponentsApiResponseConnectionItem,
@@ -33,11 +28,11 @@ import {
 	ComponentsApiResponseWebhookItem,
 	ModuleComponentDetailsApiResponseItem,
 } from '../types/get-component-api-response.types';
-import { camelToKebab } from '../utils/camel-to-kebab';
 import { existsSync } from 'fs';
 import { TextEncoder } from 'util';
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { getAllComponentsSummaries } from './component-summaries';
+import { generateDefaultCodeFilesPaths, generateDefaultLocalFilePath } from './local-file-paths';
 
 export async function cloneAppToWorkspace(context: App): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
@@ -187,37 +182,6 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 }
 
-function generateDefaultLocalFilePath(
-	codeDef: CodeDef,
-	codeName: string,
-	componentType: AppComponentType | undefined,
-	componentName: string | undefined,
-	appRootdir: vscode.Uri,
-) {
-	const filename =
-		(componentName ? camelToKebab(componentName) + '.' : '') +
-		// custom filename | component name
-		(codeDef.filename ? codeDef.filename : codeName) +
-		// file extension
-		'.' +
-		codeDef.fileext;
-
-	if (!componentType || !componentName) {
-		return filename;
-	}
-
-	// Add component type (like "functions", "modules",...) / [component name] subdirs
-
-	let postfix = 0;
-	let localdir: string;
-	do {
-		localdir = path.join(componentType + 's', camelToKebab(componentName + (postfix ? '-' + postfix : '')));
-		postfix++;
-	} while (false /** TODO check if directory already exists in fs, then increase postfix */);
-
-	return path.join(localdir, filename);
-}
-
 async function cloneComponent(
 	appComponentType: AppComponentType,
 	appComponentName: string,
@@ -225,24 +189,17 @@ async function cloneComponent(
 	origin: LocalAppOriginWithSecret,
 	componentMetadata: AppComponentMetadata,
 ): Promise<ComponentCodeFilesMetadata> {
-	// Detect, which codes are appropriate to the component
-	const componentCodesDef = Object.entries(getAppComponentCodesDefinition(appComponentType)).filter(
-		([_codeName, codeDef]) => !codeDef.onlyFor || codeDef.onlyFor(componentMetadata),
+	// Generate Local file paths (Relative to app rootdir) + store metadata
+	const componentCodeMetadata: ComponentCodeFilesMetadata = generateDefaultCodeFilesPaths(
+		appComponentType,
+		appComponentName,
+		componentMetadata,
+		localAppRootdir,
 	);
 
-	const componentCodeMetadata: ComponentCodeFilesMetadata = {};
-	// Process all codes
-	for (const [codeName, codeDef] of componentCodesDef) {
-		// Local file path (Relative to app rootdir)
-		const codeLocalRelativePath = generateDefaultLocalFilePath(
-			codeDef,
-			codeName,
-			appComponentType,
-			appComponentName,
-			localAppRootdir,
-		);
+	// Download codes from API to local files
+	for (const [codeName, codeLocalRelativePath] of Object.entries(componentCodeMetadata.codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-		// Download code from API to local file
 		await downloadSource({
 			appComponentType,
 			appComponentName,
@@ -250,9 +207,8 @@ async function cloneComponent(
 			origin,
 			destinationPath: codeLocalAbsolutePath,
 		});
-		// Add to makecomapp.json
-		componentCodeMetadata[codeName] = codeLocalRelativePath;
 	}
+
 	return componentCodeMetadata;
 }
 

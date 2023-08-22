@@ -387,27 +387,20 @@
 			},
 			{
 				"command": "apps-sdk.file.upload",
-				"title": "Deploy to Make",
-				"icon": {
-					"dark": "resources/icons/dark/refresh.png",
-					"light": "resources/icons/light/refresh.png"
-				}
+				"title": "Deploy to Make"
 			},
 			{
 				"command": "apps-sdk.file.download",
-				"title": "Download from Make",
-				"icon": {
-					"dark": "resources/icons/dark/refresh.png",
-					"light": "resources/icons/light/refresh.png"
-				}
+				"title": "Download from Make"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-connection",
+				"title": "Create 'Connection' app component",
+				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.clone-to-workspace",
-				"title": "Clone to local workspace",
-				"icon": {
-					"dark": "resources/icons/dark/refresh.png",
-					"light": "resources/icons/light/refresh.png"
-				}
+				"title": "Clone to local workspace"
 			}
 		],
 		"viewsContainers": {
@@ -736,6 +729,11 @@
 				{
 					"command": "apps-sdk.file.download",
 					"group": "7_modification"
+				},
+				{
+					"command": "apps-sdk.local-dev.create-connection",
+					"group": "7_modification",
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
 				}
 			]
 		},

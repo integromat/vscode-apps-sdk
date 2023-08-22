@@ -18,6 +18,7 @@ import AccountCommands = require('./commands/AccountCommands');
 import CoreCommands = require('./commands/CoreCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
+import * as createConnectionUI from './local-development/create-connection-ui';
 
 import LanguageServersSettings = require('./LanguageServersSettings');
 
@@ -185,7 +186,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	/**
 	 * Registering commands
 	 */
-	const coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider, currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider);
+	const coreCommands = new CoreCommands(
+		appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider,
+		currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider
+	);
 	await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
 	await AppCommands.register(appsProvider, _authorization, _environment, _admin);
 	await ConnectionCommands.register(appsProvider, _authorization, _environment);
@@ -196,6 +200,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);
 	LocalFileCommands.register();
+	createConnectionUI.register();
 
 	/**
 	 * Registering events
