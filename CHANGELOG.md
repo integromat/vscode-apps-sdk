@@ -6,7 +6,7 @@ Change Log
 
 ### Fixed
 
-- Fail a custom function testing, when using another custom function (#105)
+- Custom function testing fails, when using another custom function (#105)
 
 1.3.27
 ------
