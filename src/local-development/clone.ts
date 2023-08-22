@@ -23,14 +23,16 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from './code-deploy-download';
 import {
+	getAppComponentDetails,
+	getAppComponents,
+} from '../services/get-app-components';
+import {
 	ComponentsApiResponseItem,
 	ComponentsApiResponseConnectionItem,
 	ComponentsApiResponseModuleItem,
 	ComponentsApiResponseWebhookItem,
-	getAppComponentDetails,
-	getAppComponents,
 	ModuleComponentDetailsApiResponseItem,
-} from '../services/get-app-components';
+} from '../types/get-component-api-response.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { existsSync } from 'fs';
 import { TextEncoder } from 'util';
@@ -117,7 +119,6 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 	// Process all app's compoments
 	for (const appComponentType of getAppComponentTypes()) {
 		const appComponentSummaryList = await getAppComponents<ComponentsApiResponseItem>(appComponentType, origin);
-		// TODO Extrahovat stazeni jednotlivych komponent jako samotnou funkci
 
 		for (const appComponentSummary of appComponentSummaryList) {
 			// Create section in makecomapp.json

@@ -1,11 +1,11 @@
 import { getAppComponentTypes } from '../services/component-code-def';
+import { getAppComponents } from '../services/get-app-components';
 import {
 	ComponentsApiResponseItem,
 	ComponentsApiResponseConnectionItem,
 	ComponentsApiResponseModuleItem,
 	ComponentsApiResponseWebhookItem,
-	getAppComponents,
-} from '../services/get-app-components';
+} from '../types/get-component-api-response.types';
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 

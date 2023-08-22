@@ -1,10 +1,9 @@
 import camelCase from 'lodash.camelcase';
 import { AppComponentType } from '../types/app-component-type.types';
-import { Crud } from '../local-development/types/crud.types';
-import { ConnectionType, WebhookType } from '../types/module-type.types';
 import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
 import axios from 'axios';
 import { apiV2SdkAppsBasePath } from './consts';
+import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
 
 /**
  * Gets list of components summaries of the given type for the given app.
@@ -77,68 +76,3 @@ function getAppComponentsBaseUrl(
 	componentType + 's'
 }
 
-// interface AppsListItem {
-// 	name: string;
-// 	label: string;
-// 	description: string;
-// 	version: any;
-// 	beta: any;
-// 	theme: any;
-// 	public: boolean;
-// 	approved: boolean;
-// 	changes: any;
-// }
-
-export interface ComponentsApiResponseModuleItem {
-	approved: boolean;
-	crud: Crud | null;
-	description: string;
-	label: string;
-	name: string;
-	public: boolean;
-	typeId: number;
-}
-
-export interface ModuleComponentDetailsApiResponseItem extends ComponentsApiResponseModuleItem {
-	connection: string | null;
-	altConnection: string | null;
-	/* Used for "dedicated webhook" only. Null in other cases. */
-	webhook: string | null;
-}
-
-export interface ComponentsApiResponseConnectionItem {
-	name: string;
-	label: string;
-	type: ConnectionType;
-}
-
-export interface ComponentsApiResponseWebhookItem {
-	name: string;
-	label: string;
-	type: WebhookType;
-	// connection: string | null;
-	// altConnection: string | null;
-}
-
-export interface ComponentsApiResponseRpcItem {
-	name: string;
-	label: string;
-	// connection: string | null;
-	// altConnection: string | null;
-}
-
-export interface ComponentsApiResponseFunctionItem {
-	name: string;
-	args: string;
-}
-
-export type ComponentsApiResponseItem = Partial<ComponentsApiResponseModuleItem> &
-	Partial<ComponentsApiResponseConnectionItem> &
-	Partial<ComponentsApiResponseWebhookItem> &
-	Partial<ComponentsApiResponseRpcItem> &
-	Partial<ComponentsApiResponseFunctionItem> & {
-		name: string;
-	};
-
-
-export type ComponentDetailsApiResponseItem = Partial<ModuleComponentDetailsApiResponseItem>;
