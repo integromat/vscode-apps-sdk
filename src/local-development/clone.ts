@@ -23,11 +23,13 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from './code-deploy-download';
 import {
-	ComponentSummary,
-	ConnectionComponentSummary,
-	ModuleComponentSummary,
-	WebhookComponentSummary,
+	ComponentsApiResponseItem,
+	ComponentsApiResponseConnectionItem,
+	ComponentsApiResponseModuleItem,
+	ComponentsApiResponseWebhookItem,
+	getAppComponentDetails,
 	getAppComponents,
+	ModuleComponentDetailsApiResponseItem,
 } from '../services/get-app-components';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { existsSync } from 'fs';
@@ -114,7 +116,7 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	// Process all app's compoments
 	for (const appComponentType of getAppComponentTypes()) {
-		const appComponentSummaryList = await getAppComponents<ComponentSummary>(appComponentType, origin);
+		const appComponentSummaryList = await getAppComponents<ComponentsApiResponseItem>(appComponentType, origin);
 		// TODO Extrahovat stazeni jednotlivych komponent jako samotnou funkci
 
 		for (const appComponentSummary of appComponentSummaryList) {
@@ -125,30 +127,39 @@ export async function cloneAppToWorkspace(context: App): Promise<void> {
 			};
 			switch (appComponentType) {
 				case 'connection':
-					componentMetadata['connectionType'] = (appComponentSummary as ConnectionComponentSummary).type;
+					componentMetadata['connectionType'] = (
+						appComponentSummary as ComponentsApiResponseConnectionItem
+					).type;
 					break;
-				case 'webhook':
-					componentMetadata['webhookType'] = (appComponentSummary as WebhookComponentSummary).type;
-					// TODO Issue: It is missing in API response
-					// componentMetadata['connection'] = appComponentSummary.connection;
-					// componentMetadata['altConnection'] = appComponentSummary.altConnection;
+				case 'webhook': {
+					componentMetadata['webhookType'] = (appComponentSummary as ComponentsApiResponseWebhookItem).type;
 					break;
+				}
 				case 'module':
 					componentMetadata['moduleSubtype'] = getModuleDefFromId(
-						(appComponentSummary as ModuleComponentSummary).typeId,
+						(appComponentSummary as ComponentsApiResponseModuleItem).typeId,
 					).type;
 					if (componentMetadata['moduleSubtype'] === 'action') {
-						componentMetadata['actionCrud'] = (appComponentSummary as ModuleComponentSummary).crud;
+						componentMetadata['actionCrud'] = (appComponentSummary as ComponentsApiResponseModuleItem).crud;
 					}
-					// TODO Issue: It is missing in API response
-					// componentMetadata['connection'] = (appComponentSummary as ModuleComponentSummary).connection;
-					// componentMetadata['altConnection'] = (appComponentSummary as ModuleComponentSummary).altConnection;
 					break;
-				case 'rpc':
-					// TODO Issue: It is missing in API response
-					// componentMetadata['connection'] = (appComponentSummary as RpcComponentSummary).connection;
-					// componentMetadata['altConnection'] = (appComponentSummary as RpcComponentSummary).altConnection;
-					break;
+			}
+			// Get and store connection, altConnection, webhook references
+			if (['webhook', 'module', 'rpc'].includes(appComponentType)) {
+				const componentDetails = await getAppComponentDetails(
+					appComponentType,
+					appComponentSummary.name,
+					origin,
+				);
+				componentMetadata['connection'] = componentDetails.connection;
+				componentMetadata['altConnection'] = componentDetails.altConnection;
+				if (
+					appComponentType === 'module' &&
+					getModuleDefFromId((componentDetails as ModuleComponentDetailsApiResponseItem).typeId).type ===
+						'instant_trigger'
+				) {
+					componentMetadata['webhook'] = componentDetails.webhook;
+				}
 			}
 
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {

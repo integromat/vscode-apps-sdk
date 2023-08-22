@@ -42,10 +42,12 @@ export interface AppComponentMetadata {
 	webhookType?: WebhookType;
 	moduleSubtype?: ModuleSubtype;
 	actionCrud?: Crud;
-	/** Valid for modules, webhooks, rpcs */
-	// connection?: string | null;
-	/** Valid for modules, webhooks, rpcs */
-	// altConnection?: string | null;
+	/** Valid for modules, webhooks, RPCs only */
+	connection?: string | null;
+	/** Valid for modules, webhooks, RPCs only */
+	altConnection?: string | null;
+	/** Valid for module subtype "instant_trigger" only */
+	webhook?: string | null;
 }
 
 /** General Code Name => Code Local File Path */
