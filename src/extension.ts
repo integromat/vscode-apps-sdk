@@ -7,7 +7,7 @@ import OpensourceProvider = require('./providers/OpensourceProvider');
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 
 import RpcCommands = require('./commands/RpcCommands');
-import FunctionCommands = require('./commands/FunctionCommands');
+import { FunctionCommands } from './commands/FunctionCommands';
 import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
 import ConnectionCommands = require('./commands/ConnectionCommands');
@@ -183,7 +183,18 @@ export async function activate(context: vscode.ExtensionContext) {
 	/**
 	 * Registering commands
 	 */
-	const coreCommands = new CoreCommands(appsProvider, _authorization, _environment, currentRpcProvider, currentImlProvider, currentParametersProvider, currentStaticImlProvider, currentTempProvider, currentDataProvider, currentGroupsProvider);
+	const coreCommands = new CoreCommands(
+		appsProvider,
+		_authorization,
+		_environment,
+		currentRpcProvider,
+		currentImlProvider,
+		currentParametersProvider,
+		currentStaticImlProvider,
+		currentTempProvider,
+		currentDataProvider,
+		currentGroupsProvider
+	);
 	await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
 	await AppCommands.register(appsProvider, _authorization, _environment, _admin);
 	await ConnectionCommands.register(appsProvider, _authorization, _environment);
@@ -224,7 +235,7 @@ export async function deactivate() {
 	// Delete local temp dir
 	rmCodeLocalTempBasedir();
 
-	//Stop the language server client
+	// Stop the language server client
 	if (!client) {
 		return undefined;
 	}

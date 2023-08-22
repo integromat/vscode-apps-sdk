@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+1.3.28 (pre-release)
+--------------------
+
+### Fixed
+
+- Custom function testing fails, when using another custom function (#105)
+
 1.3.27
 ------
 
