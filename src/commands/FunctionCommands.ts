@@ -1,47 +1,50 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
-const vscode = require('vscode')
+import * as vscode from 'vscode';
 
-const Core = require('../Core')
-const Validator = require('../Validator')
+import * as Core from '../Core';
+import * as Validator from '../Validator';
 
-const { VM, VMScript } = require('vm2')
-const { IML } = require('@integromat/iml')
-const { catchError } = require('../error-handling');
+import { VM, VMOptions, VMScript } from 'vm2';
+import { IML } from '@integromat/iml';
+import { catchError } from '../error-handling';
+import { Environment } from '../types/environment.types';
+import AppsProvider from '../providers/AppsProvider';
 
-class FunctionCommands {
-	static async register(appsProvider, _authorization, _environment, _timezone) {
+export class FunctionCommands {
+	static async register(
+		appsProvider: AppsProvider, _authorization: string, _environment: Environment, _timezone: string
+	) {
 
-		var outputChannel = vscode.window.createOutputChannel("IML tests")
+		const outputChannel = vscode.window.createOutputChannel('IML tests')
 
-        /**
-         * New function
-         */
+		/**
+		 * New function
+		 */
 		vscode.commands.registerCommand('apps-sdk.function.new', catchError('Function creation', async (context) => {
 
 			// If called out of context -> die
 			if (!Core.contextGuard(context)) { return }
 
 			// Get the source app
-			let app = context.parent
+			const app = context.parent
 
 			// Prompt for the function name
-			let name = await vscode.window.showInputBox({
-				prompt: "Enter function name",
+			const name = await vscode.window.showInputBox({
+				prompt: 'Enter function name',
 				ignoreFocusOut: false,
 				validateInput: Validator.functionName
 			})
 
 			// If not filled -> die
-			if (!Core.isFilled("name", "function", name)) { return }
+			if (!Core.isFilled('name', 'function', name)) { return }
 
 			// Add the new entity. Refresh the tree or show the error
-			await Core.addEntity(_authorization, { "name": name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
+			await Core.addEntity(_authorization, { name: name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
 			appsProvider.refresh()
 		}));
 
-        /**
-         * Run function test
-         */
+		/**
+		 * Run function test
+		 */
 		vscode.commands.registerCommand('apps-sdk.function.test', async function (context) {
 
 			let urn
@@ -49,10 +52,9 @@ class FunctionCommands {
 
 			// If called out of context -> gather the required information
 			if (context === undefined || context === null) {
-				let crumbs
 				// If a window is open
 				if (!vscode.window.activeTextEditor) {
-					vscode.window.showErrorMessage("Active text editor not found.")
+					vscode.window.showErrorMessage('Active text editor not found.')
 					return
 				}
 				// If an apps file is open
@@ -61,10 +63,10 @@ class FunctionCommands {
 					return
 				}
 				// Parse the path
-				crumbs = vscode.window.activeTextEditor.document.uri.fsPath.split('apps-sdk')[1].split('/').reverse()
+				const crumbs = vscode.window.activeTextEditor.document.uri.fsPath.split('apps-sdk')[1].split('/').reverse()
 				// If crumbs were parsed
 				if (!crumbs) {
-					vscode.window.showErrorMessage("The path was not parsed successfully.")
+					vscode.window.showErrorMessage('The path was not parsed successfully.')
 					return
 				}
 				// If the path hasn't 8 or 7 crumbs it's definitely not a function
@@ -73,7 +75,7 @@ class FunctionCommands {
 					return
 				}
 				// If the path doesn't contain required crumbs
-				if (!((crumbs[0] === "test.js" || crumbs[0] === "code.js") && (crumbs[2] === "function" || crumbs[2] === "functions") && (crumbs[5] === "app" || crumbs[5] === "apps"))) {
+				if (!((crumbs[0] === 'test.js' || crumbs[0] === 'code.js') && (crumbs[2] === 'function' || crumbs[2] === 'functions') && (crumbs[5] === 'app' || crumbs[5] === 'apps'))) {
 					vscode.window.showErrorMessage("The parsed path doesn't correspond to the function test schema.")
 					return
 				}
@@ -86,47 +88,47 @@ class FunctionCommands {
 			else {
 				// Set correct URN (if called from function or core or test)
 				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(context).name}/${Core.getApp(context).version}/${Core.pathDeterminer(_environment.version, 'function')}`
-				if (context.supertype === "function") {
+				if (context.supertype === 'function') {
 					functionName = `${context.name}`
 				}
-				else if (context.name === "code" || context.name === "test") {
+				else if (context.name === 'code' || context.name === 'test') {
 					functionName = `${context.parent.name}`
 				}
 			}
 
 			// Get current function code
-			let code = await Core.rpGet(`${urn}/${functionName}/code`, _authorization)
+			const code = await Core.rpGet(`${urn}/${functionName}/code`, _authorization)
 
 			// Get current test code
-			let test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
+			const test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
 
 			// Get users' functions
-			let userFunctions = await Core.rpGet(`${urn}?cols[]=code`, _authorization, { code: true })
+			let userFunctions: { name: string, code: string }[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
 			if (_environment.version === 2) {
-				userFunctions = userFunctions.appFunctions;
+				userFunctions = (<any>userFunctions).appFunctions;
 			}
 
 			// Merge codes
-			let codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
+			const codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
 
-            /**
-             *  Sandbox cookbook
-             *  - Assert for assertions
-             *  - IML for internal IML functions
-             *  - Users' IML functions
-             */
+			/**
+			 *  Sandbox cookbook
+			 *  - Assert for assertions
+			 *  - IML for internal IML functions
+			 *  - Users' IML functions
+			 */
 			let success = 0
 			let fail = 0
 			let total = 0
-			let sandbox = {
+			const sandbox: VMOptions['sandbox'] = {
 				assert: require('assert'),
 				iml: {},
-				it: (name, test) => {
+				it: (name: string, test: () => void) => {
 					total++
 					outputChannel.append(`- ${name} ... `)
 					try {
 						test()
-						outputChannel.appendLine(`✔`)
+						outputChannel.appendLine('✔')
 						success++
 					}
 					catch (err) {
@@ -150,14 +152,14 @@ class FunctionCommands {
 			const vm = new VM({
 				timeout: 5000,
 				sandbox: sandbox
-			})
+			});
 
-			vm.prepare = vm.run('(function(args) { global.__arguments__ = args })');
+			(vm as any).prepare = vm.run('(function(args) { global.__arguments__ = args })');
 
 			userFunctions.forEach(func => {
 				const preCompiled = new VMScript(`(${func.code}).apply({timezone: environment.timezone}, __arguments__)`, func.name);
-				sandbox.iml[func.name] = (...args) => {
-					vm.prepare(args);
+				sandbox.iml[func.name] = (...args: any[]) => {
+					(vm as any).prepare(args);
 					return vm.run(preCompiled);
 				};
 			});
@@ -166,23 +168,21 @@ class FunctionCommands {
 			outputChannel.show()
 			try {
 				vm.run(codeToRun)
-				outputChannel.appendLine(`----------- COMPLETED -----------`)
+				outputChannel.appendLine('----------- COMPLETED -----------')
 				outputChannel.appendLine(`Total test blocks: ${total}`)
 				outputChannel.appendLine(`Passed blocks: ${success}`)
 				outputChannel.appendLine(`Failed blocks: ${fail}`)
 				if (fail === 0) {
-					outputChannel.appendLine(`========== TEST PASSED ==========`)
+					outputChannel.appendLine('========== TEST PASSED ==========')
 				}
 				else {
-					outputChannel.appendLine(`========== TEST FAILED ==========`)
+					outputChannel.appendLine('========== TEST FAILED ==========')
 				}
 			}
-			catch (err) {
-				outputChannel.appendLine(`========= CRITICAL FAIL =========`)
+			catch (err: any) {
+				outputChannel.appendLine('========= CRITICAL FAIL =========')
 				outputChannel.appendLine(err)
 			}
 		})
 	}
 }
-
-module.exports = FunctionCommands

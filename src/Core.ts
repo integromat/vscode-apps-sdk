@@ -7,7 +7,7 @@ import * as Meta from './Meta';
 import { showError } from './error-handling';
 
 
-export async function rpGet(uri: string, authorization: string, qs?: Record<string, string|string[]>) {
+export async function rpGet(uri: string, authorization: string, qs?: Record<string, string|string[]|boolean>) {
 	try {
 		return (await axios({
 			url: uri,
@@ -47,7 +47,7 @@ export function envGuard(environment: Environment, available: number[]) {
 	return true;
 }
 
-export function isFilled(subject: string, object: string, thing: any, article: string, the: boolean) {
+export function isFilled(subject: string, object: string, thing: any, article?: string, the?: boolean) {
 	if (thing === undefined || thing === "" || thing === null) {
 		vscode.window.showWarningMessage(`${article || "A"} ${subject} for ${the === false ? "" : "the"} ${object} has not been specified.`);
 		return false;
