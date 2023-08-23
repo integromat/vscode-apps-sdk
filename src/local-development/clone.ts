@@ -38,7 +38,7 @@ import { catchError, withProgress } from '../error-handling';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
-		'apps-sdk.app.clone-to-workspace',
+		'apps-sdk.local-dev.clone-to-workspace',
 		catchError(
 			'Download app to workspace',
 			withProgress({ title: 'Downloading app to workspace...' }, cloneAppToWorkspace)

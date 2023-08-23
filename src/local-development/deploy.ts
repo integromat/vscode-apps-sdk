@@ -18,7 +18,7 @@ import { catchError } from '../error-handling';
 
 
 export function registerCommands(): void {
-	vscode.commands.registerCommand('apps-sdk.file.upload', catchError('Deploy to Make', localFileDeploy));
+	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', localFileDeploy));
 }
 
 /**

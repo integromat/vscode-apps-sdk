@@ -386,21 +386,21 @@
 				}
 			},
 			{
-				"command": "apps-sdk.file.upload",
-				"title": "Deploy to Make"
+				"command": "apps-sdk.local-dev.deploy",
+				"title": "Deploy to Make (pre-alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.file-download",
-				"title": "Download from Make"
+				"title": "Download from Make (pre-alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-connection",
-				"title": "Create 'Connection' app component",
+				"title": "Create 'Connection' component (pre-alpha)",
 				"category": "Make Apps"
 			},
 			{
-				"command": "apps-sdk.app.clone-to-workspace",
-				"title": "Clone to local workspace"
+				"command": "apps-sdk.local-dev.clone-to-workspace",
+				"title": "Clone to local workspace (pre-alpha)"
 			}
 		],
 		"viewsContainers": {
@@ -625,7 +625,7 @@
 					"when": "viewItem == app && view == apps"
 				},
 				{
-					"command": "apps-sdk.app.clone-to-workspace",
+					"command": "apps-sdk.local-dev.clone-to-workspace",
 					"when": "viewItem == app && view == apps"
 				},
 				{
@@ -723,7 +723,7 @@
 			],
 			"explorer/context": [
 				{
-					"command": "apps-sdk.file.upload",
+					"command": "apps-sdk.local-dev.deploy",
 					"group": "7_modification"
 				},
 				{
