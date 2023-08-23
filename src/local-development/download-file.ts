@@ -9,7 +9,7 @@ import { askForOrigin } from '../local-development/dialog-select-origin';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
-		'apps-sdk.file.download',
+		'apps-sdk.local-dev.file-download',
 		catchError(
 			'File download from Make',
 			withProgress({ title: 'Updating local file from Make...' }, localFileDownload)

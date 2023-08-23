@@ -390,7 +390,7 @@
 				"title": "Deploy to Make"
 			},
 			{
-				"command": "apps-sdk.file.download",
+				"command": "apps-sdk.local-dev.file-download",
 				"title": "Download from Make"
 			},
 			{
@@ -727,8 +727,9 @@
 					"group": "7_modification"
 				},
 				{
-					"command": "apps-sdk.file.download",
-					"group": "7_modification"
+					"command": "apps-sdk.local-dev.file-download",
+					"group": "7_modification",
+					"when": "resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.imljson))$/"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-connection",

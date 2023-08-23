@@ -30,7 +30,7 @@ export const generalCodesDefinition: Record<GeneralCodeName, CodeDef> = {
 const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
 	connection: {
 		api: { ...imljsonc, filename: 'communication' },
-		parameters: imljsonc,
+		parameters: { ...imljsonc, filename: 'params' },
 		common: json,
 		scopes: {
 			...imljsonc,
@@ -55,7 +55,7 @@ const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef
 	},
 	webhook: {
 		api: { ...imljsonc, filename: 'communication' },
-		parameters: imljsonc,
+		parameters: { ...imljsonc, filename: 'params' },
 		attach: imljsonc,
 		detach: imljsonc,
 		update: imljsonc,
