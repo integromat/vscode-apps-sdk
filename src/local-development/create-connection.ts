@@ -4,15 +4,15 @@ import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types
 import { generateDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappJson, getMakecomappRootDir, updateMakecomappJson } from './makecomappjson';
 
-export function register(): void {
+export function registerCommands(): void {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.create-connection',
-		catchError('Create Connection', createConnectionUi),
+		catchError('Create Connection', createConnection),
 	);
 }
 
 /** Creates new 'connection' component into local project */
-async function createConnectionUi(file: vscode.Uri) {
+async function createConnection(file: vscode.Uri) {
 	const makecomappJson = await getMakecomappJson(file);
 	const makeappRootdir = getMakecomappRootDir(file);
 

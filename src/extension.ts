@@ -18,18 +18,15 @@ import AccountCommands = require('./commands/AccountCommands');
 import CoreCommands = require('./commands/CoreCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
-import * as createConnectionUI from './local-development/create-connection-ui';
-
 import LanguageServersSettings = require('./LanguageServersSettings');
-
 import * as path from 'path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 import { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
 import { version } from './Meta';
-import { LocalFileCommands } from './commands/LocalFileCommands';
 import { AppsSdkConfiguration, AppsSdkConfigurationEnvironment, getConfiguration, getCurrentEnvironment } from './providers/configuration';
+import { registerCommandForLocalDevelopment } from './local-development';
 
 
 let client: vscode_languageclient.LanguageClient;
@@ -207,8 +204,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);
-	LocalFileCommands.register();
-	createConnectionUI.register();
+	registerCommandForLocalDevelopment();
 
 	/**
 	 * Registering events

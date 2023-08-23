@@ -33,8 +33,20 @@ import { TextEncoder } from 'util';
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { getAllComponentsSummaries } from './component-summaries';
 import { generateDefaultCodeFilesPaths, generateDefaultLocalFilePath } from './local-file-paths';
+import { catchError, withProgress } from '../error-handling';
 
-export async function cloneAppToWorkspace(context: App): Promise<void> {
+
+export function registerCommands(): void {
+	vscode.commands.registerCommand(
+		'apps-sdk.app.clone-to-workspace',
+		catchError(
+			'Download app to workspace',
+			withProgress({ title: 'Downloading app to workspace...' }, cloneAppToWorkspace)
+		)
+	);
+}
+
+async function cloneAppToWorkspace(context: App): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 	const apikeyFileUri = vscode.Uri.joinPath(apikeyDir, 'apikey1');

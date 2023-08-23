@@ -4,32 +4,17 @@ import { catchError, withProgress } from '../error-handling';
 import { log } from '../output-channel';
 import { downloadSource } from '../local-development/code-deploy-download';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
-import { cloneAppToWorkspace } from '../local-development/clone';
 import { findCodeByFilePath } from '../local-development/find-code-by-filepath';
 import { askForOrigin } from '../local-development/dialog-select-origin';
-import { localFileDeploy } from '../local-development/deploy';
 
-
-export class LocalFileCommands {
-	static register(): void {
-		vscode.commands.registerCommand('apps-sdk.file.upload', catchError('Deploy to Make', localFileDeploy));
-
-		vscode.commands.registerCommand(
-			'apps-sdk.file.download',
-			catchError(
-				'File download from Make',
-				withProgress({ title: 'Updating local file from Make...' }, localFileDownload)
-			)
-		);
-
-		vscode.commands.registerCommand(
-			'apps-sdk.app.clone-to-workspace',
-			catchError(
-				'Download app to workspace',
-				withProgress({ title: 'Downloading app to workspace...' }, cloneAppToWorkspace)
-			)
-		);
-	}
+export function registerCommands(): void {
+	vscode.commands.registerCommand(
+		'apps-sdk.file.download',
+		catchError(
+			'File download from Make',
+			withProgress({ title: 'Updating local file from Make...' }, localFileDownload)
+		)
+	);
 }
 
 /**

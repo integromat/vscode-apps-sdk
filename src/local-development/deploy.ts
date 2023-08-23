@@ -14,11 +14,17 @@ import { findCodesByFilePath } from './find-code-by-filepath';
 import { diffComponentsPresence } from './diff-components-presence';
 import { createAppComponent } from './create-component';
 import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
+import { catchError } from '../error-handling';
+
+
+export function registerCommands(): void {
+	vscode.commands.registerCommand('apps-sdk.file.upload', catchError('Deploy to Make', localFileDeploy));
+}
 
 /**
  * Uploads the local file defined in makecomapp.json to the Make cloud.
  */
-export async function localFileDeploy(file: vscode.Uri) {
+async function localFileDeploy(file: vscode.Uri) {
 	const makecomappJson = await getMakecomappJson(file);
 	const makeappRootdir = getMakecomappRootDir(file);
 	const stat = await vscode.workspace.fs.stat(file);
