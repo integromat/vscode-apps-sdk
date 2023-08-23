@@ -60,63 +60,63 @@
 	"contributes": {
 		"jsonValidation": [
 			{
-				"fileMatch": "parameters.imljson",
+				"fileMatch": ["parameters.imljson", "*.params.iml.json"],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": "expect.imljson",
+				"fileMatch": ["expect.imljson", "*.mappable-params.iml.json"],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": "interface.imljson",
+				"fileMatch": ["interface.imljson", "*.interface.iml.json"],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": "common.imljson",
+				"fileMatch": ["common.imljson", "common.json"],
 				"url": "./syntaxes/imljson/schemas/common.json"
 			},
 			{
-				"fileMatch": "api.imljson",
+				"fileMatch": ["api.imljson", "*.communication.iml.json"],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "samples.imljson",
+				"fileMatch": ["samples.imljson", "*.samples.iml.json"],
 				"url": "./syntaxes/imljson/schemas/samples.json"
 			},
 			{
-				"fileMatch": "scopes.imljson",
+				"fileMatch": ["scopes.imljson", "*.scope-list.iml.json"],
 				"url": "./syntaxes/imljson/schemas/scopes.json"
 			},
 			{
-				"fileMatch": "scope.imljson",
+				"fileMatch": ["scope.imljson", "*.default-scope.iml.json", "*.required-scope.iml.json"],
 				"url": "./syntaxes/imljson/schemas/scope.json"
 			},
 			{
-				"fileMatch": "epoch.imljson",
+				"fileMatch": ["epoch.imljson", "*.epoch.iml.json"],
 				"url": "./syntaxes/imljson/schemas/epoch.json"
 			},
 			{
-				"fileMatch": "attach.imljson",
+				"fileMatch": ["attach.imljson", "*.attach.iml.json"],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "detach.imljson",
+				"fileMatch": ["detach.imljson", "*.detach.iml.json"],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "publish.imljson",
+				"fileMatch": ["publish.imljson", "*.publish.iml.json"],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "base.imljson",
+				"fileMatch": ["base.imljson", "*.base.iml.json"],
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
-				"fileMatch": "api-oauth.imljson",
+				"fileMatch": ["api-oauth.imljson", "*.oauth-communication.iml.json"],
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
 			{
-				"fileMatch": "groups.json",
+				"fileMatch": ["groups.json", "*.groups.iml.json"],
 				"url": "./syntaxes/imljson/schemas/groups.json"
 			}
 		],
@@ -124,7 +124,8 @@
 			{
 				"id": "imljson",
 				"extensions": [
-					".imljson"
+					".imljson",
+					".iml.json"
 				],
 				"aliases": [
 					"JSON with IML",

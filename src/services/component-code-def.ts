@@ -3,7 +3,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { CodeDef } from '../local-development/types/code-def.types';
 
 const imljsonc = {
-	fileext: 'imljson',
+	fileext: 'iml.json',
 	mimetype: 'application/jsonc',
 };
 

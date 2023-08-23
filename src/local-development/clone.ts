@@ -172,7 +172,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 
 			makecomappJson.components[appComponentType][appComponentSummary.name] = {
 				...componentMetadata,
-				codeFiles: await cloneComponent(
+				codeFiles: await cloneComponentCodeFiles(
 					appComponentType,
 					appComponentSummary.name,
 					localAppRootdir,
@@ -194,7 +194,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 }
 
-async function cloneComponent(
+async function cloneComponentCodeFiles(
 	appComponentType: AppComponentType,
 	appComponentName: string,
 	localAppRootdir: vscode.Uri,
@@ -202,7 +202,7 @@ async function cloneComponent(
 	componentMetadata: AppComponentMetadata,
 ): Promise<ComponentCodeFilesMetadata> {
 	// Generate Local file paths (Relative to app rootdir) + store metadata
-	const componentCodeMetadata: ComponentCodeFilesMetadata = generateDefaultCodeFilesPaths(
+	const codeFiles: ComponentCodeFilesMetadata = generateDefaultCodeFilesPaths(
 		appComponentType,
 		appComponentName,
 		componentMetadata,
@@ -210,7 +210,7 @@ async function cloneComponent(
 	);
 
 	// Download codes from API to local files
-	for (const [codeName, codeLocalRelativePath] of Object.entries(componentCodeMetadata.codeFiles)) {
+	for (const [codeName, codeLocalRelativePath] of Object.entries(codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		await downloadSource({
 			appComponentType,
@@ -221,7 +221,7 @@ async function cloneComponent(
 		});
 	}
 
-	return componentCodeMetadata;
+	return codeFiles;
 }
 
 async function cloneAllFilesToLocal(
@@ -241,7 +241,7 @@ async function cloneAllFilesToLocal(
 									componentName,
 									<AppComponentMetadataWithCodeFiles>{
 										...componentMetadata,
-										codeFiles: await cloneComponent(
+										codeFiles: await cloneComponentCodeFiles(
 											componentType as AppComponentType,
 											componentName,
 											localAppRootdir,
