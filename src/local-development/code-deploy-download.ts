@@ -6,6 +6,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { LocalAppOriginWithSecret } from './types/makecomapp.types';
+import { log } from '../output-channel';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -28,6 +29,7 @@ export async function downloadSource({
 	origin: LocalAppOriginWithSecret,
 	destinationPath: vscode.Uri;
 }): Promise<void> {
+	log('debug', `Download code ${codeName} of ${appComponentType} ${appComponentName}`);
 	// Get the code from the API
 	const axiosResponse = await axios({
 		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),

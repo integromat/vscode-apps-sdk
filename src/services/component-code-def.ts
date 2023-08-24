@@ -29,7 +29,17 @@ export const generalCodesDefinition: Record<GeneralCodeName, CodeDef> = {
 
 const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
 	connection: {
-		api: { ...imljsonc, filename: 'communication' },
+		api: {
+			...imljsonc,
+			filename: (componentType, componentMetadata) => {
+				if (componentType === 'connection' && componentMetadata!.connectionType === 'oauth') {
+					// Special case: Oauth connection API code has the different JSON schema than Basic connection.
+					// To match the right json schema the filename must be different for this case.
+					return 'oauth-communication';
+				}
+				return 'communication';
+			},
+		},
 		parameters: { ...imljsonc, filename: 'params' },
 		common: json,
 		scopes: {

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { catchError } from '../error-handling';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
-import { generateDefaultCodeFilesPaths } from './local-file-paths';
+import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappJson, getMakecomappRootDir, updateMakecomappJson } from './makecomappjson';
 
 export function registerCommands(): void {
@@ -30,7 +30,7 @@ async function createConnection(file: vscode.Uri) {
 
 	const connectionMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
 		...connectionMetadata,
-		codeFiles: generateDefaultCodeFilesPaths(
+		codeFiles: await generateComponentDefaultCodeFilesPaths(
 			// Generate Local file paths (Relative to app rootdir) + store metadata
 			'connection',
 			appConnectionBasename + appConnectionNameSuffix,
