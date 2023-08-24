@@ -60,63 +60,109 @@
 	"contributes": {
 		"jsonValidation": [
 			{
-				"fileMatch": ["parameters.imljson", "*.params.iml.json"],
+				"fileMatch": [
+					"parameters.imljson",
+					"*.params.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": ["expect.imljson", "*.mappable-params.iml.json"],
+				"fileMatch": [
+					"expect.imljson",
+					"*.mappable-params.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": ["interface.imljson", "*.interface.iml.json"],
+				"fileMatch": [
+					"interface.imljson",
+					"*.interface.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": ["common.imljson", "common.json"],
+				"fileMatch": [
+					"common.imljson",
+					"common.json"
+				],
 				"url": "./syntaxes/imljson/schemas/common.json"
 			},
 			{
-				"fileMatch": ["api.imljson", "*.communication.iml.json"],
+				"fileMatch": [
+					"api.imljson",
+					"*.communication.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": ["samples.imljson", "*.samples.iml.json"],
+				"fileMatch": [
+					"samples.imljson",
+					"*.samples.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/samples.json"
 			},
 			{
-				"fileMatch": ["scopes.imljson", "*.scope-list.iml.json"],
+				"fileMatch": [
+					"scopes.imljson",
+					"*.scope-list.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/scopes.json"
 			},
 			{
-				"fileMatch": ["scope.imljson", "*.default-scope.iml.json", "*.required-scope.iml.json"],
+				"fileMatch": [
+					"scope.imljson",
+					"*.default-scope.iml.json",
+					"*.required-scope.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/scope.json"
 			},
 			{
-				"fileMatch": ["epoch.imljson", "*.epoch.iml.json"],
+				"fileMatch": [
+					"epoch.imljson",
+					"*.epoch.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/epoch.json"
 			},
 			{
-				"fileMatch": ["attach.imljson", "*.attach.iml.json"],
+				"fileMatch": [
+					"attach.imljson",
+					"*.attach.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": ["detach.imljson", "*.detach.iml.json"],
+				"fileMatch": [
+					"detach.imljson",
+					"*.detach.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": ["publish.imljson", "*.publish.iml.json"],
+				"fileMatch": [
+					"publish.imljson",
+					"*.publish.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": ["base.imljson", "*.base.iml.json"],
+				"fileMatch": [
+					"base.imljson",
+					"*.base.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
-				"fileMatch": ["api-oauth.imljson", "*.oauth-communication.iml.json"],
+				"fileMatch": [
+					"api-oauth.imljson",
+					"*.oauth-communication.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
 			{
-				"fileMatch": ["groups.json", "*.groups.iml.json"],
+				"fileMatch": [
+					"groups.json",
+					"*.groups.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/groups.json"
 			}
 		],
@@ -821,6 +867,7 @@
 		"lodash.union": "^4.6.0",
 		"request-light": "^0.7.0",
 		"tempy": "^1.0.1",
+		"throat": "^6.0.2",
 		"uuid": "^9.0.0",
 		"vm2": "^3.9.19",
 		"vscode-json-languageservice": "^5.3.5",

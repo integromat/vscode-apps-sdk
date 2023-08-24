@@ -5,6 +5,7 @@ import { camelToKebab } from '../utils/camel-to-kebab';
 import { CodeDef } from './types/code-def.types';
 import { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makecomapp.types';
 import { getAppComponentCodesDefinition } from '../services/component-code-def';
+import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
 
 /**
  * Generate a filename (with extension), how it looks to be placed in local fs for local development.
@@ -84,35 +85,4 @@ export async function generateComponentDefaultCodeFilesPaths(
 			path.relative(localAppRootdir.fsPath, componentDir.fsPath) + '/' + codeFilename;
 	}
 	return componentCodeMetadata;
-}
-
-/**
- * Gets the target directory, where to store the component.
- * The empty directory is also created in FS as reservation for component files.
- */
-async function reserveComponentCodeFilesDirectory(
-	componentType: AppComponentType,
-	componentName: string,
-	localAppRootdir: vscode.Uri,
-): Promise<vscode.Uri> {
-	let postfix = 0;
-	let localdir: string;
-	do {
-		localdir = path.join(componentType + 's', camelToKebab(componentName + (postfix ? '-' + postfix : '')));
-		// Check if path (directory) already exists
-		try {
-			await vscode.workspace.fs.stat(vscode.Uri.joinPath(localAppRootdir, localdir));
-		} catch (e: any) {
-			if (e.code === 'FileNotFound') {
-				// This is the right directory for component.
-				const componentDir = vscode.Uri.joinPath(localAppRootdir, localdir);
-				// Create empty directory
-				vscode.workspace.fs.createDirectory(componentDir);
-				return componentDir;
-			}
-			throw e; // Unknown error
-		}
-		postfix++;
-	} while (postfix < 100);
-	throw new Error('Component directory postfix number exceeded the maximum.');
 }
