@@ -448,6 +448,10 @@
 			{
 				"command": "apps-sdk.local-dev.clone-to-workspace",
 				"title": "Clone to local workspace (pre-alpha)"
+			},
+			{
+				"command": "apps-sdk.local-dev.pull-new-components",
+				"title": "Pull new components from Make (pre-alpha)"
 			}
 		],
 		"viewsContainers": {
@@ -769,6 +773,11 @@
 				}
 			],
 			"explorer/context": [
+				{
+					"command": "apps-sdk.local-dev.pull-new-components",
+					"group": "7_modification",
+					"when": "resourceFilename == 'makecomapp.json'"
+				},
 				{
 					"command": "apps-sdk.local-dev.deploy",
 					"group": "7_modification"

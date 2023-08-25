@@ -1,6 +1,7 @@
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { CodeDef } from '../local-development/types/code-def.types';
+import { componentTypesDeployOrder } from './component-types-order';
 
 const imljsonc = {
 	fileext: 'iml.json',
@@ -125,8 +126,12 @@ export function getGeneralCodeDefinition(appCodeName: GeneralCodeName): CodeDef 
 }
 
 /**
- * Returns list: ['function', 'module, 'rpc', ...]
+ * Returns list of component types ['function', 'module, 'rpc', ...]
+ * in the correct order, in which to deploy or pull to not break any dependencies (connection references, ...)
  */
 export function getAppComponentTypes(): AppComponentType[] {
-	return Object.keys(componentsCodesDefinition) as AppComponentType[];
+	const types = Object.keys(componentsCodesDefinition) as AppComponentType[];
+	return types.sort((compType1, compType2) => {
+		return componentTypesDeployOrder[compType1] - componentTypesDeployOrder[compType2];
+	});
 }

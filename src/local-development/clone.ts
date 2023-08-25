@@ -1,28 +1,20 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { existsSync } from 'fs';
+import { TextEncoder } from 'util';
 import { getCurrentWorkspace } from '../services/workspace';
 import { getCurrentEnvironment } from '../providers/configuration';
-import {
-	AppComponentMetadata,
-	AppComponentMetadataWithCodeFiles,
-	AppComponentTypesMetadata,
-	LocalAppOriginWithSecret,
-	MakecomappJson,
-} from './types/makecomapp.types';
+import { LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import App from '../tree/App';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import { generalCodesDefinition } from '../services/component-code-def';
-import { AppComponentType } from '../types/app-component-type.types';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from './code-deploy-download';
-import { existsSync } from 'fs';
-import { TextEncoder } from 'util';
-import { getAllComponentsSummaries } from './component-summaries';
-import { generateComponentDefaultCodeFilesPaths, generateDefaultLocalFilename } from './local-file-paths';
-import { catchError, withProgress } from '../error-handling';
-import { log } from '../output-channel';
 
+import { generateDefaultLocalFilename } from './local-file-paths';
+import { catchError, withProgress } from '../error-handling';
+import { pullNewComponents } from './pull';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -68,11 +60,13 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,
 		generalCodeFiles: {} as any, // Missing mandatory values are filled in loop below.
-		components: await cloneAllComponentsFilesToLocal(
-			await getAllComponentsSummaries(origin),
-			origin,
-			localAppRootdir,
-		),
+		components: {
+			connection: {},
+			module: {},
+			function: {},
+			rpc: {},
+			webhook: {},
+		},
 		origins: [origin],
 	};
 
@@ -86,15 +80,6 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	// Create apikey file
 	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
 	await vscode.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
-
-	// Create .vscode/settings.json with exclude secrets dir
-	// const settingsJsonUri = vscode.Uri.joinPath(workspaceRoot, '.vscode', 'settings.json');
-	// const settingsJsonContent = new TextEncoder().encode(JSON.stringify({
-	// 	"files.exclude": {
-	// 		[secretsDirRelativeToWorkspaceRoot]: true
-	// 	}
-	// }, null, 4));
-	// await vscode.workspace.fs.writeFile(settingsJsonUri, settingsJsonContent);
 
 	// #region Process all app's general codes
 	for (const [codeName, codeDef] of Object.entries(generalCodesDefinition)) {
@@ -125,78 +110,11 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		makeappJsonPath,
 		new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
 	);
+	// Pull all app's components
+	await pullNewComponents(localAppRootdir, origin);
+
 	// VSCode show readme.md and open explorer
 	const readme = vscode.Uri.joinPath(localAppRootdir, 'readme.md');
 	await vscode.commands.executeCommand('vscode.open', readme);
 	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
-}
-
-/**
- * Download all files of component from `componentMetadata.codeFiles` to local file system.
- */
-async function downloadCodeFiles(
-	appComponentType: AppComponentType,
-	appComponentName: string,
-	localAppRootdir: vscode.Uri,
-	origin: LocalAppOriginWithSecret,
-	componentMetadata: AppComponentMetadataWithCodeFiles,
-): Promise<void> {
-	log('debug', `Clone all codes of ${appComponentType} ${appComponentName}`);
-	// Download codes from API to local files
-	for (const [codeName, codeLocalRelativePath] of Object.entries(componentMetadata.codeFiles)) {
-		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-		await downloadSource({
-			appComponentType,
-			appComponentName,
-			codeName,
-			origin,
-			destinationPath: codeLocalAbsolutePath,
-		});
-	}
-}
-
-/**
- * Clones app's all component's codes to local files.
- */
-async function cloneAllComponentsFilesToLocal(
-	allComponentSummaries: AppComponentTypesMetadata<AppComponentMetadata>,
-	origin: LocalAppOriginWithSecret,
-	localAppRootdir: vscode.Uri,
-): Promise<AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>> {
-	const ret = Object.fromEntries(
-		await Promise.all(
-			Object.entries(allComponentSummaries).map(async ([componentType, components]) => {
-				return [
-					<AppComponentType>componentType,
-					Object.fromEntries(
-						await Promise.all(
-							Object.entries(components).map(async ([componentName, componentMetadata]) => {
-								// Generate code files paths
-								const componentMetadataWithCodefiles = <AppComponentMetadataWithCodeFiles>{
-									...componentMetadata,
-									codeFiles: await generateComponentDefaultCodeFilesPaths(
-										componentType as AppComponentType,
-										componentName,
-										componentMetadata,
-										localAppRootdir,
-									),
-								};
-								// Download code files
-								await downloadCodeFiles(
-									componentType as AppComponentType,
-									componentName,
-									localAppRootdir,
-									origin,
-									componentMetadataWithCodefiles,
-								);
-
-								return [componentName, componentMetadataWithCodefiles];
-							}),
-						),
-					),
-				];
-			}),
-		),
-	);
-	return <Record<AppComponentType, (typeof ret)[string]>>ret; // Force retype, because `fromEntries` loses a keys type.
 }

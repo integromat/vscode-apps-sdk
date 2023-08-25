@@ -3,8 +3,7 @@ import * as vscode from 'vscode';
 import {
 	getMakecomappJson,
 	getMakecomappRootDir,
-	renameConnection,
-	updateMakecomappJson,
+	renameConnectionInMakecomappJson,
 } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { uploadSource } from './code-deploy-download';
@@ -15,7 +14,6 @@ import { diffComponentsPresence } from './diff-components-presence';
 import { createAppComponent } from './create-component';
 import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 import { catchError } from '../error-handling';
-
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', localFileDeploy));
@@ -118,20 +116,14 @@ async function localFileDeploy(file: vscode.Uri) {
 			}
 
 			// #region Process all post-actions
-			let isMakecomappUpdated = false;
 			for (const postAction of postActions) {
 				if (postAction.renameConnection) {
-					renameConnection(
-						makecomappJson,
+					await renameConnectionInMakecomappJson(
+						makeappRootdir,
 						postAction.renameConnection.oldId,
 						postAction.renameConnection.newId,
 					);
-					isMakecomappUpdated = true;
 				}
-			}
-			// Write post-action changes back into makecomapp.json file
-			if (isMakecomappUpdated) {
-				updateMakecomappJson(makeappRootdir, makecomappJson);
 			}
 			// #endregion Process all post-actions
 

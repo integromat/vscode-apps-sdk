@@ -1,6 +1,20 @@
 import * as vscode from 'vscode';
 import { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { TextDecoder } from 'util';
+import { getMakecomappJson } from './makecomappjson';
+
+/**
+ * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
+ * If origin is one one, nothing asked to user, but instantnly returns this origin.
+ *
+ * Note: Gets the list of origins from project's makecomapp.json.
+ */
+export async function askForProjectOrigin(
+	makeappRootdir: vscode.Uri,	purposeLabel?: string,
+) {
+	const makecomappJson = await getMakecomappJson(makeappRootdir);
+	return askForOrigin(makecomappJson.origins, makeappRootdir, purposeLabel);
+}
 
 /**
  * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
