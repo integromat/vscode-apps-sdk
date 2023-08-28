@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import { TextEncoder } from 'util';
+import pick from 'lodash.pick';
 import { getCurrentWorkspace } from '../services/workspace';
 import { getCurrentEnvironment } from '../providers/configuration';
 import { LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
@@ -15,6 +16,7 @@ import { downloadSource } from './code-deploy-download';
 import { generateDefaultLocalFilename } from './local-file-paths';
 import { catchError, withProgress } from '../error-handling';
 import { pullNewComponents } from './pull';
+import { storeSecret } from './secrets-storage';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -32,7 +34,6 @@ export function registerCommands(): void {
 async function cloneAppToWorkspace(context: App): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
-	const apikeyFileUri = vscode.Uri.joinPath(apikeyDir, 'apikey1');
 
 	const localAppRootdir = await askForAppDirToClone();
 	if (!localAppRootdir) {
@@ -48,12 +49,14 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
 	}
 
+	const apikeyFileUri = (await storeSecret('apikey', environment.apikey));
+
 	const origin: LocalAppOriginWithSecret = {
 		label: 'Origin',
 		baseUrl: 'https://' + environment.url,
 		appId: context.name,
 		appVersion: context.version,
-		apikeyFile: path.relative(path.dirname(makeappJsonPath.fsPath), apikeyFileUri.fsPath),
+		apikeyFile: path.relative(localAppRootdir.fsPath, apikeyFileUri.fsPath),
 		apikey: environment.apikey,
 	};
 
@@ -67,7 +70,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			rpc: {},
 			webhook: {},
 		},
-		origins: [origin],
+		origins: [pick(origin, ['label', 'baseUrl', 'appId', 'appVersion', 'apikeyFile'])],
 	};
 
 	// Save .gitignore: exclude secrets dir, common data.
