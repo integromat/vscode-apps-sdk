@@ -21,7 +21,7 @@ export const generalCodesDefinition: Record<GeneralCodeName, CodeDef> = {
 	},
 	common: { ...json, filename: 'general/common' },
 	content: {
-		filename: 'readme',
+		filename: 'README',
 		fileext: 'md',
 		mimetype: 'text/markdown',
 	},

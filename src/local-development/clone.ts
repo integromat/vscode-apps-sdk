@@ -49,7 +49,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
 	}
 
-	const apikeyFileUri = (await storeSecret('apikey', environment.apikey));
+	const apikeyFileUri = await storeSecret('apikey', environment.apikey);
 
 	const origin: LocalAppOriginWithSecret = {
 		label: 'Origin',
@@ -117,7 +117,10 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	await pullNewComponents(localAppRootdir, origin);
 
 	// VSCode show readme.md and open explorer
-	const readme = vscode.Uri.joinPath(localAppRootdir, 'readme.md');
-	await vscode.commands.executeCommand('vscode.open', readme);
+	const readmeUri = vscode.Uri.joinPath(
+		localAppRootdir,
+		generalCodesDefinition.content.filename + '.' + generalCodesDefinition.content.fileext,
+	);
+	await vscode.commands.executeCommand('vscode.open', readmeUri);
 	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 }
