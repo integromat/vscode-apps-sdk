@@ -12,7 +12,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 const limitConcurrency = throat(1);
 
 /**
- * FinSd the nearest parent dir, where makecomapp.json is located.
+ * Finds the nearest parent dir, where makecomapp.json is located.
  * File must be located in the workspace.
  * @return Directory, where makecomapp.json is located.
  */
