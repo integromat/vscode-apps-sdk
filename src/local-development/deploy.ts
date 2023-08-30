@@ -15,6 +15,7 @@ import { createAppComponent } from './create-component';
 import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
+import { MAKECOMAPP_FILENAME } from './consts';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', localFileDeploy));
@@ -28,7 +29,12 @@ async function localFileDeploy(file: vscode.Uri) {
 	const makeappRootdir = getMakecomappRootDir(file);
 	const stat = await vscode.workspace.fs.stat(file);
 	const fileIsDirectory = stat.type === vscode.FileType.Directory;
-	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath) + (fileIsDirectory ? '/' : ''); // Relative to makecomapp.json
+	let fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath) + (fileIsDirectory ? '/' : ''); // Relative to makecomapp.json
+
+	// Special case: If user clicks to `makecomapp.json`, it means "all project files".
+	if (fileRelativePath === MAKECOMAPP_FILENAME) {
+		fileRelativePath = '/';
+	}
 
 	const codesToDeploy = findCodesByFilePath(fileRelativePath, makecomappJson, makeappRootdir);
 

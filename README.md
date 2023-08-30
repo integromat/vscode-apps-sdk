@@ -23,17 +23,17 @@
 
 - Clone SDK app to local workspace
 - Deploy any code file up to Make (+bulk deploy)
+  - "Deploy all" by clicking on `makecomapp.json`.
 - Rewrite the local file by the newer version from Make (pull)
 - Compare local code file with Make
 - Ability to have multiple origins of a single local app to be able to use for staging
 - ApiKey store as local file(s)
+  - Handle multiple apiKey files in the same workspace.
 - Pull new components from Make
 - Compatible with GIT versioning
 
 #### Not implemented yet
 
-- "Deploy all" by clicking on `makecomapp.json`.
-- Handle multiple apiKey files in the same workspace.
 - Smart code highlight and JSON validation.
 - Handle with HTTP 428 API rate limit reach.
 - Local create webhooks, modules, RPCs, and functions.
