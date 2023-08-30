@@ -19,7 +19,7 @@
 
 ### Features Status
 
-**For testing purposes only!**
+#### Implemented (but use for testing purposes only!)
 
 - Clone SDK app to local workspace
 - Deploy any code file up to Make (+bulk deploy)
@@ -30,7 +30,7 @@
 - Pull new components from Make
 - Compatible with GIT versioning
 
-#### Not implemented yet in local development
+#### Not implemented yet
 
 - "Deploy all" by clicking on `makecomapp.json`.
 - Handle multiple apiKey files in the same workspace.
