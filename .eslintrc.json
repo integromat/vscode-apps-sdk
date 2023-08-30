@@ -31,7 +31,7 @@
 			"no-tabs": "off",  // This project uses tabs instead of spaces as default.
 			"quote-props": ["error", "as-needed"],
 			// "object-curly-spacing" is not aligned in Google with Typescript default used style
-			"object-curly-spacing": ["error", "always", { "objectsInObjects": false }],
+			"object-curly-spacing": ["error", "always", { "objectsInObjects": true }],
 			"require-jsdoc": "off",
 			"valid-jsdoc":"off",
 			"quotes": ["error", "single", { "avoidEscape": true }],  // Allow to used double-quotes if inner string has single-quote.
