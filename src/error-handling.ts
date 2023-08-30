@@ -63,18 +63,19 @@ export function catchError<T extends (...args: any[]) => Promise<any>>(
 
 /**
  * Function wrapper, which displays a progress bar in the VSCode window during async function execution.
+ * @deprecated Use 'vscode-progress-dialog.ts' -> `withProgressDialog() instead.
  */
-export function withProgress<T extends (...args: any[]) => Promise<any>>(
-	options: Omit<vscode.ProgressOptions, 'location'|'cancellable'>,
-	asyncFunc: T
-): T {
-	return <T>(async (...args: any[]) => {
-		return await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			...options,
-		}, async (progress, token) => {
-			return await asyncFunc(...args);
-		});
-	});
-}
+// export function withProgress<T extends (...args: any[]) => Promise<any>>(
+// 	options: Omit<vscode.ProgressOptions, 'location'|'cancellable'>,
+// 	asyncFunc: T
+// ): T {
+// 	return <T>(async (...args: any[]) => {
+// 		return await vscode.window.withProgress({
+// 			location: vscode.ProgressLocation.Notification,
+// 			cancellable: false,
+// 			...options,
+// 		}, async (progress, token) => {
+// 			return await asyncFunc(...args);
+// 		});
+// 	});
+// }

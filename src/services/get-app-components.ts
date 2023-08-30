@@ -4,6 +4,7 @@ import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.
 import axios from 'axios';
 import { apiV2SdkAppsBasePath } from './consts';
 import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
+import { progresDialogReport } from '../utils/vscode-progress-dialog';
 
 /**
  * Gets list of components summaries of the given type for the given app.
@@ -15,6 +16,8 @@ export async function getAppComponents<T extends ComponentsApiResponseItem>(
 ): Promise<T[]> {
 	const apiURL = getAppComponentsBaseUrl(origin, componentType);
 
+	progresDialogReport(`Getting ${componentType}s list`);
+
 	const responseData = (await axios({
 		url: apiURL,
 		headers: {
@@ -24,6 +27,8 @@ export async function getAppComponents<T extends ComponentsApiResponseItem>(
 	})).data;
 
 	const items: T[] = responseData[camelCase(`app_${componentType}s`)];
+
+	progresDialogReport('');
 	return items;
 }
 
@@ -55,6 +60,8 @@ export async function getAppComponentDetails<T extends ComponentDetailsApiRespon
 			throw new Error(`Unknown component type "${componentType}"`);
 	}
 
+	progresDialogReport(`Getting ${componentType} ${componentName} metadata`);
+
 	const responseData = (await axios({
 		url,
 		headers: {
@@ -62,8 +69,9 @@ export async function getAppComponentDetails<T extends ComponentDetailsApiRespon
 			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},
 	})).data;
-
 	const item: T = responseData[camelCase(`app_${componentType}`)];
+
+	progresDialogReport('');
 	return item;
 }
 

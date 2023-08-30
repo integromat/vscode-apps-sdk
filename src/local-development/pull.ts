@@ -13,6 +13,7 @@ import { downloadSource } from './code-deploy-download';
 import { log } from '../output-channel';
 import { catchError } from '../error-handling';
 import { askForProjectOrigin } from './dialog-select-origin';
+import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -23,7 +24,9 @@ export function registerCommands(): void {
 			if (!origin) {
 				return;
 			}
-			const newComponents = await pullNewComponents(localAppRootdir, origin);
+			const newComponents = await withProgressDialog({ title: '' }, async (_progress, _cancellationToken) => {
+				return pullNewComponents(localAppRootdir, origin);
+			});
 			if (newComponents.length > 0) {
 				vscode.window.showInformationMessage(
 					`New ${newComponents.length} local components pulled:` +

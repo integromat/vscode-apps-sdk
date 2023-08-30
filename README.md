@@ -23,7 +23,7 @@
 
 - Clone SDK app to local workspace
 - Deploy any code file up to Make (+bulk deploy)
-- Rewrite the local file by the newer version from Make (download)
+- Rewrite the local file by the newer version from Make (pull)
 - Compare local code file with Make
 - Ability to have multiple origins of a single local app to be able to use for staging
 - ApiKey store as local file(s)
@@ -46,13 +46,14 @@
 - Cloning issue of components with the same ID (but different character case only)
   - For example: two modules: `myModule`, `mymodule`
   - File extension `.imljson` change to `.iml.json`.
+- All longer actions display the progress/busy notification.
 
 **IMPORTANT NOTE: Local file structure and all these features for local development
                 are under development and don't have to be stable yet.**
 
 ### How to use SDK app local development
 
-The idea is that a developer can `clone` a whole SDK app from Make to local files. Files are `downloaded` to the workspace currently opened in VS Code. From this time all local files are "disconnected" from Make until a developer `deploys` them back to Make. Therefore a developer can work on changes as long as he needs without touching on the SDK app running in Make. When all necessary changes are made locally a developer can `deploy` changes back to Make. The whole SDK app can be `deployed` or any `component` can be deployed anytime separately. There is also a way to `pull` changes made in Make and update the local files in case somebody is touching to SDK app `codes` directly on Make UI or by VS Code Extension online editing.
+The idea is that a developer can `clone` a whole SDK app from Make to local files. Files are `pulled` to the workspace currently opened in VS Code. From this time all local files are "disconnected" from Make until a developer `deploys` them back to Make. Therefore a developer can work on changes as long as he needs without touching on the SDK app running in Make. When all necessary changes are made locally a developer can `deploy` changes back to Make. The whole SDK app can be `deployed` or any `component` can be deployed anytime separately. There is also a way to `pull` changes made in Make and update the local files in case somebody is touching to SDK app `codes` directly on Make UI or by VS Code Extension online editing.
 
 ### Terms used in local development feature
 
@@ -61,9 +62,7 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 - `code` - Each file (mostly JSON) is named `code` and it is the part `component`
            or it belongs to the app itself directly (like `Base`, `Common` or `Readme`).
 - `clone` - The process, which clones a SDK app from Make into a newly created local directory in your opened workspace.
-- `pull` - The process, which updates or inserts a local component content loaded from a remote origin (Make).
-- `download` - The process, which updates the local code (part of the component) loaded from a remote origin (Make).
-               `Download` is a part of the `pull` process.
+- `pull` - The process, which updates or inserts a local component (or it's code) loaded from a remote origin (Make).
 - `deploy` - The process, which pushes/uploads a local component or code to remote origin (Make).
 - `remote`, `origin` - Make.com or similar public cloud Make instance or private Make instance.
 
@@ -83,7 +82,7 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 
    *Note: If you intend to have multiple apps in a single workspace, each app must be cloned into a different subdirectory.*
 
-5. When the `clone` process is finished VS Code switches the view to File Explorer, where newly downloaded files are placed and the app `README` file will be opened.
+5. When the `clone` process is finished VS Code switches the view to File Explorer, where newly pulled files are placed and the app `README` file will be opened.
 
    *After this step the local development is ready to use! 👍*
 
@@ -125,6 +124,6 @@ Path `.secrets` is automatically added into `.gitignore` to avoid accidentally c
 
 Each locally developer SDK app is cloned from its remote origin. Origin (Make API URI with the API key) is defined in `makecomapp.json` in the section `origins`. By default, each app has one origin. But this can be extended with an unlimited count of origins by a simple edit of this section `origins`.
 
-From the time you define the second origin (or more), you will be asked by VS Code dialog to choose the origin from the list on each interaction with a remote app in Make (deploy, pull, download, ...).
+From the time you define the second origin (or more), you will be asked by VS Code dialog to choose the origin from the list on each interaction with a remote app in Make (deploy, pull, ...).
 
 The purpose of this feature is to cover the case, where developers have also another SDK app in Make used for the development or testing stage.

@@ -7,6 +7,7 @@ import { TextDecoder, TextEncoder } from 'util';
 import { GeneralCodeName } from '../types/general-code-name.types';
 import { LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { log } from '../output-channel';
+import { progresDialogReport } from '../utils/vscode-progress-dialog';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -17,6 +18,7 @@ const ENVIRONMENT_VERSION = 2;
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function downloadSource({
+	// TODO Rename downloadSource to pullSource
 	appComponentType,
 	appComponentName,
 	codeName,
@@ -29,7 +31,8 @@ export async function downloadSource({
 	origin: LocalAppOriginWithSecret,
 	destinationPath: vscode.Uri;
 }): Promise<void> {
-	log('debug', `Download code ${codeName} of ${appComponentType} ${appComponentName}`);
+	log('debug', `Pull ${appComponentType} ${appComponentName}: code ${codeName}`);
+	progresDialogReport(`Pulling ${appComponentType} ${appComponentName} code ${codeName}`);
 	// Get the code from the API
 	const axiosResponse = await axios({
 		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),
@@ -56,6 +59,7 @@ export async function downloadSource({
 	// Save the received code to the temp directory
 	const codeContentUint8 = new TextEncoder().encode(codeContent);
 	await vscode.workspace.fs.writeFile(destinationPath, codeContentUint8);
+	progresDialogReport('');
 }
 
 /**
@@ -124,6 +128,8 @@ export async function uploadSource({
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
 }): Promise<void> {
+	progresDialogReport(`Deploying ${appComponentType} ${appComponentName}: code ${codeName}`);
+
 	const codeDef =
 		appComponentType === 'app'
 			? getGeneralCodeDefinition(codeName as GeneralCodeName)
@@ -145,4 +151,6 @@ export async function uploadSource({
 		transformRequest: (data) => data, // Do not expect the `data` to be JSON
 	};
 	await axios(axiosConfig);
+
+	progresDialogReport('');
 }

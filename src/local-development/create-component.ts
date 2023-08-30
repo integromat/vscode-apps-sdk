@@ -4,6 +4,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import * as Core from '../Core';
 import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
+import { progresDialogReport } from '../utils/vscode-progress-dialog';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -21,7 +22,7 @@ export async function createAppComponent(opt: {
 }): Promise<CreateAppComponentPostAction[]> {
 	switch (opt.componentType) {
 		case 'connection': {
-			const newConnId = await createConnection(opt);
+			const newConnId = await createConnectionInOrigin(opt);
 			return [{ renameConnection: { oldId: opt.componentName, newId: newConnId }}];
 		}
 //		case 'module':
@@ -35,11 +36,12 @@ export async function createAppComponent(opt: {
  * IMPORTANT: Not suitable for legacy Integromat API.
  * @returns Connection ID (name)
  */
-async function createConnection(opt: {
+async function createConnectionInOrigin(opt: {
 	origin: LocalAppOriginWithSecret,
 	componentMetadata: AppComponentMetadata,
 }): Promise<string> {
 	log('debug', `Create connection "${opt.componentMetadata.label ?? '[unlabeled]'}" for app "${opt.origin.appId}"`);
+	progresDialogReport(`Creating connection ${opt.componentMetadata.label ?? '[unlabeled]'}`);
 	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(ENVIRONMENT_VERSION, 'app')}/`;
 	const axiosConfig: AxiosRequestConfig = {
 		headers: {
@@ -50,12 +52,9 @@ async function createConnection(opt: {
 		method: 'POST',
 		data: { label: opt.componentMetadata.label, type: opt.componentMetadata.connectionType }
 	}
-
 	const response = await axios<CreateConnectionApiResponse>(axiosConfig);
 
-	// TODO Change connection ID in makecomapp.json
-
-
+	progresDialogReport('');
 	return response.data.appConnection.name; // Connection ID (name)
 }
 

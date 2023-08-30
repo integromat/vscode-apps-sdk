@@ -14,16 +14,17 @@ import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from './code-deploy-download';
 
 import { generateDefaultLocalFilename } from './local-file-paths';
-import { catchError, withProgress } from '../error-handling';
+import { catchError } from '../error-handling';
 import { pullNewComponents } from './pull';
 import { storeSecret } from './secrets-storage';
+import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.clone-to-workspace',
 		catchError(
 			'Download app to workspace',
-			withProgress({ title: 'Downloading app to workspace...' }, cloneAppToWorkspace),
+			cloneAppToWorkspace,
 		),
 	);
 }
@@ -77,50 +78,52 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
 	const secretsDirRelativeToWorkspaceRoot = path.relative(workspaceRoot.fsPath, apikeyDir.fsPath);
 	const gitignoreLines: string[] = ['common.json', '*.common.json', secretsDirRelativeToWorkspaceRoot];
-	gitignoreLines.push(secretsDirRelativeToWorkspaceRoot);
 	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
 	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
 	// Create apikey file
 	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
 	await vscode.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
 
-	// #region Process all app's general codes
-	for (const [codeName, codeDef] of Object.entries(generalCodesDefinition)) {
-		const codeLocalRelativePath = await generateDefaultLocalFilename(
-			// Note: target directories "general" and "modules" are defined in `codeDef`.
-			codeDef,
-			codeName,
-			undefined,
-			undefined,
-			undefined,
+	await withProgressDialog({ title: `Cloning app ${origin.appId}` }, async () => {
+
+		// #region Process all app's general codes
+		for (const [codeName, codeDef] of Object.entries(generalCodesDefinition)) {
+			const codeLocalRelativePath = await generateDefaultLocalFilename(
+				// Note: target directories "general" and "modules" are defined in `codeDef`.
+				codeDef,
+				codeName,
+				undefined,
+				undefined,
+				undefined,
+			);
+			const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
+			// Download code from API to local file
+			await downloadSource({
+				appComponentType: 'app', // The `app` type with name `` is the special
+				appComponentName: '', //
+				codeName,
+				origin,
+				destinationPath: codeLocalAbsolutePath,
+			});
+			// Add to makecomapp.json
+			makecomappJson.generalCodeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
+		}
+		// #endregion Process all app's general codes
+
+		// Write makecomapp.json app metadata file
+		await vscode.workspace.fs.writeFile(
+			makeappJsonPath,
+			new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
 		);
-		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-		// Download code from API to local file
-		await downloadSource({
-			appComponentType: 'app', // The `app` type with name `` is the special
-			appComponentName: '', //
-			codeName,
-			origin,
-			destinationPath: codeLocalAbsolutePath,
-		});
-		// Add to makecomapp.json
-		makecomappJson.generalCodeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
-	}
-	// #endregion Process all app's general codes
+		// Pull all app's components
+		await pullNewComponents(localAppRootdir, origin);
 
-	// Write makecomapp.json app metadata file
-	await vscode.workspace.fs.writeFile(
-		makeappJsonPath,
-		new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
-	);
-	// Pull all app's components
-	await pullNewComponents(localAppRootdir, origin);
-
-	// VSCode show readme.md and open explorer
-	const readmeUri = vscode.Uri.joinPath(
-		localAppRootdir,
-		generalCodesDefinition.content.filename + '.' + generalCodesDefinition.content.fileext,
-	);
-	await vscode.commands.executeCommand('vscode.open', readmeUri);
-	await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
+		// VSCode show readme.md and open explorer
+		const readmeUri = vscode.Uri.joinPath(
+			localAppRootdir,
+			generalCodesDefinition.content.filename + '.' + generalCodesDefinition.content.fileext,
+		);
+		await vscode.commands.executeCommand('vscode.open', readmeUri);
+		await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
+	});
 }

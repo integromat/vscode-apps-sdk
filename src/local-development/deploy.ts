@@ -14,6 +14,7 @@ import { diffComponentsPresence } from './diff-components-presence';
 import { createAppComponent } from './create-component';
 import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 import { catchError } from '../error-handling';
+import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', localFileDeploy));
@@ -40,12 +41,8 @@ async function localFileDeploy(file: vscode.Uri) {
 		return;
 	}
 
-	await vscode.window.withProgress(
-		{
-			location: vscode.ProgressLocation.Notification,
-			cancellable: true,
-			title: `Deploying ${codesToDeploy.length} codes to Make`,
-		},
+	await withProgressDialog(
+		{ title: `Deploying ${codesToDeploy.length} code${codesToDeploy.length !== 1 ? 's' : ''}` },
 		async (progress, cancellationToken) => {
 			let canceled = false;
 			cancellationToken.onCancellationRequested(() => {
@@ -132,7 +129,6 @@ async function localFileDeploy(file: vscode.Uri) {
 				// Update the progress bar
 				progress.report({
 					increment: 100 / codesToDeploy.length,
-					message: `${component.componentType} ${component.componentName} ${component.codeName}`,
 				});
 				// Skip if component removed from cloud
 				if (
