@@ -628,7 +628,7 @@ class AppCommands {
 
 				let canceled = false;
 				progress.report({ increment: 0, message: `${app.label} - Preparing for export` });
-				const RATE_LIMIT_MS = Meta.turbo === true ? 10 : 600;
+				// const RATE_LIMIT_MS = Meta.turbo === true ? 10 : 600;  // TODO remove in future. Disabled 2023/8
 				const DIR = tempy.directory();
 				token.onCancellationRequested(() => {
 					vscode.window.showWarningMessage(`Export of ${app.label} canceled.`);
@@ -654,7 +654,7 @@ class AppCommands {
 					let a = await Core.rpGet(`${urn}`, _authorization);
 					if (_environment.version === 2) { a = a.app }
 					await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(pick(a, ['name', 'label', 'version', 'theme', 'language', 'countries']), null, 4));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+					// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 					/**
 					 * 2 - Get Base
@@ -664,7 +664,7 @@ class AppCommands {
 					}
 					progress.report({ increment: 2, message: `${app.label} - Exporting Base` });
 					await asyncfile.writeFile(path.join(archive, `base.imljson`), Core.jsonString(await Core.rpGet(`${urn}/base`, _authorization)));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+					// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 					/**
 					 * 3 - Get Readme
@@ -674,7 +674,7 @@ class AppCommands {
 					}
 					progress.report({ increment: 2, message: `${app.label} - Exporting Readme` });
 					await asyncfile.writeFile(path.join(archive, `readme.md`), (await Core.rpGet(`${urn}/readme`, _authorization) || ''));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+					// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 					/**
 					 * 4 - Get Connections
@@ -704,7 +704,7 @@ class AppCommands {
 						let c = (await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}`, _authorization));
 						if (_environment.version === 2) { c = c.appConnection }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(c, ['name', 'label', 'type']), null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `scope`, `scopes`, `parameters`]) {
@@ -713,7 +713,7 @@ class AppCommands {
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization), key));
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+							// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 						}
 					}
 
@@ -744,14 +744,14 @@ class AppCommands {
 						if (_environment.version === 2) { r = r.appRpc }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
 							JSON.stringify(pick(r, ['name', 'label', 'connection']), null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `parameters`]) {
 							progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` });
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization), key));
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 						}
 					}
 
@@ -781,7 +781,7 @@ class AppCommands {
 						let w = await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}`, _authorization)
 						if (_environment.version === 2) { w = w.appWebhook }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(w, ['name', 'label', 'connection', 'type']), null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])) {
@@ -790,7 +790,7 @@ class AppCommands {
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization), key));
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+							// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 						}
 					}
 
@@ -824,7 +824,7 @@ class AppCommands {
 						metadata.type = getModuleDefFromId(metadata.type_id).type;
 						delete metadata.type_id;
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(metadata, null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+						// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 
 						// Get Corresponding Sources Based On Type
 						switch (module.type_id) {
@@ -839,7 +839,7 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+									// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 								}
 								break;
 							// Trigger
@@ -850,7 +850,7 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+									// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 								}
 								break;
 							// Instant trigger
@@ -861,7 +861,7 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+									// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 								}
 								break;
 							// Responder
@@ -872,7 +872,7 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+									// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 								}
 								break;
 						}
@@ -906,7 +906,7 @@ class AppCommands {
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.js`),
 								(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'function')}/${fun.name}/${key}`, _authorization)) || '');
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
+							// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 						}
 					}
 
@@ -1402,7 +1402,7 @@ class AppCommands {
 						});
 					}
 					// To avoid reach the API limit, slow down the request queue.
-					await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
+					// await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));  // TODO Remove in future. Disabled 2023/9.
 				}
 			});
 			appsProvider.refresh();
