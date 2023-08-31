@@ -18,12 +18,17 @@ async function createConnection(file: vscode.Uri) {
 	const makecomappJson = await getMakecomappJson(file);
 	const makeappRootdir = getMakecomappRootDir(file);
 
-	const appConnectionBasename = makecomappJson.origins[0]?.appId ?? 'unnamedapp';
-	let appConnectionNameSuffix: string | number = '';
-	while (makecomappJson.components.connection[appConnectionBasename + appConnectionNameSuffix] !== undefined) {
-		appConnectionNameSuffix = typeof appConnectionNameSuffix === 'string' ? 1 : appConnectionNameSuffix + 1;
+	if (!makecomappJson.origins[0]?.appId) {
+		throw new Error('Cannot create connection, because missing "appId" in "makecomapp.json" => first "origin".');
 	}
-	const newConnectionTempName = appConnectionBasename + appConnectionNameSuffix;
+
+	// Find first not used ID (Connections use autoincrement ID based on app ID).
+	const appId = makecomappJson.origins[0].appId;
+	let appConnectionNameSuffix: number | undefined = undefined;
+	while (makecomappJson.components.connection[appId + appConnectionNameSuffix] !== undefined) {
+		appConnectionNameSuffix = appConnectionNameSuffix === undefined ? 2 : appConnectionNameSuffix + 1;
+	}
+	const newConnectionTempId = appId + appConnectionNameSuffix;
 
 	const connectionMetadata: AppComponentMetadata = {
 		label: 'new connection', // TODO ask user
@@ -36,16 +41,16 @@ async function createConnection(file: vscode.Uri) {
 		codeFiles: await generateComponentDefaultCodeFilesPaths(
 			// Generate Local file paths (Relative to app rootdir) + store metadata
 			'connection',
-			newConnectionTempName,
+			String(appConnectionNameSuffix) || '1',  // Use numbers 1,2,3,4,5 connections directory name (ignore prefix with app ID).
 			connectionMetadata,
 			makeappRootdir,
 		),
 	};
 	// Create new code files
-	await createLocalConnection(newConnectionTempName, connectionMetadataWithCodeFiles, makeappRootdir);
+	await createLocalConnection(newConnectionTempId, connectionMetadataWithCodeFiles, makeappRootdir);
 
 	// OK info message
-	vscode.window.showInformationMessage(`Connection "${newConnectionTempName} created locally."`);
+	vscode.window.showInformationMessage(`Connection "${newConnectionTempId} created locally."`);
 }
 
 /**

@@ -9,6 +9,9 @@ import {
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 
+/**
+ * Gets list of all components from remote origin (in Make).
+ */
 export async function getAllComponentsSummaries(
 	origin: LocalAppOriginWithSecret,
 ): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {

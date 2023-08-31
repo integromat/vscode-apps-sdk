@@ -47,64 +47,63 @@ async function localFileDeploy(file: vscode.Uri) {
 		return;
 	}
 
+	// Get all existing remote components
+	const allComponentsSummariesInCloud = await withProgressDialog(
+		{ title: 'Deployment initial analytics' },
+		async () => {
+			return getAllComponentsSummaries(origin);
+		},
+	);
+	// Compare remote component list with local makecomapp.json
+	const componentAddingRemoving = diffComponentsPresence(makecomappJson.components, allComponentsSummariesInCloud);
+	// New components = new components in makecomapp.json & components to deploy
+	const newComponentsToCreate = componentAddingRemoving.newComponents.filter((newComponentInMakecomappjson) =>
+		codesToDeploy.find(
+			(codeToDeploy) =>
+				codeToDeploy.componentType === newComponentInMakecomappjson.componentType &&
+				codeToDeploy.componentName === newComponentInMakecomappjson.componentName,
+		),
+	);
+	if (componentAddingRemoving.newComponents.length > 0 || componentAddingRemoving.missingComponents.length > 0) {
+		// Ask for continue in case of new component(s) found
+		const confirmAnswer = await vscode.window.showWarningMessage(
+			'Components asymetry found between local files and Make',
+			{
+				modal: true,
+				detail: [
+					newComponentsToCreate.length > 0
+						? `New ${newComponentsToCreate.length} local components\n` +
+						  '(will be created at Make):\n' +
+						  newComponentsToCreate
+								.map((newC) => '➕\xA0' + newC.componentType + '\xA0' + newC.componentName)
+								.join(', ')
+						: '',
+					componentAddingRemoving.missingComponents.length > 0
+						? `NOTE: Missing ${componentAddingRemoving.missingComponents.length} local components:\n` +
+						  '(exists in Make, but missing in local project):\n' +
+						  componentAddingRemoving.missingComponents
+								.map((missingC) => '➖\xA0' + missingC.componentType + '\xA0' + missingC.componentName)
+								.join(', ')
+						: '',
+					'MAKE SURE THIS IS SOMETHING YOU INTEND' +
+						(componentAddingRemoving ? ' and there is no typo in some of local component ID' : '') +
+						'.',
+				].join('\n\n'),
+			},
+			{ title: 'Continue' },
+		);
+		if (confirmAnswer?.title !== 'Continue') {
+			return;
+		}
+	}
+
 	await withProgressDialog(
-		{ title: `Deploying ${codesToDeploy.length} code${codesToDeploy.length !== 1 ? 's' : ''}` },
+		{ title: `Deploying ${codesToDeploy.length} code${codesToDeploy.length !== 1 ? 's' : ''}`, cancellable: true },
 		async (progress, cancellationToken) => {
 			let canceled = false;
 			cancellationToken.onCancellationRequested(() => {
 				canceled = true;
 			});
-
-			const allComponentsSummariesInCloud = await getAllComponentsSummaries(origin);
-			// Compare cloud component list with local makecomapp.json
-			const componentAddingRemoving = diffComponentsPresence(
-				makecomappJson.components,
-				allComponentsSummariesInCloud,
-			);
-			// New components = new components in makecomapp.json & components to deploy
-			const newComponentsToCreate = componentAddingRemoving.newComponents.filter((newComponentInMakecomappjson) =>
-				codesToDeploy.find(
-					(codeToDeploy) =>
-						codeToDeploy.componentType === newComponentInMakecomappjson.componentType &&
-						codeToDeploy.componentName === newComponentInMakecomappjson.componentName,
-				),
-			);
-			if (
-				componentAddingRemoving.newComponents.length > 0 ||
-				componentAddingRemoving.missingComponents.length > 0
-			) {
-				// Ask for continue in case of new component(s) found
-				const confirmAnswer = await vscode.window.showWarningMessage(
-					'Components asymetry found between local files and Make',
-					{
-						modal: true,
-						detail: [
-							newComponentsToCreate.length > 0
-								? `New ${newComponentsToCreate.length} local components\n` +
-								  '(will be created at Make):\n' +
-								  newComponentsToCreate
-										.map((newC) => '➕\xA0' + newC.componentType + '\xA0' + newC.componentName)
-										.join(', ')
-								: '',
-							componentAddingRemoving.missingComponents.length > 0
-								? `NOTE: Missing ${componentAddingRemoving.missingComponents.length} local components:\n` +
-								  '(exists in Make, but missing in local project):\n' +
-								  componentAddingRemoving.missingComponents
-										.map(
-											(missingC) =>
-												'➖\xA0' + missingC.componentType + '\xA0' + missingC.componentName,
-										)
-										.join(', ')
-								: '',
-							'MAKE SURE THIS IS SOMETHING YOU ARE INTENDINT and there is no typo in component ID.',
-						].join('\n\n'),
-					},
-					{ title: 'Continue' },
-				);
-				if (confirmAnswer?.title !== 'Continue') {
-					return;
-				}
-			}
 
 			// Create new components in cloud
 			const postActions: CreateAppComponentPostAction[] = [];

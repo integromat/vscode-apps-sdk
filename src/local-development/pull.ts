@@ -87,6 +87,7 @@ async function pullComponent(
 			componentName,
 			componentMetadata,
 			localAppRootdir,
+			origin.appId,
 		),
 	};
 	// Download code files
