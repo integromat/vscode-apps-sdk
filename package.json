@@ -836,11 +836,11 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npm run cleanup && npm run compile",
 		"compile": "tsc -p ./",
 		"cleanup": "rm -rf ./out",
 		"watch": "tsc -watch -p ./",
-		"test": "npm run compile && node ./out/test/runTest.js",
+		"test": "npm run cleanup && npm run compile && node ./out/test/runTest.js",
 		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
 	},
 	"devDependencies": {
