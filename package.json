@@ -513,263 +513,328 @@
 			"view/item/context": [
 				{
 					"command": "apps-sdk.function.new",
+					"group": "7_modification_online",
 					"when": "viewItem == functions && view == apps"
 				},
 				{
 					"command": "apps-sdk.function.test",
+					"group": "7_modification_online",
 					"when": "viewItem == function && view == apps"
 				},
 				{
 					"command": "apps-sdk.function.test",
+					"group": "7_modification_online",
 					"when": "viewItem == code && view == apps"
 				},
 				{
 					"command": "apps-sdk.function.test",
+					"group": "7_modification_online",
 					"when": "viewItem == test && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.new",
+					"group": "7_modification_online",
 					"when": "viewItem == rpcs && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.new",
+					"group": "7_modification_online",
 					"when": "viewItem == modules && view == apps"
 				},
 				{
 					"command": "apps-sdk.webhook.new",
+					"group": "7_modification_online",
 					"when": "viewItem == webhooks && view == apps"
 				},
 				{
 					"command": "apps-sdk.connection.new",
+					"group": "7_modification_online",
 					"when": "viewItem == connections && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == function && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == webhook && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == connection && view == apps"
 				},
 				{
 					"command": "apps-sdk.connection.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == connection && view == apps"
 				},
 				{
 					"command": "apps-sdk.webhook.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == webhook && view == apps"
 				},
 				{
 					"command": "apps-sdk.webhook.change-connection",
+					"group": "7_modification_online",
 					"when": "viewItem == webhook && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.visibility.public",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.visibility.private",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-type",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-type",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-type",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.change-connection",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.test",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.changes.show",
+					"group": "7_modification_online",
 					"when": "viewItem == changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.visibility.public",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.export",
-					"when": "viewItem == app && view == apps"
-				},
-				{
-					"command": "apps-sdk.local-dev.clone-to-workspace",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.export",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.export",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.export",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.visibility.private",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.changes.commit",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.changes.rollback",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
+				},
+				{
+					"command": "apps-sdk.local-dev.clone-to-workspace",
+					"group": "z_commands",
+					"when": "viewItem == app && view == apps"
 				}
 			],
 			"explorer/context": [
