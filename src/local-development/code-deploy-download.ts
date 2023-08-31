@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as Core from '../Core';
-import axios, { AxiosRequestConfig } from 'axios';
+import { AxiosRequestConfig } from 'axios';
 import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
@@ -8,6 +8,7 @@ import { GeneralCodeName } from '../types/general-code-name.types';
 import { LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
+import { requestMakeApi } from '../utils/request-api-make';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -34,17 +35,15 @@ export async function downloadSource({
 	log('debug', `Pull ${appComponentType} ${appComponentName}: code ${codeName}`);
 	progresDialogReport(`Pulling ${appComponentType} ${appComponentName} code ${codeName}`);
 	// Get the code from the API
-	const axiosResponse = await axios({
+	let codeContent = await requestMakeApi({
 		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
-			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},
 		transformResponse: (res) => res, // Do not parse the response into JSON
 	});
 
 	// Prepare a stream to be saved
-	let codeContent: string = axiosResponse.data;
 
 	// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
 	// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"
@@ -145,12 +144,11 @@ export async function uploadSource({
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 			'Content-Type': codeDef.mimetype,
-			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},
 		data: sourceContent,
 		transformRequest: (data) => data, // Do not expect the `data` to be JSON
 	};
-	await axios(axiosConfig);
+	await requestMakeApi(axiosConfig);
 
 	progresDialogReport('');
 }

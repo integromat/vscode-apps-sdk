@@ -1,10 +1,10 @@
 import camelCase from 'lodash.camelcase';
 import { AppComponentType } from '../types/app-component-type.types';
 import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
-import axios from 'axios';
 import { apiV2SdkAppsBasePath } from './consts';
 import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
+import { requestMakeApi } from '../utils/request-api-make';
 
 /**
  * Gets list of components summaries of the given type for the given app.
@@ -18,13 +18,12 @@ export async function getAppComponents<T extends ComponentsApiResponseItem>(
 
 	progresDialogReport(`Getting ${componentType}s list`);
 
-	const responseData = (await axios({
+	const responseData = await requestMakeApi({
 		url: apiURL,
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
-			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},
-	})).data;
+	});
 
 	const items: T[] = responseData[camelCase(`app_${componentType}s`)];
 
@@ -62,13 +61,12 @@ export async function getAppComponentDetails<T extends ComponentDetailsApiRespon
 
 	progresDialogReport(`Getting ${componentType} ${componentName} metadata`);
 
-	const responseData = (await axios({
+	const responseData = (await requestMakeApi({
 		url,
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
-			// TODO 'x-imt-apps-sdk-version': Meta.version
 		},
-	})).data;
+	}));
 	const item: T = responseData[camelCase(`app_${componentType}`)];
 
 	progresDialogReport('');

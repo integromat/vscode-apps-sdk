@@ -1,12 +1,10 @@
-import * as  vscode from 'vscode';
+import * as vscode from 'vscode';
 import { Environment } from '../types/environment.types';
-
 import * as Core from '../Core';
-import * as  Meta from '../Meta';
-
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import * as jsoncParser from 'jsonc-parser';
 import { showError } from '../error-handling';
+import { requestMakeApi } from '../utils/request-api-make';
 
 
 /**
@@ -42,14 +40,13 @@ export class ParametersProvider {
 		if (["connection", "webhook", "rpc", "module", "connections", "webhooks", "rpcs", "modules"].includes(crumbs[3])) {
 			const url = `${this._environment.baseUrl}${urn}/parameters`;
 			try {
-				const parameters = (await axios({
+				const parameters = await requestMakeApi({
 					url: url,
 					headers: {
-						'Authorization': this._authorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						Authorization: this._authorization,
 					},
 					transformResponse: (res: AxiosResponse) => { return res; },  // Do not parse the response into JSON
-				})).data;
+				});
 				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), "parameters"));
 			} catch (err: any) {
 				showError(err, 'loadParameters');
@@ -63,14 +60,13 @@ export class ParametersProvider {
 		if (crumbs[3] === "module" || crumbs[3] === "modules") {
 			const url = `${this._environment.baseUrl}${urn}/expect`;
 			try {
-				const expect = (await axios({
+				const expect = await requestMakeApi({
 					url: url,
 					headers: {
-						'Authorization': this._authorization,
-						'x-imt-apps-sdk-version': Meta.version
+						Authorization: this._authorization,
 					},
 					transformResponse: (res: AxiosResponse) => { return res; },  // Do not parse the response into JSON
-				})).data;
+				});
 				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), "parameters"));
 			} catch (err: any) {
 				showError(err, 'loadParameters');

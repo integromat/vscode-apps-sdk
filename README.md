@@ -35,7 +35,6 @@
 #### Not implemented yet
 
 - Smart code highlight and JSON validation.
-- Handle with HTTP 428 API rate limit reach.
 - Local create webhooks, modules, RPCs, and functions.
 - Pull all changes from Make
 - IMLJSON suggestions (e.g. `parameters`, `connection` object properties)
@@ -47,6 +46,7 @@
   - For example: two modules: `myModule`, `mymodule`
   - File extension `.imljson` change to `.iml.json`.
 - All longer actions display the progress/busy notification.
+- Handle with HTTP 429 API rate limit reach.
 
 **IMPORTANT NOTE: Local file structure and all these features for local development
                 are under development and don't have to be stable yet.**
