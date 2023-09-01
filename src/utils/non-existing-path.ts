@@ -3,16 +3,11 @@ import * as vscode from 'vscode';
 /**
  * Finds the file, which is not exists in filesystem.
  * If `basedir/basename` already exists, tries to add a number as postfix until non existing path found.
- *
- * @param basedir
- * @param basename
- * @param initialPostfixNumber If `0`, then postfix will not be added if possible.
- * @returns
  */
-export async function getFirstNonExistingPath(basedir: vscode.Uri, basename: string, initialPostfixNumber = 0) {
-	let postfix = initialPostfixNumber;
+export async function getFirstNonExistingPath(basedir: vscode.Uri, basename: string) {
+	let postfix = 1; // Note: '1' will not be added as postfix (1 == without postfix)
 	do {
-		const filePath = vscode.Uri.joinPath(basedir, basename + (postfix ? '-' + postfix : ''));
+		const filePath = vscode.Uri.joinPath(basedir, basename + (postfix > 1 ? postfix : ''));
 		try {
 			await vscode.workspace.fs.stat(filePath);
 		} catch (e: any) {

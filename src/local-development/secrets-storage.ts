@@ -14,7 +14,7 @@ export async function storeSecret(secretName: string, secret: string): Promise<v
 	return limitConcurrency(async () => {
 		const workspaceRoot = getCurrentWorkspace().uri;
 		const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
-		const apikeyPath = await getFirstNonExistingPath(apikeyDir, secretName, 1);
+		const apikeyPath = await getFirstNonExistingPath(apikeyDir, secretName);
 
 		await vscode.workspace.fs.writeFile(apikeyPath, new TextEncoder().encode(secret));
 

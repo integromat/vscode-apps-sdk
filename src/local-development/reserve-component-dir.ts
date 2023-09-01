@@ -19,7 +19,6 @@ export async function reserveComponentCodeFilesDirectory(
 		const componentDir = await getFirstNonExistingPath(
 			vscode.Uri.joinPath(localAppRootdir, componentType + 's'),
 			camelToKebab(componentName),
-			0,
 		);
 
 		// Create empty directory
