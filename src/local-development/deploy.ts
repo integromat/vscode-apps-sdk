@@ -67,20 +67,20 @@ async function localFileDeploy(file: vscode.Uri) {
 	if (componentAddingRemoving.newComponents.length > 0 || componentAddingRemoving.missingComponents.length > 0) {
 		// Ask for continue in case of new component(s) found
 		const confirmAnswer = await vscode.window.showWarningMessage(
-			'Components asymetry found between local files and Make',
+			'Components asymetry found between local files and remote Make',
 			{
 				modal: true,
 				detail: [
 					newComponentsToCreate.length > 0
 						? `New ${newComponentsToCreate.length} local components\n` +
-						  '(will be created at Make):\n' +
+						  '(will be created at remote Make):\n' +
 						  newComponentsToCreate
 								.map((newC) => '➕\xA0' + newC.componentType + '\xA0' + newC.componentName)
 								.join(', ')
 						: '',
 					componentAddingRemoving.missingComponents.length > 0
 						? `NOTE: Missing ${componentAddingRemoving.missingComponents.length} local components:\n` +
-						  '(exists in Make, but missing in local project):\n' +
+						  '(exists in remote Make, but missing in local project):\n' +
 						  componentAddingRemoving.missingComponents
 								.map((missingC) => '➖\xA0' + missingC.componentType + '\xA0' + missingC.componentName)
 								.join(', ')

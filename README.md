@@ -66,7 +66,7 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 - `clone` - The process, which clones a SDK app from Make into a newly created local directory in your opened workspace.
 - `pull` - The process, which updates or inserts a local component (or it's code) loaded from a remote origin (Make).
 - `deploy` - The process, which pushes/uploads a local component or code to remote origin (Make).
-- `remote`, `origin` - Make.com or similar public cloud Make instance or private Make instance.
+- `remote`, `origin`, `Make` - Make.com or similar public cloud Make instance or private Make instance.
 
 ### How to clone an app to local files
 
@@ -80,6 +80,8 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 
 3. Use the right mouse to click on any SDK app and select the `Clone to local workspace` context menu item.
 
+   ![Clone menu item](resources/readme-local/clone-to-local.png)
+
 4. The process asks you to destination directory.  The default is the `src`.
 
    *Note: If you intend to have multiple apps in a single workspace, each app must be cloned into a different subdirectory.*
@@ -87,6 +89,8 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 5. When the `clone` process is finished VS Code switches the view to File Explorer, where newly pulled files are placed and the app `README` file will be opened.
 
    *After this step the local development is ready to use! 👍*
+
+   ![Locally clonned app](resources/readme-local/cloned-locally.png)
 
 ### Local clone structure
 
@@ -98,7 +102,11 @@ Many actions can be also executed to part of project only. For this case the rig
 
 Any part of the SDK app (including all changes) can be deployed back to Make (named as `remote origin`). For this action do a right mouse click to any code file, component directory, whole `src` directory or `makecomapp.json` file. Select the menu item `Deploy to Make` to start updating the SDK app in Make by local code files.
 
+![Context menu actions](resources/readme-local/context-menu-actions.png)
+
 If the component does not exist in Make yet, then the developer sees the info message with confirmation to create a new component in Make.
+
+![Component asymetry dialog](resources/readme-local/component-asymetry-new.png)
 
 ### Add new components into local files
 
@@ -135,3 +143,5 @@ Each locally developer SDK app is cloned from its remote origin. Origin (Make AP
 From the time you define the second origin (or more), you will be asked by VS Code dialog to choose the origin from the list on each interaction with a remote app in Make (deploy, pull, ...).
 
 The purpose of this feature is to cover the case, where developers have also another SDK app in Make used for the development or testing stage.
+
+![Multiple origins selection dialog](resources/readme-local/origin-selection.png)
