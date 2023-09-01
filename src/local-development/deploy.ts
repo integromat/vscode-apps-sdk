@@ -42,7 +42,7 @@ async function localFileDeploy(file: vscode.Uri) {
 		throw new Error('Sorry, no associated component code with this file/path found.');
 	}
 
-	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'deployment to Make');
+	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'the deployment');
 	if (!origin) {
 		return;
 	}

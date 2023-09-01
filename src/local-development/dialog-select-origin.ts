@@ -49,18 +49,18 @@ async function askForOrigin2(
 
 	const selected = await vscode.window.showQuickPick(
 		origins.map((origin, index) => {
-			const label = origin.label || origin.appId + ' ' + origin.appVersion;
+			const label = origin.label || origin.appId + ' v' + origin.appVersion;
 			const originHost = new URL(origin.baseUrl).host;
 			return <{ origin: LocalAppOrigin } & vscode.QuickPickItem>{
 				label,
-				description: 'at ' + originHost,
+				description: '(' + (origin.label ? `${origin.appId} ` : '') + 'at ' + originHost + ')',
 				picked: index === 0,
 				origin: origin,
 			};
 		}),
 		{
 			ignoreFocusOut: true,
-			title: 'Select the app origin' + (purposeLabel ? `for ${purposeLabel}` : '') + ':',
+			title: 'Select the app origin' + (purposeLabel ? ` for ${purposeLabel}` : '') + ':',
 		},
 	);
 
