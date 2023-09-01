@@ -34,10 +34,12 @@
 
 #### Not implemented yet
 
+- Validate makecomapp.json file by JSON schema on each usage
+- Using single "shared" code file for multiple components
 - Smart code highlight and JSON validation.
-- Local create webhooks, modules, RPCs, and functions.
-- Pull all changes from Make
 - IMLJSON suggestions (e.g. `parameters`, `connection` object properties)
+- Local create webhooks, modules, RPCs, and functions.
+- Pull all changes from Make (update existing local project by remote changes)
 - Icon file
 
 #### Fixed/resolved
@@ -60,7 +62,7 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 - `component` - One section of an app. Each component is one of the following type:
                 `module`, `connection`, `rpc`, `custom function`, `webhook`.
 - `code` - Each file (mostly JSON) is named `code` and it is the part `component`
-           or it belongs to the app itself directly (like `Base`, `Common` or `Readme`).
+           or it belongs to the app itself directly (like `Base`, `Common` or `README`).
 - `clone` - The process, which clones a SDK app from Make into a newly created local directory in your opened workspace.
 - `pull` - The process, which updates or inserts a local component (or it's code) loaded from a remote origin (Make).
 - `deploy` - The process, which pushes/uploads a local component or code to remote origin (Make).
@@ -86,9 +88,15 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 
    *After this step the local development is ready to use! 👍*
 
+### Local clone structure
+
+When SDK app is cloned into local files, it is created into some subdirectory (mostly `src`). In this directory the most important file is `makecomapp.json`, which is the main fail of whole project. In this file there are list of all compoments, app metadata and links to all component code files. Anytime new component is created, it must be defined in this `makecomapp.json` file. When developer right-clicks to this file, he see couple of additional actions, how the local project can be managed/edited/developed.
+
+Many actions can be also executed to part of project only. For this case the right-click can be used on any component's subdirectory or on any component code file.
+
 ### Deploy local changes to Make
 
-Any part of the SDK app (including all changes) can be deployed back to Make. For this action do a right mouse click to any code file, component directory, whole `src` directory or `makecomapp.json` file. Select the menu item `Deploy to Make` to start updating the SDK app in Make by local code files.
+Any part of the SDK app (including all changes) can be deployed back to Make (named as `remote origin`). For this action do a right mouse click to any code file, component directory, whole `src` directory or `makecomapp.json` file. Select the menu item `Deploy to Make` to start updating the SDK app in Make by local code files.
 
 If the component does not exist in Make yet, then the developer sees the info message with confirmation to create a new component in Make.
 
