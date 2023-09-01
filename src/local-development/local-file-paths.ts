@@ -6,6 +6,7 @@ import { CodeDef } from './types/code-def.types';
 import { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makecomapp.types';
 import { getAppComponentCodesDefinition } from '../services/component-code-def';
 import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
+import { getComponentPseudoId } from './component-pseudo-id';
 
 /**
  * Generate a filename (with extension), how it looks to be placed in local fs for local development.
@@ -83,20 +84,4 @@ export async function generateComponentDefaultCodeFilesPaths(
 			path.relative(localAppRootdir.fsPath, componentDir.fsPath) + '/' + codeFilename;
 	}
 	return componentCodeMetadata;
-}
-
-/**
- * Explanation: Some component ID (like connections and may be some other kind of components)
- * have naming convention as [appId][index].
- *
- * For this case this function returns [componentType][index].
- * If no postfix (first connection), function returns '1'.
- *
- * If naming convention is not based on [appId], returns original componentId.
- */
-function getComponentPseudoId(componentType: AppComponentType, componentId: string, appId: string | undefined): string {
-	if (!appId || !componentId.startsWith(appId)) {
-		return componentId;
-	}
-	return componentType + (componentId.substring(appId.length) || '1');
 }

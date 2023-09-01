@@ -36,9 +36,30 @@ export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
 export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<MakecomappJson> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
-	const makecomappJson = JSON.parse(
-		new TextDecoder().decode(await vscode.workspace.fs.readFile(makecomappJsonPath)),
-	) as MakecomappJson;
+	let makecomappJsonRaw: string;
+	try {
+		makecomappJsonRaw = new TextDecoder().decode(await vscode.workspace.fs.readFile(makecomappJsonPath));
+	} catch (e: any) {
+		const err = new Error(`Cannot read the file "${MAKECOMAPP_FILENAME}."`, { cause: e });
+		err.name = 'PopupError';
+		throw err;
+	}
+	let makecomappJson: MakecomappJson;
+	try {
+		makecomappJson = JSON.parse(makecomappJsonRaw);
+	} catch (e: any) {
+		const err = new Error(
+			`Check the "${MAKECOMAPP_FILENAME}" file, which is currupted. It is not valid JSON file, there is some syntax error."`,
+			{ cause: e },
+		);
+		err.name = 'PopupError';
+		throw err;
+	}
+	if (!Array.isArray(makecomappJson.origins)) {
+		const err = new Error(`Missing "origins" in ${MAKECOMAPP_FILENAME}, or it has incorrect type.`);
+		err.name = 'PopupError';
+		throw err;
+	}
 	return makecomappJson;
 }
 

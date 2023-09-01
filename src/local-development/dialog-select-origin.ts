@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { TextDecoder } from 'util';
 import { getMakecomappJson } from './makecomappjson';
+import { MAKECOMAPP_FILENAME } from './consts';
 
 /**
  * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
@@ -9,9 +10,7 @@ import { getMakecomappJson } from './makecomappjson';
  *
  * Note: Gets the list of origins from project's makecomapp.json.
  */
-export async function askForProjectOrigin(
-	makeappRootdir: vscode.Uri,	purposeLabel?: string,
-) {
+export async function askForProjectOrigin(makeappRootdir: vscode.Uri, purposeLabel?: string) {
 	const makecomappJson = await getMakecomappJson(makeappRootdir);
 	return askForOrigin(makecomappJson.origins, makeappRootdir, purposeLabel);
 }
@@ -26,17 +25,15 @@ export async function askForProjectOrigin(
  */
 export async function askForOrigin(
 	origins: LocalAppOrigin[],
-	makeappRootdir: vscode.Uri,	purposeLabel?: string,
+	makeappRootdir: vscode.Uri,
+	purposeLabel?: string,
 ): Promise<LocalAppOriginWithSecret | undefined> {
-	return includeApiKey(await askForOrigin2(origins, purposeLabel), makeappRootdir)
+	return includeApiKey(await askForOrigin2(origins, purposeLabel), makeappRootdir);
 }
 
-async function askForOrigin2(
-	origins: LocalAppOrigin[],
-	purposeLabel?: string,
-): Promise<LocalAppOrigin | undefined> {
-	if (!origins?.length) {
-		throw new Error('Missing "origins" in makecomapp.json.');
+async function askForOrigin2(origins: LocalAppOrigin[], purposeLabel?: string): Promise<LocalAppOrigin | undefined> {
+	if (!Array.isArray(origins)) {
+		throw new Error('Origins should be the array.');
 	}
 
 	if (origins.length === 0) {
@@ -70,10 +67,7 @@ async function askForOrigin2(
 /**
  * Takes the origin and return new structure, where apiKey is included.
  */
-async function includeApiKey(
-	origin: LocalAppOrigin,
-	makeappRootdir: vscode.Uri,
-): Promise<LocalAppOriginWithSecret>;
+async function includeApiKey(origin: LocalAppOrigin, makeappRootdir: vscode.Uri): Promise<LocalAppOriginWithSecret>;
 async function includeApiKey(origin: undefined, makeappRootdir: vscode.Uri): Promise<undefined>;
 async function includeApiKey(
 	origin: LocalAppOrigin | undefined,
@@ -90,9 +84,20 @@ async function includeApiKey(
 		throw new Error(`Missing "apikeyFile" in origin ${origin.appId || 'unknown-app-id'})`);
 	}
 	const apiKeyUri = vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile);
-	const apiKey = new TextDecoder().decode(await vscode.workspace.fs.readFile(apiKeyUri)).trim();
-	return {
-		...origin,
-		apikey: apiKey,
-	};
+	try {
+		const apiKey = new TextDecoder().decode(await vscode.workspace.fs.readFile(apiKeyUri)).trim();
+		return {
+			...origin,
+			apikey: apiKey,
+		};
+	} catch (e: any) {
+		const err = new Error(
+			`Cannot read API key file defined in "${MAKECOMAPP_FILENAME}" origin "${
+				origin.label || origin.appId
+			}". Check if the file exists and it is correctly named.`,
+			{ cause: e },
+		);
+		err.name = 'PopupError';
+		throw err;
+	}
 }

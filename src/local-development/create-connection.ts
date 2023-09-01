@@ -3,6 +3,7 @@ import { catchError } from '../error-handling';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
+import { getComponentPseudoId } from './component-pseudo-id';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -24,11 +25,12 @@ async function createConnection(file: vscode.Uri) {
 
 	// Find first not used ID (Connections use autoincrement ID based on app ID).
 	const appId = makecomappJson.origins[0].appId;
-	let appConnectionNameSuffix: number | undefined = undefined;
+	let appConnectionNameSuffix: number | string = '';
 	while (makecomappJson.components.connection[appId + appConnectionNameSuffix] !== undefined) {
-		appConnectionNameSuffix = appConnectionNameSuffix === undefined ? 2 : appConnectionNameSuffix + 1;
+		appConnectionNameSuffix = typeof appConnectionNameSuffix === 'string' ? 2 : appConnectionNameSuffix + 1;
 	}
 	const newConnectionTempId = appId + appConnectionNameSuffix;
+	const newConnectionPseudoId = getComponentPseudoId('connection', newConnectionTempId, appId);
 
 	const connectionMetadata: AppComponentMetadata = {
 		label: 'new connection', // TODO ask user
@@ -41,7 +43,7 @@ async function createConnection(file: vscode.Uri) {
 		codeFiles: await generateComponentDefaultCodeFilesPaths(
 			// Generate Local file paths (Relative to app rootdir) + store metadata
 			'connection',
-			String(appConnectionNameSuffix) || '1',  // Use numbers 1,2,3,4,5 connections directory name (ignore prefix with app ID).
+			newConnectionPseudoId, // Use 'connection2','connection3',... connections directory name (ignore prefix with app ID).
 			connectionMetadata,
 			makeappRootdir,
 		),
