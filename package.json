@@ -752,7 +752,7 @@
 		"@types/glob": "^8.1.0",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "^16.18.38",
-		"@types/uuid": "^9.0.1",
+		"@types/uuid": "^9.0.3",
 		"@types/vscode": "^1.78.0",
 		"@typescript-eslint/eslint-plugin": "^6.5.0",
 		"@typescript-eslint/parser": "^6.5.0",
@@ -760,7 +760,7 @@
 		"eslint": "^8.48.0",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^9.0.0",
-		"glob": "^10.3.3",
+		"glob": "^10.3.4",
 		"mocha": "^10.2.0",
 		"typescript": "^5.2.2"
 	},
