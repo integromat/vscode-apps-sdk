@@ -17,9 +17,21 @@
 
 ## Upcoming feature: Local development (pre-alpha)
 
+```text/plain
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! FOR TESTING PURPOSES ONLY!                    !!
+!!                                               !!
+!! Local file structure and all these features   !!
+!! for local development is under development    !!
+!! and don't have to be stable yet.              !!
+!! There can be upcomming breaking changes       !!
+!! before final production release!              !!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+```
+
 ### Features Status
 
-#### Implemented (but use for testing purposes only!)
+#### Implemented
 
 - Clone SDK app to local workspace
 - Deploy any code file up to Make (+bulk deploy)
@@ -32,26 +44,19 @@
 - Pull new components from Make
 - Compatible with GIT versioning
 
-#### Not implemented yet
+#### Waiting for the implementation
 
+- More user friendly names of files (keys in makecomapp.json) - MUST BE DONE BEFORE PRE-RELEASE, BECAUSE OF BREAKING CHANGE.
+- Finalize the short documentation (README) with externally stored screenshots
+- Create local components (webhooks, modules, RPCs, and functions).
+  - Note: Create with empty files only (or single template only)
 - Validate makecomapp.json file by JSON schema on each usage
 - Using single "shared" code file for multiple components
 - Smart code highlight and JSON validation.
 - IMLJSON suggestions (e.g. `parameters`, `connection` object properties)
-- Local create webhooks, modules, RPCs, and functions.
 - Pull all changes from Make (update existing local project by remote changes)
-- Icon file
-
-#### Fixed/resolved
-
-- Cloning issue of components with the same ID (but different character case only)
-  - For example: two modules: `myModule`, `mymodule`
-  - File extension `.imljson` change to `.iml.json`.
-- All longer actions display the progress/busy notification.
-- Handle with HTTP 429 API rate limit reach.
-
-**IMPORTANT NOTE: Local file structure and all these features for local development
-                are under development and don't have to be stable yet.**
+- Wizard, which helps to create all types of components with all templates (same experience as on UI).
+- Nice to have: Icon file
 
 ### How to use SDK app local development
 
@@ -80,7 +85,7 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 
 3. Use the right mouse to click on any SDK app and select the `Clone to local workspace` context menu item.
 
-   ![Clone menu item](resources/readme-local/clone-to-local.png)
+   ![Clone menu item](resources/readme/localdev/clone-to-local.png)
 
 4. The process asks you to destination directory.  The default is the `src`.
 
@@ -90,7 +95,7 @@ The idea is that a developer can `clone` a whole SDK app from Make to local file
 
    *After this step the local development is ready to use! 👍*
 
-   ![Locally clonned app](resources/readme-local/cloned-locally.png)
+   ![Locally clonned app](resources/readme/localdev/cloned-locally.png)
 
 ### Local clone structure
 
@@ -102,15 +107,22 @@ Many actions can be also executed to part of project only. For this case the rig
 
 Any part of the SDK app (including all changes) can be deployed back to Make (named as `remote origin`). For this action do a right mouse click to any code file, component directory, whole `src` directory or `makecomapp.json` file. Select the menu item `Deploy to Make` to start updating the SDK app in Make by local code files.
 
-![Context menu actions](resources/readme-local/context-menu-actions.png)
+![Context menu actions](resources/readme/localdev/context-menu-actions.png)
 
 If the component does not exist in Make yet, then the developer sees the info message with confirmation to create a new component in Make.
 
-![Component asymetry dialog](resources/readme-local/component-asymetry-new.png)
+![Component asymetry dialog](resources/readme/localdev/component-asymetry-new.png)
 
 ### Add new components into local files
 
-To add a new SDK app component into local files there are two ways: assisted or manual.
+Because local component creation is not implemented yet, please create new component online and then pull it into local code as temporary workaround:
+
+<!--
+To add a new SDK app `connection` component into local files there are three ways:
+
+- local assisted
+- local manual files edit
+- online and then pull new components
 
 #### Assisted component adding
 
@@ -122,7 +134,9 @@ This action creates appropriate code files and defines the new component in `mak
 
 #### Manual component adding
 
-You can create new components manually by the same steps as the assisted component adding.
+**IMPORTANT NOTE: This feature is under development and it is not fully implemented yet.**
+
+You can create new components manually by the same steps as the assisted component adding:
 
 1. Create the new component directory in the same structure as another existing one. The directory structure is `[src]/[componentType]/[componentName]`. Example: `src/modules/get-items`.
 
@@ -130,11 +144,19 @@ You can create new components manually by the same steps as the assisted compone
 
 3. Add component details and the references to files created in step 2 into the `makecomapp.json` file placed in the component root directory. Again, the easiest way is to copy/paste the structure from another similar existing component.
 
+-->
+
+#### Online component adding + pull new components
+
+1. Create new app component online (via online part of VS Code Extension or via "My Apps" in Make web interface).
+
+2. Right-click over `makecomapps.json`, click `Pull all new components`.
+
 ### Storing ApiKey during local development
 
-IMPORTANT: In the case of using app local development, the API key is stored in `[workspaceRoot]/.secrets/apikey1` file. When multiple origins or multiple apps are placed in a single workspace there will be multiple files.
+In the case of using app local development, the API key is stored in `[workspaceRoot]/.secrets/apikey` file. When multiple origins or multiple apps are placed in a single workspace there will be multiple files.
 
-Path `.secrets` is automatically added into `.gitignore` to avoid accidentally committing into a GIT repository.
+Note: Path `.secrets` is automatically added into `.gitignore` to avoid accidentally committing into a GIT repository.
 
 ### Multiple remote origins
 
@@ -144,4 +166,8 @@ From the time you define the second origin (or more), you will be asked by VS Co
 
 The purpose of this feature is to cover the case, where developers have also another SDK app in Make used for the development or testing stage.
 
-![Multiple origins selection dialog](resources/readme-local/origin-selection.png)
+![Multiple origins selection dialog](resources/readme/localdev/origin-selection.png)
+
+![Multiple origins selection dialog](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/make.png?raw=true)
+
+![Multiple origins selection dialog](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/make.png?raw=true =50%)
