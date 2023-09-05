@@ -14,6 +14,7 @@ import { log } from '../output-channel';
 import { catchError } from '../error-handling';
 import { askForProjectOrigin } from './dialog-select-origin';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
+import { entries } from '../utils/typed-object';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -116,7 +117,7 @@ async function downloadCodeFiles(
 ): Promise<void> {
 	log('debug', `Clone all codes of ${appComponentType} ${appComponentName}`);
 	// Download codes from API to local files
-	for (const [codeName, codeLocalRelativePath] of Object.entries(componentMetadata.codeFiles)) {
+	for (const [codeName, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		await downloadSource({
 			appComponentType,

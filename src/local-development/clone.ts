@@ -10,14 +10,13 @@ import App from '../tree/App';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import { generalCodesDefinition } from '../services/component-code-def';
-import { GeneralCodeName } from '../types/general-code-name.types';
 import { downloadSource } from './code-deploy-download';
-
 import { generateDefaultLocalFilename } from './local-file-paths';
 import { catchError } from '../error-handling';
 import { pullNewComponents } from './pull';
 import { storeSecret } from './secrets-storage';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
+import { entries } from '../utils/typed-object';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -87,7 +86,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	await withProgressDialog({ title: `Cloning app ${origin.appId}` }, async () => {
 
 		// #region Process all app's general codes
-		for (const [codeName, codeDef] of Object.entries(generalCodesDefinition)) {
+		for (const [codeName, codeDef] of entries(generalCodesDefinition)) {
 			const codeLocalRelativePath = await generateDefaultLocalFilename(
 				// Note: target directories "general" and "modules" are defined in `codeDef`.
 				codeDef,
@@ -106,7 +105,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				destinationPath: codeLocalAbsolutePath,
 			});
 			// Add to makecomapp.json
-			makecomappJson.generalCodeFiles[codeName as GeneralCodeName] = codeLocalRelativePath;
+			makecomappJson.generalCodeFiles[codeName] = codeLocalRelativePath;
 		}
 		// #endregion Process all app's general codes
 
@@ -121,7 +120,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		// VSCode show readme.md and open explorer
 		const readmeUri = vscode.Uri.joinPath(
 			localAppRootdir,
-			generalCodesDefinition.content.filename + '.' + generalCodesDefinition.content.fileext,
+			generalCodesDefinition.readme.filename + '.' + generalCodesDefinition.readme.fileext,
 		);
 		await vscode.commands.executeCommand('vscode.open', readmeUri);
 		await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');

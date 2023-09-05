@@ -1,7 +1,11 @@
-import { GeneralCodeName } from '../types/general-code-name.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { CodeDef } from '../local-development/types/code-def.types';
 import { componentTypesDeployOrder } from './component-types-order';
+import {
+	ComponentCodeFriendlyType,
+	GeneralCodeFriendlyType,
+} from '../local-development/types/code-friendly-type.types';
+import { keys } from '../utils/typed-object';
 
 const imljsonc = {
 	fileext: 'iml.json',
@@ -13,25 +17,35 @@ const json = {
 	mimetype: 'application/json',
 };
 
-export const generalCodesDefinition: Record<GeneralCodeName, CodeDef> = {
+export const generalCodesDefinition: Record<GeneralCodeFriendlyType, CodeDef> = {
 	base: {
+		apiCodeType: 'base',
 		filename: 'general/base',
 		fileext: 'imljson',
 		mimetype: 'application/jsonc',
 	},
-	common: { ...json, filename: 'general/common' },
-	content: {
+	common: { apiCodeType: 'common', ...json, filename: 'general/common' },
+	readme: {
+		apiCodeType: 'content',
 		filename: 'README',
 		fileext: 'md',
 		mimetype: 'text/markdown',
 	},
-	groups: { ...json, filename: 'modules/groups' },
+	groups: { ...json, apiCodeType: 'groups', filename: 'modules/groups' },
 };
 
-const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef>> = {
+/**
+ * Defines all types of app components (like module, connection, ...)
+ * and the appropriate code files for each component type.
+ */
+export const componentsCodesDefinition: Record<
+	AppComponentType,
+	Partial<Record<ComponentCodeFriendlyType, CodeDef>>
+> = {
 	connection: {
-		api: {
+		communication: {
 			...imljsonc,
+			apiCodeType: 'api',
 			filename: (componentType, componentMetadata) => {
 				if (componentType === 'connection' && componentMetadata!.connectionType === 'oauth') {
 					// Special case: Oauth connection API code has the different JSON schema than Basic connection.
@@ -41,56 +55,61 @@ const componentsCodesDefinition: Record<AppComponentType, Record<string, CodeDef
 				return 'communication';
 			},
 		},
-		parameters: { ...imljsonc, filename: 'params' },
-		common: json,
-		scopes: {
+		params: { ...imljsonc, apiCodeType: 'parameters', filename: 'params' },
+		common: { ...json, apiCodeType: 'common' },
+		scopeList: {
 			...imljsonc,
+			apiCodeType: 'scopes',
 			filename: 'scope-list',
 			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
 		},
-		scope: {
+		defaultScope: {
 			...imljsonc,
+			apiCodeType: 'scope',
 			filename: 'default-scope',
 			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
 		},
 		installSpec: {
 			...imljsonc,
+			apiCodeType: 'installSpec',
 			filename: 'install-spec',
 			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
 		},
-		install: {
+		installDirectives: {
 			...imljsonc,
+			apiCodeType: 'install',
 			filename: 'install-directives',
 			onlyFor: (componentMetadata) => componentMetadata.connectionType === 'oauth',
 		},
 	},
 	webhook: {
-		api: { ...imljsonc, filename: 'communication' },
-		parameters: { ...imljsonc, filename: 'params' },
-		attach: imljsonc,
-		detach: imljsonc,
-		update: imljsonc,
-		scope: { ...imljsonc, filename: 'required-scope' },
+		communication: { ...imljsonc, apiCodeType: 'api', filename: 'communication' },
+		params: { ...imljsonc, apiCodeType: 'parameters', filename: 'params' },
+		attach: { ...imljsonc, apiCodeType: 'attach' },
+		detach: { ...imljsonc, apiCodeType: 'detach' },
+		update: { ...imljsonc, apiCodeType: 'update' },
+		requiredScope: { ...imljsonc, apiCodeType: 'scope', filename: 'required-scope' },
 	},
 	module: {
-		api: { ...imljsonc, filename: 'communication' },
+		communication: { ...imljsonc, apiCodeType: 'api', filename: 'communication' },
 		epoch: {
 			...imljsonc,
+			apiCodeType: 'epoch',
 			onlyFor: (componentMetadata) => componentMetadata.moduleSubtype === 'trigger',
 		},
-		parameters: { ...imljsonc, filename: 'static-params' },
-		expect: { ...imljsonc, filename: 'mappable-params' },
-		interface: imljsonc,
-		samples: imljsonc,
+		staticParams: { ...imljsonc, apiCodeType: 'parameters', filename: 'static-params' },
+		mappableParams: { ...imljsonc, apiCodeType: 'expect', filename: 'mappable-params' },
+		interface: { ...imljsonc, apiCodeType: 'interface' },
+		samples: { ...imljsonc, apiCodeType: 'samples' },
 		// scope: imljsonc, // Looks like not visible anywhere, so disabling.
 	},
 	rpc: {
-		api: { ...imljsonc, filename: 'communication' },
-		parameters: imljsonc,
+		communication: { ...imljsonc, apiCodeType: 'api', filename: 'communication' },
+		params: { ...imljsonc, apiCodeType: 'parameters', filename: 'params' },
 	},
 	function: {
-		code: { fileext: 'js', mimetype: 'application/javascript' },
-		test: { fileext: 'js', mimetype: 'application/javascript' },
+		code: { apiCodeType: 'code', fileext: 'js', mimetype: 'application/javascript' },
+		test: { apiCodeType: 'test', fileext: 'js', mimetype: 'application/javascript' },
 	},
 };
 
@@ -102,20 +121,24 @@ export function getAppComponentCodesDefinition(appComponentType: AppComponentTyp
 	return componentsCodesDefinition[appComponentType];
 }
 
-export function getAppComponentCodeDefinition(appComponentType: AppComponentType, codeName: string): CodeDef {
+export function getAppComponentCodeDefinition(
+	appComponentType: AppComponentType,
+	codeName: ComponentCodeFriendlyType,
+): CodeDef {
 	const componentCodesDef = getAppComponentCodesDefinition(appComponentType);
 
-	if (!componentCodesDef[codeName]) {
+	const codeDef = componentCodesDef[codeName];
+	if (!codeDef) {
 		throw new Error(`Unsupported component code name: ${appComponentType}->${codeName}`);
 	}
 
-	return componentCodesDef[codeName];
+	return codeDef;
 }
 
 /**
  * Returns definition of app's direct codes
  */
-export function getGeneralCodeDefinition(appCodeName: GeneralCodeName): CodeDef {
+export function getGeneralCodeDefinition(appCodeName: GeneralCodeFriendlyType): CodeDef {
 	const componentDef: CodeDef | undefined = generalCodesDefinition[appCodeName];
 
 	if (!componentDef) {
@@ -130,7 +153,7 @@ export function getGeneralCodeDefinition(appCodeName: GeneralCodeName): CodeDef 
  * in the correct order, in which to deploy or pull to not break any dependencies (connection references, ...)
  */
 export function getAppComponentTypes(): AppComponentType[] {
-	const types = Object.keys(componentsCodesDefinition) as AppComponentType[];
+	const types = keys(componentsCodesDefinition);
 	return types.sort((compType1, compType2) => {
 		return componentTypesDeployOrder[compType1] - componentTypesDeployOrder[compType2];
 	});

@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { AppComponentType } from '../types/app-component-type.types';
 import {
-	AppComponentMetadataWithCodeFiles,
-	AppComponentTypesMetadata,
+
 	ComponentCodeFilesMetadata,
 	MakecomappJson,
 } from '../local-development/types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { CodePath } from './types/code-path.types';
+import { entries, keys } from '../utils/typed-object';
 
 /**
  * Gets app's and component's code, which matches with the local file path.
@@ -43,14 +43,14 @@ export function findCodesByFilePath(
 	const ret: CodePath[] = [];
 
 	// Try to find in app's direct configuration codes
-	for (const [appCodeName, codeFilePath] of Object.entries(makecomappJson.generalCodeFiles)) {
+	for (const [codeType, codeFilePath] of entries(makecomappJson.generalCodeFiles)) {
 		const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 		const codeExactMatch = codeFilePath === relativePath;
 		if (codeIsInSubdir || codeExactMatch) {
 			const codePath: CodePath = {
 				componentType: 'app',
 				componentName: '',
-				codeName: appCodeName,
+				codeName: codeType,
 				localFile: vscode.Uri.joinPath(makeappRootdir, codeFilePath),
 			};
 			if (codeExactMatch) {
@@ -62,22 +62,19 @@ export function findCodesByFilePath(
 	}
 
 	// Try to find in compoments
-	const appComponentsMetadata: AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles> =
-		makecomappJson.components;
-	/* eslint-disable guard-for-in */
-	for (const componentType in appComponentsMetadata) {
-		for (const componentName in appComponentsMetadata[componentType as AppComponentType]) {
+	const appComponentsMetadata = makecomappJson.components;
+	for (const [componentType, appComponents] of entries(appComponentsMetadata)) {
+		for (const componentName of keys(appComponents)) {
 			const codeFilesMetadata: ComponentCodeFilesMetadata =
-				appComponentsMetadata[componentType as AppComponentType][componentName].codeFiles || {};
-			for (const codeName in codeFilesMetadata) {
-				const codeFilePath = codeFilesMetadata[codeName];
+				appComponents[componentName].codeFiles || {};
+			for (const [codeFriendlyName, codeFilePath] of entries(codeFilesMetadata)) {
 				const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 				const codeExactMatch = codeFilePath === relativePath;
 				if (codeIsInSubdir || codeExactMatch) {
 					const codePath: CodePath = {
-						componentType: componentType as AppComponentType,
+						componentType: componentType,
 						componentName,
-						codeName,
+						codeName: codeFriendlyName,
 						localFile: vscode.Uri.joinPath(makeappRootdir, codeFilePath),
 					};
 					if (codeExactMatch) {
@@ -89,7 +86,6 @@ export function findCodesByFilePath(
 			}
 		}
 	}
-	/* eslint-enable guard-for-in */
 	return ret
 		// Sort codes to correct order to avoid break some dependency/relation
 		.sort((codePath1, codePath2) => {

@@ -7,6 +7,8 @@ import { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makeco
 import { getAppComponentCodesDefinition } from '../services/component-code-def';
 import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
 import { getComponentPseudoId } from './component-pseudo-id';
+import { CodeFriendlyType } from './types/code-friendly-type.types';
+import { entries } from '../utils/typed-object';
 
 /**
  * Generate a filename (with extension), how it looks to be placed in local fs for local development.
@@ -17,7 +19,7 @@ import { getComponentPseudoId } from './component-pseudo-id';
  */
 export async function generateDefaultLocalFilename(
 	codeDef: CodeDef,
-	codeName: string,
+	codeName: CodeFriendlyType,
 	componentType: AppComponentType | undefined,
 	componentName: string | undefined,
 	componentMetadata: AppComponentMetadata | undefined,
@@ -65,7 +67,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentPseudoId, localAppRootdir);
 
 	// Detect, which codes are appropriate to the component
-	const componentCodesDef = Object.entries(getAppComponentCodesDefinition(componentType)).filter(
+	const componentCodesDef = entries(getAppComponentCodesDefinition(componentType)).filter(
 		([_codeName, codeDef]) => !codeDef.onlyFor || codeDef.onlyFor(componentMetadata),
 	);
 

@@ -1,4 +1,5 @@
 import { AppComponentType } from '../types/app-component-type.types';
+import { entries } from '../utils/typed-object';
 import { AppComponentMetadata, AppComponentTypesMetadata } from './types/makecomapp.types';
 
 /**
@@ -26,12 +27,12 @@ export function diffComponentsPresence(
 		missingComponents: skipCheckMissing ? [] : diffComponentsPresence(reference, allComponents, true).newComponents,
 	};
 
-	for (const [componentType, components] of Object.entries(allComponents)) {
-		for (const [componentName, componentMetadata] of Object.entries(components)) {
-			const referenceComponentMetadata = reference[componentType as AppComponentType]?.[componentName];
+	for (const [componentType, components] of entries(allComponents)) {
+		for (const [componentName, componentMetadata] of entries(components)) {
+			const referenceComponentMetadata = reference[componentType]?.[componentName];
 			if (referenceComponentMetadata === undefined) {
 				ret.newComponents.push({
-					componentType: componentType as AppComponentType,
+					componentType,
 					componentName,
 					componentMetadata,
 				});

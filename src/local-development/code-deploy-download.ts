@@ -4,11 +4,13 @@ import { AxiosRequestConfig } from 'axios';
 import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
-import { GeneralCodeName } from '../types/general-code-name.types';
 import { LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
+import { ApiCodeType } from './types/code-type.types';
+import { CodeFriendlyType, ComponentCodeFriendlyType, GeneralCodeFriendlyType } from './types/code-friendly-type.types';
+import { CodeDef } from './types/code-def.types';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -28,15 +30,18 @@ export async function downloadSource({
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: string;
+	codeName: CodeFriendlyType;
 	origin: LocalAppOriginWithSecret,
 	destinationPath: vscode.Uri;
 }): Promise<void> {
 	log('debug', `Pull ${appComponentType} ${appComponentName}: code ${codeName}`);
 	progresDialogReport(`Pulling ${appComponentType} ${appComponentName} code ${codeName}`);
+
+	const codeDef = getCodeDef(appComponentType, codeName);
+
 	// Get the code from the API
 	let codeContent = await requestMakeApi({
-		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),
+		url: getCodeApiUrl({ appComponentType, appComponentName, codeName: codeDef.apiCodeType, origin }),
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 		},
@@ -74,7 +79,7 @@ function getCodeApiUrl({
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: string;
+	codeName: ApiCodeType;
 	origin: LocalAppOriginWithSecret;
 }): string {
 	// Compose directory structure
@@ -123,23 +128,20 @@ export async function uploadSource({
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: string;
+	codeName: CodeFriendlyType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
 }): Promise<void> {
 	progresDialogReport(`Deploying ${appComponentType} ${appComponentName}: code ${codeName}`);
 
-	const codeDef =
-		appComponentType === 'app'
-			? getGeneralCodeDefinition(codeName as GeneralCodeName)
-			: getAppComponentCodeDefinition(appComponentType, codeName);
+	const codeDef = getCodeDef(appComponentType, codeName);
 
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
 	// Get the code from the API
 	const axiosConfig: AxiosRequestConfig = {
-		url: getCodeApiUrl({ appComponentType, appComponentName, codeName, origin }),
+		url: getCodeApiUrl({ appComponentType, appComponentName, codeName: codeDef.apiCodeType, origin }),
 		method: 'PUT',
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
@@ -151,4 +153,10 @@ export async function uploadSource({
 	await requestMakeApi(axiosConfig);
 
 	progresDialogReport('');
+}
+
+function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeFriendlyType): CodeDef {
+	return componentType === 'app'
+			? getGeneralCodeDefinition(codeType as GeneralCodeFriendlyType)
+			: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeFriendlyType);
 }

@@ -4,6 +4,7 @@ import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
 import { getComponentPseudoId } from './component-pseudo-id';
+import { entries } from '../utils/typed-object';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -70,14 +71,14 @@ async function createLocalConnection(
 			`Not implemented to create local connection type "${connectionMetadataWithCodeFiles.connectionType}"`,
 		);
 	}
-	for (const [codeName, codeFilePath] of Object.entries(connectionMetadataWithCodeFiles.codeFiles)) {
+	for (const [codeName, codeFilePath] of entries(connectionMetadataWithCodeFiles.codeFiles)) {
 		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
 		switch (codeName) {
-			case 'api':
+			case 'communication':
 			case 'common':
 				await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode('{ }\n'));
 				break;
-			case 'parameters':
+			case 'params':
 				await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode('[]\n'));
 				break;
 			default:

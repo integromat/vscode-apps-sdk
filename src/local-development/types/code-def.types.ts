@@ -1,7 +1,12 @@
 import { AppComponentType } from '../../types/app-component-type.types';
+import { ApiCodeType } from './code-type.types';
 import { AppComponentMetadata } from './makecomapp.types';
 
 export interface CodeDef {
+	/**
+	 * Original code name as is used in API endpoints and in the Make backend in general.
+	 */
+	apiCodeType: ApiCodeType;
 	mimetype: string;
 	fileext: string;
 	/**

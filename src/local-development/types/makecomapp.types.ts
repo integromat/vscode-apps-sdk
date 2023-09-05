@@ -1,7 +1,7 @@
-import { GeneralCodeName } from '../../types/general-code-name.types';
 import { AppComponentType } from '../../types/app-component-type.types';
 import { Crud } from './crud.types';
 import { ConnectionType, ModuleSubtype, WebhookType } from '../../types/module-type.types';
+import { ComponentCodeFriendlyType, GeneralCodeFriendlyType } from './code-friendly-type.types';
 
 export interface MakecomappJson {
 	fileVersion: number;
@@ -50,11 +50,11 @@ export interface AppComponentMetadata {
 	webhook?: string | null;
 }
 
-/** General Code Name => Code Local File Path */
-export type GeneralCodeFilesMetadata = Record<GeneralCodeName, CodeFilePath>;
+/** General Friendly Code Name => Code Local File Path */
+export type GeneralCodeFilesMetadata = Record<GeneralCodeFriendlyType, CodeFilePath>;
 
-/** Component's Code Name => Code Local File Path */
-export type ComponentCodeFilesMetadata = Record<string, CodeFilePath>;
+/** Component's Friendly Code Name => Code Local File Path */
+export type ComponentCodeFilesMetadata = Partial<Record<ComponentCodeFriendlyType, CodeFilePath>>;
 
 /**
  * Relative filepath in local filesystem.
