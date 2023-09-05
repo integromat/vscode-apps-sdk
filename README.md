@@ -60,6 +60,9 @@
 - Pull all changes from Make (update existing local project by remote changes)
 - Wizard, which helps to create all types of components with all templates (same experience as on UI).
 - Nice to have: Icon file
+- Not tested with published apps, where there is versioning integrated in Make.
+  Actions "commit changes" and "discard changes" not implemented. User must to run these actions on web UI.
+- Discuss the renaming of the confusing menu item "Clone", which makes the online clone of existing app into new one.
 
 ### How to use SDK app local development
 
