@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
-import { CodeFriendlyType } from './code-friendly-type.types';
+import { CodeType } from './code-type.types';
 
 export interface CodePath {
 	componentType: AppComponentType | AppGeneralType;
 	componentName: string;
-	codeName: CodeFriendlyType;
+	codeName: CodeType;
 	localFile: vscode.Uri;
 }

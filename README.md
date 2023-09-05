@@ -46,8 +46,6 @@
 
 #### Waiting for the implementation
 
-- More user friendly names of files (keys in makecomapp.json)
-  - BREAKING CHANGE
 - Issue: All users have to place apikey into same filename, because it is defined in makecomapp.json.
   - TODO: Remove it from `makecomapp.json` file and make it somehow "independent".
   - BREAKING CHANGE

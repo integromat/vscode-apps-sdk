@@ -8,8 +8,7 @@ import { LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
-import { ApiCodeType } from './types/code-type.types';
-import { CodeFriendlyType, ComponentCodeFriendlyType, GeneralCodeFriendlyType } from './types/code-friendly-type.types';
+import { CodeType, ComponentCodeType, GeneralCodeType, ApiCodeType } from './types/code-type.types';
 import { CodeDef } from './types/code-def.types';
 
 const ENVIRONMENT_VERSION = 2;
@@ -30,7 +29,7 @@ export async function downloadSource({
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: CodeFriendlyType;
+	codeName: CodeType;
 	origin: LocalAppOriginWithSecret,
 	destinationPath: vscode.Uri;
 }): Promise<void> {
@@ -128,7 +127,7 @@ export async function uploadSource({
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: CodeFriendlyType;
+	codeName: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
 }): Promise<void> {
@@ -155,8 +154,8 @@ export async function uploadSource({
 	progresDialogReport('');
 }
 
-function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeFriendlyType): CodeDef {
+function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
 	return componentType === 'app'
-			? getGeneralCodeDefinition(codeType as GeneralCodeFriendlyType)
-			: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeFriendlyType);
+			? getGeneralCodeDefinition(codeType as GeneralCodeType)
+			: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
 }

@@ -67,14 +67,14 @@ export function findCodesByFilePath(
 		for (const componentName of keys(appComponents)) {
 			const codeFilesMetadata: ComponentCodeFilesMetadata =
 				appComponents[componentName].codeFiles || {};
-			for (const [codeFriendlyName, codeFilePath] of entries(codeFilesMetadata)) {
+			for (const [codeName, codeFilePath] of entries(codeFilesMetadata)) {
 				const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 				const codeExactMatch = codeFilePath === relativePath;
 				if (codeIsInSubdir || codeExactMatch) {
 					const codePath: CodePath = {
 						componentType: componentType,
 						componentName,
-						codeName: codeFriendlyName,
+						codeName: codeName,
 						localFile: vscode.Uri.joinPath(makeappRootdir, codeFilePath),
 					};
 					if (codeExactMatch) {

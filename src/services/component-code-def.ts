@@ -2,9 +2,9 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { CodeDef } from '../local-development/types/code-def.types';
 import { componentTypesDeployOrder } from './component-types-order';
 import {
-	ComponentCodeFriendlyType,
-	GeneralCodeFriendlyType,
-} from '../local-development/types/code-friendly-type.types';
+	ComponentCodeType,
+	GeneralCodeType,
+} from '../local-development/types/code-type.types';
 import { keys } from '../utils/typed-object';
 
 const imljsonc = {
@@ -17,7 +17,7 @@ const json = {
 	mimetype: 'application/json',
 };
 
-export const generalCodesDefinition: Record<GeneralCodeFriendlyType, CodeDef> = {
+export const generalCodesDefinition: Record<GeneralCodeType, CodeDef> = {
 	base: {
 		apiCodeType: 'base',
 		filename: 'general/base',
@@ -40,7 +40,7 @@ export const generalCodesDefinition: Record<GeneralCodeFriendlyType, CodeDef> = 
  */
 export const componentsCodesDefinition: Record<
 	AppComponentType,
-	Partial<Record<ComponentCodeFriendlyType, CodeDef>>
+	Partial<Record<ComponentCodeType, CodeDef>>
 > = {
 	connection: {
 		communication: {
@@ -123,7 +123,7 @@ export function getAppComponentCodesDefinition(appComponentType: AppComponentTyp
 
 export function getAppComponentCodeDefinition(
 	appComponentType: AppComponentType,
-	codeName: ComponentCodeFriendlyType,
+	codeName: ComponentCodeType,
 ): CodeDef {
 	const componentCodesDef = getAppComponentCodesDefinition(appComponentType);
 
@@ -138,7 +138,7 @@ export function getAppComponentCodeDefinition(
 /**
  * Returns definition of app's direct codes
  */
-export function getGeneralCodeDefinition(appCodeName: GeneralCodeFriendlyType): CodeDef {
+export function getGeneralCodeDefinition(appCodeName: GeneralCodeType): CodeDef {
 	const componentDef: CodeDef | undefined = generalCodesDefinition[appCodeName];
 
 	if (!componentDef) {

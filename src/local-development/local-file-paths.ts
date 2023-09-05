@@ -7,7 +7,7 @@ import { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makeco
 import { getAppComponentCodesDefinition } from '../services/component-code-def';
 import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
 import { getComponentPseudoId } from './component-pseudo-id';
-import { CodeFriendlyType } from './types/code-friendly-type.types';
+import { CodeType } from './types/code-type.types';
 import { entries } from '../utils/typed-object';
 
 /**
@@ -19,7 +19,7 @@ import { entries } from '../utils/typed-object';
  */
 export async function generateDefaultLocalFilename(
 	codeDef: CodeDef,
-	codeName: CodeFriendlyType,
+	codeName: CodeType,
 	componentType: AppComponentType | undefined,
 	componentName: string | undefined,
 	componentMetadata: AppComponentMetadata | undefined,
