@@ -117,12 +117,12 @@ async function downloadCodeFiles(
 ): Promise<void> {
 	log('debug', `Clone all codes of ${appComponentType} ${appComponentName}`);
 	// Download codes from API to local files
-	for (const [codeName, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
+	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		await downloadSource({
 			appComponentType,
 			appComponentName,
-			codeName,
+			codeType,
 			origin,
 			destinationPath: codeLocalAbsolutePath,
 		});

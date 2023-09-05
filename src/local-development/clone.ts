@@ -86,11 +86,11 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	await withProgressDialog({ title: `Cloning app ${origin.appId}` }, async () => {
 
 		// #region Process all app's general codes
-		for (const [codeName, codeDef] of entries(generalCodesDefinition)) {
+		for (const [codeType, codeDef] of entries(generalCodesDefinition)) {
 			const codeLocalRelativePath = await generateDefaultLocalFilename(
 				// Note: target directories "general" and "modules" are defined in `codeDef`.
 				codeDef,
-				codeName,
+				codeType,
 				undefined,
 				undefined,
 				undefined,
@@ -100,12 +100,12 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			await downloadSource({
 				appComponentType: 'app', // The `app` type with name `` is the special
 				appComponentName: '', //
-				codeName,
+				codeType,
 				origin,
 				destinationPath: codeLocalAbsolutePath,
 			});
 			// Add to makecomapp.json
-			makecomappJson.generalCodeFiles[codeName] = codeLocalRelativePath;
+			makecomappJson.generalCodeFiles[codeType] = codeLocalRelativePath;
 		}
 		// #endregion Process all app's general codes
 

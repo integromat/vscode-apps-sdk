@@ -50,10 +50,10 @@ export interface AppComponentMetadata {
 	webhook?: string | null;
 }
 
-/** General Code Name => Code Local File Path */
+/** General Code Type => Code Local File Path */
 export type GeneralCodeFilesMetadata = Record<GeneralCodeType, CodeFilePath>;
 
-/** Component's Code Name => Code Local File Path */
+/** Component's Code Type => Code Local File Path */
 export type ComponentCodeFilesMetadata = Partial<Record<ComponentCodeType, CodeFilePath>>;
 
 /**

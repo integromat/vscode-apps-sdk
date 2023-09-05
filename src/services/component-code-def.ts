@@ -123,13 +123,13 @@ export function getAppComponentCodesDefinition(appComponentType: AppComponentTyp
 
 export function getAppComponentCodeDefinition(
 	appComponentType: AppComponentType,
-	codeName: ComponentCodeType,
+	codeType: ComponentCodeType,
 ): CodeDef {
 	const componentCodesDef = getAppComponentCodesDefinition(appComponentType);
 
-	const codeDef = componentCodesDef[codeName];
+	const codeDef = componentCodesDef[codeType];
 	if (!codeDef) {
-		throw new Error(`Unsupported component code name: ${appComponentType}->${codeName}`);
+		throw new Error(`Unsupported component code type: ${appComponentType}->${codeType}`);
 	}
 
 	return codeDef;
@@ -138,11 +138,11 @@ export function getAppComponentCodeDefinition(
 /**
  * Returns definition of app's direct codes
  */
-export function getGeneralCodeDefinition(appCodeName: GeneralCodeType): CodeDef {
-	const componentDef: CodeDef | undefined = generalCodesDefinition[appCodeName];
+export function getGeneralCodeDefinition(codeType: GeneralCodeType): CodeDef {
+	const componentDef: CodeDef | undefined = generalCodesDefinition[codeType];
 
 	if (!componentDef) {
-		throw new Error(`Unsupported app base code name: ${appCodeName}`);
+		throw new Error(`Unsupported app base code type: ${codeType}`);
 	}
 
 	return componentDef;

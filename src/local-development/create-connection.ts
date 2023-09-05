@@ -71,9 +71,9 @@ async function createLocalConnection(
 			`Not implemented to create local connection type "${connectionMetadataWithCodeFiles.connectionType}"`,
 		);
 	}
-	for (const [codeName, codeFilePath] of entries(connectionMetadataWithCodeFiles.codeFiles)) {
+	for (const [codeType, codeFilePath] of entries(connectionMetadataWithCodeFiles.codeFiles)) {
 		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
-		switch (codeName) {
+		switch (codeType) {
 			case 'communication':
 			case 'common':
 				await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode('{ }\n'));
@@ -82,7 +82,7 @@ async function createLocalConnection(
 				await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode('[]\n'));
 				break;
 			default:
-				throw new Error(`Not implemented to create connection code file for "${codeName}"`);
+				throw new Error(`Not implemented to create connection code file for code "${codeType}"`);
 		}
 	}
 

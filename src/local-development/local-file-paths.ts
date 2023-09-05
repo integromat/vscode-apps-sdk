@@ -19,7 +19,7 @@ import { entries } from '../utils/typed-object';
  */
 export async function generateDefaultLocalFilename(
 	codeDef: CodeDef,
-	codeName: CodeType,
+	codeType: CodeType,
 	componentType: AppComponentType | undefined,
 	componentName: string | undefined,
 	componentMetadata: AppComponentMetadata | undefined,
@@ -33,7 +33,7 @@ export async function generateDefaultLocalFilename(
 			filename = codeDef.filename(componentType, componentMetadata);
 			break;
 		case 'undefined':
-			filename = codeName;
+			filename = codeType;
 			break;
 		default:
 			throw new Error(`Type ${typeof codeDef.filename} is not supported in CodeDef.filename`);
@@ -68,21 +68,21 @@ export async function generateComponentDefaultCodeFilesPaths(
 
 	// Detect, which codes are appropriate to the component
 	const componentCodesDef = entries(getAppComponentCodesDefinition(componentType)).filter(
-		([_codeName, codeDef]) => !codeDef.onlyFor || codeDef.onlyFor(componentMetadata),
+		([_codeType, codeDef]) => !codeDef.onlyFor || codeDef.onlyFor(componentMetadata),
 	);
 
 	const componentCodeMetadata: ComponentCodeFilesMetadata = {};
 	// Process all codes
-	for (const [codeName, codeDef] of componentCodesDef) {
+	for (const [codeType, codeDef] of componentCodesDef) {
 		// Local file path (Relative to app rootdir)
 		const codeFilename = await generateDefaultLocalFilename(
 			codeDef,
-			codeName,
+			codeType,
 			componentType,
 			componentPseudoId,
 			componentMetadata,
 		);
-		componentCodeMetadata[codeName] =
+		componentCodeMetadata[codeType] =
 			path.relative(localAppRootdir.fsPath, componentDir.fsPath) + '/' + codeFilename;
 	}
 	return componentCodeMetadata;

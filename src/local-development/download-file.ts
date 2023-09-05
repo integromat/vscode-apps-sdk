@@ -46,7 +46,7 @@ async function localFileDownload(file: vscode.Uri) {
 		await downloadSource({
 			appComponentType: componentDetails.componentType,
 			appComponentName: componentDetails.componentName,
-			codeName: componentDetails.codeName,
+			codeType: componentDetails.codeType,
 			origin,
 			destinationPath: newTmpFile,
 		});

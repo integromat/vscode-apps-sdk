@@ -145,28 +145,28 @@ async function localFileDeploy(file: vscode.Uri) {
 				) {
 					log(
 						'debug',
-						`Skipping to deploy ${component.componentType} ${component.componentName} ${component.codeName} because does not exist on Make yet.`,
+						`Skipping to deploy ${component.componentType} ${component.componentName} ${component.codeType} because does not exist on Make yet.`,
 					);
 					continue;
 				}
 
 				log(
 					'debug',
-					`Deploying ${component.componentType} ${component.componentName} ${component.codeName} from ${file.fsPath}`,
+					`Deploying ${component.componentType} ${component.componentName} ${component.codeType} from ${file.fsPath}`,
 				);
 
 				// Upload via API
 				await uploadSource({
 					appComponentType: component.componentType,
 					appComponentName: component.componentName,
-					codeName: component.codeName,
+					codeType: component.codeType,
 					origin,
 					sourcePath: component.localFile,
 				});
 				// Log 'done' to console
 				log(
 					'debug',
-					`Deployed ${component.componentType} ${component.componentName} ${component.codeName} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
+					`Deployed ${component.componentType} ${component.componentName} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
 				// Handle the user "cancel" button press
 				if (canceled) {

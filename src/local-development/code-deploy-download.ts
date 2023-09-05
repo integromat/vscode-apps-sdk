@@ -16,31 +16,31 @@ const ENVIRONMENT_VERSION = 2;
 /**
  * Download the code from the API and save it to the local destination
  * @return void, because the code is saved to the destination file.
- * @param codeName
+ * @param codeType
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function downloadSource({
 	// TODO Rename downloadSource to pullSource
 	appComponentType,
 	appComponentName,
-	codeName,
+	codeType,
 	origin,
 	destinationPath,
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: CodeType;
+	codeType: CodeType;
 	origin: LocalAppOriginWithSecret,
 	destinationPath: vscode.Uri;
 }): Promise<void> {
-	log('debug', `Pull ${appComponentType} ${appComponentName}: code ${codeName}`);
-	progresDialogReport(`Pulling ${appComponentType} ${appComponentName} code ${codeName}`);
+	log('debug', `Pull ${appComponentType} ${appComponentName}: code ${codeType}`);
+	progresDialogReport(`Pulling ${appComponentType} ${appComponentName} code ${codeType}`);
 
-	const codeDef = getCodeDef(appComponentType, codeName);
+	const codeDef = getCodeDef(appComponentType, codeType);
 
 	// Get the code from the API
 	let codeContent = await requestMakeApi({
-		url: getCodeApiUrl({ appComponentType, appComponentName, codeName: codeDef.apiCodeType, origin }),
+		url: getCodeApiUrl({ appComponentType, appComponentName, apiCodeType: codeDef.apiCodeType, origin }),
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 		},
@@ -52,7 +52,7 @@ export async function downloadSource({
 	// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
 	// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"
 	if (codeContent === 'null') {
-		if (codeName === 'samples') {
+		if (codeType === 'samples') {
 			codeContent = '{}';
 		} else {
 			codeContent = '[]';
@@ -73,12 +73,12 @@ export async function downloadSource({
 function getCodeApiUrl({
 	appComponentType,
 	appComponentName,
-	codeName,
+	apiCodeType,
 	origin,
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: ApiCodeType;
+	apiCodeType: ApiCodeType;
 	origin: LocalAppOriginWithSecret;
 }): string {
 	// Compose directory structure
@@ -98,17 +98,17 @@ function getCodeApiUrl({
 		case 'module':
 		case 'rpc':
 		case 'function':
-			urn += `/${appComponentType}s/${appComponentName}/${codeName}`;
+			urn += `/${appComponentType}s/${appComponentName}/${apiCodeType}`;
 			break;
 		// Base, common, readme, group
 		case 'app':
 			// Prepared for more app-level codes
-			switch (codeName) {
+			switch (apiCodeType) {
 				case 'content':
 					urn += '/readme';
 					break;
 				default:
-					urn += `/${codeName}`;
+					urn += `/${apiCodeType}`;
 					break;
 			}
 			break;
@@ -121,26 +121,26 @@ function getCodeApiUrl({
 export async function uploadSource({
 	appComponentType,
 	appComponentName,
-	codeName,
+	codeType,
 	origin,
 	sourcePath,
 }: {
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
-	codeName: CodeType;
+	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
 }): Promise<void> {
-	progresDialogReport(`Deploying ${appComponentType} ${appComponentName}: code ${codeName}`);
+	progresDialogReport(`Deploying ${appComponentType} ${appComponentName}: code ${codeType}`);
 
-	const codeDef = getCodeDef(appComponentType, codeName);
+	const codeDef = getCodeDef(appComponentType, codeType);
 
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
 	// Get the code from the API
 	const axiosConfig: AxiosRequestConfig = {
-		url: getCodeApiUrl({ appComponentType, appComponentName, codeName: codeDef.apiCodeType, origin }),
+		url: getCodeApiUrl({ appComponentType, appComponentName, apiCodeType: codeDef.apiCodeType, origin }),
 		method: 'PUT',
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
