@@ -18,7 +18,7 @@ const limitConcurrency = throat(1);
  */
 export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
 	const workspace = getCurrentWorkspace();
-	const startDirRelative = path.relative(workspace.uri.fsPath, anyProjectPath.fsPath);
+	const startDirRelative = path.posix.relative(workspace.uri.path, anyProjectPath.path);
 	if (startDirRelative.startsWith('..') || anyProjectPath.fsPath === path.parse(anyProjectPath.fsPath).root) {
 		throw new Error(`Appropriate ${MAKECOMAPP_FILENAME} file not found in the workspace.`);
 	}
@@ -99,10 +99,10 @@ export async function renameConnectionInMakecomappJson(
 	// Rename referecne: connections mentioned in modules
 	Object.values(makecomappJson.components.module).forEach((moduleMetadata) => {
 		if (moduleMetadata.connection === oldConnectionName) {
-			moduleMetadata.connection === newConnectionName;
+			moduleMetadata.connection = newConnectionName;
 		}
 		if (moduleMetadata.altConnection === oldConnectionName) {
-			moduleMetadata.altConnection === newConnectionName;
+			moduleMetadata.altConnection = newConnectionName;
 		}
 	});
 	// Write changes to file
