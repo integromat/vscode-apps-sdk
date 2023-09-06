@@ -437,8 +437,8 @@
 				"title": "Deploy to Make (pre-alpha)"
 			},
 			{
-				"command": "apps-sdk.local-dev.file-download",
-				"title": "Download from Make (pre-alpha)"
+				"command": "apps-sdk.local-dev.file-compare",
+				"title": "Compare with Make (pre-alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-connection",
@@ -848,9 +848,9 @@
 					"group": "7_modification"
 				},
 				{
-					"command": "apps-sdk.local-dev.file-download",
+					"command": "apps-sdk.local-dev.file-compare",
 					"group": "7_modification",
-					"when": "resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.imljson))$/"
+					"when": "resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.iml.json))$/"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-connection",

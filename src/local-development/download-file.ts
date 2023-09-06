@@ -10,18 +10,18 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
-		'apps-sdk.local-dev.file-download',
+		'apps-sdk.local-dev.file-compare',
 		catchError(
-			'File download from Make',
-			localFileDownload
+			'Compare with Make',
+			localFileCompare
 		)
 	);
 }
 
 /**
- * Rewrites the local file defined in makecomapp.json by version from the Make cloud.
+ * Pulls the file from Make and shows the comparision with the local file.
  */
-async function localFileDownload(file: vscode.Uri) {
+async function localFileCompare(file: vscode.Uri) {
 	const makeappJson = await getMakecomappJson(file);
 
 	const makeappRootdir = getMakecomappRootDir(file);
@@ -36,7 +36,7 @@ async function localFileDownload(file: vscode.Uri) {
 
 	log(
 		'debug',
-		`Pulling/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in file ${
+		`Pulling ${componentDetails.componentType} ${componentDetails.componentName} in file ${
 			path.posix.relative(makeappRootdir.path, file.path)
 		} from ${origin.baseUrl} app ${origin.appId} version ${origin.appVersion} ...`
 	);
@@ -71,8 +71,6 @@ async function localFileDownload(file: vscode.Uri) {
  */
 function tempFilename(filename: vscode.Uri): vscode.Uri {
 	const parsed = path.parse(filename.fsPath);
-	const uri = vscode.Uri.file(
-		path.join(parsed.dir, parsed.name + '.tmp' + parsed.ext)
-	);
+	const uri = vscode.Uri.joinPath(filename, '..', '_temp-remote.' + parsed.name + parsed.ext);
 	return uri;
 }
