@@ -53,7 +53,7 @@ async function createConnection(file: vscode.Uri) {
 	await createLocalConnection(newConnectionTempId, connectionMetadataWithCodeFiles, makeappRootdir);
 
 	// OK info message
-	vscode.window.showInformationMessage(`Connection "${newConnectionTempId} created locally."`);
+	vscode.window.showInformationMessage(`Connection "${newConnectionTempId}" sucessfully created locally.`);
 }
 
 /**
