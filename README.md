@@ -24,8 +24,8 @@
 !! Local file structure and all these features   !!
 !! for local development is under development    !!
 !! and don't have to be stable yet.              !!
-!! There can be upcomming breaking changes       !!
-!! before final production release!              !!
+!! There can be upcoming breaking changes        !!
+!! before the final production release!          !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ```
 
@@ -36,7 +36,7 @@
 - Clone SDK app to local workspace
 - Deploy any code file up to Make (+bulk deploy)
   - "Deploy all" by clicking on `makecomapp.json`.
-- Rewrite the local file by the newer version from Make (pull)
+- Rewrite the local file with the newer version from Make (pull)
 - Compare local code file with Make
 - Ability to have multiple origins of a single local app to be able to use for staging
 - ApiKey store as local file(s)
@@ -48,32 +48,30 @@
 
 - Create local components (webhooks, modules, RPCs, and functions).
   - Note: Create with empty files only (or single template only)
-- Validate makecomapp.json file by JSON schema on each usage
-- Using single "shared" code file for multiple components
-  - Mention it also into "Tips & Tricks"
+- Validate the `makecomapp.json` file by JSON schema on each usage
+- Using a single "shared" code file for multiple components. Mention it also in "Tips & Tricks".
 - Smart code highlight and JSON validation.
 - IMLJSON suggestions (e.g. `parameters`, `connection` object properties)
 - Pull all changes from Make (update existing local project by remote changes)
 - Wizard, which helps to create all types of components with all templates (same experience as on UI).
 - Nice to have: Icon file
 - Not tested with published apps, where there is versioning integrated in Make.
-  Actions "commit changes" and "discard changes" not implemented. User must to run these actions on web UI.
-- Discuss the renaming of the confusing menu item "Clone", which makes the online clone of existing app into new one.
+  Actions "commit changes" and "discard changes" are not implemented. The user must run these actions on the web UI.
 
 ### How to use SDK app local development
 
 The idea is that a developer can `clone` a whole SDK app from Make to local files. Files are `pulled` to the workspace currently opened in VS Code. From this time all local files are "disconnected" from Make until a developer `deploys` them back to Make. Therefore a developer can work on changes as long as he needs without touching on the SDK app running in Make. When all necessary changes are made locally a developer can `deploy` changes back to Make. The whole SDK app can be `deployed` or any `component` can be deployed anytime separately. There is also a way to `pull` changes made in Make and update the local files in case somebody is touching to SDK app `codes` directly on Make UI or by VS Code Extension online editing.
 
-To be sure, what code is currently in Make, the developer can `Compare with Make` by right-click to any local code file. Then the diff window (remote vs. local) will be displayed in VS Code.
+To be sure, what code is currently in Make, the developer can `Compare with Make` by right-clicking on any local code file. Then the diff window (remote vs. local) will be displayed in VS Code.
 
 ### Terms used in local development feature
 
-- `component` - One section of an app. Each component is one of the following type:
-                `module`, `connection`, `rpc`, `custom function`, `webhook`.
+- `component` - One section of an app. Each component is one of the following types:
+                module, connection, RPC, custom function, webhook.
 - `code` - Each file (mostly JSON) is named `code` and it is the part `component`
            or it belongs to the app itself directly (like `Base`, `Common` or `README`).
 - `clone` - The process, which clones a SDK app from Make into a newly created local directory in your opened workspace.
-- `pull` - The process, which updates or inserts a local component (or it's code) loaded from a remote origin (Make).
+- `pull` - The process that updates or inserts a local component (or its code) loaded from a remote origin (Make).
 - `deploy` - The process, which pushes/uploads a local component or code to remote origin (Make).
 - `remote`, `origin`, `Make` - Make.com or similar public cloud Make instance or private Make instance.
 
@@ -83,7 +81,7 @@ To be sure, what code is currently in Make, the developer can `Compare with Make
 
    *Note: Monorepo style is supported. It means multiple SDK apps can be placed in the same workspace.*
 
-2. In VS Code's Activity Bar click on tab `Make apps` to see all your already existing SDK apps.
+2. In VS Code's Activity Bar click on the tab `Make apps` to see all your already existing SDK apps.
 
    *Note: Expected the `Make Apps SDK` VS Code extension to be installed and the environment with ApiKey is already configured.*
 
@@ -103,9 +101,9 @@ To be sure, what code is currently in Make, the developer can `Compare with Make
 
 ### Local clone structure
 
-When SDK app is cloned into local files, it is created into some subdirectory (mostly `src`). In this directory the most important file is `makecomapp.json`, which is the main fail of whole project. In this file there are list of all compoments, app metadata and links to all component code files. Anytime new component is created, it must be defined in this `makecomapp.json` file. When developer right-clicks to this file, he see couple of additional actions, how the local project can be managed/edited/developed.
+When the SDK app is cloned into local files, it is created into some subdirectory (mostly `src`). In this directory, the most important file is `makecomapp.json` which is the main file of the whole project. There is the list of all components, app metadata and links to all component code files. Anytime a new component is created, it must be defined in this `makecomapp.json` file. When a developer right-clicks to this file, he sees a couple of additional actions, which can manage/edit/develop the local project.
 
-Many actions can be also executed to part of project only. For this case the right-click can be used on any component's subdirectory or on any component code file.
+Many actions can be also executed on a sub-part of the project only. For this case, the right-click can be used on any component's subdirectory or on any component code file.
 
 ### Deploy local changes to Make
 
@@ -119,7 +117,7 @@ If the component does not exist in Make yet, then the developer sees the info me
 
 ### Add new components into local files
 
-Because local component creation is not implemented yet, please create new component online and then pull it into local code as temporary workaround:
+Because local component creation is not implemented yet, please create a new component online and then pull it into local code as a temporary workaround:
 
 <!--
 To add a new SDK app `connection` component into local files there are three ways:
@@ -130,7 +128,7 @@ To add a new SDK app `connection` component into local files there are three way
 
 #### Assisted component adding
 
-Right-click to `makecomapps.json` and select `Create "[componentType]" component`. In this way, you can add new `modules`, `connections`, `custom functions`, `rpcs`, and `webhooks`.
+Right-click on `makecomapps.json` and select `Create "[componentType]" component`. In this way, you can add new `modules`, `connections`, `custom functions`, `RPCs`, and `webhooks`.
 
 The alternative way is to right-click on an appropriate directory with the list of components. Example: Directory `components` has context menu item `Create "connection" component`.
 
@@ -152,13 +150,13 @@ You can create new components manually by the same steps as the assisted compone
 
 #### Online component adding + pull new components
 
-1. Create new app component online (via online part of VS Code Extension or via "My Apps" in Make web interface).
+1. Create a new app component online (via the online part of VS Code Extension or via "My Apps" in the Make web interface).
 
-2. Right-click over `makecomapps.json`, click `Pull all new components`.
+2. Right-click over the `makecomapps.json` and click `Pull all new components`.
 
 ### Storing ApiKey during local development
 
-In the case of using app local development, the API key is stored in `[workspaceRoot]/.secrets/apikey` file. When multiple origins or multiple apps are placed in a single workspace there will be multiple files.
+In the case of using app local development, the API key is stored in the `[workspaceRoot]/.secrets/apikey` file. When multiple origins or multiple apps are placed in a single workspace there will be multiple files.
 
 Note: Path `.secrets` is automatically added into `.gitignore` to avoid accidentally committing into a GIT repository.
 
@@ -171,3 +169,13 @@ From the time you define the second origin (or more), you will be asked by VS Co
 The purpose of this feature is to cover the case, where developers have also another SDK app in Make used for the development or testing stage.
 
 ![Multiple origins selection dialog](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/origin-selection.png?raw=true)
+
+### GIT usage
+
+The local development feature is fully compatible with GIT. Use `git init` at any time in the workspace.
+
+During the app clone to the local workspace, the `.gitignore` file is created automatically with the following files to exclude from GIT:
+
+- `.secret` directory, because contains the private API key(s).
+- `common.js` general code file, because it can contain some secrets or other private data.
+- `*.common.js` connection code file, because it can contain some secrets or other private data.
