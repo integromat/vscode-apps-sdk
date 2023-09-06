@@ -46,10 +46,9 @@
 
 #### Waiting for the implementation
 
-- Issue: All users have to place apikey into same filename, because it is defined in makecomapp.json.
+- To discussion: All users have to place apikey into same filename, because it is defined in makecomapp.json.
   - TODO: Remove it from `makecomapp.json` file and make it somehow "independent".
-  - BREAKING CHANGE
-- Finalize the short documentation (README) with externally stored screenshots
+  - Can be a BREAKING CHANGE.
 - Create local components (webhooks, modules, RPCs, and functions).
   - Note: Create with empty files only (or single template only)
 - Validate makecomapp.json file by JSON schema on each usage
@@ -67,6 +66,8 @@
 ### How to use SDK app local development
 
 The idea is that a developer can `clone` a whole SDK app from Make to local files. Files are `pulled` to the workspace currently opened in VS Code. From this time all local files are "disconnected" from Make until a developer `deploys` them back to Make. Therefore a developer can work on changes as long as he needs without touching on the SDK app running in Make. When all necessary changes are made locally a developer can `deploy` changes back to Make. The whole SDK app can be `deployed` or any `component` can be deployed anytime separately. There is also a way to `pull` changes made in Make and update the local files in case somebody is touching to SDK app `codes` directly on Make UI or by VS Code Extension online editing.
+
+To be sure, what code is currently in Make, the developer can `Compare with Make` by right-click to any local code file. Then the diff window (remote vs. local) will be displayed in VS Code.
 
 ### Terms used in local development feature
 
