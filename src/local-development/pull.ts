@@ -19,7 +19,7 @@ import { entries } from '../utils/typed-object';
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.pull-new-components',
-		catchError('Download app to workspace', async (makecomappJsonPath: vscode.Uri) => {
+		catchError('Pull new components', async (makecomappJsonPath: vscode.Uri) => {
 			const localAppRootdir = getMakecomappRootDir(makecomappJsonPath);
 			const origin = await askForProjectOrigin(localAppRootdir);
 			if (!origin) {

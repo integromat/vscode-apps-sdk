@@ -22,7 +22,7 @@ export function registerCommands(): void {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.clone-to-workspace',
 		catchError(
-			'Download app to workspace',
+			'Clone app to workspace',
 			cloneAppToWorkspace,
 		),
 	);
