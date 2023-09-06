@@ -26,7 +26,7 @@ async function localFileDownload(file: vscode.Uri) {
 
 	const makeappRootdir = getMakecomappRootDir(file);
 
-	const fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath); // Relative to makecomapp.json
+	const fileRelativePath = path.posix.relative(makeappRootdir.path, file.path); // Relative to makecomapp.json
 	const componentDetails = findCodeByFilePath(fileRelativePath, makeappJson, makeappRootdir);
 
 	const origin = await askForOrigin(makeappJson.origins, makeappRootdir, 'app cloning to local');
@@ -36,11 +36,13 @@ async function localFileDownload(file: vscode.Uri) {
 
 	log(
 		'debug',
-		`Pulling/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in ${file.fsPath} from ${origin.baseUrl} app ${origin.appId} version ${origin.appVersion} ...`
+		`Pulling/rewriting ${componentDetails.componentType} ${componentDetails.componentName} in file ${
+			path.posix.relative(makeappRootdir.path, file.path)
+		} from ${origin.baseUrl} app ${origin.appId} version ${origin.appVersion} ...`
 	);
 
 	// Download the cloud file version into temp file
-	const newTmpFile = vscode.Uri.file(tempFilename(file.fsPath));
+	const newTmpFile = tempFilename(file);
 
 	await withProgressDialog({ title: '' }, async (_progress, _cancellationToken) => {
 		await downloadSource({
@@ -53,7 +55,7 @@ async function localFileDownload(file: vscode.Uri) {
 	});
 
 	// Keep user to approve changes
-	const relativeFilepath = path.relative(makeappRootdir.fsPath, file.fsPath);
+	const relativeFilepath = path.posix.relative(makeappRootdir.path, file.path);
 	await vscode.commands.executeCommand(
 		'vscode.diff',
 		newTmpFile,
@@ -67,7 +69,10 @@ async function localFileDownload(file: vscode.Uri) {
 /**
  * From absolute file path it generates the same one, but with ".tmp" postfix before file extension.
  */
-function tempFilename(filename: string): string {
-	const parsed = path.parse(filename);
-	return path.join(parsed.dir, parsed.name + '.tmp' + parsed.ext);
+function tempFilename(filename: vscode.Uri): vscode.Uri {
+	const parsed = path.parse(filename.fsPath);
+	const uri = vscode.Uri.file(
+		path.join(parsed.dir, parsed.name + '.tmp' + parsed.ext)
+	);
+	return uri;
 }

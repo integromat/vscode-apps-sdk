@@ -29,7 +29,7 @@ async function localFileDeploy(file: vscode.Uri) {
 	const makeappRootdir = getMakecomappRootDir(file);
 	const stat = await vscode.workspace.fs.stat(file);
 	const fileIsDirectory = stat.type === vscode.FileType.Directory;
-	let fileRelativePath = path.relative(makeappRootdir.fsPath, file.fsPath) + (fileIsDirectory ? '/' : ''); // Relative to makecomapp.json
+	let fileRelativePath = path.posix.relative(makeappRootdir.path, file.path) + (fileIsDirectory ? '/' : ''); // Relative to makecomapp.json
 
 	// Special case: If user clicks to `makecomapp.json`, it means "all project files".
 	if (fileRelativePath === MAKECOMAPP_FILENAME) {
@@ -162,7 +162,9 @@ async function localFileDeploy(file: vscode.Uri) {
 
 				log(
 					'debug',
-					`Deploying ${component.componentType} ${component.componentName} ${component.codeType} from ${file.fsPath}`,
+					`Deploying ${component.componentType} ${component.componentName} ${
+						component.codeType
+					} from ${path.posix.relative(makeappRootdir.path, file.path)}`,
 				);
 
 				// Upload via API

@@ -56,7 +56,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		baseUrl: 'https://' + environment.url,
 		appId: context.name,
 		appVersion: context.version,
-		apikeyFile: path.relative(localAppRootdir.fsPath, apikeyFileUri.fsPath),
+		apikeyFile: path.posix.relative(localAppRootdir.path, apikeyFileUri.path),
 		apikey: environment.apikey,
 	};
 
@@ -75,7 +75,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	// Save .gitignore: exclude secrets dir, common data.
 	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
-	const secretsDirRelativeToWorkspaceRoot = path.relative(workspaceRoot.fsPath, apikeyDir.fsPath);
+	const secretsDirRelativeToWorkspaceRoot = path.posix.relative(workspaceRoot.path, apikeyDir.path);
 	const gitignoreLines: string[] = ['common.json', '*.common.json', secretsDirRelativeToWorkspaceRoot];
 	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
 	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);

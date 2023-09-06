@@ -83,7 +83,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 			componentMetadata,
 		);
 		componentCodeMetadata[codeType] =
-			path.relative(localAppRootdir.fsPath, componentDir.fsPath) + '/' + codeFilename;
+			path.posix.relative(localAppRootdir.path, componentDir.path) + '/' + codeFilename;
 	}
 	return componentCodeMetadata;
 }
