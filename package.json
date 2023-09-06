@@ -25,36 +25,7 @@
 		"Extension Packs"
 	],
 	"activationEvents": [
-		"workspaceContains:**/makecomapp.json",
-		"onCommand:apps-sdk.refresh",
-		"onCommand:apps-sdk.function.new",
-		"onCommand:apps-sdk.rpc.new",
-		"onCommand:apps-sdk.connection.new",
-		"onCommand:apps-sdk.webhook.new",
-		"onCommand:apps-sdk.module.new",
-		"onCommand:apps-sdk.app.new",
-		"onCommand:apps-sdk.delete",
-		"onCommand:apps-sdk.app.delete",
-		"onCommand:apps-sdk.load-source",
-		"onCommand:apps-sdk.load-open-source",
-		"onCommand:apps-sdk.login",
-		"onCommand:apps-sdk.logout",
-		"onCommand:apps-sdk.env.change",
-		"onCommand:apps-sdk.env.add",
-		"onCommand:apps-sdk.app.get-icon",
-		"onCommand:apps-sdk.app.edit-metadata",
-		"onCommand:apps-sdk.connection.edit-metadata",
-		"onCommand:apps-sdk.webhook.edit-metadata",
-		"onCommand:apps-sdk.module.edit-metadata",
-		"onCommand:apps-sdk.rpc.edit-metadata",
-		"onCommand:apps-sdk.app.visibility.public",
-		"onCommand:apps-sdk.app.visibility.private",
-		"onCommand:apps-sdk.help",
-		"onCommand:apps-sdk.app.export",
-		"onCommand:apps-sdk.udt",
-		"onCommand:apps-sdk.app.import",
-		"onView:apps",
-		"onView:opensource"
+		"workspaceContains:**/makecomapp.json"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -275,12 +246,12 @@
 			},
 			{
 				"command": "apps-sdk.delete",
-				"title": "Delete",
+				"title": "Delete component",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.delete",
-				"title": "Delete",
+				"title": "Delete app",
 				"category": "Make Apps"
 			},
 			{
@@ -305,7 +276,7 @@
 			},
 			{
 				"command": "apps-sdk.app.clone",
-				"title": "Clone",
+				"title": "Clone into new app",
 				"category": "Make Apps"
 			},
 			{
@@ -355,7 +326,7 @@
 			},
 			{
 				"command": "apps-sdk.module.clone",
-				"title": "Clone",
+				"title": "Clone into new module",
 				"category": "Make Apps"
 			},
 			{

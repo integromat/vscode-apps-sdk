@@ -46,9 +46,6 @@
 
 #### Waiting for the implementation
 
-- To discussion: All users have to place apikey into same filename, because it is defined in makecomapp.json.
-  - TODO: Remove it from `makecomapp.json` file and make it somehow "independent".
-  - Can be a BREAKING CHANGE.
 - Create local components (webhooks, modules, RPCs, and functions).
   - Note: Create with empty files only (or single template only)
 - Validate makecomapp.json file by JSON schema on each usage
