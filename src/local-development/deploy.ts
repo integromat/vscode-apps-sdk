@@ -11,7 +11,7 @@ import { getAllComponentsSummaries } from './component-summaries';
 import { askForOrigin } from './dialog-select-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { diffComponentsPresence } from './diff-components-presence';
-import { createAppComponent } from './create-component';
+import { createRemoteAppComponent } from './create-remote-component';
 import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 import { catchError } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
@@ -118,7 +118,7 @@ async function localFileDeploy(file: vscode.Uri) {
 			// Create new components in cloud
 			const postActions: CreateAppComponentPostAction[] = [];
 			for (const componentToCreate of newComponentsToCreate) {
-				const postActions2 = await createAppComponent({
+				const postActions2 = await createRemoteAppComponent({
 					appName: origin.appId,
 					appVersion: origin.appVersion,
 					...componentToCreate,

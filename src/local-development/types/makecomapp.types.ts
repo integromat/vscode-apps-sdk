@@ -1,6 +1,6 @@
 import { AppComponentType } from '../../types/app-component-type.types';
 import { Crud } from './crud.types';
-import { ConnectionType, ModuleSubtype, WebhookType } from '../../types/module-type.types';
+import { ConnectionType, ModuleType, WebhookType } from '../../types/module-type.types';
 import { ComponentCodeType, GeneralCodeType } from './code-type.types';
 
 export interface MakecomappJson {
@@ -40,7 +40,7 @@ export interface AppComponentMetadata {
 	description?: string;
 	connectionType?: ConnectionType;
 	webhookType?: WebhookType;
-	moduleSubtype?: ModuleSubtype;
+	moduleType?: ModuleType; // TODO drive "moduleSubtype" - dodelat migraci
 	actionCrud?: Crud;
 	/** Valid for modules, webhooks, RPCs only */
 	connection?: string | null;

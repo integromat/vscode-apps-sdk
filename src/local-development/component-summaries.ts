@@ -44,10 +44,10 @@ export async function getAllComponentsSummaries(
 
 					break;
 				case 'module':
-					componentMetadata['moduleSubtype'] = getModuleDefFromId(
+					componentMetadata['moduleType'] = getModuleDefFromId(
 						(appComponentSummary as ComponentsApiResponseModuleItem).typeId,
 					).type;
-					if (componentMetadata['moduleSubtype'] === 'action') {
+					if (componentMetadata['moduleType'] === 'action') {
 						componentMetadata['actionCrud'] = (appComponentSummary as ComponentsApiResponseModuleItem).crud;
 					}
 					break;

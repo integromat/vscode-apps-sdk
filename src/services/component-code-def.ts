@@ -95,7 +95,7 @@ export const componentsCodesDefinition: Record<
 		epoch: {
 			...imljsonc,
 			apiCodeType: 'epoch',
-			onlyFor: (componentMetadata) => componentMetadata.moduleSubtype === 'trigger',
+			onlyFor: (componentMetadata) => componentMetadata.moduleType === 'trigger',
 		},
 		staticParams: { ...imljsonc, apiCodeType: 'parameters', filename: 'static-params' },
 		mappableParams: { ...imljsonc, apiCodeType: 'expect', filename: 'mappable-params' },

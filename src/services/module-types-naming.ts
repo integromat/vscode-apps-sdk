@@ -1,7 +1,7 @@
-import { ModuleSubtype } from '../types/module-type.types';
+import { ModuleType } from '../types/module-type.types';
 
 export const moduleTypes: {
-	type_id: number, type: ModuleSubtype, label: string
+	type_id: number, type: ModuleType, label: string
 }[] = [
 	{
 		type_id: 1,

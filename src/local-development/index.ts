@@ -1,7 +1,7 @@
 import * as downloadFileModule from './download-file';
 import * as deployModule from './deploy'
 import * as cloneModule from './clone';
-import * as createConnectionModule from './create-connection';
+import * as createConnectionModule from './create-local-connection';
 import * as pullModule from './pull';
 
 /**
