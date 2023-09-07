@@ -882,6 +882,7 @@
 	"devDependencies": {
 		"@types/glob": "^8.1.0",
 		"@types/lodash.camelcase": "^4.3.7",
+		"@types/lodash.clonedeep": "^4.5.7",
 		"@types/lodash.pick": "^4.4.7",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "^16.18.38",
@@ -908,6 +909,7 @@
 		"jimp": "^0.22.10",
 		"jsonc-parser": "^3.2.0",
 		"lodash.camelcase": "^4.3.0",
+		"lodash.clonedeep": "^4.5.0",
 		"lodash.kebabcase": "^4.1.1",
 		"lodash.pick": "^4.4.0",
 		"lodash.union": "^4.6.0",

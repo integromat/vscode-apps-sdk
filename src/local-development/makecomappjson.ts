@@ -8,6 +8,7 @@ import { MAKECOMAPP_FILENAME } from './consts';
 import { TextDecoder, TextEncoder } from 'util';
 import { log } from '../output-channel';
 import { AppComponentType } from '../types/app-component-type.types';
+import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
 
 const limitConcurrency = throat(1);
 
@@ -60,7 +61,17 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 		err.name = 'PopupError';
 		throw err;
 	}
-	return makecomappJson;
+
+	// Finds all deprecated properties and upgrade it to valid
+	const upgraded = migrateMakecomappJsonFile(makecomappJson);
+	if (upgraded.changesApplied) {
+		// Save the upgrade back to the `makecomapps.json`
+		await updateMakecomappJson(anyProjectPath, upgraded.makecomappJson);
+	}
+
+	// TODO To add the JSON schema validation here.
+
+	return upgraded.makecomappJson;
 }
 
 /**
