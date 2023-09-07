@@ -1,0 +1,38 @@
+import { CodeType } from '../types/code-type.types';
+
+/**
+ * Retuns the default empty content for each code type.
+ *
+ * Note: This function is here only temporary, until full templates are implemented instead.
+ */
+export function getEmptyCodeContent(codeType: CodeType): string {
+	switch (codeType) {
+		case 'base':
+		case 'communication':
+		case 'common':
+		case 'scopeList':
+		case 'mappableParams':
+		case 'staticParams':
+		case 'samples':
+		case 'attach':
+		case 'detach':
+		case 'update':
+		case 'epoch':
+		case 'installDirectives':
+			return '{ }\n';
+		case 'params':
+		case 'defaultScope':
+		case 'interface':
+		case 'groups':
+		case 'requiredScope':
+		case 'installSpec':
+			return '[]\n';
+		case 'readme':
+			return 'README\n======\n';
+		case 'code':
+		case 'test':
+			return '// Write the JavaScript code here...\n';
+		default:
+			throw new Error(`Unknown code type "${codeType}."`);
+	}
+}

@@ -6,6 +6,7 @@ import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjso
 import { getComponentPseudoId } from './component-pseudo-id';
 import { entries } from '../utils/typed-object';
 import { MAKECOMAPP_FILENAME } from './consts';
+import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -93,17 +94,7 @@ async function createLocalConnection(
 	}
 	for (const [codeType, codeFilePath] of entries(connectionMetadataWithCodeFiles.codeFiles)) {
 		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
-		switch (codeType) {
-			case 'communication':
-			case 'common':
-				await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode('{ }\n'));
-				break;
-			case 'params':
-				await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode('[]\n'));
-				break;
-			default:
-				throw new Error(`Not implemented to create connection code file for code "${codeType}"`);
-		}
+		await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
 	}
 
 	// Write changes to makecomapp.json file
