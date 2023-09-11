@@ -9,6 +9,8 @@ import { TextDecoder, TextEncoder } from 'util';
 import { log } from '../output-channel';
 import { AppComponentType } from '../types/app-component-type.types';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
+import { isValidID } from './helpers/validate-id';
+import { entries } from '../utils/typed-object';
 
 const limitConcurrency = throat(1);
 
@@ -67,6 +69,19 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 	if (upgraded.changesApplied) {
 		// Save the upgrade back to the `makecomapps.json`
 		await updateMakecomappJson(anyProjectPath, upgraded.makecomappJson);
+	}
+
+	// Validate all compoments ID
+	for (const [componentType, components] of entries(makecomappJson.components)) {
+		for (const componentID of Object.keys(components)) {
+			if (!isValidID(componentType, componentID)) {
+				const e = new Error(
+					`${componentType} ID "${componentID}" defined in ${MAKECOMAPP_FILENAME} file is not valid ID. It does not meet requirements. Fix it first.`,
+				);
+				e.name = 'PopupError';
+				throw e;
+			}
+		}
 	}
 
 	// TODO To add the JSON schema validation here.

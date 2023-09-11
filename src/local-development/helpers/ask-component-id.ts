@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
+import { isValidID } from './validate-id';
 
-const rulesDescription =
-	'3-30 lowercase letters (a-z), numbers (0-9), and dashes (-). Must start with a letter, not end with a dash.';
+// const rulesDescription =
+//	'3-30 lowercase letters (a-z), numbers (0-9), and dashes (-). Must start with a letter, not end with a dash.';
+const moduleRulesDescription =
+	'3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.';
 
 /**
  * Display the VS Code input box to ask user to enter the module ID.
@@ -16,19 +19,14 @@ export async function askModuleID(): Promise<string | undefined> {
 			title:
 				(moduleID !== undefined ? 'INVALID FORMAT. Try again to ' : '') +
 				'Enter the module ID (name) of new module to be created:',
-			prompt: 'Rules: ' + rulesDescription,
+			prompt: 'Rules: ' + moduleRulesDescription,
 			value: moduleID,
 		});
 		if (moduleID === undefined) {
 			return undefined;
 		}
-	} while (!hasIdValidFormat(moduleID));
+	} while (!isValidID('module', moduleID));
 	return moduleID;
 }
 
-/**
- * Tests if the ID (name) has the correct format defined by Make.
- */
-function hasIdValidFormat(id: string): boolean {
-	return /^[a-z][0-9a-z-]{1,28}[0-9a-z]$/.test(id);
-}
+

@@ -22,7 +22,11 @@ export function showError(err: Error | AxiosError<any> | string, title?: string 
 
 	// Try to use APIError message format instead of syntax error
 	if (e.message && e.detail) {
-		e = `${e.message}. ${e.detail instanceof Array ? e.detail[0] : e.detail}`;
+		let eText = `${e.message}. ${e.detail instanceof Array ? e.detail[0] : e.detail}`;
+		if (e.suberrors instanceof Array) {
+			eText += ' ' + e.suberrors.map((suberror: Error) => suberror.message).join(' ');
+		}
+		e = eText;
 	}
 	if (e.name && e.message) {
 		e = `[${e.name}] ${e.message}`;
