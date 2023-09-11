@@ -14,12 +14,14 @@ const ENVIRONMENT_VERSION = 2;
 /**
  * Creates new SDK App component in remote Make.
  * Note: Content will stay filled by templated codes. No local codes are updates by this function.
+ *
+ * @param opt.componentName New component ID (for components, where it can be defined by user)
  */
 export async function createRemoteAppComponent(opt: {
 	appName: string;
 	appVersion: number;
 	componentType: AppComponentType;
-	componentName: string;  // New component ID (for components, where it can be defined by user)
+	componentName: string;
 	componentMetadata: AppComponentMetadata;
 	origin: LocalAppOriginWithSecret;
 }): Promise<CreateAppComponentPostAction[]> {
@@ -94,10 +96,10 @@ async function createRemoteModule(opt: {
 		throw new Error(`Module type must be defined, but missing. Check the ${MAKECOMAPP_FILENAME}.`);
 	}
 
-	const baseUrl = `https://${opt.origin.baseUrl}/v2/${Core.pathDeterminer(
+	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
 		ENVIRONMENT_VERSION,
-		'__sdk',
-	)}${Core.pathDeterminer(ENVIRONMENT_VERSION, 'app')}/`;
+		'app',
+	)}/`;
 	const axiosConfig: AxiosRequestConfig = {
 		headers: {
 			Authorization: 'Token ' + opt.origin.apikey,
