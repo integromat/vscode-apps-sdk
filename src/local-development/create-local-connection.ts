@@ -10,7 +10,7 @@ import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
-		'apps-sdk.local-dev.create-connection',
+		'apps-sdk.local-dev.create-local-connection',
 		catchError('Create local connection', onCreateLocalConnectionClick),
 	);
 }

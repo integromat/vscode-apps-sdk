@@ -1,7 +1,8 @@
 import * as downloadFileModule from './download-file';
 import * as deployModule from './deploy'
 import * as cloneModule from './clone';
-import * as createConnectionModule from './create-local-connection';
+import * as createLocalConnection from './create-local-connection';
+import * as createLocalModule from './create-local-module';
 import * as pullModule from './pull';
 
 /**
@@ -11,6 +12,7 @@ export function registerCommandForLocalDevelopment(): void {
 	downloadFileModule.registerCommands();
 	deployModule.registerCommands();
 	cloneModule.registerCommands();
-	createConnectionModule.registerCommands();
+	createLocalConnection.registerCommands();
+	createLocalModule.registerCommands();
 	pullModule.registerCommands();
 }

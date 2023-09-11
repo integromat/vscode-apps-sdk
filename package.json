@@ -412,8 +412,13 @@
 				"title": "Compare with Make (pre-alpha)"
 			},
 			{
-				"command": "apps-sdk.local-dev.create-connection",
-				"title": "Create 'Connection' component (pre-alpha)",
+				"command": "apps-sdk.local-dev.create-local-connection",
+				"title": "Create 'Connection' (pre-alpha)",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-local-module",
+				"title": "Create 'Module' (pre-alpha)",
 				"category": "Make Apps"
 			},
 			{
@@ -824,9 +829,14 @@
 					"when": "resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.iml.json))$/"
 				},
 				{
-					"command": "apps-sdk.local-dev.create-connection",
+					"command": "apps-sdk.local-dev.create-local-connection",
 					"group": "7_modification",
 					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
+				},
+				{
+					"command": "apps-sdk.local-dev.create-local-module",
+					"group": "7_modification",
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
 				}
 			]
 		},
