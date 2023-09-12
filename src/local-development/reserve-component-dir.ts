@@ -1,5 +1,6 @@
-import * as vscode from 'vscode';
+import sanitize from 'sanitize-filename';
 import throat from 'throat';
+import * as vscode from 'vscode';
 import { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { getFirstNonExistingPath } from '../utils/non-existing-path';
@@ -18,7 +19,7 @@ export async function reserveComponentCodeFilesDirectory(
 	return limitConcurrency(async () => {
 		const componentDir = await getFirstNonExistingPath(
 			vscode.Uri.joinPath(localAppRootdir, componentType + 's'),
-			camelToKebab(componentName),
+			sanitize(camelToKebab(componentName)) || 'unnamed',
 		);
 
 		// Create empty directory

@@ -47,7 +47,6 @@
 
 #### Waiting for the implementation
 
-- Use dash-case on component directories
 - Create local components (webhooks, RPCs, functions).
   - Note: Create with empty files only (or single template only)
 - Validate the `makecomapp.json` file by JSON schema on each usage

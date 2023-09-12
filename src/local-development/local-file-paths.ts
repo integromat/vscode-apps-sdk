@@ -1,27 +1,30 @@
-import path from 'path';
+import path from 'node:path';
+import sanitize from 'sanitize-filename';
 import * as vscode from 'vscode';
-import { AppComponentType } from '../types/app-component-type.types';
-import { camelToKebab } from '../utils/camel-to-kebab';
+import { getComponentPseudoId } from './component-pseudo-id';
+import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
 import { CodeDef } from './types/code-def.types';
+import { CodeType } from './types/code-type.types';
 import { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makecomapp.types';
 import { getAppComponentCodesDefinition } from '../services/component-code-def';
-import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
-import { getComponentPseudoId } from './component-pseudo-id';
-import { CodeType } from './types/code-type.types';
+import { AppComponentType } from '../types/app-component-type.types';
+import { camelToKebab } from '../utils/camel-to-kebab';
 import { entries } from '../utils/typed-object';
 
 /**
  * Generate a filename (with extension), how it looks to be placed in local fs for local development.
  *
  * @param componentType Note: `undefined` for general codes (Base, Common, Readme)
- * @param componentName  Note: `undefined` for general codes (Base, Common, Readme)
+ * @param filenamePrefix  Note: `undefined` for general codes (Base, Common, Readme).
+ *                        For components it uses sanitized component ID, example `getSomething`.
+ *                        In this case the output filename starts with sanitizes kebab-case version of this prefix (example: `get-something).
  * @param componentMetadata  Note: `undefined` for general codes (Base, Common, Readme)
  */
 export async function generateDefaultLocalFilename(
 	codeDef: CodeDef,
 	codeType: CodeType,
 	componentType: AppComponentType | undefined,
-	componentName: string | undefined,
+	filenamePrefix: string | undefined,
 	componentMetadata: AppComponentMetadata | undefined,
 ): Promise<string> {
 	let filename: string;
@@ -39,8 +42,9 @@ export async function generateDefaultLocalFilename(
 			throw new Error(`Type ${typeof codeDef.filename} is not supported in CodeDef.filename`);
 	}
 
+	const sanitizedFilenamePrefix = filenamePrefix ? sanitize(camelToKebab(filenamePrefix)) : '';
 	const fileNameExt =
-		(componentName ? camelToKebab(componentName) + '.' : '') +
+		(sanitizedFilenamePrefix ? sanitizedFilenamePrefix + '.' : '') +
 		// custom filename | component name
 		filename +
 		// file extension

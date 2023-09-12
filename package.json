@@ -924,6 +924,7 @@
 		"lodash.pick": "^4.4.0",
 		"lodash.union": "^4.6.0",
 		"request-light": "^0.7.0",
+		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
 		"uuid": "^9.0.0",
