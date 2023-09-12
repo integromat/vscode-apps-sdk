@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+1.3.30 (pre-release)
+--------------------
+
+### New features
+
+- Ability to create local module
+- Ability to create remote module in Make
+- `makecomapp.json` structure automatic migration/upgrade
+- Validate components IDs in `makecomapp.json`
+- Directory/files names sanitization for case of unexpected/unsupported symbols in component IDs
+
+### Changes
+
+- `makecomapp.json` module property `moduleSubtype` rename to `moduleType`
+- Context menu item texts rename
+- Library `@integromat/iml` update from v2 to v3
+
+### Fixed
+
+- More user friendly errors in case of invalid code's JSON structure
+
 1.3.29 (pre-release)
 --------------------
 

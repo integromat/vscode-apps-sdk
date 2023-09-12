@@ -126,7 +126,8 @@ class CoreCommands {
 			this.appsProvider.refresh()
 		}
 		catch (err) {
-			showError(err, `File ${event?.document?.fileName} saving/uploading failed`);
+			const filename = path.basename(event?.document?.fileName || '');
+			showError(err, `Deploy ${filename}`);
 
 			// Mark the document as dirty (Adds a space and remove it)
 			const editor = vscode.window.activeTextEditor

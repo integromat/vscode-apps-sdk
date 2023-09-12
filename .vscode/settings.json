@@ -41,5 +41,10 @@
             "orderLevel": 30,
             "disableSort": true
         },
-    ]
+    ],
+
+    "markdownlint.config": {
+        "MD003": false,
+        "MD024": false
+    }
 }
