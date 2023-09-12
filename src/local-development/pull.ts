@@ -6,13 +6,13 @@ import {
 } from './types/makecomapp.types';
 import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
 import { getAllComponentsSummaries } from './component-summaries';
-import { getAppComponentTypes } from '../services/component-code-def';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
-import { AppComponentType } from '../types/app-component-type.types';
 import { downloadSource } from './code-deploy-download';
+import { askForProjectOrigin } from './dialog-select-origin';
+import { getAppComponentTypes } from '../services/component-code-def';
+import { AppComponentType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { catchError } from '../error-handling';
-import { askForProjectOrigin } from './dialog-select-origin';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
 
@@ -53,19 +53,19 @@ export async function pullNewComponents(
 ): Promise<{ componentType: AppComponentType; componentName: string }[]> {
 	const makecomappJson = await getMakecomappJson(localAppRootdir);
 	const cloudAppComponents = await getAllComponentsSummaries(origin);
-	const newComponens: Awaited<ReturnType<typeof pullNewComponents>> = [];
+	const newComponents: Awaited<ReturnType<typeof pullNewComponents>> = [];
 
 	for (const componentType of getAppComponentTypes()) {
 		for (const [componentName, componentMetadata] of Object.entries(cloudAppComponents[componentType])) {
 			if (!makecomappJson.components[componentType][componentName]) {
 				// Local component not exists, so pull it
 				pullComponent(componentType, componentName, componentMetadata, localAppRootdir, origin);
-				newComponens.push({ componentType, componentName });
+				newComponents.push({ componentType, componentName });
 			}
 		}
 	}
 
-	return newComponens;
+	return newComponents;
 }
 
 /**
