@@ -909,7 +909,7 @@
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {
-		"@integromat/iml": "^2.19.11",
+		"@integromat/iml": "^3.0.0",
 		"@integromat/udt": "^1.2.0",
 		"adm-zip": "^0.5.10",
 		"async-file": "^2.0.2",
