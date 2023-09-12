@@ -413,21 +413,21 @@
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-connection",
-				"title": "Create 'Connection' (pre-alpha)",
+				"title": "New Connection Component (pre-alpha)",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-module",
-				"title": "Create 'Module' (pre-alpha)",
+				"title": "New Module Component (pre-alpha)",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.clone-to-workspace",
-				"title": "Clone to local workspace (pre-alpha)"
+				"title": "Clone to Local Workspace (pre-alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.pull-new-components",
-				"title": "Pull new components from Make (pre-alpha)"
+				"title": "Pull New Components From Make (pre-alpha)"
 			}
 		],
 		"viewsContainers": {
