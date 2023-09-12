@@ -1,6 +1,6 @@
+import { AxiosError } from 'axios';
 import * as vscode from 'vscode';
 import { log } from './output-channel';
-import { AxiosError } from 'axios';
 
 /**
  * Displays an error message in the VSCode window.
@@ -22,9 +22,9 @@ export function showError(err: Error | AxiosError<any> | string, title?: string 
 
 	// Try to use APIError message format instead of syntax error
 	if (e.message && e.detail) {
-		let eText = `${e.message}. ${e.detail instanceof Array ? e.detail[0] : e.detail}`;
+		let eText = `${improveErrorMessage(e.detail instanceof Array ? e.detail[0] : e.detail)}`;
 		if (e.suberrors instanceof Array) {
-			eText += ' ' + e.suberrors.map((suberror: Error) => suberror.message).join(' ');
+			eText += ' ' + e.suberrors.map((suberror: Error) => improveErrorMessage(suberror.message)).join(' ');
 		}
 		e = eText;
 	}
@@ -40,7 +40,11 @@ export function showError(err: Error | AxiosError<any> | string, title?: string 
 
 	// Log Axios request URL
 	if (err instanceof AxiosError) {
-		e += ' Requested ' + err.request?.method + ' ' + err.request?.path;
+		e +=
+			' Technical details: Remote Make server rejected the request ' +
+			(err.request?.method || '').toUpperCase() +
+			' ' +
+			err.request?.path;
 	}
 
 	// Show error message in VS Code
@@ -68,20 +72,11 @@ export function catchError<T extends (...args: any[]) => Promise<any>>(errorTitl
 }
 
 /**
- * Function wrapper, which displays a progress bar in the VSCode window during async function execution.
- * @deprecated Use 'vscode-progress-dialog.ts' -> `withProgressDialog() instead.
+ * Improves the specific error message to more user friendly one. In all other cases returns the original one.
  */
-// export function withProgress<T extends (...args: any[]) => Promise<any>>(
-// 	options: Omit<vscode.ProgressOptions, 'location'|'cancellable'>,
-// 	asyncFunc: T
-// ): T {
-// 	return <T>(async (...args: any[]) => {
-// 		return await vscode.window.withProgress({
-// 			location: vscode.ProgressLocation.Notification,
-// 			cancellable: false,
-// 			...options,
-// 		}, async (progress, token) => {
-// 			return await asyncFunc(...args);
-// 		});
-// 	});
-// }
+function improveErrorMessage(message: string): string {
+	if (message === "Value doesn't match pattern in parameter 'name'.") {
+		return 'Some local component has the invalid ID (name) defined. The ID must to follow specific restrictions for used letters, number and symbols.';
+	}
+	return message;
+}
