@@ -8,6 +8,8 @@ Change Log
 
 - Ability to create local module
 - Ability to create remote module in Make
+- Local connection creation wizard
+- Ability to create all types of connections (Basic, OAuth)
 - `makecomapp.json` structure automatic migration/upgrade
 - Validate components IDs in `makecomapp.json`
 - Directory/files names sanitization for case of unexpected/unsupported symbols in component IDs

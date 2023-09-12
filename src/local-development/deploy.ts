@@ -1,21 +1,20 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-	getMakecomappJson,
-	getMakecomappRootDir,
-	renameConnectionInMakecomappJson,
-} from '../local-development/makecomappjson';
-import { log } from '../output-channel';
 import { uploadSource } from './code-deploy-download';
 import { getAllComponentsSummaries } from './component-summaries';
 import { askForOrigin } from './dialog-select-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { diffComponentsPresence } from './diff-components-presence';
 import { createRemoteAppComponent } from './create-remote-component';
-import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
+import { MAKECOMAPP_FILENAME } from './consts';
+import {
+    getMakecomappJson,
+    getMakecomappRootDir,
+    renameConnectionInMakecomappJson
+} from '../local-development/makecomappjson';
+import { log } from '../output-channel';
 import { catchError } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
-import { MAKECOMAPP_FILENAME } from './consts';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', localFileDeploy));
@@ -73,10 +72,7 @@ async function localFileDeploy(file: vscode.Uri) {
 						codeToDeploy.componentName === newComponentInMakecomappjson.componentName,
 				),
 			);
-			if (
-				newComponentsToCreate.length > 0 ||
-				componentAddingRemoving.missingComponents.length > 0
-			) {
+			if (newComponentsToCreate.length > 0 || componentAddingRemoving.missingComponents.length > 0) {
 				// Ask for continue in case of new component(s) found
 				progresDialogReport('Waiting for your response');
 				const confirmAnswer = await vscode.window.showWarningMessage(
@@ -116,8 +112,8 @@ async function localFileDeploy(file: vscode.Uri) {
 			progresDialogReport('Deploying');
 
 			// Create remote components that has been found in local
-			let componentToCreate: typeof newComponentsToCreate[0] | undefined;
-			while (componentToCreate = newComponentsToCreate.shift()) {
+			let componentToCreate: (typeof newComponentsToCreate)[0] | undefined;
+			while ((componentToCreate = newComponentsToCreate.shift())) {
 				// Create new remote component in origin
 				const postActions = await createRemoteAppComponent({
 					appName: origin.appId,
@@ -136,9 +132,9 @@ async function localFileDeploy(file: vscode.Uri) {
 					}
 				}
 				// Remove the added component also from list `componentAddingRemoving.newComponents`
-				componentAddingRemoving.newComponents = componentAddingRemoving.newComponents.filter((component) => (
-					component !== componentToCreate
-				));
+				componentAddingRemoving.newComponents = componentAddingRemoving.newComponents.filter(
+					(component) => component !== componentToCreate,
+				);
 			}
 
 			// Deploy codes one-by-one

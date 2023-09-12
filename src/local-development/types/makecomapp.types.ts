@@ -1,7 +1,7 @@
-import { AppComponentType } from '../../types/app-component-type.types';
 import { Crud } from './crud.types';
-import { ConnectionType, ModuleType, WebhookType } from '../../types/module-type.types';
 import { ComponentCodeType, GeneralCodeType } from './code-type.types';
+import { AppComponentType } from '../../types/app-component-type.types';
+import { ConnectionType, ModuleType, WebhookType } from '../../types/component-types.types';
 
 export interface MakecomappJson {
 	fileVersion: number;

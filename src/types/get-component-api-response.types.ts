@@ -1,6 +1,6 @@
 
+import { ConnectionType, WebhookType } from './component-types.types';
 import { Crud } from '../local-development/types/crud.types';
-import { ConnectionType, WebhookType } from '../types/module-type.types';
 
 /**
  * Item of array `appModules` of API response:

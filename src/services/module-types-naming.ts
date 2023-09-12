@@ -1,4 +1,4 @@
-import { ModuleType } from '../types/module-type.types';
+import { ModuleType } from '../types/component-types.types';
 
 export const moduleTypes: {
 	type_id: number, type: ModuleType, label: string

@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
-import { catchError } from '../error-handling';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
-import { entries } from '../utils/typed-object';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { askModuleID } from './helpers/ask-component-id';
 import { askFreeText } from './helpers/ask-free-text';
-import { moduleTypes } from '../services/module-types-naming';
-import { ModuleType } from '../types/module-type.types';
 import { Crud } from './types/crud.types';
+import { catchError } from '../error-handling';
+import { entries } from '../utils/typed-object';
+import { moduleTypes } from '../services/module-types-naming';
+import { ModuleType } from '../types/component-types.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -56,7 +56,7 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	// Ask for module type
 	const moduleTypePick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: ModuleType }>(
 		moduleTypes.map((moduleType) => ({ label: moduleType.label, id: moduleType.type })),
-		{ ignoreFocusOut: true, title: 'Select the type of module tobe created' },
+		{ ignoreFocusOut: true, title: 'Select the type of module to be created' },
 	);
 	if (!moduleTypePick) {
 		return;

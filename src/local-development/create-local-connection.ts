@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
-import { catchError } from '../error-handling';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
 import { getComponentPseudoId } from './component-pseudo-id';
-import { entries } from '../utils/typed-object';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
+import { askFreeText } from './helpers/ask-free-text';
+import { catchError } from '../error-handling';
+import { entries } from '../utils/typed-object';
+import { ConnectionType } from '../types/component-types.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -54,10 +56,33 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 	const newConnectionTempId = appId + appConnectionNameSuffix;
 	const newConnectionPseudoId = getComponentPseudoId('connection', newConnectionTempId, appId);
 
+	// Ask for connection label
+	const connectionLabel = await askFreeText({
+		subject: 'Label (title) of new connection to be created',
+		note: 'Rules: Use any free text, but must not be empty.',
+		placeHolder: 'Example: Basic authorization to system',
+		required: true,
+	});
+	if (connectionLabel === undefined) {
+		return; /* Cancelled by user */
+	}
+
+	// Ask for connection type
+	const connectionTypes: { type: ConnectionType, label: string }[] = [
+		{ type: 'basic', label: 'Basic Auth, API key auth, Token auth, etc.' },
+		{ type: 'oauth', label: 'Oauth 2' },
+	];
+	const connectionTypePick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: ConnectionType }>(
+		connectionTypes.map((connetionType) => ({ label: connetionType.label, id: connetionType.type })),
+		{ ignoreFocusOut: true, title: 'Select the type of connection to be created' },
+	);
+	if (!connectionTypePick) {
+		return;
+	}
+
 	const connectionMetadata: AppComponentMetadata = {
-		label: 'new connection', // TODO ask user
-		description: 'created by local development in VS Code extension', // TODO ask user
-		connectionType: 'basic',
+		label: connectionLabel,
+		connectionType: connectionTypePick.id,
 	};
 
 	const connectionMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
@@ -87,11 +112,6 @@ async function createLocalConnection(
 	connectionMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles,
 	makeappRootdir: vscode.Uri,
 ) {
-	if (connectionMetadataWithCodeFiles.connectionType !== 'basic') {
-		throw new Error(
-			`Not implemented to create local connection type "${connectionMetadataWithCodeFiles.connectionType}"`,
-		);
-	}
 	for (const [codeType, codeFilePath] of entries(connectionMetadataWithCodeFiles.codeFiles)) {
 		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
 		await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
