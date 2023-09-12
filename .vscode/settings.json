@@ -6,5 +6,40 @@
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         // "editor.formatOnSave": true
-    }
+    },
+    "importSorter.generalConfiguration.sortOnBeforeSave": true,
+    "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
+    "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
+    "importSorter.importStringConfiguration.tabSize": 4,
+    "importSorter.importStringConfiguration.quoteMark": "single",
+    "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
+    "importSorter.sortConfiguration.customOrderingRules.defaultOrderLevel": 20,
+    "importSorter.sortConfiguration.customOrderingRules.rules": [
+        {
+            "type": "importMember",
+            "regex": "^$",
+            "orderLevel": 10,
+            "disableSort": true
+        },
+        {
+            "regex": "^node:",
+            "orderLevel": 15,
+            "disableSort": true
+        },
+        {
+            "regex": "^\\.\\./\\.\\./",
+            "orderLevel": 50,
+            "disableSort": true
+        },
+        {
+            "regex": "^\\.\\./",
+            "orderLevel": 40,
+            "disableSort": true
+        },
+                {
+            "regex": "^\\./",
+            "orderLevel": 30,
+            "disableSort": true
+        },
+    ]
 }
