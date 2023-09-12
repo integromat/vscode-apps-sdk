@@ -74,7 +74,7 @@ async function localFileDeploy(file: vscode.Uri) {
 				),
 			);
 			if (
-				componentAddingRemoving.newComponents.length > 0 ||
+				newComponentsToCreate.length > 0 ||
 				componentAddingRemoving.missingComponents.length > 0
 			) {
 				// Ask for continue in case of new component(s) found
@@ -115,29 +115,31 @@ async function localFileDeploy(file: vscode.Uri) {
 
 			progresDialogReport('Deploying');
 
-			// Create new components in cloud
-			const postActions: CreateAppComponentPostAction[] = [];
-			for (const componentToCreate of newComponentsToCreate) {
-				const postActions2 = await createRemoteAppComponent({
+			// Create remote components that has been found in local
+			let componentToCreate: typeof newComponentsToCreate[0] | undefined;
+			while (componentToCreate = newComponentsToCreate.shift()) {
+				// Create new remote component in origin
+				const postActions = await createRemoteAppComponent({
 					appName: origin.appId,
 					appVersion: origin.appVersion,
 					...componentToCreate,
 					origin,
 				});
-				postActions.push(...postActions2);
-			}
-
-			// #region Process all post-actions
-			for (const postAction of postActions) {
-				if (postAction.renameConnection) {
-					await renameConnectionInMakecomappJson(
-						makeappRootdir,
-						postAction.renameConnection.oldId,
-						postAction.renameConnection.newId,
-					);
+				// Process post-actions
+				for (const postAction of postActions) {
+					if (postAction.renameConnection) {
+						await renameConnectionInMakecomappJson(
+							makeappRootdir,
+							postAction.renameConnection.oldId,
+							postAction.renameConnection.newId,
+						);
+					}
 				}
+				// Remove the added component also from list `componentAddingRemoving.newComponents`
+				componentAddingRemoving.newComponents = componentAddingRemoving.newComponents.filter((component) => (
+					component !== componentToCreate
+				));
 			}
-			// #endregion Process all post-actions
 
 			// Deploy codes one-by-one
 			for (const component of codesToDeploy) {

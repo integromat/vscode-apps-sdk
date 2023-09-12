@@ -11,8 +11,6 @@ export function getEmptyCodeContent(codeType: CodeType): string {
 		case 'communication':
 		case 'common':
 		case 'scopeList':
-		case 'mappableParams':
-		case 'staticParams':
 		case 'samples':
 		case 'attach':
 		case 'detach':
@@ -21,6 +19,8 @@ export function getEmptyCodeContent(codeType: CodeType): string {
 		case 'installDirectives':
 			return '{ }\n';
 		case 'params':
+		case 'mappableParams':
+		case 'staticParams':
 		case 'defaultScope':
 		case 'interface':
 		case 'groups':
