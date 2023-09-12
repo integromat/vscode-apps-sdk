@@ -47,6 +47,8 @@
 
 #### Waiting for the implementation
 
+- More user friendly error in case of invalid ID
+- More user friendly error in case of invalid JSON code
 - Create local components (webhooks, RPCs, functions).
   - Note: Create with empty files only (or single template only)
 - Validate the `makecomapp.json` file by JSON schema on each usage
