@@ -1,13 +1,13 @@
+import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { getAppComponentTypes } from '../services/component-code-def';
 import { getAppComponents } from '../services/get-app-components';
 import {
-	ComponentsApiResponseItem,
 	ComponentsApiResponseConnectionItem,
+	ComponentsApiResponseItem,
 	ComponentsApiResponseModuleItem,
 	ComponentsApiResponseWebhookItem,
 } from '../types/get-component-api-response.types';
 import { getModuleDefFromId } from '../services/module-types-naming';
-import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 
 /**
  * Gets list of all components from remote origin (in Make).
@@ -31,7 +31,6 @@ export async function getAllComponentsSummaries(
 			// Create section in makecomapp.json
 			const componentMetadata: AppComponentMetadata = {
 				label: appComponentSummary.label,
-				description: appComponentSummary.description,
 			};
 			switch (appComponentType) {
 				case 'connection':
@@ -44,6 +43,7 @@ export async function getAllComponentsSummaries(
 
 					break;
 				case 'module':
+					componentMetadata['description'] = appComponentSummary.description;
 					componentMetadata['moduleType'] = getModuleDefFromId(
 						(appComponentSummary as ComponentsApiResponseModuleItem).typeId,
 					).type;
