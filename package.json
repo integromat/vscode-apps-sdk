@@ -10,7 +10,8 @@
 	},
 	"publisher": "Integromat",
 	"engines": {
-		"vscode": "^1.78.0"
+		"vscode": "^1.82.0",
+		"node": "^18.15.0"
 	},
 	"keywords": [
 		"Make",
@@ -772,6 +773,7 @@
 		"axios": "^1.5.0",
 		"compressing": "^1.10.0",
 		"image-downloader": "^4.3.0",
+		"isolated-vm": "^4.6.0",
 		"jimp": "^0.22.10",
 		"jsonc-parser": "^3.2.0",
 		"lodash.camelcase": "^4.3.0",
@@ -781,7 +783,6 @@
 		"request-light": "^0.7.0",
 		"tempy": "^1.0.1",
 		"uuid": "^9.0.0",
-		"vm2": "^3.9.19",
 		"vscode-json-languageservice": "^5.3.6",
 		"vscode-languageclient": "^8.1.0",
 		"vscode-languageserver": "^8.1.0"

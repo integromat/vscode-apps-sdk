@@ -1,10 +1,8 @@
+import { IML } from '@integromat/iml';
+import ivm from 'isolated-vm';
 import * as vscode from 'vscode';
-
 import * as Core from '../Core';
 import * as Validator from '../Validator';
-
-import { VM, VMOptions, VMScript } from 'vm2';
-import { IML } from '@integromat/iml';
 import { catchError } from '../error-handling';
 import { Environment } from '../types/environment.types';
 import AppsProvider from '../providers/AppsProvider';
@@ -47,8 +45,8 @@ export class FunctionCommands {
 		 */
 		vscode.commands.registerCommand('apps-sdk.function.test', async function (context) {
 
-			let urn
-			let functionName
+			let urn: string;
+			let functionName: string;
 
 			// If called out of context -> gather the required information
 			if (context === undefined || context === null) {
@@ -93,6 +91,8 @@ export class FunctionCommands {
 				}
 				else if (context.name === 'code' || context.name === 'test') {
 					functionName = `${context.parent.name}`
+				} else {
+					throw new Error('Internal error: Unexpected state, cannot resolve the "functionName".');
 				}
 			}
 
@@ -120,58 +120,68 @@ export class FunctionCommands {
 			let success = 0
 			let fail = 0
 			let total = 0
-			const sandbox: VMOptions['sandbox'] = {
+			const sandbox /* : VMOptions['sandbox'] */ = {
 				assert: require('assert'),
-				iml: {},
+				iml: {} as Record<string, (...args: any) => any>,
 				it: (name: string, test: () => void) => {
-					total++
-					outputChannel.append(`- ${name} ... `)
+					total++;
+					outputChannel.append(`- ${name} ... `);
 					try {
-						test()
-						outputChannel.appendLine('✔')
-						success++
-					}
-					catch (err) {
-						outputChannel.appendLine(`✘ => ${err}`)
-						fail++
+						test();
+						outputChannel.appendLine('✔');
+						success++;
+					} catch (err) {
+						outputChannel.appendLine(`✘ => ${err}`);
+						fail++;
 					}
 				},
 				environment: {
-					timezone: _timezone
-				}
+					timezone: _timezone,
+				},
 			};
 
-			Object.keys(IML.FUNCTIONS).forEach(name => {
+			// Add build-in IML functions as global `iml.[functionName]`
+			Object.keys(IML.FUNCTIONS).forEach((name) => {
 				sandbox.iml[name] = IML.FUNCTIONS[name].value.bind({ timezone: sandbox.environment.timezone });
 			});
 
-			outputChannel.clear()
-			outputChannel.appendLine(`======= STARTING IML TEST =======\r\nFunction: ${functionName}\r\n---------- IN PROGRESS ----------`)
+			outputChannel.clear();
+			outputChannel.appendLine(
+				`======= STARTING IML TEST =======\r\nFunction: ${functionName}\r\n---------- IN PROGRESS ----------`,
+			);
 
-			// Prepare VM2, set timeout and pass sandbox
-			const vm = new VM({
-				timeout: 5000,
-				sandbox: sandbox
-			});
+			// Prepare the isolated context
+			const isolate = new ivm.Isolate({ memoryLimit: 32 /* MB */ });
+			const ivmContext = isolate.createContextSync();
+			const ivmJail = ivmContext.global;
+			ivmJail.setSync('global', ivmJail.derefInto());
+			ivmJail.setSync('assert', sandbox.assert);
+			ivmJail.setSync('iml', sandbox.iml);
+			ivmJail.setSync('it', sandbox.it);
+			ivmJail.setSync('environment', sandbox.environment);
 
-			(vm as any).prepare = vm.run('(function(args) { global.__arguments__ = args })');
-
-			userFunctions.forEach(func => {
-				const preCompiled = new VMScript(`(${func.code}).apply({timezone: environment.timezone}, __arguments__)`, func.name);
-				sandbox.iml[func.name] = (...args: any[]) => {
-					(vm as any).prepare(args);
-					return vm.run(preCompiled);
-				};
-			});
+			// Make all other user functions available in the isolation,
+			// because the tested function can call other functions anytime.
+			const userFunctionsCode = userFunctions
+				.map((userFunction) => {
+					if (userFunction.name !== functionName) {
+						return `function ${userFunction.name} (...arguments) { (${userFunction.code}).apply({timezone: environment.timezone}, arguments); }`;
+					}
+				})
+				.join('\n\n');
+			ivmContext.evalSync(userFunctionsCode, { timeout: 2000 });
 
 			// Show output channel IML tests and try running the test code
-			outputChannel.show()
+			outputChannel.show();
+
+			// Execute the test
 			try {
-				vm.run(codeToRun)
-				outputChannel.appendLine('----------- COMPLETED -----------')
-				outputChannel.appendLine(`Total test blocks: ${total}`)
-				outputChannel.appendLine(`Passed blocks: ${success}`)
-				outputChannel.appendLine(`Failed blocks: ${fail}`)
+				const script = isolate.compileScriptSync(codeToRun);
+				await script.run(context);
+				outputChannel.appendLine('----------- COMPLETED -----------');
+				outputChannel.appendLine(`Total test blocks: ${total}`);
+				outputChannel.appendLine(`Passed blocks: ${success}`);
+				outputChannel.appendLine(`Failed blocks: ${fail}`);
 				if (fail === 0) {
 					outputChannel.appendLine('========== TEST PASSED ==========')
 				}
