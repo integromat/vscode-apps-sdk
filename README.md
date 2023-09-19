@@ -47,7 +47,7 @@
 
 #### Waiting for the implementation
 
-- Improve: User friendly error messages during the bulk action.
+- New module must be also added into `groups.json` local file.
 - Create local components (webhooks, RPCs, functions).
   - Note: Create with empty files only (or single template only)
 - Validate the `makecomapp.json` file by JSON schema on each usage

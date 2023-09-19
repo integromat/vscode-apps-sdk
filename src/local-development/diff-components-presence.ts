@@ -1,6 +1,6 @@
+import { AppComponentMetadata, AppComponentTypesMetadata } from './types/makecomapp.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
-import { AppComponentMetadata, AppComponentTypesMetadata } from './types/makecomapp.types';
 
 /**
  * Compares list of components from two sources and returns,
@@ -11,11 +11,19 @@ export function diffComponentsPresence(
 	reference: AppComponentTypesMetadata<AppComponentMetadata>,
 	skipCheckMissing = false,
 ): {
+	/**
+	 * Existing in `allComponents`, missing in `reference`
+	 * Common meaning: New local component, which not exists in remote Make yet.
+	 */
 	newComponents: {
 		componentType: AppComponentType;
 		componentName: string;
 		componentMetadata: AppComponentMetadata;
 	}[];
+	/**
+	 * Missing in `allComponents`, but existing in `reference`.
+	 * Common meaning: Missing in local components, existing in remote Make.
+	 */
 	missingComponents: {
 		componentType: AppComponentType;
 		componentName: string;
