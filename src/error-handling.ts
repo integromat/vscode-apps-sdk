@@ -15,20 +15,18 @@ export function errorToString(err: Error | AxiosError<any> | string): { message:
 	// #region Case of the Error toast notification
 	else if (err instanceof AxiosError) {
 		// Try to use APIError message format instead of syntax error
-		if (err.response?.data.message && err.response?.data.detail) {
-			// let originalMessage: string = `${err.response.data.detail instanceof Array ? err.response.data.detail[0] : err.response.data.detail}`;
-			// let improvedMessage: string | undefined = getImprovedErrorMessage(originalMessage);
-			if (err.response.data.suberrors instanceof Array && err.response.data.suberrors.length > 0) {
-				errMessages.push(
-					...(err.response.data.suberrors as { message: string }[]).map((suberror) => suberror.message),
-				);
-			} else {
-				// No suberrors exist
-				const detailMessage = `${
-					err.response.data.detail instanceof Array ? err.response.data.detail[0] : err.response.data.detail
-				}`;
-				errMessages.push(detailMessage);
-			}
+		if (err.response?.data?.suberrors instanceof Array && err.response.data.suberrors.length > 0) {
+			errMessages.push(
+				...(err.response.data.suberrors as { message: string }[]).map((suberror) => suberror.message),
+			);
+		} else if (err.response?.data?.detail) {
+			// No suberrors exist
+			const detailMessage = `${
+				err.response.data.detail instanceof Array ? err.response.data.detail[0] : err.response.data.detail
+			}`;
+			errMessages.push(detailMessage);
+		} else if (err.response?.data.message) {
+			errMessages.push(err.response.data.message);
 		} else if (typeof err.response?.data === 'string') {
 			// Axios can return JSON error message stringified, so try to parse them.
 			errMessages.push(String(err.response.data));
