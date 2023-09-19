@@ -3,15 +3,13 @@ import * as vscode from 'vscode';
 import { log, showLog } from './output-channel';
 
 /**
- * Displays an error message in the VSCode toast notification / modal / console log
+ * Smart convert a varios types of errors to string.
  */
-export function showError(err: Error | AxiosError<any> | string, actionTitle?: string | undefined) {
+export function errorToString(err: Error | AxiosError<any> | string): { message: string; isImproved: boolean } {
 	const errMessages: string[] = [];
 
-	// Case of the Modal Popup
-	if (err instanceof Error && err.name === 'PopupError') {
-		vscode.window.showErrorMessage('Failed ' + (actionTitle ?? ''), { detail: err.message, modal: true });
-		return;
+	if (typeof err === 'string') {
+		errMessages.push(err);
 	}
 
 	// #region Case of the Error toast notification
@@ -37,8 +35,8 @@ export function showError(err: Error | AxiosError<any> | string, actionTitle?: s
 		} else {
 			errMessages.push(err.response?.status + ' ' + (err.response?.statusText ?? 'Unknown response error'));
 		}
-	} else if (err instanceof Error && err.name && err.message) {
-		errMessages.push(`[${err.name}] ${err.message}`);
+	} else if (err instanceof Error && err.message) {
+		errMessages.push(err.message);
 	} else if (err instanceof Object) {
 		errMessages.push(JSON.stringify(err));
 	} else {
@@ -46,22 +44,29 @@ export function showError(err: Error | AxiosError<any> | string, actionTitle?: s
 	}
 
 	const improved = improveSomeErrors(errMessages);
-	const errMessage = improved.messages.join(' - ');
 
-	// Show error message in VS Code
-	vscode.window
-		.showErrorMessage(
-			(actionTitle ? `FAILED ${actionTitle.toLocaleUpperCase()}: ` : '') + errMessage,
-			'OK',
-			'Show error log',
-		)
-		.then((userResponse) => {
-			if (userResponse === 'Show error log') {
-				showLog();
-			}
+	return {
+		message: improved.messages.join(' - '),
+		isImproved: improved.isImproved,
+	};
+}
+
+/**
+ * Displays an error message in the VSCode toast notification / modal / console log.
+ * Also adds the error into console log.
+ */
+export function showAndLogError(err: Error | AxiosError<any> | string, actionTitle?: string | undefined) {
+	const improvedErrors = errorToString(err);
+
+	// Case of the Modal Popup
+	if (err instanceof Error && err.name === 'PopupError') {
+		vscode.window.showErrorMessage('Failed ' + (actionTitle ?? ''), {
+			detail: improvedErrors.message,
+			modal: true,
 		});
-
-	// #endregion Case of the Error toast notification
+	} else {
+		showErrorDialog((actionTitle ? `FAILED ${actionTitle.toLocaleUpperCase()}: ` : '') + improvedErrors.message);
+	}
 
 	// Log to console
 	if (err instanceof AxiosError) {
@@ -75,13 +80,33 @@ export function showError(err: Error | AxiosError<any> | string, actionTitle?: s
 				(err.response?.data instanceof Object ? '\n\t' + JSON.stringify(err.response?.data) : '') +
 				(typeof err.response?.data === 'string' ? '\n\t' + err.response?.data : ''),
 		);
-	} else if (err instanceof Error && !improved.improved) {
+	} else if (err instanceof Error && !improvedErrors.isImproved) {
 		// Log to VS Code console
-		log('error', errMessage);
-		if (!improved.improved) {
+		log('error', improvedErrors.message);
+		if (!improvedErrors.isImproved) {
 			log('error', `\tSTACK: ${err.stack}`);
 		}
 	}
+}
+
+/**
+ * Shows the error message in VS Code toast notification.
+ *
+ * Note: Does not log the error into error console. If needed to log it, use `showAndLogError()` instead.
+ */
+export function showErrorDialog(message: string, messageOptions: vscode.MessageOptions = {}): void {
+	vscode.window
+		.showErrorMessage(
+			message,
+			messageOptions,
+			{ title: 'OK' },
+			{ title: 'Show error log', isCloseAffordance: true },
+		)
+		.then((userResponse) => {
+			if (userResponse?.title === 'Show error log') {
+				showLog();
+			}
+		});
 }
 
 /**
@@ -92,7 +117,7 @@ export function catchError<T extends (...args: any[]) => Promise<any>>(errorTitl
 		try {
 			return await asyncFunc(...args);
 		} catch (err: any) {
-			showError(err, errorTitle);
+			showAndLogError(err, errorTitle);
 		}
 	});
 }
@@ -104,7 +129,7 @@ function getImprovedErrorMessage(message: string): string | undefined {
 	if (message === "Value doesn't match pattern in parameter 'name'.") {
 		return 'Some local component has the invalid ID (name) defined. The ID must to follow specific restrictions for used letters, number and symbols.';
 	}
-	if (message.startsWith('Invalid symbol in JSONC at position')) {
+	if (message.includes(' in JSONC at position ')) {
 		return 'JSON has corrupted structure. Code cannot be deployed. Find and fix the error and try to deploy again.';
 	}
 	return undefined;
@@ -114,13 +139,13 @@ function getImprovedErrorMessage(message: string): string | undefined {
  * Process the list of error messages and when some is generic known message, replaces it by more user friendly one.
  * Note: User friendly messages are prioritized, so moved to the top of the list.
  */
-function improveSomeErrors(messages: string[]): { messages: string[]; improved: boolean } {
+function improveSomeErrors(messages: string[]): { messages: string[]; isImproved: boolean } {
 	const improvedMessages = messages
 		.map(getImprovedErrorMessage)
 		.filter((message) => message !== undefined) as string[];
 	const otherMessages = messages.filter((message) => !getImprovedErrorMessage(message));
 	return {
-		improved: improvedMessages.length > 0,
+		isImproved: improvedMessages.length > 0,
 		messages: [
 			// Prioritize the messages with "improved" text
 			...improvedMessages,

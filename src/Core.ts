@@ -1,10 +1,9 @@
-import { Environment } from './types/environment.types';
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { showError } from './error-handling';
+import * as vscode from 'vscode';
+import { Environment } from './types/environment.types';
+import { showAndLogError } from './error-handling';
 import { requestMakeApi } from './utils/request-api-make';
-
 
 export async function rpGet(uri: string, authorization: string, qs?: Record<string, string|string[]|boolean>) {
 	try {
@@ -16,7 +15,7 @@ export async function rpGet(uri: string, authorization: string, qs?: Record<stri
 			params: qs
 		});
 	} catch (err: any) {
-		showError(err, 'rpGet');
+		showAndLogError(err, 'rpGet');
 		throw err;
 	}
 }

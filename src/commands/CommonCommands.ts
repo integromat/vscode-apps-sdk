@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as Enum from '../Enum';
-import { showError } from '../error-handling';
+import { showAndLogError } from '../error-handling';
 import AppsProvider from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
 import { requestMakeApi } from '../utils/request-api-make';
@@ -44,7 +44,7 @@ export class CommonCommands {
 				appsProvider.refresh();
 			}
 			catch (err: any) {
-				showError(err, 'apps-sdk.delete');
+				showAndLogError(err, 'apps-sdk.delete');
 			}
 		});
 

@@ -1,11 +1,10 @@
+import { AxiosResponse } from 'axios';
+import * as jsoncParser from 'jsonc-parser';
 import * as vscode from 'vscode';
 import { Environment } from '../types/environment.types';
 import * as Core from '../Core';
-import { AxiosResponse } from 'axios';
-import * as jsoncParser from 'jsonc-parser';
-import { showError } from '../error-handling';
+import { showAndLogError } from '../error-handling';
 import { requestMakeApi } from '../utils/request-api-make';
-
 
 /**
  * Represents static parameters + mappable parameters.
@@ -49,7 +48,7 @@ export class ParametersProvider {
 				});
 				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), "parameters"));
 			} catch (err: any) {
-				showError(err, 'loadParameters');
+				showAndLogError(err, 'loadParameters');
 			}
 
 		}
@@ -69,7 +68,7 @@ export class ParametersProvider {
 				});
 				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), "parameters"));
 			} catch (err: any) {
-				showError(err, 'loadParameters');
+				showAndLogError(err, 'loadParameters');
 			}
 
 		}
