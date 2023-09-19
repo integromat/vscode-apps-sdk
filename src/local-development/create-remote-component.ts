@@ -1,13 +1,14 @@
 import { AxiosRequestConfig } from 'axios';
+import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
+import { MAKECOMAPP_FILENAME } from './consts';
 import { log } from '../output-channel';
 import { AppComponentType } from '../types/app-component-type.types';
-import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import * as Core from '../Core';
-import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
-import { MAKECOMAPP_FILENAME } from './consts';
+import { errorToString } from '../error-handling';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -25,16 +26,25 @@ export async function createRemoteAppComponent(opt: {
 	componentMetadata: AppComponentMetadata;
 	origin: LocalAppOriginWithSecret;
 }): Promise<CreateAppComponentPostAction[]> {
-	switch (opt.componentType) {
-		case 'connection': {
-			const newConnId = await createRemoteConnection(opt);
-			return [{ renameConnection: { oldId: opt.componentName, newId: newConnId } }];
+	try {
+		switch (opt.componentType) {
+			case 'connection': {
+				const newConnId = await createRemoteConnection(opt);
+				return [{ renameConnection: { oldId: opt.componentName, newId: newConnId } }];
+			}
+			case 'module':
+				await createRemoteModule(opt);
+				return [];
+			default:
+				throw new Error(`Creation of ${opt.componentType} ${opt.componentName} not implemented yet. Sorry.`);
 		}
-		case 'module':
-			await createRemoteModule(opt);
-			return [];
-		default:
-			throw new Error(`Creation of ${opt.componentType} ${opt.componentName} not implemented yet. Sorry.`);
+	} catch (e: any) {
+		throw new Error(
+			`Failed to create ${opt.componentType} ${opt.componentName} in remote "${
+				opt.origin.label || opt.origin.appId
+			}". ${errorToString(e).message}`,
+			{ cause: e },
+		);
 	}
 }
 
