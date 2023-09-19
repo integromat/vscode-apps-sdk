@@ -887,7 +887,9 @@
 		"cleanup": "rm -rf ./out",
 		"watch": "tsc -watch -p ./",
 		"test": "npm run cleanup && npm run compile && node ./out/test/runTest.js",
-		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
+		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js",
+		"vsceBuildPrerelease": "vsce package --pre-release patch",
+		"vscePublishPrerelease": "vsce publish --pre-release"
 	},
 	"devDependencies": {
 		"@types/glob": "^8.1.0",
