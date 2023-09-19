@@ -4,13 +4,18 @@ let outputChannel: vscode.OutputChannel | undefined = undefined;
 
 export const extensionDisplayName: string = vscode.extensions.getExtension('Integromat.apps-sdk')!.packageJSON.displayName;
 
-/**
- * Logs error into output console "Make Apps SDK extension".
- */
-export function log(level: 'debug'|'info'|'warn'|'error', errorMessage: string, suppressFocusDebugConsole?: boolean) {
+export function getOutputChannel(): vscode.OutputChannel {
 	if (!outputChannel) {
 		outputChannel = vscode.window.createOutputChannel(extensionDisplayName + ' extension');
 	}
+	return outputChannel;
+}
+
+/**
+ * Logs error into output console "Make Apps SDK extension".
+ */
+export function log(level: 'debug'|'info'|'warn'|'error', errorMessage: string) {
+	const output = getOutputChannel();
 
 	const rawLogLine = level.toUpperCase() + ': ' + errorMessage;
 
@@ -19,9 +24,10 @@ export function log(level: 'debug'|'info'|'warn'|'error', errorMessage: string, 
 		console.log(extensionDisplayName + ' ' + rawLogLine);
 	}
 
-	outputChannel.appendLine((new Date()).toLocaleString() + ': ' + rawLogLine);
+	output.appendLine((new Date()).toLocaleString() + ': ' + rawLogLine);
+}
 
-	if (level === 'error' && !suppressFocusDebugConsole) {
-		outputChannel.show(true);
-	}
+export function showLog() {
+	const output = getOutputChannel();
+	output.show(true);
 }
