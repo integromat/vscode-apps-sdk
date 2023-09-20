@@ -25,6 +25,19 @@ class OutputChannelMock implements vscode.OutputChannel {
 		this.append(value);
 		this.lineEnded = true;
 	}
+	_findLine(includes: string | RegExp): string {
+		const foundLines =
+			includes instanceof RegExp
+				? this._lines.filter((line) => includes.test(line))
+				: this._lines.filter((line) => line.includes(includes));
+		if (foundLines.length === 0) {
+			throw new Error(`Not found expected "${includes} in output"`);
+		}
+		if (foundLines.length > 1) {
+			throw new Error(`Too unspecific "${includes} search in output. Multiple lines found."`);
+		}
+		return foundLines[0];
+	}
 }
 
 suite('IML Functions Unit testing feature', () => {
@@ -54,7 +67,11 @@ suite('IML Functions Unit testing feature', () => {
 				'Europe/Prague',
 			);
 			assertTestSummary(outputChannel, 1, 0);
-			assert.ok(outputChannel._lines.includes('- simulatedTestSuccess ... ✔'), 'Test report');
+			assert.equal(
+				outputChannel._findLine('- simulatedTestSuccess'),
+				'- simulatedTestSuccess ... ✔',
+				'Test report',
+			);
 		});
 
 		test('Failing unit test', async () => {
@@ -67,8 +84,9 @@ suite('IML Functions Unit testing feature', () => {
 				'Europe/Prague',
 			);
 			assertTestSummary(outputChannel, 0, 1);
-			assert.ok(
-				outputChannel._lines.includes('- simulatedTestFailing ... ✘ => AssertionError [ERR_ASSERTION]: 3 == 0'),
+			assert.equal(
+				outputChannel._findLine('- simulatedTestFailing'),
+				'- simulatedTestFailing ... ✘ => AssertionError [ERR_ASSERTION]: 3 == 0',
 				'AssertionError report',
 			);
 		});
@@ -111,7 +129,11 @@ suite('IML Functions Unit testing feature', () => {
 			);
 
 			assertTestSummary(outputChannel, 1, 0);
-			assert.ok(outputChannel._lines.includes('- simulatedTestAccessAnotherCustomFunc ... ✔'), 'Test report');
+			assert.equal(
+				outputChannel._findLine('- simulatedTestAccessAnotherCustomFunc'),
+				'- simulatedTestAccessAnotherCustomFunc ... ✔',
+				'Test report',
+			);
 		});
 
 		test('Failing unit test', async () => {
@@ -129,10 +151,9 @@ suite('IML Functions Unit testing feature', () => {
 			);
 			assertTestSummary(outputChannel, 0, 1);
 
-			assert.ok(
-				outputChannel._lines.includes(
-					'- simulatedFailingTestAccessAnotherCustomFunc ... ✘ => AssertionError [ERR_ASSERTION]: 11 == 0',
-				),
+			assert.equal(
+				outputChannel._findLine('- simulatedFailingTestAccessAnotherCustomFunc'),
+				'- simulatedFailingTestAccessAnotherCustomFunc ... ✘ => AssertionError [ERR_ASSERTION]: 11 == 0',
 				'Test report',
 			);
 		});
@@ -154,27 +175,39 @@ suite('IML Functions Unit testing feature', () => {
 			outputChannel,
 			'Europe/Prague',
 		);
-		assert.ok(
-			outputChannel._lines.includes('- loopingFunc should return undefined ...  ✘ EXECUTION CRITICAL FAILURE'),
+		assert.equal(
+			outputChannel._findLine('- loopingFunc'),
+			'- loopingFunc should return undefined ...  ✘ EXECUTION CRITICAL FAILURE',
 			'Critical error report',
 		);
-		assert.ok(outputChannel._lines.includes('Error: Script execution timed out after 5000ms'), 'Execution timeout');
+		assert.equal(
+			outputChannel._findLine('Script execution timed out after'),
+			'Error: Script execution timed out after 5000ms',
+			'Execution timeout',
+		);
 	});
 });
 
+/**
+ * Helper, which asserts the the final test summary text.
+ */
 function assertTestSummary(outputChannel: OutputChannelMock, sucessfulTestCount: number, failingTestCount: number) {
 	// console.log(JSON.stringify(outputChannel._lines, null, 2));
-	assert.ok(
-		outputChannel._lines.includes(`Total test blocks: ${sucessfulTestCount + failingTestCount}`),
+	assert.equal(
+		outputChannel._findLine('Total test blocks: '),
+		`Total test blocks: ${sucessfulTestCount + failingTestCount}`,
 		'Total test count',
 	);
-	assert.ok(outputChannel._lines.includes(`Passed blocks: ${sucessfulTestCount}`), 'Passed test count');
-	assert.ok(outputChannel._lines.includes(`Failed blocks: ${failingTestCount}`), 'Failed test count');
+	assert.equal(
+		outputChannel._findLine('Passed blocks: '),
+		`Passed blocks: ${sucessfulTestCount}`,
+		'Passed test count',
+	);
+	assert.equal(outputChannel._findLine('Failed blocks: '), `Failed blocks: ${failingTestCount}`, 'Failed test count');
+	const finalConclussion = outputChannel._findLine(/TEST (PASSED|FAILED) ==========/);
 	if (failingTestCount === 0) {
-		assert.ok(outputChannel._lines.includes('========== ✔ TEST PASSED =========='), 'Final conclusion');
-		assert.ok(!outputChannel._lines.includes('========== ✘ TEST FAILED =========='), 'Final conclusion');
+		assert.equal(finalConclussion, '========== ✔ TEST PASSED ==========', 'Final conclusion: success');
 	} else {
-		assert.ok(!outputChannel._lines.includes('========== ✔ TEST PASSED =========='), 'Final conclusion');
-		assert.ok(outputChannel._lines.includes('========== ✘ TEST FAILED =========='), 'Final conclusion');
+		assert.equal(finalConclussion, '========== ✘ TEST FAILED ==========', 'Final conclusion: failed');
 	}
 }
