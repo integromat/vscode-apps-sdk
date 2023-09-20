@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+1.3.31 (pre-release)
+--------------------
+
+### Changes
+
+- Error messages improvements
+- Bulk deployment continues to work even after the error occurred. Shows the error report on the end.
+
 1.3.30 (pre-release)
 --------------------
 
