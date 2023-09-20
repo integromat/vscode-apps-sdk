@@ -747,10 +747,7 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"test": "npm run compile && node ./out/test/runTest.js",
-		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js",
-		"electron-rebuild": "electron-rebuild -o isolated-vm --version ${npm_package_engines_electron}",
-		"electron-rebuild-win": "electron-rebuild -o isolated-vm --version %npm_package_engines_electron%"
-
+		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
 	},
 	"devDependencies": {
 		"@electron/rebuild": "^3.3.0",
@@ -777,7 +774,6 @@
 		"axios": "^1.5.0",
 		"compressing": "^1.10.0",
 		"image-downloader": "^4.3.0",
-		"isolated-vm": "^4.6.0",
 		"jimp": "^0.22.10",
 		"jsonc-parser": "^3.2.0",
 		"lodash.camelcase": "^4.3.0",

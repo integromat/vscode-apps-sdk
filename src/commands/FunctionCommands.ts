@@ -1,5 +1,7 @@
+import * as vm from 'node:vm';
+import * as assert from 'node:assert';
+import { setTimeout } from 'node:timers/promises';
 import { IML } from '@integromat/iml';
-import ivm from 'isolated-vm';
 import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as Validator from '../Validator';
@@ -120,9 +122,14 @@ export class FunctionCommands {
 			let success = 0
 			let fail = 0
 			let total = 0
-			const sandbox /* : VMOptions['sandbox'] */ = {
-				assert: require('assert'),
-				iml: {} as Record<string, (...args: any) => any>,
+
+			const sandbox: vm.Context = {
+				assert: assert,
+				// Add build-in IML functions as global `iml.[functionName]`
+				iml: Object.fromEntries(Object.entries(IML.FUNCTIONS).map(([name, func]) => [
+					name,
+					func.value.bind({ timezone: _timezone })
+				])),
 				it: (name: string, test: () => void) => {
 					total++;
 					outputChannel.append(`- ${name} ... `);
@@ -140,25 +147,19 @@ export class FunctionCommands {
 				},
 			};
 
-			// Add build-in IML functions as global `iml.[functionName]`
-			Object.keys(IML.FUNCTIONS).forEach((name) => {
-				sandbox.iml[name] = IML.FUNCTIONS[name].value.bind({ timezone: sandbox.environment.timezone });
-			});
-
 			outputChannel.clear();
-			outputChannel.appendLine(
-				`======= STARTING IML TEST =======\r\nFunction: ${functionName}\r\n---------- IN PROGRESS ----------`,
-			);
+			outputChannel.show();
 
-			// Prepare the isolated context
-			const isolate = new ivm.Isolate({ memoryLimit: 32 /* MB */ });
-			const ivmContext = isolate.createContextSync();
-			const ivmJail = ivmContext.global;
-			ivmJail.setSync('global', ivmJail.derefInto());
-			ivmJail.setSync('assert', sandbox.assert);
-			ivmJail.setSync('iml', sandbox.iml);
-			ivmJail.setSync('it', sandbox.it);
-			ivmJail.setSync('environment', sandbox.environment);
+			outputChannel.appendLine(
+				'======= STARTING IML TEST =======\r\n' +
+				`Function: ${functionName}\r\n` +
+				'---------- IN PROGRESS ----------',
+			);
+			// Give a time to display the output log
+			await setTimeout();
+
+			// Prepare the separate context
+			vm.createContext(sandbox);
 
 			// Make all other user functions available in the isolation,
 			// because the tested function can call other functions anytime.
@@ -169,28 +170,24 @@ export class FunctionCommands {
 					}
 				})
 				.join('\n\n');
-			ivmContext.evalSync(userFunctionsCode, { timeout: 2000 });
-
-			// Show output channel IML tests and try running the test code
-			outputChannel.show();
+			vm.runInContext(userFunctionsCode, sandbox, { timeout: 2000 });
 
 			// Execute the test
 			try {
-				const script = isolate.compileScriptSync(codeToRun);
-				await script.run(context);
-				outputChannel.appendLine('----------- COMPLETED -----------');
+				vm.runInContext(codeToRun, sandbox, { timeout: 5000 });
+				outputChannel.appendLine('----------- FINISHED -----------');
 				outputChannel.appendLine(`Total test blocks: ${total}`);
 				outputChannel.appendLine(`Passed blocks: ${success}`);
 				outputChannel.appendLine(`Failed blocks: ${fail}`);
 				if (fail === 0) {
-					outputChannel.appendLine('========== TEST PASSED ==========')
+					outputChannel.appendLine('========== ✔ TEST PASSED ==========')
 				}
 				else {
-					outputChannel.appendLine('========== TEST FAILED ==========')
+					outputChannel.appendLine('========== ✘ TEST FAILED ==========')
 				}
 			}
 			catch (err: any) {
-				outputChannel.appendLine('========= CRITICAL FAIL =========')
+				outputChannel.appendLine(' ✘ EXECUTION CRITICAL FAILURE');
 				outputChannel.appendLine(err)
 			}
 		})
