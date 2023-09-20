@@ -10,8 +10,7 @@
 	},
 	"publisher": "Integromat",
 	"engines": {
-		"vscode": "^1.81.1",
-		"electron": "^22.3.18"
+		"vscode": "^1.78.0"
 	},
 	"keywords": [
 		"Make",
@@ -750,7 +749,6 @@
 		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@electron/rebuild": "^3.3.0",
 		"@types/glob": "^8.1.0",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "^16.18.38",
