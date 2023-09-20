@@ -70,7 +70,7 @@ suite('IML Functions Unit testing feature', () => {
 			assert.equal(
 				outputChannel._findLine('- simulatedTestSuccess'),
 				'- simulatedTestSuccess ... ✔',
-				'Test report',
+				'Test executed successfully',
 			);
 		});
 
@@ -132,7 +132,7 @@ suite('IML Functions Unit testing feature', () => {
 			assert.equal(
 				outputChannel._findLine('- simulatedTestAccessAnotherCustomFunc'),
 				'- simulatedTestAccessAnotherCustomFunc ... ✔',
-				'Test report',
+				'Test executed successfully',
 			);
 		});
 
@@ -154,15 +154,36 @@ suite('IML Functions Unit testing feature', () => {
 			assert.equal(
 				outputChannel._findLine('- simulatedFailingTestAccessAnotherCustomFunc'),
 				'- simulatedFailingTestAccessAnotherCustomFunc ... ✘ => AssertionError [ERR_ASSERTION]: 11 == 0',
-				'Test report',
+				'Test executed with specific failure',
 			);
 		});
 	});
 
-	// test('Build-in functions are available', async () => {});
-	// TODO !!!
+	test('Build-in functions are available', async () => {
+		const callImlCode = 'function callImlFunction() { return iml.formatNumber(iml.floor(iml.average(1,6000)), 2, ",", "."); }';
 
-	test('Timeout in case of infinite loop', async () => {
+		const callImlSucessfulTestCode = `it('simulatedTestCallIml', () => {
+			assert.equal(callImlFunction(), "3.000,00");
+		});`;
+
+		await executeCustomFunctionTest(
+			'callImlFunction',
+			callImlCode,
+			callImlSucessfulTestCode,
+			[],
+			outputChannel,
+			'Europe/Prague',
+		);
+
+		assertTestSummary(outputChannel, 1, 0);
+		assert.equal(
+			outputChannel._findLine('- simulatedTestCallIml'),
+			'- simulatedTestCallIml ... ✔',
+			'Test executed successfully',
+		);
+	});
+
+	test('Timeout in case of function infinite loop', async () => {
 		const loopFuncCode = 'function loopingFunc(a, b) { while(true) {} }';
 		const failingLoopFuncTestCode = `it('loopingFunc should return undefined', () => {
 			assert.equal(loopingFunc(), undefined);
