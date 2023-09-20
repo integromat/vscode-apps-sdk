@@ -111,85 +111,99 @@ export class FunctionCommands {
 			}
 
 			// Merge codes
-			const codeToRun = `${code}\r\n\r\n/* === TEST CODE === */\r\n\r\n${test}`
 
-			/**
-			 *  Sandbox cookbook
-			 *  - Assert for assertions
-			 *  - IML for internal IML functions
-			 *  - Users' IML functions
-			 */
-			let success = 0
-			let fail = 0
-			let total = 0
+			await executeCustomFunctionTest(functionName, code, test, userFunctions, outputChannel, _timezone);
 
-			const sandbox: vm.Context = {
-				assert: assert,
-				// Add build-in IML functions as global `iml.[functionName]`
-				iml: Object.fromEntries(Object.entries(IML.FUNCTIONS).map(([name, func]) => [
-					name,
-					func.value.bind({ timezone: _timezone })
-				])),
-				it: (name: string, test: () => void) => {
-					total++;
-					outputChannel.append(`- ${name} ... `);
-					try {
-						test();
-						outputChannel.appendLine('✔');
-						success++;
-					} catch (err) {
-						outputChannel.appendLine(`✘ => ${err}`);
-						fail++;
-					}
-				},
-				environment: {
-					timezone: _timezone,
-				},
-			};
+		})
+	}
+}
 
-			outputChannel.clear();
-			outputChannel.show();
+/**
+ * Executes unit tests (param `testCode`) of custom function (param `customFunctionCode`) in separate context
+ * and pushes the result into `outputChannel` as user-friendly report.
+ */
+export async function executeCustomFunctionTest(
+	functionName: string, customFunctionCode: string, testCode: string,
+	userFunctions: { name: string, code: string }[], outputChannel: vscode.OutputChannel, _timezone: string
+) {
 
-			outputChannel.appendLine(
-				'======= STARTING IML TEST =======\r\n' +
-				`Function: ${functionName}\r\n` +
-				'---------- IN PROGRESS ----------',
-			);
-			// Give a time to display the output log
-			await setTimeout();
+	const codeToRun = `${customFunctionCode}\r\n\r\n/* === TEST CODE === */\r\n\r\n${testCode}`
 
-			// Prepare the separate context
-			vm.createContext(sandbox);
+	/**
+	 *  Sandbox cookbook
+	 *  - Assert for assertions
+	 *  - IML for internal IML functions
+	 *  - Users' IML functions
+	 */
+	let success = 0
+	let fail = 0
+	let total = 0
 
-			// Make all other user functions available in the isolation,
-			// because the tested function can call other functions anytime.
-			const userFunctionsCode = userFunctions
-				.map((userFunction) => {
-					if (userFunction.name !== functionName) {
-						return `function ${userFunction.name} (...arguments) { (${userFunction.code}).apply({timezone: environment.timezone}, arguments); }`;
-					}
-				})
-				.join('\n\n');
-			vm.runInContext(userFunctionsCode, sandbox, { timeout: 2000 });
-
-			// Execute the test
+	const sandbox: vm.Context = {
+		assert: assert,
+		// Add build-in IML functions as global `iml.[functionName]`
+		iml: Object.fromEntries(Object.entries(IML.FUNCTIONS).map(([name, func]) => [
+			name,
+			func.value.bind({ timezone: _timezone })
+		])),
+		it: (name: string, test: () => void) => {
+			total++;
+			outputChannel.append(`- ${name} ... `);
 			try {
-				vm.runInContext(codeToRun, sandbox, { timeout: 5000 });
-				outputChannel.appendLine('----------- FINISHED -----------');
-				outputChannel.appendLine(`Total test blocks: ${total}`);
-				outputChannel.appendLine(`Passed blocks: ${success}`);
-				outputChannel.appendLine(`Failed blocks: ${fail}`);
-				if (fail === 0) {
-					outputChannel.appendLine('========== ✔ TEST PASSED ==========')
-				}
-				else {
-					outputChannel.appendLine('========== ✘ TEST FAILED ==========')
-				}
+				test();
+				outputChannel.appendLine('✔');
+				success++;
+			} catch (err) {
+				outputChannel.appendLine(`✘ => ${err}`);
+				fail++;
 			}
-			catch (err: any) {
-				outputChannel.appendLine(' ✘ EXECUTION CRITICAL FAILURE');
-				outputChannel.appendLine(err)
+		},
+		environment: {
+			timezone: _timezone,
+		},
+	};
+
+	outputChannel.clear();
+	outputChannel.show();
+
+	outputChannel.appendLine(
+		'======= STARTING IML TEST =======\r\n' +
+		`Function: ${functionName}\r\n` +
+		'---------- IN PROGRESS ----------',
+	);
+	// Give a time to display the output log
+	await setTimeout();
+
+	// Prepare the separate context
+	vm.createContext(sandbox);
+
+	// Make all other user functions available in the isolation,
+	// because the tested function can call other functions anytime.
+	const userFunctionsCode = userFunctions
+		.map((userFunction) => {
+			if (userFunction.name !== functionName) {
+				return `function ${userFunction.name} (...arguments) { return (${userFunction.code}).apply({timezone: environment.timezone}, arguments); }`;
 			}
 		})
+		.join('\n\n');
+	vm.runInContext(userFunctionsCode, sandbox, { timeout: 2000 });
+
+	// Execute the test
+	try {
+		vm.runInContext(codeToRun, sandbox, { timeout: 5000 });
+		outputChannel.appendLine('----------- FINISHED -----------');
+		outputChannel.appendLine(`Total test blocks: ${total}`);
+		outputChannel.appendLine(`Passed blocks: ${success}`);
+		outputChannel.appendLine(`Failed blocks: ${fail}`);
+		if (fail === 0) {
+			outputChannel.appendLine('========== ✔ TEST PASSED ==========')
+		}
+		else {
+			outputChannel.appendLine('========== ✘ TEST FAILED ==========')
+		}
+	}
+	catch (err: any) {
+		outputChannel.appendLine(' ✘ EXECUTION CRITICAL FAILURE');
+		outputChannel.appendLine(`${err.name}: ${err.message}`);
 	}
 }

@@ -1,7 +1,7 @@
-import * as path from "path";
-import Mocha from "mocha";
-import { glob } from "glob";
-import * as vscode from "vscode";
+import { glob } from 'glob';
+import Mocha from 'mocha';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 export async function run(...argv2: any): Promise<void> {
 	// Use a report JSON file if specified by the environment `MOCHA_OUTPUT_FILE=filenam.json`
@@ -14,9 +14,10 @@ export async function run(...argv2: any): Promise<void> {
 		// Use JSON output if requested
 		reporter: mochaOutputFile ? "json" : "spec",
 		reporterOptions: mochaOutputFile ? { output: mochaOutputFile } : undefined,
+		timeout: 8000,
 	});
 
-	const testsRoot = path.resolve(__dirname, "..");
+	const testsRoot = path.resolve(__dirname, "../..");
 
 	const files = await glob("**/**.test.js", { cwd: testsRoot });
 
