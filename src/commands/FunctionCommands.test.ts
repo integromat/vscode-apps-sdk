@@ -207,6 +207,48 @@ suite('IML Functions Unit testing feature', () => {
 			'Execution timeout',
 		);
 	});
+
+	test('Isolation: process should not exists in context', async () => {
+		const getProcessCode = 'function getProcess() { return process; }';
+		const getProcessTestCode = `it('process should not exists in context', () => {
+			assert.throws(getProcess, { name: "ReferenceError", message: "process is not defined"}, '"process" variable should not exist');
+		});`;
+		await executeCustomFunctionTest(
+			'getProcess',
+			getProcessCode,
+			getProcessTestCode,
+			[],
+			outputChannel,
+			'Europe/Prague',
+		);
+		assert.equal(
+			outputChannel._findLine('- process should not exists in context'),
+			'- process should not exists in context ... ✔',
+			'Test executed successfully',
+		);
+		assertTestSummary(outputChannel, 1, 0);
+	});
+
+	test('Isolation: global should not exists in context', async () => {
+		const getGlobalCode = 'function getGlobal() { return global; }';
+		const getGlobalTestCode = `it('global should not exists in context', () => {
+			assert.throws(getGlobal, { name: "ReferenceError", message: "global is not defined"}, '"global" variable should not exist');
+		});`;
+		await executeCustomFunctionTest(
+			'getGlobal',
+			getGlobalCode,
+			getGlobalTestCode,
+			[],
+			outputChannel,
+			'Europe/Prague',
+		);
+		assert.equal(
+			outputChannel._findLine('- global should not exists in context'),
+			'- global should not exists in context ... ✔',
+			'Test executed successfully',
+		);
+		assertTestSummary(outputChannel, 1, 0);
+	});
 });
 
 /**
