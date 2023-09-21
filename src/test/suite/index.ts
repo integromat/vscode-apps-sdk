@@ -1,7 +1,6 @@
+import * as path from 'node:path';
 import { glob } from 'glob';
 import Mocha from 'mocha';
-import * as path from 'path';
-import * as vscode from 'vscode';
 
 export async function run(...argv2: any): Promise<void> {
 	// Use a report JSON file if specified by the environment `MOCHA_OUTPUT_FILE=filenam.json`
