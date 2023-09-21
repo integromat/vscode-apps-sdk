@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+1.3.32 (pre-releas)
+--------------------
+
+### New features
+
+- New local module -> automatic append to `groups.json`
+
 1.3.31 (pre-release)
 --------------------
 
