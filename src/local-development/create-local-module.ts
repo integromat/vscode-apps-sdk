@@ -6,6 +6,7 @@ import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { askModuleID } from './helpers/ask-component-id';
 import { askFreeText } from './helpers/ask-free-text';
 import { Crud } from './types/crud.types';
+import { optionalAddModuleToDefaultGroup } from './groups-json';
 import { catchError } from '../error-handling';
 import { entries } from '../utils/typed-object';
 import { moduleTypes } from '../services/module-types-naming';
@@ -94,6 +95,9 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	};
 	// Create new code files
 	await createLocalModule(moduleID, moduleMetadataWithCodeFiles, makeappRootdir);
+
+	// Update groups.json (if file is filled/used)
+	await optionalAddModuleToDefaultGroup(makeappRootdir, moduleID);
 
 	// OK info message
 	vscode.window.showInformationMessage(`Module "${moduleID}" sucessfully created locally.`);
