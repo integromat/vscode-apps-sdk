@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Unreleased
+----------
+
+### Changes
+
+- Migrate `vm2` to `node:vm`
+
 1.3.28 (pre-release)
 --------------------
 
@@ -35,7 +42,7 @@ Change Log
 - Attempts to upload files not belonging to extension
 - Error in case of parameters defined as rpc://
 
-# Changes
+### Changes
 
 - Temporary directory is removed on the end of extension lifecycle
 - Prevent to remove empty JSON lines by autoformat

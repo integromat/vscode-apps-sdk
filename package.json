@@ -745,6 +745,7 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
+		"cleanup": "rm -rf ./out",
 		"test": "npm run compile && node ./out/test/runTest.js",
 		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js"
 	},
@@ -781,7 +782,6 @@
 		"request-light": "^0.7.0",
 		"tempy": "^1.0.1",
 		"uuid": "^9.0.0",
-		"vm2": "^3.9.19",
 		"vscode-json-languageservice": "^5.3.6",
 		"vscode-languageclient": "^8.1.0",
 		"vscode-languageserver": "^8.1.0"
