@@ -1,12 +1,16 @@
 Change Log
 ==========
 
-1.3.32 (pre-releas)
---------------------
+Unreleased
+----------
 
 ### New features
 
 - New local module -> automatic append to `groups.json`
+
+### Changes
+
+- Migrate `vm2` to `node:vm`
 
 1.3.31 (pre-release)
 --------------------

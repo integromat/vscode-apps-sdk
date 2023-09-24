@@ -19,6 +19,7 @@ jobs:
   test:
     name: "Integration tests"
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # minutes
     permissions:
       checks: write
     steps:
@@ -36,6 +37,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Run tests
+        timeout-minutes: 5 # minutes
         run: |
           xvfb-run npm run testToJsonFile
 

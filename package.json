@@ -930,7 +930,6 @@
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
 		"uuid": "^9.0.0",
-		"vm2": "^3.9.19",
 		"vscode-json-languageservice": "^5.3.6",
 		"vscode-languageclient": "^8.1.0",
 		"vscode-languageserver": "^8.1.0"
