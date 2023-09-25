@@ -12,6 +12,7 @@ Unreleased
 ### Fixed
 
 - "Clone to local" menu item misses on published apps
+- Ability to clone app into project root
 
 ### Changes
 

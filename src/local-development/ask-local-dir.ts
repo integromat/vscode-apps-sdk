@@ -15,8 +15,26 @@ export async function askForAppDirToClone(): Promise<vscode.Uri | undefined> {
 		value: 'src',
 		title: 'Destination, where to clone the app',
 	});
-	if (!directory) {
+	if (directory === undefined) {
 		return undefined;
+	}
+
+	// Warning if clone planned to be into rootdir
+	if (['', '/', '\\'].includes(directory)) {
+		const confirmAnswer = await vscode.window.showWarningMessage(
+			'Clone the app into project root',
+			{
+				modal: true,
+				detail:
+					'You are planning to clone the app into open folder root. ' +
+					'It means you will not be able to clone multiple apps into same project. ' +
+					'If you are OK with this limitation, you can continue.',
+			},
+			{ title: 'Continue' },
+		);
+		if (confirmAnswer?.title !== 'Continue') {
+			return;
+		}
 	}
 
 	// Warning if directory contains some data
