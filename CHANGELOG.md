@@ -7,6 +7,7 @@ Unreleased
 ### New features
 
 - New local module -> automatic append to `groups.json`
+- Warning dialog when try to clone app into not empty directory
 
 ### Fixed
 

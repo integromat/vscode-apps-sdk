@@ -29,7 +29,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ```
 
-### Features Status
+### Major Features Status
 
 #### Implemented
 
@@ -67,6 +67,8 @@
 - Create empty folders for components
   - Except functions, which are available for limited users only.
 - Ability to navigate from one custom function to another by ctrl-click to function name. (Same feature is on the web UI).
+
+Note: For details see also the extension CHANGELOG.
 
 ### How to use SDK app local development
 
