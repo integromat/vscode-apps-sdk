@@ -690,22 +690,7 @@
 				{
 					"command": "apps-sdk.app.export",
 					"group": "7_modification_online",
-					"when": "viewItem == app && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.export",
-					"group": "7_modification_online",
-					"when": "viewItem == app_public && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.export",
-					"group": "7_modification_online",
-					"when": "viewItem == app_approved && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.export",
-					"group": "7_modification_online",
-					"when": "viewItem == app_approved_changed && view == apps"
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
@@ -755,22 +740,7 @@
 				{
 					"command": "apps-sdk.app.show-detail",
 					"group": "7_modification_online",
-					"when": "viewItem == app && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.show-detail",
-					"group": "7_modification_online",
-					"when": "viewItem == app_public && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.show-detail",
-					"group": "7_modification_online",
-					"when": "viewItem == app_approved && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.show-detail",
-					"group": "7_modification_online",
-					"when": "viewItem == app_approved_changed && view == apps"
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
@@ -790,27 +760,12 @@
 				{
 					"command": "apps-sdk.app.clone",
 					"group": "7_modification_online",
-					"when": "viewItem == app && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.clone",
-					"group": "7_modification_online",
-					"when": "viewItem == app_public && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.clone",
-					"group": "7_modification_online",
-					"when": "viewItem == app_approved && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.clone",
-					"group": "7_modification_online",
-					"when": "viewItem == app_approved_changed && view == apps"
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				},
 				{
 					"command": "apps-sdk.local-dev.clone-to-workspace",
 					"group": "z_commands",
-					"when": "viewItem == app && view == apps"
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				}
 			],
 			"explorer/context": [

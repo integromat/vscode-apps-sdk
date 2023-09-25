@@ -8,6 +8,10 @@ Unreleased
 
 - New local module -> automatic append to `groups.json`
 
+### Fixed
+
+- "Clone to local" menu item misses on published apps
+
 ### Changes
 
 - Migrate `vm2` to `node:vm`
