@@ -758,10 +758,10 @@
 		"@typescript-eslint/eslint-plugin": "^6.6.0",
 		"@typescript-eslint/parser": "^6.6.0",
 		"@vscode/test-electron": "^2.3.4",
-		"eslint": "^8.48.0",
+		"eslint": "^8.50.0",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^9.0.0",
-		"glob": "^10.3.4",
+		"glob": "^10.3.7",
 		"mocha": "^10.2.0",
 		"typescript": "^5.2.2"
 	},
