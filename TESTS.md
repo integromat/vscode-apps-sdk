@@ -6,11 +6,11 @@ Manual testing scenarios
 Clone the app
 -------------
 
-### Test: Clone the app with no workspace opened
+### Test: Clone the app with no folder opened
 
 Expected result:
-  
-1. Error message "No workspace opened." is displayed.
+
+1. Error message "No folder opened." is displayed.
 
 ### Test: Clone the app with workspace opened
 
