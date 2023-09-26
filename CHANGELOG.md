@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Unreleased
+----------
+
+### Changes
+
+- Always use tabs for autoformat indent
+
 1.3.32 (pre-release)
 --------------------
 

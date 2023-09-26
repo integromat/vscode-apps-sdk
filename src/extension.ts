@@ -1,36 +1,39 @@
+import * as path from 'node:path';
+import * as jsoncParser from 'jsonc-parser';
+import { v4 as uuidv4 } from 'uuid';
 import * as vscode from 'vscode';
-import vscode_languageclient = require("vscode-languageclient/node");
+import * as vscodeLanguageclient from 'vscode-languageclient/node';
 import { log } from './output-channel';
+import { FunctionCommands } from './commands/FunctionCommands';
+import { CommonCommands } from './commands/CommonCommands';
+import { Environment } from './types/environment.types';
+import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
+import { version } from './Meta';
+import {
+	AppsSdkConfiguration,
+	AppsSdkConfigurationEnvironment,
+	getConfiguration,
+	getCurrentEnvironment,
+} from './providers/configuration';
+import { registerCommandForLocalDevelopment } from './local-development';
 
 import AppsProvider = require('./providers/AppsProvider');
 import OpensourceProvider = require('./providers/OpensourceProvider');
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 
 import RpcCommands = require('./commands/RpcCommands');
-import { FunctionCommands } from './commands/FunctionCommands';
 import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
 import ConnectionCommands = require('./commands/ConnectionCommands');
 import AppCommands = require('./commands/AppCommands');
-import { CommonCommands } from './commands/CommonCommands';
 import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import CoreCommands = require('./commands/CoreCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
 import LanguageServersSettings = require('./LanguageServersSettings');
-import * as path from 'path';
-import * as jsoncParser from 'jsonc-parser';
-import { v4 as uuidv4 } from 'uuid';
-import { Environment } from './types/environment.types';
-import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
-import { version } from './Meta';
-import { AppsSdkConfiguration, AppsSdkConfigurationEnvironment, getConfiguration, getCurrentEnvironment } from './providers/configuration';
-import { registerCommandForLocalDevelopment } from './local-development';
 
-
-let client: vscode_languageclient.LanguageClient;
-
+let client: vscodeLanguageclient.LanguageClient;
 
 export async function activate(context: vscode.ExtensionContext) {
 	log('debug', `Extension ${version} starting...`);
@@ -76,14 +79,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Prepare the IMLJSON language server module and create a new language client
 	const serverModule = context.asAbsolutePath(path.join('syntaxes', 'languageServers', 'imlJsonServerMain.js'));
-	client = new vscode_languageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
+	client = new vscodeLanguageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
 	// Start the client. This will also launch the server
 	await client.start();
 
 	// When the client is ready, send IMLJSON schemas to the server
 
 	await client.sendNotification(
-		new vscode_languageclient.NotificationType('imljson/schemaAssociations'),
+		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
 		LanguageServersSettings.getJsonSchemas()
 	);
 
@@ -219,7 +222,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.languages.registerDocumentFormattingEditProvider({ language: 'imljson', scheme: 'file' }, {
 		provideDocumentFormattingEdits(document) {
 			const text = document.getText();
-			const edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true });
+			const edits = jsoncParser.format(text, undefined, { insertSpaces: false, keepLines: true });
 			return edits.map(edit => {
 				const start = document.positionAt(edit.offset);
 				const end = document.positionAt(edit.offset + edit.length);
