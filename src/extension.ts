@@ -222,7 +222,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.languages.registerDocumentFormattingEditProvider({ language: 'imljson', scheme: 'file' }, {
 		provideDocumentFormattingEdits(document) {
 			const text = document.getText();
-			const edits = jsoncParser.format(text, undefined, { insertSpaces: false, keepLines: true });
+			const edits = jsoncParser.format(text, undefined, { keepLines: true });
 			return edits.map(edit => {
 				const start = document.positionAt(edit.offset);
 				const end = document.positionAt(edit.offset + edit.length);

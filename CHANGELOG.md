@@ -6,7 +6,7 @@ Unreleased
 
 ### Changes
 
-- Always use tabs for autoformat indent
+- Document indent autodetection during autoformat (spaces vs. tabs)
 
 1.3.32 (pre-release)
 --------------------
