@@ -1,15 +1,15 @@
-import * as path from 'path';
-import { existsSync } from 'fs';
-import * as vscode from 'vscode';
+import { existsSync } from 'node:fs';
+import * as path from 'node:path';
+import { TextDecoder, TextEncoder } from 'node:util';
 import throat from 'throat';
-import { getCurrentWorkspace } from '../services/workspace';
+import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
-import { TextDecoder, TextEncoder } from 'util';
-import { log } from '../output-channel';
-import { AppComponentType } from '../types/app-component-type.types';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
 import { isValidID } from './helpers/validate-id';
+import { getCurrentWorkspace } from '../services/workspace';
+import { log } from '../output-channel';
+import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 
 const limitConcurrency = throat(1);
@@ -21,15 +21,25 @@ const limitConcurrency = throat(1);
  */
 export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
 	const workspace = getCurrentWorkspace();
-	const startDirRelative = path.posix.relative(workspace.uri.path, anyProjectPath.path);
-	if (startDirRelative.startsWith('..') || anyProjectPath.fsPath === path.parse(anyProjectPath.fsPath).root) {
-		throw new Error(`Appropriate ${MAKECOMAPP_FILENAME} file not found in the workspace.`);
-	}
-
-	if (existsSync(path.join(anyProjectPath.fsPath, MAKECOMAPP_FILENAME))) {
-		return anyProjectPath;
-	} else {
-		return getMakecomappRootDir(vscode.Uri.joinPath(anyProjectPath, '..'));
+	let currentProjectPath = anyProjectPath;
+	let currentDirRelative: string;
+	const errorMessage = `Appropriate ${MAKECOMAPP_FILENAME} file not found in the opened folder/workspace. The path "${path.posix.relative(
+		workspace.uri.path,
+		anyProjectPath.path,
+	)}" is not a part of a Make App.`;
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		currentDirRelative = path.posix.relative(workspace.uri.path, currentProjectPath.path);
+		if (currentDirRelative.startsWith('..')) {
+			throw new Error(errorMessage);
+		}
+		if (existsSync(path.join(currentProjectPath.fsPath, MAKECOMAPP_FILENAME))) {
+			return currentProjectPath;
+		}
+		if (currentDirRelative === '' || currentProjectPath.fsPath === path.parse(currentProjectPath.fsPath).root) {
+			throw new Error(errorMessage);
+		}
+		currentProjectPath = vscode.Uri.joinPath(currentProjectPath, '..');
 	}
 }
 
