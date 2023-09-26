@@ -423,7 +423,7 @@
 			},
 			{
 				"command": "apps-sdk.local-dev.clone-to-workspace",
-				"title": "Clone to Local Workspace (pre-alpha)"
+				"title": "Clone to Local Folder (pre-alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.pull-new-components",
@@ -776,7 +776,8 @@
 				},
 				{
 					"command": "apps-sdk.local-dev.deploy",
-					"group": "7_modification"
+					"group": "7_modification",
+					"when": "resourceFilename != undefined"
 				},
 				{
 					"command": "apps-sdk.local-dev.file-compare",
