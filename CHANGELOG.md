@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Unreleased
-----------
+1.3.32 (pre-release)
+--------------------
 
 ### New features
 
