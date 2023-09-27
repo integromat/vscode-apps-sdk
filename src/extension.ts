@@ -6,6 +6,7 @@ import * as vscodeLanguageclient from 'vscode-languageclient/node';
 import { log } from './output-channel';
 import { FunctionCommands } from './commands/FunctionCommands';
 import { CommonCommands } from './commands/CommonCommands';
+import { CoreCommands } from './commands/CoreCommands';
 import { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
 import { version } from './Meta';
@@ -20,7 +21,6 @@ import { registerCommandForLocalDevelopment } from './local-development';
 import AppsProvider = require('./providers/AppsProvider');
 import OpensourceProvider = require('./providers/OpensourceProvider');
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
-
 import RpcCommands = require('./commands/RpcCommands');
 import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
@@ -28,7 +28,6 @@ import ConnectionCommands = require('./commands/ConnectionCommands');
 import AppCommands = require('./commands/AppCommands');
 import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
-import CoreCommands = require('./commands/CoreCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
 import LanguageServersSettings = require('./LanguageServersSettings');
@@ -41,14 +40,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	let _authorization: string|undefined = undefined;
 	let _environment: Environment | undefined = undefined;
 	let _admin = false;
-	let currentRpcProvider;
-	let currentImlProvider;
-	let currentParametersProvider;
-	let currentStaticImlProvider;
-	let currentTempProvider;
-	let currentDataProvider;
-	let currentGroupsProvider;
-
 
 	let _configuration = getConfiguration();
 
@@ -190,13 +181,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		appsProvider,
 		_authorization,
 		_environment,
-		currentRpcProvider,
-		currentImlProvider,
-		currentParametersProvider,
-		currentStaticImlProvider,
-		currentTempProvider,
-		currentDataProvider,
-		currentGroupsProvider
 	);
 	await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
 	await AppCommands.register(appsProvider, _authorization, _environment, _admin);
