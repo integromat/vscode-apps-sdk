@@ -33,14 +33,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	let _authorization: string|undefined = undefined;
 	let _environment: Environment | undefined = undefined;
 	let _admin = false;
-	// TODO REMOVE FOLLOWING, because of unused
-	let currentRpcProvider: undefined;
-	let currentImlProvider: undefined;
-	let currentParametersProvider: undefined;
-	let currentStaticImlProvider: undefined;
-	let currentTempProvider: undefined;
-	let currentDataProvider: undefined;
-	let currentGroupsProvider: undefined;
+
 
 
 	let _configuration = getConfiguration();
@@ -183,13 +176,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		appsProvider,
 		_authorization,
 		_environment,
-		currentRpcProvider,
-		currentImlProvider,
-		currentParametersProvider,
-		currentStaticImlProvider,
-		currentTempProvider,
-		currentDataProvider,
-		currentGroupsProvider
 	);
 	await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
 	await AppCommands.register(appsProvider, _authorization, _environment, _admin);

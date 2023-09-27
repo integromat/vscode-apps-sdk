@@ -35,25 +35,10 @@ export class CoreCommands {
 		appsProvider: AppsProvider,
 		_authorization: string,
 		_environment: Environment,
-		// TODO Remove following from constructor, because it is unused.
-		rpcProvider: undefined,
-		imlProvider: undefined,
-		parametersProvider: undefined,
-		staticImlProvider: undefined,
-		tempProvider: undefined,
-		dataProvider: undefined,
-		groupsProvider: undefined,
 	) {
 		this.appsProvider = appsProvider;
 		this._authorization = _authorization;
 		this._environment = _environment;
-		this.currentRpcProvider = rpcProvider;
-		this.currentImlProvider = imlProvider;
-		this.currentParametersProvider = parametersProvider;
-		this.currentStaticImlProvider = staticImlProvider;
-		this.currentTempProvider = tempProvider;
-		this.currentDataProvider = dataProvider;
-		this.currentGroupsProvider = groupsProvider;
 		this.staticImlProvider = new StaticImlProvider();
 		this.sipInit = false;
 		this.tempListener = null;
