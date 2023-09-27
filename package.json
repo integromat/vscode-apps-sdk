@@ -753,13 +753,13 @@
 		"@types/node": "^16.18.38",
 		"@types/uuid": "^9.0.3",
 		"@types/vscode": "^1.78.0",
-		"@typescript-eslint/eslint-plugin": "^6.6.0",
-		"@typescript-eslint/parser": "^6.6.0",
+		"@typescript-eslint/eslint-plugin": "^6.7.3",
+		"@typescript-eslint/parser": "^6.7.3",
 		"@vscode/test-electron": "^2.3.4",
-		"eslint": "^8.48.0",
+		"eslint": "^8.50.0",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^9.0.0",
-		"glob": "^10.3.4",
+		"glob": "^10.3.10",
 		"mocha": "^10.2.0",
 		"typescript": "^5.2.2"
 	},
@@ -768,7 +768,7 @@
 		"@integromat/udt": "^1.2.0",
 		"adm-zip": "^0.5.10",
 		"async-file": "^2.0.2",
-		"axios": "^1.5.0",
+		"axios": "^1.5.1",
 		"compressing": "^1.10.0",
 		"image-downloader": "^4.3.0",
 		"jimp": "^0.22.10",
@@ -781,8 +781,8 @@
 		"tempy": "^1.0.1",
 		"uuid": "^9.0.0",
 		"vscode-json-languageservice": "^5.3.6",
-		"vscode-languageclient": "^9.0.0",
-		"vscode-languageserver": "^9.0.0"
+		"vscode-languageclient": "^9.0.1",
+		"vscode-languageserver": "^9.0.1"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {
