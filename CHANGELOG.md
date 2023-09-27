@@ -8,6 +8,10 @@ Unreleased
 
 - Document indent autodetection during autoformat (spaces vs. tabs)
 
+### Fixed
+
+- Error dialog should be displayed in case of error
+
 1.3.32 (pre-release)
 --------------------
 

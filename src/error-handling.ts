@@ -88,6 +88,12 @@ export function showAndLogError(err: Error | AxiosError<any> | string, actionTit
 }
 
 /**
+ * Alias for old usages in JS files.
+ * @deprecated Use `showAndLogError()` name instead.
+ */
+export const showError = showAndLogError;
+
+/**
  * Shows the error message in VS Code toast notification.
  *
  * Note: Does not log the error into error console. If needed to log it, use `showAndLogError()` instead.
