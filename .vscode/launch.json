@@ -38,7 +38,7 @@
 		{
 			"type": "node",
 			"request": "attach",
-			"name": "Language Server",
+			"name": "Attach Language Server",
 			"port": 6009
 		}
 	]
