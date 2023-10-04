@@ -1,0 +1,15 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "../../../out/imljson-language-features/server",
+		"sourceMap": true,
+		"sourceRoot": ".",
+		"lib": [
+			"ES2020",
+			"WebWorker"
+		]
+	},
+	"include": [
+		"src/**/*"
+	]
+}

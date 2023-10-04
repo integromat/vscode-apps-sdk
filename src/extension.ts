@@ -37,14 +37,14 @@ let client: vscodeLanguageclient.LanguageClient;
 export async function activate(context: vscode.ExtensionContext) {
 	log('debug', `Extension ${version} starting...`);
 
-	let _authorization: string|undefined = undefined;
+	let _authorization: string | undefined = undefined;
 	let _environment: Environment | undefined = undefined;
 	let _admin = false;
 
 	let _configuration = getConfiguration();
 
 	// Backward Compatibility Layer - Transform Old Config Format to the New One
-	if (typeof _configuration.environments === 'object' && !(Array.isArray(_configuration.environments))) {
+	if (typeof _configuration.environments === 'object' && !Array.isArray(_configuration.environments)) {
 		console.debug('Old Environment Configuration Schema detected - transforming');
 
 		// RAW copy of environments, because _configuration is read only
@@ -52,7 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		// Build new Envs
 		let currentEnvUuid;
-		const newEnvironments = Object.keys(oldEnvironments).map(url => {
+		const newEnvironments = Object.keys(oldEnvironments).map((url) => {
 			const e = Object.assign({}, oldEnvironments[url], { url: url });
 			const uuid = uuidv4();
 			e.uuid = uuid;
@@ -62,15 +62,26 @@ export async function activate(context: vscode.ExtensionContext) {
 			return e;
 		});
 		// Store
-		await Promise.all([_configuration.update('environments', newEnvironments, 1), _configuration.update('environment', currentEnvUuid, 1)]);
+		await Promise.all([
+			_configuration.update('environments', newEnvironments, 1),
+			_configuration.update('environment', currentEnvUuid, 1),
+		]);
 		// Reload
 		_configuration = getConfiguration();
 	}
 
-
 	// Prepare the IMLJSON language server module and create a new language client
-	const serverModule = context.asAbsolutePath(path.join('syntaxes', 'languageServers', 'imlJsonServerMain.js'));
-	client = new vscodeLanguageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
+	// Note: Used the little updated original JSON language server from Microsoft VSCode.
+	//       See file://./../syntaxes/imljson-language-features/README.md
+	const serverModuleFile = context.asAbsolutePath(
+		path.join('out', 'imljson-language-features', 'server', 'node', 'jsonServerMain.js'),
+	);
+	client = new vscodeLanguageclient.LanguageClient(
+		'imljsonLanguageServer',
+		'IMLJSON language server',
+		LanguageServersSettings.buildServerOptions(serverModuleFile),
+		LanguageServersSettings.clientOptions,
+	);
 	// Start the client. This will also launch the server
 	await client.start();
 
@@ -78,19 +89,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	await client.sendNotification(
 		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
-		LanguageServersSettings.getJsonSchemas()
+		LanguageServersSettings.getJsonSchemas(),
 	);
 
 	// Environment commands and envChanger
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10);
-	envChanger.tooltip = "Click to change your working environment";
+	envChanger.tooltip = 'Click to change your working environment';
 	const currentEnvironmentOrUndefined = getCurrentEnvironmentOrUndefined();
 	if (currentEnvironmentOrUndefined) {
 		envChanger.text = `$(server) ${currentEnvironmentOrUndefined.name}`;
 	} else {
-		envChanger.text = `$(server) ENVIRONMENT NOT SET`;
+		envChanger.text = '$(server) ENVIRONMENT NOT SET';
 	}
-	envChanger.command = "apps-sdk.env.change";
+	envChanger.command = 'apps-sdk.env.change';
 	envChanger.show();
 
 	await EnvironmentCommands.register(envChanger, _configuration);
@@ -100,13 +111,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	 * First launch -> there are no environments
 	 */
 	if (Object.keys(_configuration.environments).length === 0) {
-		setImmediate(() => {  // Run after the extension activation (because of automated tests)
-			(async() => {
+		setImmediate(() => {
+			// Run after the extension activation (because of automated tests)
+			(async () => {
 				const input = await vscode.window.showWarningMessage(
-					"You have no environments set up yet. If you want to start using Apps SDK, you have to add a new one.",
-					"Add environment"
+					'You have no environments set up yet. If you want to start using Apps SDK, you have to add a new one.',
+					'Add environment',
 				);
-				if (input === "Add environment") {
+				if (input === 'Add environment') {
 					vscode.commands.executeCommand('apps-sdk.env.add');
 				}
 			})();
@@ -116,37 +128,41 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	if (getCurrentEnvironmentOrUndefined()) {
-
 		await AccountCommands.register(_configuration);
 
 		const currentEnvironment = getCurrentEnvironment();
 		// If environment is set, but there's no API key in the configuration
-		if (currentEnvironment.apikey === "") {
-			const input = await vscode.window.showWarningMessage("Your API key for this environment is not set. Please login first.", "Login");
-			if (input === "Login") {
-				vscode.commands.executeCommand("apps-sdk.login");
+		if (currentEnvironment.apikey === '') {
+			const input = await vscode.window.showWarningMessage(
+				'Your API key for this environment is not set. Please login first.',
+				'Login',
+			);
+			if (input === 'Login') {
+				vscode.commands.executeCommand('apps-sdk.login');
 			}
 		}
 
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
-			_authorization = "Token " + currentEnvironment.apikey;
+			_authorization = 'Token ' + currentEnvironment.apikey;
 			// If API version not set or it's 1
-			if (!(currentEnvironment.version) || currentEnvironment.version === 1) {
+			if (!currentEnvironment.version || currentEnvironment.version === 1) {
 				_environment = {
 					baseUrl: `https://${currentEnvironment.url}/v1`,
-					version: 1
+					version: 1,
 				};
 			} else {
 				// API V2 and development purposes
 				// configuration.unsafe removes https
 				// configuration.noVersionPath removes vX in path
 				_environment = {
-					baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`}${currentEnvironment.admin === true ? '/admin' : ''}`,
-					version: currentEnvironment.version
+					baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
+						currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
+					}${currentEnvironment.admin === true ? '/admin' : ''}`,
+					version: currentEnvironment.version,
 				};
 			}
-			_admin = (currentEnvironment.admin === true);
+			_admin = currentEnvironment.admin === true;
 		}
 	}
 
@@ -158,18 +174,19 @@ export async function activate(context: vscode.ExtensionContext) {
 		//       Then command `apps-sdk.env.change` will execute the extension reload to register all other below.
 	}
 
-
 	/**
 	 * AUTHORIZED
 	 * Following stuff is done only when environment and API key are set correctly (_authorization variable was set -> it isn't undefined)
 	 */
 
-
 	/**
 	 * Registering providers
 	 */
 	vscode.languages.registerHoverProvider({ language: 'imljson', scheme: 'file' }, new ImljsonHoverProvider());
-	vscode.window.registerTreeDataProvider('opensource', new OpensourceProvider(_authorization, _environment, sourceCodeLocalTempBasedir));
+	vscode.window.registerTreeDataProvider(
+		'opensource',
+		new OpensourceProvider(_authorization, _environment, sourceCodeLocalTempBasedir),
+	);
 
 	const appsProvider = new AppsProvider(_authorization, _environment, sourceCodeLocalTempBasedir, _admin);
 	vscode.window.registerTreeDataProvider('apps', appsProvider);
@@ -177,11 +194,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	/**
 	 * Registering commands
 	 */
-	const coreCommands = new CoreCommands(
-		appsProvider,
-		_authorization,
-		_environment,
-	);
+	const coreCommands = new CoreCommands(appsProvider, _authorization, _environment);
 	await CoreCommands.register(sourceCodeLocalTempBasedir, _authorization, _environment);
 	await AppCommands.register(appsProvider, _authorization, _environment, _admin);
 	await ConnectionCommands.register(appsProvider, _authorization, _environment);
@@ -196,28 +209,29 @@ export async function activate(context: vscode.ExtensionContext) {
 	/**
 	 * Registering events
 	 */
-	vscode.workspace.onWillSaveTextDocument(event => coreCommands.sourceUpload(event));
-	vscode.window.onDidChangeActiveTextEditor(editor => coreCommands.keepProviders(editor));
-
+	vscode.workspace.onWillSaveTextDocument((event) => coreCommands.sourceUpload(event));
+	vscode.window.onDidChangeActiveTextEditor((editor) => coreCommands.keepProviders(editor));
 
 	/**
 	 * Registering JSONC formatter
 	 */
-	vscode.languages.registerDocumentFormattingEditProvider({ language: 'imljson', scheme: 'file' }, {
-		provideDocumentFormattingEdits(document) {
-			const text = document.getText();
-			const edits = jsoncParser.format(text, undefined, { keepLines: true });
-			return edits.map(edit => {
-				const start = document.positionAt(edit.offset);
-				const end = document.positionAt(edit.offset + edit.length);
-				return vscode.TextEdit.replace(new vscode.Range(start, end), edit.content);
-			});
-		}
-	});
+	vscode.languages.registerDocumentFormattingEditProvider(
+		{ language: 'imljson', scheme: 'file' },
+		{
+			provideDocumentFormattingEdits(document) {
+				const text = document.getText();
+				const edits = jsoncParser.format(text, undefined, { keepLines: true });
+				return edits.map((edit) => {
+					const start = document.positionAt(edit.offset);
+					const end = document.positionAt(edit.offset + edit.length);
+					return vscode.TextEdit.replace(new vscode.Range(start, end), edit.content);
+				});
+			},
+		},
+	);
 
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }
-
 
 export async function deactivate() {
 	// Delete local temp dir
@@ -231,7 +245,6 @@ export async function deactivate() {
 	await client.stop();
 }
 
-
 /**
  * User can define multiple environmnents.
  * Function returns the one that is currently selected by user.
@@ -241,4 +254,11 @@ function getCurrentEnvironmentOrUndefined(): AppsSdkConfigurationEnvironment | u
 	return _configuration
 		.get<AppsSdkConfiguration['environments']>('environments')
 		?.find((e: any) => e.uuid === _configuration.environment);
+}
+
+/**
+ * Exported for automated testing purpose only
+ */
+export function testsOnly_getImljsonLanguageClient() {
+	return client;
 }

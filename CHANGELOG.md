@@ -30,6 +30,7 @@ Change Log
 - Migrate `vm2` to `node:vm`
 - "makecomapp.json not found" error message improvement
 - "Workspace" word change to "Folder"
+- Update (iml)json language server to 8.2.0-next.3
 
 1.3.31 (pre-release)
 --------------------

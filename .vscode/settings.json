@@ -44,9 +44,11 @@
             "disableSort": true
         },
     ],
-
     "markdownlint.config": {
         "MD003": false,
         "MD024": false
-    }
+    },
+    "importSorter.generalConfiguration.exclude": [
+        "imljson-language-features/"
+    ]
 }
