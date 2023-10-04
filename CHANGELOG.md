@@ -9,6 +9,10 @@ Unreleased
 - Migrate `vm2` to `node:vm`
 - Update (iml)json language server to 8.2.0-next.3
 
+### Fixed
+
+- Custom IML function was not correctly available under the namespace `iml.` in another function's body.
+
 1.3.28 (pre-release)
 --------------------
 

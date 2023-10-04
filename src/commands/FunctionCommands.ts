@@ -182,7 +182,9 @@ export async function executeCustomFunctionTest(
 	const userFunctionsCode = userFunctions
 		.map((userFunction) => {
 			if (userFunction.name !== functionName) {
-				return `function ${userFunction.name} (...arguments) { return (${userFunction.code}).apply({timezone: environment.timezone}, arguments); }`;
+				return `iml['${userFunction.name}'] = function (...arguments) {` +
+					`    return (${userFunction.code}).apply({timezone: environment.timezone}, arguments); ` +
+					'};';
 			}
 		})
 		.join('\n\n');

@@ -109,7 +109,7 @@ suite('IML Functions Unit testing feature', () => {
 			{ name: 'getFive', code: 'function getFive() { return 5; }' },
 			{ name: 'getSix', code: 'function getSix() { return 6; }' },
 		];
-		const fakeFunc3Code = 'function fakeFunc3() { return getFive() + getSix(); }';
+		const fakeFunc3Code = 'function fakeFunc3() { return iml.getFive() + iml.getSix(); }';
 
 		test('Sucessful unit test', async () => {
 			const fakeFunc3SucessfullTestCode = `it('simulatedTestAccessAnotherCustomFunc', () => {
