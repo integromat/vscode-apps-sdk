@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: weekly
+      interval: monthly
     target-branch: development
     commit-message:
       prefix: build
