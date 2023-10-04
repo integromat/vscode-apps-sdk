@@ -740,8 +740,8 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
+		"vscode:prepublish": "npm run cleanup && npm run compile",
+		"compile": "tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"watch": "tsc -watch -p ./",
 		"cleanup": "rm -rf ./out",
 		"test": "npm run compile && node ./out/test/runTest.js",
@@ -781,8 +781,8 @@
 		"tempy": "^1.0.1",
 		"uuid": "^9.0.0",
 		"vscode-json-languageservice": "^5.3.6",
-		"vscode-languageclient": "^9.0.0",
-		"vscode-languageserver": "^9.0.0"
+		"vscode-languageclient": "^8.2.0-next.3",
+		"vscode-languageserver": "^8.2.0-next.3"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {
