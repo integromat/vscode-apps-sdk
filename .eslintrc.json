@@ -40,7 +40,8 @@
 			"no-multi-spaces": ["error", { "ignoreEOLComments": true }],  // Ignore multiple spaces before comments that occur at the end of lines
 			"operator-linebreak": ["error", "after", { "overrides": { "?": "before", ":": "before" } }], // Align with Prettier
 			"@typescript-eslint/no-explicit-any": "off",
-			"@typescript-eslint/no-unused-vars": ["error", {  "argsIgnorePattern": "^_" }]  // Add ignoring the `_paramName`
+			"@typescript-eslint/no-unused-vars": ["error", {  "argsIgnorePattern": "^_" }],  // Add ignoring the `_paramName`
+			"camelcase": ["error", { "allow": ["^testsOnly_"] }]
 		  }
 		},
 		// For old JSfiles add couple of additional rules, which are included also in "google".
