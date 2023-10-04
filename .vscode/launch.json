@@ -17,7 +17,6 @@
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: compile",
-			// "postDebugTask": "npm: cleanup",
 		},
 		{
 			"name": "Test Extension",
@@ -33,7 +32,6 @@
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/out/test/**/*.js"],
 			"preLaunchTask": "npm: compile",
-			"postDebugTask": "npm: cleanup"
 		},
 		{
 			"type": "node",

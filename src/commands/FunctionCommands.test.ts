@@ -66,12 +66,12 @@ suite('IML Functions Unit testing feature', () => {
 				outputChannel,
 				'Europe/Prague',
 			);
-			assertTestSummary(outputChannel, 1, 0);
 			assert.equal(
 				outputChannel._findLine('- simulatedTestSuccess'),
 				'- simulatedTestSuccess ... ✔',
 				'Test executed successfully',
 			);
+			assertTestSummary(outputChannel, 1, 0);
 		});
 
 		test('Failing unit test', async () => {
@@ -83,12 +83,12 @@ suite('IML Functions Unit testing feature', () => {
 				outputChannel,
 				'Europe/Prague',
 			);
-			assertTestSummary(outputChannel, 0, 1);
 			assert.equal(
 				outputChannel._findLine('- simulatedTestFailing'),
 				'- simulatedTestFailing ... ✘ => AssertionError [ERR_ASSERTION]: 3 == 0',
 				'AssertionError report',
 			);
+			assertTestSummary(outputChannel, 0, 1);
 		});
 
 		test('Multiple unit tests in one file', async () => {
@@ -104,15 +104,12 @@ suite('IML Functions Unit testing feature', () => {
 		});
 	});
 
-	describe('Another custom functions are available', () => {
+	describe('Another custom function can be called in custom function body', () => {
 		const anotherCustomFunctions = [
 			{ name: 'getFive', code: 'function getFive() { return 5; }' },
-			{
-				name: 'getSix',
-				code: 'function getSix() { return 6; }',
-			},
+			{ name: 'getSix', code: 'function getSix() { return 6; }' },
 		];
-		const fakeFunc3Code = 'function fakeFunc3() { return getFive() + getSix(); }';
+		const fakeFunc3Code = 'function fakeFunc3() { return iml.getFive() + iml.getSix(); }';
 
 		test('Sucessful unit test', async () => {
 			const fakeFunc3SucessfullTestCode = `it('simulatedTestAccessAnotherCustomFunc', () => {
@@ -128,12 +125,12 @@ suite('IML Functions Unit testing feature', () => {
 				'Europe/Prague',
 			);
 
-			assertTestSummary(outputChannel, 1, 0);
 			assert.equal(
 				outputChannel._findLine('- simulatedTestAccessAnotherCustomFunc'),
 				'- simulatedTestAccessAnotherCustomFunc ... ✔',
 				'Test executed successfully',
 			);
+			assertTestSummary(outputChannel, 1, 0);
 		});
 
 		test('Failing unit test', async () => {
@@ -149,18 +146,19 @@ suite('IML Functions Unit testing feature', () => {
 				outputChannel,
 				'Europe/Prague',
 			);
-			assertTestSummary(outputChannel, 0, 1);
 
 			assert.equal(
 				outputChannel._findLine('- simulatedFailingTestAccessAnotherCustomFunc'),
 				'- simulatedFailingTestAccessAnotherCustomFunc ... ✘ => AssertionError [ERR_ASSERTION]: 11 == 0',
 				'Test executed with specific failure',
 			);
+			assertTestSummary(outputChannel, 0, 1);
 		});
 	});
 
 	test('Build-in functions are available', async () => {
-		const callImlCode = 'function callImlFunction() { return iml.formatNumber(iml.floor(iml.average(1,6000)), 2, ",", "."); }';
+		const callImlCode =
+			'function callImlFunction() { return iml.formatNumber(iml.floor(iml.average(1,6000)), 2, ",", "."); }';
 
 		const callImlSucessfulTestCode = `it('simulatedTestCallIml', () => {
 			assert.equal(callImlFunction(), "3.000,00");
@@ -175,12 +173,12 @@ suite('IML Functions Unit testing feature', () => {
 			'Europe/Prague',
 		);
 
-		assertTestSummary(outputChannel, 1, 0);
 		assert.equal(
 			outputChannel._findLine('- simulatedTestCallIml'),
 			'- simulatedTestCallIml ... ✔',
 			'Test executed successfully',
 		);
+		assertTestSummary(outputChannel, 1, 0);
 	});
 
 	test('Timeout in case of function infinite loop', async () => {
@@ -255,7 +253,6 @@ suite('IML Functions Unit testing feature', () => {
  * Helper, which asserts the the final test summary text.
  */
 function assertTestSummary(outputChannel: OutputChannelMock, sucessfulTestCount: number, failingTestCount: number) {
-	// console.log(JSON.stringify(outputChannel._lines, null, 2));
 	assert.equal(
 		outputChannel._findLine('Total test blocks: '),
 		`Total test blocks: ${sucessfulTestCount + failingTestCount}`,

@@ -836,8 +836,8 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run cleanup && npm run compile",
-		"compile": "tsc -p ./ && tsc -p ./syntaxes/imljson-language-features/server",
+		"vscode:prepublish": "npm run compile",
+		"compile": "npm run cleanup && tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"cleanup": "rm -rf ./out",
 		"watch": "tsc -watch -p ./",
 		"test": "npm run cleanup && npm run compile && node ./out/test/runTest.js",

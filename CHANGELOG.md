@@ -24,6 +24,7 @@ Change Log
 
 - "Clone to local" menu item misses on published apps
 - Ability to clone app into project root
+- Custom IML function was not correctly available under the namespace `iml.` in another function's body.
 
 ### Changes
 
