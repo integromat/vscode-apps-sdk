@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+1.3.34 (pre-release)
+--------------------
+
+### Changes
+
+- Updated (iml)json language features to latest version from microsoft/vscode github repo
+
+### Fixed
+
+- Custom IML function was not correctly available under the namespace `iml.` in another function's body
+- JSON syntax error highlighting of IMLJSON was broken in editor
+
 1.3.33 (pre-release)
 --------------------
 
@@ -24,14 +36,12 @@ Change Log
 
 - "Clone to local" menu item misses on published apps
 - Ability to clone app into project root
-- Custom IML function was not correctly available under the namespace `iml.` in another function's body.
 
 ### Changes
 
 - Migrate `vm2` to `node:vm`
 - "makecomapp.json not found" error message improvement
 - "Workspace" word change to "Folder"
-- Update (iml)json language server to 8.2.0-next.3
 
 1.3.31 (pre-release)
 --------------------
