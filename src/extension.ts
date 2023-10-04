@@ -64,8 +64,17 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 	// Prepare the IMLJSON language server module and create a new language client
-	const serverModule = context.asAbsolutePath(path.join('syntaxes', 'languageServers', 'imlJsonServerMain.js'));
-	client = new vscodeLanguageclient.LanguageClient('imljsonLanguageServer', 'IMLJSON language server', LanguageServersSettings.buildServerOptions(serverModule), LanguageServersSettings.clientOptions);
+	// Note: Used the little updated original JSON language server from Microsoft VSCode.
+	//       See file://./../syntaxes/imljson-language-features/README.md
+	const serverModuleFile = context.asAbsolutePath(
+		path.join('out', 'imljson-language-features', 'server', 'node','jsonServerMain.js')
+	);
+	client = new vscodeLanguageclient.LanguageClient(
+		'imljsonLanguageServer',
+		'IMLJSON language server',
+		LanguageServersSettings.buildServerOptions(serverModuleFile),
+		LanguageServersSettings.clientOptions,
+	);
 	// Start the client. This will also launch the server
 	await client.start();
 
@@ -267,6 +276,12 @@ function getConfiguration(): AppsSdkConfiguration {
 	return vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
 }
 
+/**
+ * Exported for automated testing purpose only
+ */
+export function testsOnly_getImljsonLanguageClient() {
+	return client;
+}
 
 /**
  * Describes the configuration structure of key `apps-sdk` in the VS Code configuration file.
