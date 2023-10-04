@@ -885,8 +885,8 @@
 		"throat": "^6.0.2",
 		"uuid": "^9.0.0",
 		"vscode-json-languageservice": "^5.3.6",
-		"vscode-languageclient": "^8.2.0-next.3",
-		"vscode-languageserver": "^8.2.0-next.3"
+		"vscode-languageclient": "^9.0.1",
+		"vscode-languageserver": "^9.0.1"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {
