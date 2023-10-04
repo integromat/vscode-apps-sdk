@@ -1,4 +1,7 @@
-# Make Apps SDK plugin for Visual Studio Code
+Make Apps Editor for VS Code
+============================
+
+The Visual Studio Code Extension for helping to develop and manage applications in the [make.com](make.com) visual automation platform.
 
 ## Features
 
@@ -11,5 +14,4 @@
 - Everything in one place
 - ... and much more
 
-## Read more in [our documentation](https://docs.integromat.com/apps/apps-sdk).
-
+**Read more in [our documentation](https://docs.integromat.com/apps/).**
