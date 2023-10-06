@@ -40,7 +40,7 @@ suite('Language ID tests for files used by online edits', () => {
 		{ filename: 'parameters.imljson', language: 'imljson' },
 		{ filename: 'expect.imljson', language: 'imljson' },
 		{ filename: 'interface.imljson', language: 'imljson' },
-		{ filename: 'common.imljson', language: 'imljson' },
+		{ filename: 'common.imljson', language: 'imljson' },  // TODO It should be `json` only. Fix this issue.
 		{ filename: 'api.imljson', language: 'imljson' },
 		{ filename: 'samples.imljson', language: 'imljson' },
 		{ filename: 'scopes.imljson', language: 'imljson' },
