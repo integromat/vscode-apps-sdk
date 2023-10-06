@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+1.3.35 (pre-release)
+--------------------
+
+### Fixed
+
+- JSON schemas was not applied for IMLJSON for the case `fileMatch` with multiple items.
+
 1.3.34 (pre-release)
 --------------------
 
