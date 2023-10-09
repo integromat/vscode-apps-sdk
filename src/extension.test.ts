@@ -34,7 +34,7 @@ suite('Extension Intialization Tests', () => {
  * See https://stackoverflow.com/questions/38279920/how-to-open-file-and-insert-text-using-the-vscode-api
  * how to open file
  */
-suite('Editor validations for files used by online edits', () => {
+suite('App online file edit validations', () => {
 	const filenamesForOnlineEdit = [
 		{
 			filename: 'parameters.imljson',
@@ -128,7 +128,7 @@ suite('Editor validations for files used by online edits', () => {
 		},
 	];
 	filenamesForOnlineEdit.forEach((def) => {
-		suite(`File "${def.filename}" in editor`, () => {
+		suite(`- file "${def.filename}"`, () => {
 			let documentUri: vscode.Uri;
 			let textDocument: vscode.TextDocument;
 			let e: vscode.TextEditor;
@@ -145,11 +145,11 @@ suite('Editor validations for files used by online edits', () => {
 				await vscode.workspace.fs.delete(documentUri);
 			});
 
-			test('Should be represented as JSON/IMLJSON language', async () => {
+			test(`Should be represented as ${def.expectedLanguage.toUpperCase()} language`, async () => {
 				assert.equal(textDocument.languageId, def.expectedLanguage, 'Language ID comparision');
 			});
 
-			test('Should detect invalid JSON (parse error)', async () => {
+			test('Should detect JSON parse error', async () => {
 				await setEditorContentAndWaitForDiagnosticsChange(e, ',');
 
 				const problems = vscode.languages.getDiagnostics(documentUri);
@@ -163,7 +163,7 @@ suite('Editor validations for files used by online edits', () => {
 			});
 
 			if (def.problematicContent && def.expectedProblemMessage) {
-				test('Shlould be validated against JSON schema', async () => {
+				test('Shlould validate against JSON schema', async () => {
 					await setEditorContentAndWaitForDiagnosticsChange(e, def.problematicContent);
 
 					const problems = vscode.languages.getDiagnostics(documentUri);
