@@ -4,8 +4,6 @@ import * as tempy from 'tempy';
 import * as vscode from 'vscode';
 import { testsOnly_getImljsonLanguageClient } from './extension';
 
-// import * as myExtension from '../../extension';   // Example
-
 suite('Extension Intialization Tests', () => {
 	vscode.window.showInformationMessage('Running e2e/unit testing ...');
 
@@ -31,7 +29,9 @@ suite('Extension Intialization Tests', () => {
 });
 
 /**
- * See https://stackoverflow.com/questions/38279920/how-to-open-file-and-insert-text-using-the-vscode-api
+ * Check the editor if correctly validates errors during the editation.
+ *
+ * Note: See https://stackoverflow.com/questions/38279920/how-to-open-file-and-insert-text-using-the-vscode-api
  * how to open file
  */
 suite('App online file edit validations', () => {
@@ -133,6 +133,7 @@ suite('App online file edit validations', () => {
 			let textDocument: vscode.TextDocument;
 			let e: vscode.TextEditor;
 
+			// Create file in temp and open in VSCode editor
 			before(async () => {
 				documentUri = vscode.Uri.parse(tempy.file({ name: def.filename }));
 				await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(''));
@@ -140,6 +141,7 @@ suite('App online file edit validations', () => {
 				e = await vscode.window.showTextDocument(textDocument, 1, false);
 			});
 
+			// Close file and delete it.
 			after(async () => {
 				await vscode.commands.executeCommand('workbench.action.closeActiveEditor', documentUri);
 				await vscode.workspace.fs.delete(documentUri);
@@ -179,15 +181,22 @@ suite('App online file edit validations', () => {
 		});
 	});
 
+	// Close all forgotly opened files (but all should be already closed)
 	after(async () => {
 		await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 	});
 });
 
+/**
+ * Writes new `content` into and already opened file in VSCode editor
+ * and waits for the "problems" section to be updated by background tasks.
+ *
+ * Note: Expects that "problems" will be changed.
+ */
 async function setEditorContentAndWaitForDiagnosticsChange(e: vscode.TextEditor, content: string) {
 	const waitPromise = new Promise<void>((done, reject) => {
 		const timeout = setTimeout(() => {
-			reject(new Error('onDidChangeDiagnostics timeout'));
+			reject(new Error('onDidChangeDiagnostics timeout. May be no changes in diagnostics.'));
 		}, 2000);
 		const disposable = vscode.languages.onDidChangeDiagnostics(() => {
 			clearTimeout(timeout);
