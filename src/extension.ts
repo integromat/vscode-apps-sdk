@@ -24,6 +24,7 @@ import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
+
 let client: vscodeLanguageclient.LanguageClient;
 
 export async function activate(context: vscode.ExtensionContext) {
