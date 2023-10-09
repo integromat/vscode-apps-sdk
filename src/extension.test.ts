@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
-import { after, suite } from 'mocha';
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
+import { after, before, suite } from 'mocha';
+import * as tempy from 'tempy';
 import * as vscode from 'vscode';
 import { testsOnly_getImljsonLanguageClient } from './extension';
 
@@ -35,34 +34,171 @@ suite('Extension Intialization Tests', () => {
  * See https://stackoverflow.com/questions/38279920/how-to-open-file-and-insert-text-using-the-vscode-api
  * how to open file
  */
-suite('Language ID tests for files used by online edits', () => {
+suite('Editor validations for files used by online edits', () => {
 	const filenamesForOnlineEdit = [
-		{ filename: 'parameters.imljson', language: 'imljson' },
-		{ filename: 'expect.imljson', language: 'imljson' },
-		{ filename: 'interface.imljson', language: 'imljson' },
-		{ filename: 'common.imljson', language: 'imljson' },  // TODO It should be `json` only. Fix this issue.
-		{ filename: 'api.imljson', language: 'imljson' },
-		{ filename: 'samples.imljson', language: 'imljson' },
-		{ filename: 'scopes.imljson', language: 'imljson' },
-		{ filename: 'scope.imljson', language: 'imljson' },
-		{ filename: 'epoch.imljson', language: 'imljson' },
-		{ filename: 'attach.imljson', language: 'imljson' },
-		{ filename: 'detach.imljson', language: 'imljson' },
-		{ filename: 'publish.imljson', language: 'imljson' },
-		{ filename: 'base.imljson', language: 'imljson' },
-		{ filename: 'api-oauth.imljson', language: 'imljson' },
-		{ filename: 'groups.json', language: 'json' },
+		{
+			filename: 'parameters.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Incorrect type. Expected "array".',
+		},
+		{
+			filename: 'expect.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Incorrect type. Expected "array".',
+		},
+		{
+			filename: 'interface.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Incorrect type. Expected "array".',
+		},
+		{
+			filename: 'common.imljson',
+			expectedLanguage: 'imljson', // TODO It should be `json` only. Fix this issue.
+			problematicContent: '[]',
+			expectedProblemMessage: 'Incorrect type. Expected "object".',
+		},
+		{
+			filename: 'api.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'samples.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '[]',
+			expectedProblemMessage: 'Incorrect type. Expected "object".',
+		},
+		{
+			filename: 'scopes.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '[]',
+			expectedProblemMessage: 'Incorrect type. Expected "object".',
+		},
+		{
+			filename: 'scope.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Incorrect type. Expected "array".',
+		},
+		{
+			filename: 'epoch.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'attach.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'detach.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'publish.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'base.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'api-oauth.imljson',
+			expectedLanguage: 'imljson',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Property invalidProperty is not allowed.',
+		},
+		{
+			filename: 'groups.json',
+			expectedLanguage: 'json',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessage: 'Incorrect type. Expected "array".',
+		},
 	];
-	for (const def of filenamesForOnlineEdit) {
-		test(`File ${def.filename} language should be ${def.language.toUpperCase()}`, async () => {
-			const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.parse('untitled:' + def.filename));
-			// const e = await vscode.window.showTextDocument(a, 1, false);
-			// e.edit((edit) => { edit.insert(new vscode.Position(0, 0), '{}'); });
-			assert.equal(textDocument.languageId, def.language, 'Language ID comparision');
+	filenamesForOnlineEdit.forEach((def) => {
+		suite(`File "${def.filename}" in editor`, () => {
+			let documentUri: vscode.Uri;
+			let textDocument: vscode.TextDocument;
+			let e: vscode.TextEditor;
+
+			before(async () => {
+				documentUri = vscode.Uri.parse(tempy.file({ name: def.filename }));
+				await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(''));
+				textDocument = await vscode.workspace.openTextDocument(documentUri);
+				e = await vscode.window.showTextDocument(textDocument, 1, false);
+			});
+
+			after(async () => {
+				await vscode.commands.executeCommand('workbench.action.closeActiveEditor', documentUri);
+				await vscode.workspace.fs.delete(documentUri);
+			});
+
+			test('Should be represented as JSON/IMLJSON language', async () => {
+				assert.equal(textDocument.languageId, def.expectedLanguage, 'Language ID comparision');
+			});
+
+			test('Should detect invalid JSON (parse error)', async () => {
+				await setEditorContentAndWaitForDiagnosticsChange(e, ',');
+
+				const problems = vscode.languages.getDiagnostics(documentUri);
+				assert.equal(
+					problems?.length,
+					1,
+					`Must exist exactly 1 problem, but ${problems.length} exists: ` +
+						problems.map((problem) => problem.message).join('; '),
+				);
+				assert.equal(problems?.[0]?.message, 'Expected a JSON object, array or literal.');
+			});
+
+			if (def.problematicContent && def.expectedProblemMessage) {
+				test('Shlould be validated against JSON schema', async () => {
+					await setEditorContentAndWaitForDiagnosticsChange(e, def.problematicContent);
+
+					const problems = vscode.languages.getDiagnostics(documentUri);
+					assert.equal(
+						problems?.length,
+						1,
+						`Must exist exactly 1 problem, but ${problems.length} exists: ` +
+							problems.map((problem) => problem.message).join('; '),
+					);
+					assert.equal(problems?.[0]?.message, def.expectedProblemMessage);
+				});
+			}
 		});
-	}
+	});
 
 	after(async () => {
 		await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 	});
 });
+
+async function setEditorContentAndWaitForDiagnosticsChange(e: vscode.TextEditor, content: string) {
+	const waitPromise = new Promise<void>((done, reject) => {
+		const timeout = setTimeout(() => {
+			reject(new Error('onDidChangeDiagnostics timeout'));
+		}, 2000);
+		const disposable = vscode.languages.onDidChangeDiagnostics(() => {
+			clearTimeout(timeout);
+			disposable.dispose();
+			done();
+		});
+	});
+
+	await e.edit(async (tee) => {
+		const doc = e.document;
+		tee.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), content);
+	});
+	return waitPromise;
+}
