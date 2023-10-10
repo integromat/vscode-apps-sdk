@@ -10,6 +10,7 @@ import { CoreCommands } from './commands/CoreCommands';
 import { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
 import { version } from './Meta';
+import * as LanguageServersSettings from './LanguageServersSettings';
 
 import AppsProvider = require('./providers/AppsProvider');
 import OpensourceProvider = require('./providers/OpensourceProvider');
@@ -23,7 +24,6 @@ import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
-import LanguageServersSettings = require('./LanguageServersSettings');
 
 let client: vscodeLanguageclient.LanguageClient;
 
