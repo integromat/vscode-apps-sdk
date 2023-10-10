@@ -105,7 +105,7 @@ export class FunctionCommands {
 			const test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
 
 			// Get users' functions
-			let userFunctions: { name: string, code: string }[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
+			let userFunctions: CustomImlFunction[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
 			if (_environment.version === 2) {
 				userFunctions = (<any>userFunctions).appFunctions;
 			}
@@ -124,7 +124,7 @@ export class FunctionCommands {
  */
 export async function executeCustomFunctionTest(
 	functionName: string, customFunctionCode: string, testCode: string,
-	userFunctions: { name: string, code: string }[], outputChannel: vscode.OutputChannel, _timezone: string
+	allCustomImlFunctions: CustomImlFunction[], outputChannel: vscode.OutputChannel, _timezone: string
 ) {
 
 	const codeToRun = `${customFunctionCode}\r\n\r\n/* === TEST CODE === */\r\n\r\n${testCode}`
@@ -179,7 +179,7 @@ export async function executeCustomFunctionTest(
 
 	// Make all other user functions available in the isolation,
 	// because the tested function can call other functions anytime.
-	const userFunctionsCode = userFunctions
+	const customImlFunctionsCode = allCustomImlFunctions
 		.map((userFunction) => {
 			if (userFunction.name !== functionName) {
 				return `iml['${userFunction.name}'] = function (...arguments) {` +
@@ -188,7 +188,7 @@ export async function executeCustomFunctionTest(
 			}
 		})
 		.join('\n\n');
-	vm.runInContext(userFunctionsCode, sandbox, { timeout: 2000 });
+	vm.runInContext(customImlFunctionsCode, sandbox, { timeout: 2000 });
 
 	// Execute the test
 	try {
@@ -208,4 +208,11 @@ export async function executeCustomFunctionTest(
 		outputChannel.appendLine(' ✘ EXECUTION CRITICAL FAILURE');
 		outputChannel.appendLine(`${err.name}: ${err.message}`);
 	}
+}
+
+export interface CustomImlFunction {
+	/** @example 'myImlFunc1' */
+	name: string;
+	/** @example "function myImlFunc1(a, b) { return a+b; }" */
+	code: string;
 }
