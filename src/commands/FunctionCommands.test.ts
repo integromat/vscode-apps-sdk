@@ -60,9 +60,8 @@ suite('IML Functions Unit testing feature', () => {
 		test('Unit test should report the success when expectation === actual', async () => {
 			await executeCustomFunctionTest(
 				sumFuncName,
-				sumFuncCode,
 				succesfulSumTestCode,
-				[],
+				[{ name: sumFuncName, code: sumFuncCode }],
 				outputChannel,
 				'Europe/Prague',
 			);
@@ -77,9 +76,8 @@ suite('IML Functions Unit testing feature', () => {
 		test('Unit test should report the fail when expectation !== actual', async () => {
 			await executeCustomFunctionTest(
 				sumFuncName,
-				sumFuncCode,
 				failingSumTestCode,
-				[],
+				[{ name: sumFuncName, code: sumFuncCode }],
 				outputChannel,
 				'Europe/Prague',
 			);
@@ -94,9 +92,8 @@ suite('IML Functions Unit testing feature', () => {
 		test('Multiple unit tests in one file', async () => {
 			await executeCustomFunctionTest(
 				sumFuncName,
-				sumFuncCode,
 				succesfulSumTestCode + failingSumTestCode,
-				[],
+				[{ name: sumFuncName, code: sumFuncCode }],
 				outputChannel,
 				'Europe/Prague',
 			);
@@ -108,13 +105,16 @@ suite('IML Functions Unit testing feature', () => {
 		const anotherCustomFunctions = [
 			{ name: 'getFive', code: 'function getFive() { return 5; }' },
 			{ name: 'getSix', code: 'function getSix() { return 6; }' },
+			{
+				name: 'fakeFunc3',
+				code: `function fakeFunc3() { return typeof iml.ceil === 'function' &&
+					typeof iml.omit === 'function' &&
+					typeof iml.capitalize === 'function' &&
+					typeof iml.addDays === 'function' &&
+					(iml.getFive() + iml.getSix());
+				}`,
+			},
 		];
-		const fakeFunc3Code = `function fakeFunc3() { return typeof iml.ceil === 'function' &&
-			typeof iml.omit === 'function' &&
-			typeof iml.capitalize === 'function' &&
-			typeof iml.addDays === 'function' &&
-			(iml.getFive() + iml.getSix());
-		}`;
 
 		test('Unit test should report the success when expectation === actual', async () => {
 			const fakeFunc3SucessfullTestCode = `it('simulatedTestAccessAnotherCustomFunc', () => {
@@ -123,7 +123,6 @@ suite('IML Functions Unit testing feature', () => {
 
 			await executeCustomFunctionTest(
 				'fakeFunc3',
-				fakeFunc3Code,
 				fakeFunc3SucessfullTestCode,
 				anotherCustomFunctions,
 				outputChannel,
@@ -145,7 +144,6 @@ suite('IML Functions Unit testing feature', () => {
 
 			await executeCustomFunctionTest(
 				'fakeFunc3',
-				fakeFunc3Code,
 				fakeFunc3FailingTestCode,
 				anotherCustomFunctions,
 				outputChannel,
@@ -162,8 +160,7 @@ suite('IML Functions Unit testing feature', () => {
 	});
 
 	test('Build-in functions are available and callable in custom functions', async () => {
-		const callImlCode =
-			`function callImlFunction() {
+		const callImlCode = `function callImlFunction() {
 				return typeof iml.ceil === 'function' &&
 					typeof iml.pick === 'function' &&
 					typeof iml.base64 === 'function' &&
@@ -177,9 +174,8 @@ suite('IML Functions Unit testing feature', () => {
 
 		await executeCustomFunctionTest(
 			'callImlFunction',
-			callImlCode,
 			callImlSucessfulTestCode,
-			[],
+			[{ name: 'callImlFunction', code: callImlCode }],
 			outputChannel,
 			'Europe/Prague',
 		);
@@ -192,9 +188,34 @@ suite('IML Functions Unit testing feature', () => {
 		assertTestSummary(outputChannel, 1, 0);
 	});
 
+	test('Custom function can be recursive', async () => {
+		const sumSequenceCode = `function sumSequence(n) {
+				if (n < 1) { return 0 };
+				return n + iml.sumSequence(n-1);
+			}`;
+
+		const imlTestCode = `it('testSumSequence', () => {
+			assert.equal(sumSequence(5), 15);
+		});`;
+
+		await executeCustomFunctionTest(
+			'sumSequence',
+			imlTestCode,
+			[{ name: 'sumSequence', code: sumSequenceCode }],
+			outputChannel,
+			'Europe/Prague',
+		);
+
+		assert.equal(
+			outputChannel._findLine('- testSumSequence'),
+			'- testSumSequence ... ✔',
+			'Test evaluated correctly',
+		);
+		assertTestSummary(outputChannel, 1, 0);
+	});
+
 	test('Unit test fail when called unexisting iml function', async () => {
-		const callImlCode =
-			`function callFailingImlFunction1() {
+		const callImlCode = `function callFailingImlFunction1() {
 				return iml.notExistFunction(1, 3, 5);
 			}`;
 
@@ -203,10 +224,9 @@ suite('IML Functions Unit testing feature', () => {
 		});`;
 
 		await executeCustomFunctionTest(
-			'callImlFunction',
-			callImlCode,
+			'callFailingImlFunction1',
 			callImlSucessfulTestCode,
-			[],
+			[{ name: 'callFailingImlFunction1', code: callImlCode }],
 			outputChannel,
 			'Europe/Prague',
 		);
@@ -219,7 +239,6 @@ suite('IML Functions Unit testing feature', () => {
 		assertTestSummary(outputChannel, 0, 1);
 	});
 
-
 	test('Timeout in case of function infinite loop', async () => {
 		const loopFuncCode = 'function loopingFunc(a, b) { while(true) {} }';
 		const failingLoopFuncTestCode = `it('loopingFunc should return undefined', () => {
@@ -227,9 +246,8 @@ suite('IML Functions Unit testing feature', () => {
 		});`;
 		await executeCustomFunctionTest(
 			'loopingFunc',
-			loopFuncCode,
 			failingLoopFuncTestCode,
-			[],
+			[{ name: 'loopingFunc', code: loopFuncCode }],
 			outputChannel,
 			'Europe/Prague',
 		);
@@ -252,9 +270,8 @@ suite('IML Functions Unit testing feature', () => {
 		});`;
 		await executeCustomFunctionTest(
 			'getProcess',
-			getProcessCode,
 			getProcessTestCode,
-			[],
+			[{ name: 'getProcess', code: getProcessCode }],
 			outputChannel,
 			'Europe/Prague',
 		);
@@ -273,9 +290,8 @@ suite('IML Functions Unit testing feature', () => {
 		});`;
 		await executeCustomFunctionTest(
 			'getGlobal',
-			getGlobalCode,
 			getGlobalTestCode,
-			[],
+			[{ name: 'getGlobal', code: getGlobalCode }],
 			outputChannel,
 			'Europe/Prague',
 		);

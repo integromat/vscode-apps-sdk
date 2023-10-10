@@ -11,6 +11,10 @@ Unreleased
 
 ### Fixed
 
+- Custom IML function unit testing was not able to test recursive functions
+
+### Fixed
+
 - Custom IML function was not correctly available under the namespace `iml.` in another function's body.
 
 1.3.28 (pre-release)
