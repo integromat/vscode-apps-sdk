@@ -98,21 +98,18 @@ export class FunctionCommands {
 				}
 			}
 
-			// Get current function code
-			const code = await Core.rpGet(`${urn}/${functionName}/code`, _authorization)
-
 			// Get current test code
 			const test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
 
-			// Get users' functions
-			let userFunctions: { name: string, code: string }[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
+			// Get all custom IML functions (includes the tested one)
+			let userFunctions: CustomImlFunction[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
 			if (_environment.version === 2) {
 				userFunctions = (<any>userFunctions).appFunctions;
 			}
 
 			// Merge codes
 
-			await executeCustomFunctionTest(functionName, code, test, userFunctions, outputChannel, _timezone);
+			await executeCustomFunctionTest(functionName, test, userFunctions, outputChannel, _timezone);
 
 		})
 	}
@@ -123,12 +120,9 @@ export class FunctionCommands {
  * and pushes the result into `outputChannel` as user-friendly report.
  */
 export async function executeCustomFunctionTest(
-	functionName: string, customFunctionCode: string, testCode: string,
-	userFunctions: { name: string, code: string }[], outputChannel: vscode.OutputChannel, _timezone: string
+	functionNameForTesting: string, testCode: string,
+	allCustomImlFunctions: CustomImlFunction[], outputChannel: vscode.OutputChannel, _timezone: string
 ) {
-
-	const codeToRun = `${customFunctionCode}\r\n\r\n/* === TEST CODE === */\r\n\r\n${testCode}`
-
 	/**
 	 *  Sandbox cookbook
 	 *  - Assert for assertions
@@ -168,7 +162,7 @@ export async function executeCustomFunctionTest(
 
 	outputChannel.appendLine(
 		'======= STARTING IML TEST =======\r\n' +
-		`Function: ${functionName}\r\n` +
+		`Function: ${functionNameForTesting}\r\n` +
 		'---------- IN PROGRESS ----------',
 	);
 	// Give a time to display the output log
@@ -179,20 +173,21 @@ export async function executeCustomFunctionTest(
 
 	// Make all other user functions available in the isolation,
 	// because the tested function can call other functions anytime.
-	const userFunctionsCode = userFunctions
+	const customImlFunctionsCode = allCustomImlFunctions
 		.map((userFunction) => {
-			if (userFunction.name !== functionName) {
-				return `iml['${userFunction.name}'] = function (...arguments) {` +
-					`    return (${userFunction.code}).apply({timezone: environment.timezone}, arguments); ` +
-					'};';
-			}
+			return `iml['${userFunction.name}'] = function (...arguments) {` +
+				`    return (${userFunction.code}).apply({timezone: environment.timezone}, arguments); ` +
+				'};';
 		})
 		.join('\n\n');
-	vm.runInContext(userFunctionsCode, sandbox, { timeout: 2000 });
+	vm.runInContext(customImlFunctionsCode, sandbox, { timeout: 2000 });
 
 	// Execute the test
 	try {
-		vm.runInContext(codeToRun, sandbox, { timeout: 5000 });
+		// Make the tested function available in global scope (without `iml.` prefix)
+		vm.runInContext(`const ${functionNameForTesting} = iml.${functionNameForTesting};`, sandbox, { timeout: 1000 });
+		// Execute tests
+		vm.runInContext(testCode, sandbox, { timeout: 5000 });
 		outputChannel.appendLine('----------- FINISHED -----------');
 		outputChannel.appendLine(`Total test blocks: ${total}`);
 		outputChannel.appendLine(`Passed blocks: ${success}`);
@@ -208,4 +203,11 @@ export async function executeCustomFunctionTest(
 		outputChannel.appendLine(' ✘ EXECUTION CRITICAL FAILURE');
 		outputChannel.appendLine(`${err.name}: ${err.message}`);
 	}
+}
+
+export interface CustomImlFunction {
+	/** @example 'myImlFunc1' */
+	name: string;
+	/** @example "function myImlFunc1(a, b) { return a+b; }" */
+	code: string;
 }

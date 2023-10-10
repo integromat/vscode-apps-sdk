@@ -7,6 +7,7 @@ Change Log
 ### Fixed
 
 - JSON schemas was not applied for IMLJSON for the case `fileMatch` with multiple items.
+- Custom IML function unit testing was not able to test recursive functions
 
 1.3.34 (pre-release)
 --------------------

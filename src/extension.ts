@@ -17,6 +17,7 @@ import {
 	getCurrentEnvironment,
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
+import * as LanguageServersSettings from './LanguageServersSettings';
 
 import AppsProvider = require('./providers/AppsProvider');
 import OpensourceProvider = require('./providers/OpensourceProvider');
@@ -30,7 +31,6 @@ import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
-import LanguageServersSettings = require('./LanguageServersSettings');
 
 let client: vscodeLanguageclient.LanguageClient;
 
