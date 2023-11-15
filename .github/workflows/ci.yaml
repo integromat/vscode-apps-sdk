@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - "**"
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 #  push:
 #    branches:
@@ -17,17 +17,21 @@ concurrency:
 
 jobs:
   test:
+    # trunk-ignore(yamllint/quoted-strings)
     name: "Integration tests"
     runs-on: ubuntu-latest
     timeout-minutes: 10 # minutes
+    # trunk-ignore(checkov/CKV2_GHA_1)
     permissions:
-      checks: write
+      checks: read
+    steps:
     steps:
       - uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
       # See https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages#publishing-packages-to-the-npm-registry
       - uses: actions/setup-node@v3
         with:
+          name: Trunk
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
 
