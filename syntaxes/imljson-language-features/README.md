@@ -4,7 +4,7 @@ Origin of this directory `imljson-language-features`
 This directory contains the server part of `json-language-features` library
 copied from https://github.com/microsoft/vscode/tree/main/extensions/json-language-features/server
 
-The current version if from commit https://github.com/microsoft/vscode/tree/1d7b8b8a43a2272d03ad007b5d61c368d399946a , which was the "main" branch in the time of copiing.
+The current version if from commit https://github.com/microsoft/vscode/tree/6f4bb998a4b165ea42a39f4ffee27222791e2d30/extensions/json-language-features/server , which was the "main" branch in the time of copiing.
 
 File `jsonServer.ts` has minor updates against original
 -------------------------------------------------------
