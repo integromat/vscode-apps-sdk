@@ -21,6 +21,7 @@ const AdmZip = require('adm-zip');
 const camelCase = require('lodash.camelcase');
 const { showError, catchError } = require('../error-handling');
 const { promisify2 } = require('../utils');
+const { getModuleDefFromId, getModuleDefFromType } = require('../services/module-types-naming');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -820,26 +821,7 @@ class AppCommands {
 						let m = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}`, _authorization)
 						if (_environment.version === 2) { m = m.appModule; m.type_id = m.typeId; delete m.typeId }
 						const metadata = pick(m, ['name', 'label', 'description', 'type_id', 'connection', 'webhook']);
-						switch (metadata.type_id) {
-							case 1:
-								metadata.type = 'trigger';
-								break;
-							case 4:
-								metadata.type = 'action';
-								break;
-							case 9:
-								metadata.type = 'search';
-								break;
-							case 10:
-								metadata.type = 'instant_trigger';
-								break;
-							case 11:
-								metadata.type = 'responder';
-								break;
-							case 12:
-								metadata.type = 'universal';
-								break;
-						}
+						metadata.type = getModuleDefFromId(metadata.type_id).type;
 						delete metadata.type_id;
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(metadata, null, 4));
 						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
@@ -1218,29 +1200,11 @@ class AppCommands {
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
 				});
-
+				// Create and Upload Modules
 				app.modules.forEach((appModule) => {
 					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook', 'subtype']);
-					switch (appModule.metadata.type) {
-						case 'trigger':
-							body.type_id = 1;
-							break;
-						case 'action':
-							body.type_id = 4;
-							break;
-						case 'search':
-							body.type_id = 9;
-							break;
-						case 'instant_trigger':
-							body.type_id = 10;
-							break;
-						case 'responder':
-							body.type_id = 11;
-							break;
-						case 'universal':
-							body.type_id = 12;
-							break;
-					}
+					body.type_id = getModuleDefFromType(appModule.metadata.type).type_id;
+					// Create module in Make
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
 						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
 						[
