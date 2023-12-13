@@ -1,16 +1,18 @@
 import * as vscode from 'vscode';
-import axios from 'axios';
-
 import * as Core from '../Core';
 import * as Enum from '../Enum';
-import * as Meta from '../Meta';
-import { showError } from '../error-handling';
+import { showAndLogError } from '../error-handling';
 import AppsProvider from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
+import { requestMakeApi } from '../utils/request-api-make';
 
 export class CommonCommands {
 
-	static async register(appsProvider: AppsProvider, _authorization: string, _environment: Environment): Promise<void> {
+	static async register(
+		appsProvider: AppsProvider,
+		_authorization: string,
+		_environment: Environment
+	): Promise<void> {
 
 		/**
 		 * Delete entity
@@ -36,18 +38,17 @@ export class CommonCommands {
 				`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, context.apiPath)}/${context.name}`;
 			try {
 				// Delete the entity
-				await axios({
+				await requestMakeApi({
 					method: 'DELETE',
 					url: url,
 					headers: {
 						Authorization: _authorization,
-						'x-imt-apps-sdk-version': Meta.version
 					},
 				});
 				appsProvider.refresh();
 			}
 			catch (err: any) {
-				showError(err, 'apps-sdk.delete');
+				showAndLogError(err, 'apps-sdk.delete');
 			}
 		});
 

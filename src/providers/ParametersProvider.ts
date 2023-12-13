@@ -1,20 +1,17 @@
-import * as  vscode from 'vscode';
-import { Environment } from '../types/environment.types';
-
-import * as Core from '../Core';
-import * as  Meta from '../Meta';
-
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import * as jsoncParser from 'jsonc-parser';
-import { showError } from '../error-handling';
-
+import * as vscode from 'vscode';
+import { Environment } from '../types/environment.types';
+import * as Core from '../Core';
+import { showAndLogError } from '../error-handling';
+import { requestMakeApi } from '../utils/request-api-make';
 
 /**
  * Represents static parameters + mappable parameters.
  * Note: These parameters are defined in SDK app module, for example.
  */
 export class ParametersProvider {
-	private availableParameters = ["parameters"];
+	private availableParameters = ['parameters'];
 
 	private parameters: vscode.CompletionItem[] = [];
 
@@ -23,7 +20,7 @@ export class ParametersProvider {
 		private _authorization: string,
 		private _environment: Environment
 	) {
-		this.availableParameters = ["parameters"];
+		this.availableParameters = ['parameters'];
 
 	}
 
@@ -39,20 +36,19 @@ export class ParametersProvider {
 		/*
 		 * PARAMETERS
 		 */
-		if (["connection", "webhook", "rpc", "module", "connections", "webhooks", "rpcs", "modules"].includes(crumbs[3])) {
+		if (['connection', 'webhook', 'rpc', 'module', 'connections', 'webhooks', 'rpcs', 'modules'].includes(crumbs[3])) {
 			const url = `${this._environment.baseUrl}${urn}/parameters`;
 			try {
-				const parameters = (await axios({
+				const parameters = await requestMakeApi({
 					url: url,
 					headers: {
-						'Authorization': this._authorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						Authorization: this._authorization,
 					},
 					transformResponse: (res: AxiosResponse) => { return res; },  // Do not parse the response into JSON
-				})).data;
-				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), "parameters"));
+				});
+				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), 'parameters'));
 			} catch (err: any) {
-				showError(err, 'loadParameters');
+				showAndLogError(err, 'loadParameters');
 			}
 
 		}
@@ -60,20 +56,19 @@ export class ParametersProvider {
 		/*
 		 * EXPECT
 		 */
-		if (crumbs[3] === "module" || crumbs[3] === "modules") {
+		if (crumbs[3] === 'module' || crumbs[3] === 'modules') {
 			const url = `${this._environment.baseUrl}${urn}/expect`;
 			try {
-				const expect = (await axios({
+				const expect = await requestMakeApi({
 					url: url,
 					headers: {
-						'Authorization': this._authorization,
-						'x-imt-apps-sdk-version': Meta.version
+						Authorization: this._authorization,
 					},
 					transformResponse: (res: AxiosResponse) => { return res; },  // Do not parse the response into JSON
-				})).data;
-				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), "parameters"));
+				});
+				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(expect), 'parameters'));
 			} catch (err: any) {
-				showError(err, 'loadParameters');
+				showAndLogError(err, 'loadParameters');
 			}
 
 		}
@@ -108,10 +103,10 @@ export class ParametersProvider {
 			if (Array.isArray(parameter.nested)) {
 				out = out.concat(this.generateParametersMap(parameter.nested, root));
 			}
-			if (parameter.type === "collection" && Array.isArray(parameter.spec)) {
+			if (parameter.type === 'collection' && Array.isArray(parameter.spec)) {
 				out = out.concat(this.generateParametersMap(parameter.spec, `${root}.${parameter.name}`));
 			}
-			else if (parameter.type === "select" && Array.isArray(parameter.options)) {
+			else if (parameter.type === 'select' && Array.isArray(parameter.options)) {
 				parameter.options.forEach(option => {
 					if (Array.isArray(option.nested)) {
 						out = out.concat(this.generateParametersMap(option.nested, root));
@@ -157,7 +152,7 @@ export class ParametersProvider {
 /**
  * @docs https://docs.integromat.com/apps/app-components/parameters
  */
-interface  ParameterDefinition {
+interface ParameterDefinition {
 	name: string;
 	type?: string;
 	label: string;
