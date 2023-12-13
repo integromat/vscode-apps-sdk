@@ -7,7 +7,7 @@ Unreleased
 ### Changes
 
 - Migrate `vm2` to `node:vm`
-- Update (iml)json language server to 8.2.0-next.3
+- Update (iml)json language server to 9.0.1
 
 ### Fixed
 

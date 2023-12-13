@@ -1,7 +1,7 @@
 Make Apps Editor for VS Code
 ============================
 
-The Visual Studio Code Extension for helping to develop and manage applications in the [make.com](make.com) visual automation platform.
+The Visual Studio Code Extension for helping to develop and manage your applications in the [make.com](make.com) visual automation platform.
 
 ## Features
 
