@@ -131,7 +131,7 @@ export function catchError<T extends (...args: any[]) => Promise<any>>(errorTitl
  */
 function getImprovedErrorMessage(message: string): string | undefined {
 	if (message === "Value doesn't match pattern in parameter 'name'.") {
-		return 'Some local component has the invalid ID (name) defined. The ID must to follow specific restrictions for used letters, number and symbols.';
+		return 'Some local component has the invalid ID (name) defined. The ID must follow specific restrictions of used letters, numbers, and symbols.';
 	}
 	if (message.includes(' in JSONC at position ')) {
 		return 'JSON has corrupted structure. Code cannot be deployed. Find and fix the error and try to deploy again.';
