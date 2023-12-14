@@ -11,7 +11,9 @@
     "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
     "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
     "importSorter.importStringConfiguration.tabSize": 4,
+    "importSorter.importStringConfiguration.tabType": "tab",
     "importSorter.importStringConfiguration.quoteMark": "single",
+    "importSorter.importStringConfiguration.trailingComma": "multiLine",
     "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
     "importSorter.sortConfiguration.customOrderingRules.defaultOrderLevel": 20,
     "importSorter.sortConfiguration.customOrderingRules.rules": [
