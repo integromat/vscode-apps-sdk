@@ -11,7 +11,7 @@ vsc-extension-quickstart.md
 **/*.ts
 **/tsconfig.json
 src/**
-resources/readme/**
+resources/readme/not-used/**
 resources/extension-icon.png
 resources/imt-icon.svg
 # imljson-language-features is compiled into /out by `tsc`. Src files not needed.
