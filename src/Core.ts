@@ -181,18 +181,6 @@ export function jsonString(text: any, sectionGuard: string|undefined): string {
 	return text;
 }
 
-export function translateModuleTypeId(typeId: number): string {
-	switch (typeId) {
-		case 1: return 'Trigger';
-		case 4: return 'Action';
-		case 9: return 'Search';
-		case 10: return 'Instant Trigger';
-		case 11: return 'Responder';
-		case 12: return 'Universal';
-		default: return 'Unknown';
-	}
-}
-
 export function pathDeterminer(version: number, originalPath: string): string {
 	switch (version) {
 		case 2:
