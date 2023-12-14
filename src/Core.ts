@@ -1,24 +1,21 @@
-import { Environment } from "./types/environment.types";
-import axios from 'axios';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as Meta from './Meta';
-import { showError } from './error-handling';
-
+import { Environment } from './types/environment.types';
+import { showAndLogError } from './error-handling';
+import { requestMakeApi } from './utils/request-api-make';
 
 export async function rpGet(uri: string, authorization: string, qs?: Record<string, string|string[]|boolean>) {
 	try {
-		return (await axios({
+		return await requestMakeApi({
 			url: uri,
 			headers: {
-				'Authorization': authorization,
-				'x-imt-apps-sdk-version': Meta.version
+				Authorization: authorization,
 			},
 			params: qs
-		})).data;
+		});
 	} catch (err: any) {
-		showError(err, 'rpGet');
+		showAndLogError(err, 'rpGet');
 		throw err;
 	}
 }
@@ -56,78 +53,72 @@ export function isFilled(subject: string, object: string, thing: any, article?: 
 }
 
 export async function addEntity(authorization: string, body: any, url: string) {
-	return (await axios({
+	return requestMakeApi({
 		method: 'POST',
 		url: url,
 		data: body,
 		headers: {
 			Authorization: authorization,
-			'x-imt-apps-sdk-version': Meta.version
 		},
-	})).data;
+	});
 }
 
 export async function deleteEntity(authorization: string, body: any, url: string) {
-	return (await axios({
+	return requestMakeApi({
 		method: 'DELETE',
 		url: url,
 		data: body,
 		headers: {
 			Authorization: authorization,
-			'x-imt-apps-sdk-version': Meta.version
 		},
-	})).data;
+	});
 }
 
 export async function editEntity(authorization: string, body: any, url: string) {
-	return (await axios({
+	return requestMakeApi({
 		method: 'PUT',
 		url: url,
 		data: body,
 		headers: {
 			Authorization: authorization,
-			'x-imt-apps-sdk-version': Meta.version
 		},
-	})).data;
+	});
 }
 
 export async function patchEntity(authorization: string, body: any, url: string) {
-	return (await axios({
+	return requestMakeApi({
 		method: 'PATCH',
 		url: url,
 		data: body,
 		headers: {
 			Authorization: authorization,
-			'x-imt-apps-sdk-version': Meta.version
 		},
-	})).data;
+	});
 
 }
 
 export async function editEntityPlain(authorization: string, value: string|undefined, url: string) {
-	return (await axios({
+	return requestMakeApi({
 		method: 'PUT',
 		url: url,
 		data: value,
 		headers: {
 			Authorization: authorization,
-			"Content-Type": "text/plain",
-			'x-imt-apps-sdk-version': Meta.version
+			'Content-Type': 'text/plain',
 		},
-	})).data;
+	});
 }
 
 export async function executePlain(authorization: string, value: string, url: string) {
-	return (await axios({
+	return requestMakeApi({
 		method: 'POST',
 		url: url,
 		data: value,
 		headers: {
 			Authorization: authorization,
-			"Content-Type": "text/plain",
-			'x-imt-apps-sdk-version': Meta.version
+			'Content-Type': 'text/plain',
 		},
-	})).data;
+	});
 }
 
 export async function getAppObject(environment: Environment, authorization: string, app: SdkApp) {
