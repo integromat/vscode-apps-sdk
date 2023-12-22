@@ -32,10 +32,11 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 
 	async getChildren(element /* : Dependency */) {
-        /*
-         * LEVEL 0 - APPS
-         */
+		/*
+		 * LEVEL 0 - APPS
+		 */
 		if (element === undefined) {
+			//#region Get apps list
 			let response;
 			switch (this._environment.version) {
 				case 2:
@@ -51,6 +52,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 					break;
 			}
 			if (response === undefined) { return }
+			//#endregion Get apps list
 
 			const apps = await Promise.all(response.map(async (app) => {
 				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
@@ -59,9 +61,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			apps.sort(Core.compareApps)
 			return apps
 		}
-        /*
-         * LEVEL 1 - GROUP
-         */
+		/*
+		 * LEVEL 1 - GROUP
+		 */
 		else if (element.level === 0) {
 
 			// For each group
@@ -109,9 +111,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			output.push(new Code('groups', 'Groups', element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), false, groupChange ? groupChange.id : null));
 			return output;
 		}
-        /*
-         * LEVEL 2 - ITEM OR CODE
-         */
+		/*
+		 * LEVEL 2 - ITEM OR CODE
+		 */
 		else if (element.level === 1) {
 
 			// General
@@ -139,29 +141,29 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 
 			// REST
 			else {
-				for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+				for (const needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
 					if (element.id.includes(`_${needle}`)) {
-						let name = needle.slice(0, -1);
-						let uri = ["connection", "webhook"].includes(name) ?
-							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
-							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, name)}`
-						let response = await Core.rpGet(uri, this._authorization)
+						const componentType = needle.slice(0, -1);
+						const uri = ["connection", "webhook"].includes(componentType) ?
+							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, componentType)}` :
+							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, componentType)}`
+						const response = await Core.rpGet(uri, this._authorization)
 						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
 						return items.map(item => {
-							let changes = element.changes.filter(change => {
+							const changes = element.changes.filter(change => {
 								if (change.item === item.name) {
 									return change
 								}
 							})
-							return new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id || item.typeId, item.public, item.approved, changes, item.description, item.crud)
+							return new Item(item.name, item.label || (item.name + item.args), element, componentType, item.type || item.type_id || item.typeId, item.public, item.approved, changes, item.description, item.crud)
 						})
 					}
 				}
 			}
 		}
-        /*
-         * LEVEL 3 - CODE
-         */
+		/*
+		 * LEVEL 3 - CODE
+		 */
 		else if (element.level === 2) {
 			switch (element.supertype) {
 				case "connection":

@@ -78,8 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Start the client. This will also launch the server
 	await client.start();
 
-	// When the client is ready, send IMLJSON schemas to the server
-
+	// Register all JSON schemas for IMLJSON language
 	await client.sendNotification(
 		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
 		LanguageServersSettings.getJsonSchemas(),
@@ -92,7 +91,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	if (currentEnvironmentOrUndefined) {
 		envChanger.text = `$(server) ${currentEnvironmentOrUndefined.name}`;
 	} else {
-		envChanger.text = `$(server) ENVIRONMENT NOT SET`;
+		envChanger.text = '$(server) ENVIRONMENT NOT SET';
 	}
 	envChanger.command = 'apps-sdk.env.change';
 	envChanger.show();
