@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Unreleased (development + poc-localdev)
+---------------------------------------
+
+- Update (iml)json language server to 9.0.1
+
 1.3.35 (pre-release)
 --------------------
 

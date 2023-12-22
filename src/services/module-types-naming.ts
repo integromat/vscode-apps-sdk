@@ -1,8 +1,8 @@
 import { ModuleType } from '../types/component-types.types';
 
-export const moduleTypes: {
-	type_id: number, type: ModuleType, label: string
-}[] = [
+/* eslint-disable camelcase */
+
+export const moduleTypes: ModuleTypeNaming[] = [
 	{
 		type_id: 1,
 		type: 'trigger',
@@ -35,26 +35,35 @@ export const moduleTypes: {
 	},
 ];
 
-export function getModuleDefFromId(typeId: number) {
-	const moduleType = moduleTypes.find((m) => (m.type_id === typeId));
-	if (!moduleType) {
+export function getModuleDefFromId(typeId: number): ModuleTypeNaming {
+	const moduleTypeNaming = moduleTypes.find((m) => (m.type_id === typeId));
+	if (!moduleTypeNaming) {
 		throw new Error(`Unkwnown module type ID ${typeId}.`);
 	}
-	return moduleType;
+	return moduleTypeNaming;
 }
 
-export function getModuleDefFromType(type: string) {
-	const moduleType = moduleTypes.find((m) => (m.type === type));
-	if (!moduleType) {
+export function getModuleDefFromType(type: string): ModuleTypeNaming {
+	const moduleTypeNaming = moduleTypes.find((m) => (m.type === type));
+	if (!moduleTypeNaming) {
 		throw new Error(`Unkwnown module type ${type}.`);
 	}
-	return moduleType;
+	return moduleTypeNaming;
 }
 
+/**
+ * Returns the user friendly name/label of the specified module type.
+ */
 export function translateModuleTypeId(typeId: number): string {
 	try {
 		return getModuleDefFromId(typeId).label;
 	} catch (_err: unknown) {
 		return 'Unknown';
 	}
+}
+
+interface ModuleTypeNaming {
+	type_id: number;
+	type: ModuleType;
+	label: string;
 }

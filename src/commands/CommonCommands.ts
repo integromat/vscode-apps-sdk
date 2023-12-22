@@ -8,7 +8,11 @@ import { requestMakeApi } from '../utils/request-api-make';
 
 export class CommonCommands {
 
-	static async register(appsProvider: AppsProvider, _authorization: string, _environment: Environment): Promise<void> {
+	static async register(
+		appsProvider: AppsProvider,
+		_authorization: string,
+		_environment: Environment
+	): Promise<void> {
 
 		/**
 		 * Delete entity

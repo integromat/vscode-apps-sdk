@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
 /**
- * Current running VSCode Extension version
+ * The version of the currently running VSCode Extension
  */
 export const version: string = vscode.extensions.getExtension('Integromat.apps-sdk')!.packageJSON.version;

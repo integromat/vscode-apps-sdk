@@ -1,17 +1,15 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable indent,semi,@typescript-eslint/no-var-requires */
+const path = require('node:path');
+const fs = require('node:fs');
 const vscode = require('vscode')
-
+const camelCase = require('lodash.camelcase');
 const Core = require('../Core')
 const Validator = require('../Validator')
 const Enum = require('../Enum')
 const QuickPick = require('../QuickPick')
 const Felicia = require('../Felicia');
-
-const camelCase = require('lodash.camelcase');
-const path = require('path');
-const fs = require('fs');
 const { showError } = require('../error-handling');
-const { translateModuleTypeId } = require('../services/module-types-naming')
+const { translateModuleTypeId } = require('../services/module-types-naming');
 
 class ModuleCommands {
     static async register(appsProvider, _authorization, _environment) {

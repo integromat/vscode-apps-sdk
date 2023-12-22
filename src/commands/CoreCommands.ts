@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import axios from 'axios';
-import * as path from 'path';
 import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as Meta from '../Meta';
@@ -11,7 +11,7 @@ import StaticImlProvider from '../providers/StaticImlProvider';
 import TempProvider from '../providers/TempProvider';
 import DataProvider from '../providers/DataProvider';
 import GroupsProvider from '../providers/GroupsProvider';
-import { catchError, showError } from '../error-handling';
+import { catchError, showAndLogError } from '../error-handling';
 import { log } from '../output-channel';
 import AppsProvider from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
@@ -135,7 +135,7 @@ export class CoreCommands {
 			this.appsProvider.refresh();
 		} catch (err: any) {
 			const filename = path.basename(event?.document?.fileName || '-unknown-');
-			showError(err, `Deploy ${filename}`);
+			showAndLogError(err, `Deploy ${filename}`);
 
 			// Mark the document as dirty (Adds a space and remove it)
 			const editor = vscode.window.activeTextEditor;
