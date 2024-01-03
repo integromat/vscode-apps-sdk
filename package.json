@@ -403,29 +403,29 @@
 			},
 			{
 				"command": "apps-sdk.local-dev.deploy",
-				"title": "Deploy to Make (pre-alpha)"
+				"title": "Deploy to Make (alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.file-compare",
-				"title": "Compare with Make (pre-alpha)"
+				"title": "Compare with Make (alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-connection",
-				"title": "New Connection Component (pre-alpha)",
+				"title": "New Connection Component (alpha)",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-module",
-				"title": "New Module Component (pre-alpha)",
+				"title": "New Module Component (alpha)",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.clone-to-workspace",
-				"title": "Clone to Local Folder (pre-alpha)"
+				"title": "Clone to Local Folder (alpha)"
 			},
 			{
 				"command": "apps-sdk.local-dev.pull-new-components",
-				"title": "Pull New Components From Make (pre-alpha)"
+				"title": "Pull New Components From Make (alpha)"
 			}
 		],
 		"viewsContainers": {

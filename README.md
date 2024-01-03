@@ -18,7 +18,7 @@ The Visual Studio Code Extension for helping to develop and manage your applicat
 
 ---
 
-## Upcoming feature: Local development (pre-alpha)
+## Upcoming feature: Local development (alpha version)
 
 ```text/plain
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
