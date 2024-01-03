@@ -163,20 +163,27 @@
 			"type": "object",
 			"properties": {
 				"type": {
-					"description": "Specifies how the trigger will behave and sort items.",
-					"type": "string",
-					"enum": [
-						"date",
-						"id"
+					"oneOf": [
+						{
+							"description": "Specifies how the trigger will behave and sort items.",
+							"type": "string",
+							"enum": ["date", "id"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"order": {
-					"description": "Specifies in what order the remote API returns items.",
-					"type": "string",
-					"enum": [
-						"asc",
-						"desc",
-						"unordered"
+					"oneOf": [
+						{
+							"description": "Specifies in what order the remote API returns items.",
+							"type": "string",
+							"enum": ["asc", "desc", "unordered"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"id": {
@@ -201,8 +208,13 @@
 				],
 				"properties": {
 					"type": {
-						"enum": [
-							"date"
+						"oneOf": [
+							{
+								"enum": ["date"]
+							},
+							{
+								"$ref": "sources.json#/definitions/stringWithIml"
+							}
 						]
 					}
 				}
@@ -230,10 +242,14 @@
 					"maxLength": 512
 				},
 				"type": {
-					"type": "string",
-					"enum": [
-						"text",
-						"email"
+					"oneOf": [
+						{
+							"type": "string",
+							"enum": ["text", "email"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				}
 			},

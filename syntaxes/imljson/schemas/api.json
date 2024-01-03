@@ -121,10 +121,13 @@
 				],
 				"properties": {
 					"method": {
-						"enum": [
-							"POST",
-							"PUT",
-							"PATCH"
+						"oneOf": [
+							{
+								"enum": ["POST", "PUT", "PATCH"]
+							},
+							{
+								"$ref": "sources.json#/definitions/stringWithIml"
+							}
 						]
 					}
 				}

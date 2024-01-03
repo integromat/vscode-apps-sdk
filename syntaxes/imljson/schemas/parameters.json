@@ -126,39 +126,47 @@
 					"description": "Parameter description for the user which is displayed in GUI"
 				},
 				"type": {
-					"type": "string",
-					"maxLength": 32,
-					"minLength": 1,
-					"description": "A type of the parameter. Each type has its own documentation page.",
-					"enum": [
-						"any",
-						"array",
-						"boolean",
-						"buffer",
-						"cert",
-						"collection",
-						"color",
-						"date",
-						"email",
-						"filename",
-						"folder",
-						"file",
-						"filter",
-						"hidden",
-						"json",
-						"integer",
-						"uinteger",
-						"number",
-						"path",
-						"pkey",
-						"port",
-						"select",
-						"text",
-						"time",
-						"timestamp",
-						"timezone",
-						"url",
-						"uuid"
+					"oneOf": [
+						{
+							"type": "string",
+							"maxLength": 32,
+							"minLength": 1,
+							"description": "A type of the parameter. Each type has its own documentation page.",
+							"enum": [
+								"any",
+								"array",
+								"boolean",
+								"buffer",
+								"cert",
+								"collection",
+								"color",
+								"date",
+								"email",
+								"filename",
+								"folder",
+								"file",
+								"filter",
+								"hidden",
+								"json",
+								"integer",
+								"uinteger",
+								"number",
+								"password",
+								"path",
+								"pkey",
+								"port",
+								"select",
+								"text",
+								"time",
+								"timestamp",
+								"timezone",
+								"url",
+								"uuid"
+							]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"semantic": {
@@ -209,12 +217,15 @@
 					"$ref": "http://json-schema.org/draft-07/schema#"
 				},
 				"tags": {
-					"type": "string",
-					"description": "Specifies how to treat HTML tags.",
-					"enum": [
-						"strip",
-						"stripall",
-						"escape"
+					"oneOf": [
+						{
+							"type": "string",
+							"description": "Specifies how to treat HTML tags.",
+							"enum": ["strip", "stripall", "escape"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"coder": {
@@ -353,11 +364,15 @@
 					]
 				},
 				"mode": {
-					"type": "string",
-					"description": "Specifies the initial mode, when editable is true.",
-					"enum": [
-						"edit",
-						"choose"
+					"oneOf": [
+						{
+							"type": "string",
+							"description": "Specifies the initial mode, when editable is true.",
+							"enum": ["edit", "choose"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"labels": {
