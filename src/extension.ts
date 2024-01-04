@@ -9,7 +9,7 @@ import { CommonCommands } from './commands/CommonCommands';
 import { CoreCommands } from './commands/CoreCommands';
 import { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
-import { version } from './Meta';
+import { isPreReleaseVersion, version } from './Meta';
 import * as LanguageServersSettings from './LanguageServersSettings';
 
 import AppsProvider = require('./providers/AppsProvider');
@@ -29,6 +29,9 @@ let client: vscodeLanguageclient.LanguageClient;
 
 export async function activate(context: vscode.ExtensionContext) {
 	log('debug', `Extension ${version} starting...`);
+
+	// Write context `isPreReleaseVersion`. Used in `package.json` -> `when` conditions.
+	vscode.commands.executeCommand('setContext', 'isPreReleaseVersion', isPreReleaseVersion);
 
 	let _authorization: string | undefined = undefined;
 	let _environment: Environment | undefined = undefined;

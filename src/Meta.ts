@@ -7,10 +7,10 @@ export const version: string = vscode.extensions.getExtension('Integromat.apps-s
 
 // Production -> load from file created during the publishing process.
 // See `package.json` -> `scripts` for details.
-let _isPreReleaseVersion: boolean = false;
+let isPreReleaseBuild: boolean = false;
 try {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	_isPreReleaseVersion = require('./__is-prerelease-version').isPreReleaseVersion;
+	isPreReleaseBuild = require('./__is-pre-release-build').isPreReleaseBuild;
 } catch (e: any) {
 	/* ignore */
 }
@@ -18,4 +18,4 @@ try {
 export const isPreReleaseVersion: boolean =
 	// - Always `true` in local debug run,
 	// - Load from flag file in production.
-	vscode.extensions.getExtension('Integromat.apps-sdk')!.packageJSON.isUnderDevelopment || _isPreReleaseVersion;
+	vscode.extensions.getExtension('Integromat.apps-sdk')!.packageJSON.isUnderDevelopment || isPreReleaseBuild;
