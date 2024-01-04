@@ -10,4 +10,4 @@ node_modules
 .DS_Store
 local
 out
-src/services/__is-pre-release-build.ts
+src/__is-pre-release-build.ts

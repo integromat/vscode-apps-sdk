@@ -711,7 +711,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && cat out/__is-pre-release-version.js>/dev/null",
+		"vscode:prepublish": "npm run compile && cat out/__is-pre-release-build.js>/dev/null",
 		"compile": "rm -rf ./out && tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"watch": "tsc -watch -p ./",
 		"test": "npm run compile && node ./out/test/runTest.js",
