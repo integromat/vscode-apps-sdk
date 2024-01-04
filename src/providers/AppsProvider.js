@@ -321,4 +321,4 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 }
 
-module.exports = AppsProvider
+module.exports.AppsProvider = AppsProvider;

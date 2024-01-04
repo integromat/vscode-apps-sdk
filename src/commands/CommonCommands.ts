@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as Enum from '../Enum';
 import { showAndLogError } from '../error-handling';
-import AppsProvider from '../providers/AppsProvider';
+import { AppsProvider } from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
 import { requestMakeApi } from '../utils/request-api-make';
 

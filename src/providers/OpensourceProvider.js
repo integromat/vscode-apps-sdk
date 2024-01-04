@@ -8,7 +8,7 @@ const Core = require('../Core');
 const camelCase = require('lodash.camelcase');
 const { downloadAndStoreAppIcon } = require('../libs/app-icon');
 
-class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
+class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -31,9 +31,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 
 	async getChildren(element) {
-        /*
-         * LEVEL 0 - APPS
-         */
+		/*
+		 * LEVEL 0 - APPS
+		 */
 		if (element === undefined) {
 			let response;
 			switch (this._environment.version) {
@@ -107,9 +107,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				}
 			}
 		}
-        /*
-         * LEVEL 3 - CODE
-         */
+		/*
+		 * LEVEL 3 - CODE
+		 */
 		else if (element.level === 2) {
 			switch (element.supertype) {
 				case "connection":
@@ -187,4 +187,4 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 }
 
-module.exports = AppsProvider
+module.exports.OpensourceProvider = OpensourceProvider;

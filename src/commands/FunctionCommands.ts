@@ -7,7 +7,7 @@ import * as Core from '../Core';
 import * as Validator from '../Validator';
 import { catchError } from '../error-handling';
 import { Environment } from '../types/environment.types';
-import AppsProvider from '../providers/AppsProvider';
+import { AppsProvider } from '../providers/AppsProvider';
 
 export class FunctionCommands {
 	static async register(
