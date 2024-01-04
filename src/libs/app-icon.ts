@@ -1,5 +1,5 @@
-import path from "path";
-import { existsSync } from "fs";
+import * as path from "node:path";
+import { existsSync } from "node:fs";
 import * as download from "image-downloader";
 import * as Meta from "../Meta";
 import { Environment } from "../types/environment.types";

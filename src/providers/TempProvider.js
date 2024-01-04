@@ -102,4 +102,4 @@ class TempProvider {
 	}
 }
 
-module.exports = TempProvider
+module.exports.TempProvider = TempProvider;

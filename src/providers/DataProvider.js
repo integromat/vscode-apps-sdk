@@ -92,4 +92,4 @@ class DataProvider {
 	}
 }
 
-module.exports = DataProvider;
+module.exports.DataProvider = DataProvider;
