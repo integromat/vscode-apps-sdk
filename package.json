@@ -711,13 +711,13 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && cat out/__is-pre-release-build.js>/dev/null",
+		"vscode:prepublish": "npm ci && npm run compile && cat out/__is-pre-release-build.js>/dev/null",
 		"compile": "rm -rf ./out && tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"watch": "tsc -watch -p ./",
 		"test": "npm run compile && node ./out/test/runTest.js",
 		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js",
 		"__writePrereleaseFlag": "echo \"export const isPreReleaseBuild = ${isPreReleaseBuild:-false};\" > src/__is-pre-release-build.ts",
-		"__deletePrereleaseFlag": "rm src/__is-pre-release-version.ts",
+		"__deletePrereleaseFlag": "rm src/__is-pre-release-build.ts",
 		"vsceBuild": "isPreReleaseBuild=false npm run __writePrereleaseFlag && vsce package && npm run __deletePrereleaseFlag",
 		"vscePublish": "isPreReleaseBuild=false npm run __writePrereleaseFlag && vsce publish && npm run __deletePrereleaseFlag",
 		"vsceBuildPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce package --pre-release && npm run __deletePrereleaseFlag",
