@@ -1,13 +1,16 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2020",
-		"lib": ["es2020"],
+		// Set this collection based on Node version used in VSCode based on
+		// https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
+		"module": "node16",
+		"target": "ES2022",
+		"lib": ["ES2022"],
+
 		"outDir": "out",
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true,
-        "allowJs": true,
+		"allowJs": true,
 		"esModuleInterop": true
 	},
 	"include": ["src"],
