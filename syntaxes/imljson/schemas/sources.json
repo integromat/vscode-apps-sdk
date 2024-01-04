@@ -217,6 +217,12 @@
 				}
 			]
 		},
+		"gzip": {
+			"$id": "#gzip",
+			"type": "boolean",
+			"default": "false",
+			"description": "Add an Accept-Encoding header to request compressed content encodings from the server (if not already present) and decode supported content encodings in the response."
+		},
 		"aws": {
 			"$id": "#aws",
 			"description": "Helper directive, that will simplify generating AWS signatures.",

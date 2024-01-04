@@ -35,6 +35,9 @@
 				"condition": {
 					"$ref": "sources.json#/definitions/condition"
 				},
+				"gzip": {
+					"$ref": "sources.json#/definitions/gzip"
+				},
 				"aws": {
 					"$ref": "sources.json#/definitions/aws"
 				},
