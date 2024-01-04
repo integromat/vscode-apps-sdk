@@ -1,10 +1,13 @@
 Change Log
 ==========
 
-Unreleased (development + poc-localdev)
+1.3.50 (pre-release)
 ---------------------------------------
 
-- Update (iml)json language server to 9.0.1
+### Changes
+
+- Updated (iml)json language server to 9.0.1 (+ merged to development)
+- Published VSCode context flag `isPreReleaseVersion`.
 
 1.3.35 (pre-release)
 --------------------
