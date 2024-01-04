@@ -24,4 +24,4 @@ class GroupsProvider {
 	}
 }
 
-module.exports = GroupsProvider
+module.exports.GroupsProvider = GroupsProvider;

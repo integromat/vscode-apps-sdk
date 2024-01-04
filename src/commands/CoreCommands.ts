@@ -4,16 +4,16 @@ import axios from 'axios';
 import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as Meta from '../Meta';
-import RpcProvider from '../providers/RpcProvider';
-import ImlProvider from '../providers/ImlProvider';
+import { RpcProvider } from '../providers/RpcProvider';
+import { ImlProvider } from '../providers/ImlProvider';
 import { ParametersProvider } from '../providers/ParametersProvider';
-import StaticImlProvider from '../providers/StaticImlProvider';
-import TempProvider from '../providers/TempProvider';
-import DataProvider from '../providers/DataProvider';
-import GroupsProvider from '../providers/GroupsProvider';
+import { StaticImlProvider } from '../providers/StaticImlProvider';
+import { TempProvider } from '../providers/TempProvider';
+import { DataProvider } from '../providers/DataProvider';
+import { GroupsProvider } from '../providers/GroupsProvider';
 import { catchError, showAndLogError } from '../error-handling';
 import { log } from '../output-channel';
-import AppsProvider from '../providers/AppsProvider';
+import { AppsProvider } from '../providers/AppsProvider';
 import { Environment } from '../types/environment.types';
 
 export class CoreCommands {
