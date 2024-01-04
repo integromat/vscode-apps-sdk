@@ -763,34 +763,34 @@
 				{
 					"command": "apps-sdk.local-dev.clone-to-workspace",
 					"group": "z_commands",
-					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
+					"when": "isPreReleaseVersion && (viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				}
 			],
 			"explorer/context": [
 				{
 					"command": "apps-sdk.local-dev.pull-new-components",
 					"group": "7_modification",
-					"when": "resourceFilename == 'makecomapp.json'"
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json'"
 				},
 				{
 					"command": "apps-sdk.local-dev.deploy",
 					"group": "7_modification",
-					"when": "resourceFilename != undefined"
+					"when": "isPreReleaseVersion && resourceFilename != undefined"
 				},
 				{
 					"command": "apps-sdk.local-dev.file-compare",
 					"group": "7_modification",
-					"when": "resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.iml.json))$/"
+					"when": "isPreReleaseVersion && resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.iml.json))$/"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-connection",
 					"group": "7_modification",
-					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-module",
 					"group": "7_modification",
-					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
 				}
 			]
 		},
