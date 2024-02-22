@@ -1,15 +1,15 @@
 Change Log
 ==========
 
-1.3.50 (pre-release)
----------------------------------------
+1.3.50 (pre-release) [2023-01-04]
+--------------------
 
 ### Changes
 
 - Updated (iml)json language server to 9.0.1 (+ merged to development)
 - Published VSCode context flag `isPreReleaseVersion`.
 
-1.3.35 (pre-release)
+1.3.35 (pre-release) [2023-10-11]
 --------------------
 
 ### Fixed
@@ -17,7 +17,7 @@ Change Log
 - JSON schemas was not applied for IMLJSON for the case `fileMatch` with multiple items.
 - Custom IML function unit testing was not able to test recursive functions
 
-1.3.34 (pre-release)
+1.3.34 (pre-release) [2023-10-04]
 --------------------
 
 ### Changes
@@ -29,7 +29,7 @@ Change Log
 - Custom IML function was not correctly available under the namespace `iml.` in another function's body
 - JSON syntax error highlighting of IMLJSON was broken in editor
 
-1.3.33 (pre-release)
+1.3.33 (pre-release) [2023-09-27]
 --------------------
 
 ### Changes
@@ -40,7 +40,7 @@ Change Log
 
 - Error dialog should be displayed in case of error
 
-1.3.32 (pre-release)
+1.3.32 (pre-release) [2023-09-26]
 --------------------
 
 ### New features
@@ -59,7 +59,7 @@ Change Log
 - "makecomapp.json not found" error message improvement
 - "Workspace" word change to "Folder"
 
-1.3.31 (pre-release)
+1.3.31 (pre-release) [2023-09-19]
 --------------------
 
 ### Changes
@@ -67,7 +67,7 @@ Change Log
 - Error messages improvements
 - Bulk deployment continues to work even after the error occurred. Shows the error report on the end.
 
-1.3.30 (pre-release)
+1.3.30 (pre-release) [2023-09-12]
 --------------------
 
 ### New features
@@ -90,7 +90,7 @@ Change Log
 
 - More user friendly errors in case of invalid code's JSON structure
 
-1.3.29 (pre-release)
+1.3.29 (pre-release) [2023-09-06]
 --------------------
 
 ### New features
@@ -101,14 +101,14 @@ Change Log
 
 - Removed redundant extension "activationEvents" from package.json
 
-1.3.28 (pre-release)
+1.3.28 (pre-release) [2023-08-21]
 --------------------
 
 ### Fixed
 
 - Custom function testing fails, when using another custom function (#105)
 
-1.3.27
+1.3.27 [2023-08-03]
 ------
 
 ### Fixed
@@ -126,7 +126,7 @@ Change Log
 - First environment configuration process is more friendly (#87)
 - Opensource apps rename to "Examples" (#95)
 
-1.3.22
+1.3.22 [2023-07-18]
 ------
 
 ### Fixed
@@ -150,43 +150,43 @@ Change Log
 
 - Connection template "Digest auth"
 
-## 1.3.19
+## 1.3.19 [2023-04-18]
 
 ### Fixed
 
 - `vm2` library security patch
 
-## 1.3.18
+## 1.3.18 [2023-04-11]
 
 ### Fixed
 
 - `vm2` library security patch
 
-## 1.3.17
+## 1.3.17 [2023-04-11]
 
 ### Fixed
 
 - `vm2` library security patch
 
-## 1.3.16
+## 1.3.16 [2022-12-08]
 
 ### New Features
 
 - Implemented to creating a new universal module
 
-## 1.3.15
+## 1.3.15 [2022-11-28]
 
 ### Fixed
 
 - Hot Fix of Make domain URL configuation when adding a new environment "eu1.make.com" => "eu1.make.com/api"
 
-## 1.3.14
+## 1.3.14 [2022-11-22]
 
 ### Fixed
 
 - Fixed Show changes feature
 
-## 1.3.13
+## 1.3.13 [2022-10-26]
 
 ### Fixed
 
@@ -493,7 +493,7 @@ Change Log
 - Inbuilt (Static) IML functions provider
 - Showing docs abstract when adding an inbuild IML function
 
-###  Fixed
+### Fixed
 
 - Request-Less Communication allowed in JSON validation
 
