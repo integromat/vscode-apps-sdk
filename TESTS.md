@@ -1,7 +1,7 @@
 Manual testing scenarios
 ========================
 
-*Note: Each `test` starts in the clear state and shoul be independent to the previous testing.*
+*Note: Each `test` starts in the clear state and should be independent to the previous testing.*
 
 Clone the app
 -------------
