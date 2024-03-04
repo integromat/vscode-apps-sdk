@@ -40,7 +40,11 @@ export interface AppComponentMetadata {
 	description?: string;
 	connectionType?: ConnectionType;
 	webhookType?: WebhookType;
-	moduleType?: ModuleType; // TODO drive "moduleSubtype" - dodelat migraci
+	/**
+	 * Note: In early alpha versions of the `makecomapp.json` the previous property name `moduleSubtype` has been used.
+	 *       See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.
+	 */
+	moduleType?: ModuleType;
 	actionCrud?: Crud;
 	/** Valid for modules, webhooks, RPCs only */
 	connection?: string | null;
