@@ -24,7 +24,8 @@ Upcoming feature: Local development (alpha version)
   - "Deploy all" by clicking on `makecomapp.json`.
 - Rewrite the local file with the newer version from Make (pull)
 - Compare local code file with Make
-- Ability to have multiple origins of a single local app to be able to use for staging
+- Local app code can be deployed to multiple remote Make apps.
+  Useful if different Make app(s) is used for development/testing purposes.
 - ApiKey store as local file(s)
   - Handle multiple apiKey files in the same workspace.
 - Pull new components from Make
