@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * Finds the file, which is not exists in filesystem.
+ * Finds the file, which does not exist in filesystem.
  * If `basedir/basename` already exists, tries to add a number as postfix until non existing path found.
  */
 export async function getFirstNonExistingPath(basedir: vscode.Uri, basename: string) {
