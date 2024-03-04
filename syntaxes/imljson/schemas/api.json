@@ -68,6 +68,9 @@
 				"verification": {
 					"$ref": "response.json#/definitions/verification"
 				},
+				"repeat": {
+					"$ref": "sources.json#/definitions/repeat"
+				},
 				"response": {
 					"description": "This directive specifies how to parse the data received from the server.",
 					"type": "object",
@@ -122,14 +125,7 @@
 				"required": ["method"],
 				"properties": {
 					"method": {
-						"oneOf": [
-							{
-								"enum": ["POST", "PUT", "PATCH"]
-							},
-							{
-								"$ref": "sources.json#/definitions/stringWithIml"
-							}
-						]
+						"enum": ["POST", "PUT", "PATCH"]
 					}
 				}
 			},

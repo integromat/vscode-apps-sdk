@@ -285,10 +285,26 @@
 				},
 				"condition": {
 					"description": "This directive specifies whether to execute the pagination request or not.",
-					"type": [
-						"boolean",
-						"string"
-					]
+					"type": ["boolean", "string"]
+				}
+			}
+		},
+		"repeat": {
+			"$id": "#repeat",
+			"description": "Repeats a request under a certain condition with a predefined delay in milliseconds. The maximum number of repeats can be bounded by the repeat.limit.",
+			"type": "object",
+			"properties": {
+				"condition": {
+					"description": "Specifies if to execute the request or not.",
+					"type": "string"
+				},
+				"delay": {
+					"description": "Specifies the delay in miliseconds.",
+					"type": "number"
+				},
+				"limit": {
+					"description": "Specifies the maximum number of iterations.",
+					"type": "number"
 				}
 			}
 		}

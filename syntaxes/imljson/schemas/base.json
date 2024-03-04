@@ -104,14 +104,7 @@
 				"required": ["method"],
 				"properties": {
 					"method": {
-						"oneOf": [
-							{
 						"enum": ["POST", "PUT", "PATCH", "DELETE"]
-							},
-							{
-								"$ref": "sources.json#/definitions/stringWithIml"
-							}
-						]
 					}
 				}
 			},
