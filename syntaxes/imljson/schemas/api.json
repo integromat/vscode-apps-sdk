@@ -35,6 +35,9 @@
 				"condition": {
 					"$ref": "sources.json#/definitions/condition"
 				},
+				"gzip": {
+					"$ref": "sources.json#/definitions/gzip"
+				},
 				"aws": {
 					"$ref": "sources.json#/definitions/aws"
 				},
@@ -64,6 +67,9 @@
 				},
 				"verification": {
 					"$ref": "response.json#/definitions/verification"
+				},
+				"repeat": {
+					"$ref": "sources.json#/definitions/repeat"
 				},
 				"response": {
 					"description": "This directive specifies how to parse the data received from the server.",
@@ -116,24 +122,15 @@
 				}
 			},
 			"if": {
-				"required": [
-					"method"
-				],
+				"required": ["method"],
 				"properties": {
 					"method": {
-						"enum": [
-							"POST",
-							"PUT",
-							"PATCH"
-						]
+						"enum": ["POST", "PUT", "PATCH"]
 					}
 				}
 			},
 			"then": {
-				"required": [
-					"url",
-					"body"
-				]
+				"required": ["url", "body"]
 			},
 			"additionalProperties": false
 		}
