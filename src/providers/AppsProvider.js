@@ -142,6 +142,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			// REST
 			else {
 				for (const needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+					// TODO Convert to `getAppEntitySummary`
 					if (element.id.includes(`_${needle}`)) {
 						const componentType = needle.slice(0, -1);
 						const uri = ["connection", "webhook"].includes(componentType) ?

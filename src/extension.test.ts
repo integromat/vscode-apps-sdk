@@ -194,6 +194,7 @@ suite('App online file edit validations', () => {
  * Note: Expects that "problems" will be changed.
  */
 async function setEditorContentAndWaitForDiagnosticsChange(e: vscode.TextEditor, content: string) {
+	// Initiate the event listener, which waits to update editor code "problems" list.
 	const waitPromise = new Promise<void>((done, reject) => {
 		const timeout = setTimeout(() => {
 			reject(new Error('onDidChangeDiagnostics timeout. May be no changes in diagnostics.'));
@@ -205,7 +206,8 @@ async function setEditorContentAndWaitForDiagnosticsChange(e: vscode.TextEditor,
 		});
 	});
 
-	await e.edit(async (tee) => {
+	// Change the editor content
+	await e.edit((tee) => {
 		const doc = e.document;
 		tee.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), content);
 	});

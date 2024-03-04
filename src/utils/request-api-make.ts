@@ -1,6 +1,7 @@
 import { setTimeout } from 'node:timers/promises';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import throat from 'throat';
+import { progresDialogReport } from './vscode-progress-dialog';
 import * as Meta from '../Meta';
 
 const limitConcurrently = throat(2);
@@ -29,6 +30,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 				})).data;
 			} catch (e: any) {
 				if ((<AxiosError>e).response?.status === 429) {
+					progresDialogReport('Too many requests into Make. Slowing down. Please wait.');
 					await setTimeout(5000); // Bloks also anothers requests (because of `limitConcurrently`)
 				}
 				throw e;

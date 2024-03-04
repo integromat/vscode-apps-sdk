@@ -728,6 +728,9 @@ export class CoreCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.load-source',
 			catchError('Load My Apps file from API', async (item) => {
+
+				// TODO Refactor this to use `downloadSource()` function.
+
 				// Compose directory structure
 				let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(
 					_environment.version,

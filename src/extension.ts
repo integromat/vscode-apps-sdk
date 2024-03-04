@@ -10,6 +10,13 @@ import { CoreCommands } from './commands/CoreCommands';
 import { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
 import { isPreReleaseVersion, version } from './Meta';
+import {
+	AppsSdkConfiguration,
+	AppsSdkConfigurationEnvironment,
+	getConfiguration,
+	getCurrentEnvironment,
+} from './providers/configuration';
+import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
 
 import { AppsProvider } from './providers/AppsProvider';
@@ -199,6 +206,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);
+	registerCommandForLocalDevelopment();
 
 	/**
 	 * Registering events
@@ -214,7 +222,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		{
 			provideDocumentFormattingEdits(document) {
 				const text = document.getText();
-				const edits = jsoncParser.format(text, undefined, { insertSpaces: true, tabSize: 4, keepLines: true });
+				const edits = jsoncParser.format(text, undefined, { keepLines: true });
 				return edits.map((edit) => {
 					const start = document.positionAt(edit.offset);
 					const end = document.positionAt(edit.offset + edit.length);
@@ -251,59 +259,8 @@ function getCurrentEnvironmentOrUndefined(): AppsSdkConfigurationEnvironment | u
 }
 
 /**
- * User can define multiple environmnents.
- * Function returns the one that is currently selected by user.
- *
- * @throws {Error} If no environment is selected or if selected environment is not found in the configuration.
- */
-function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
-	const _configuration = getConfiguration();
-	const environments = _configuration.get<AppsSdkConfiguration['environments']>('environments');
-	if (!environments) {
-		const err = "No configuration found in 'apps-sdk.environments'. Check your configuration.";
-		log('error', err);
-		throw new Error(err);
-	}
-	const selectedEnvironment = environments.find((e: any) => e.uuid === _configuration.environment);
-	if (!selectedEnvironment) {
-		throw new Error(
-			"Selected environment ('apps-sdk.environment') not found in 'apps-sdk.environments'. Check your configuration.",
-		);
-	}
-	return selectedEnvironment;
-}
-
-/**
- * Gets the extension configuration stored in VS Code settings.json file under keys `apps-sdk.*`.
- */
-function getConfiguration(): AppsSdkConfiguration {
-	return vscode.workspace.getConfiguration('apps-sdk') as AppsSdkConfiguration;
-}
-
-/**
  * Exported for automated testing purpose only
  */
 export function testsOnly_getImljsonLanguageClient() {
 	return client;
-}
-
-/**
- * Describes the configuration structure of key `apps-sdk` in the VS Code configuration file.
- */
-interface AppsSdkConfiguration extends vscode.WorkspaceConfiguration {
-	login: boolean;
-	environments: AppsSdkConfigurationEnvironment[];
-	environment: AppsSdkConfigurationEnvironment['uuid'];
-}
-
-interface AppsSdkConfigurationEnvironment {
-	name: string;
-	uuid: string;
-	apikey: string;
-	version: number;
-	url: string;
-
-	unsafe?: boolean;
-	noVersionPath?: boolean;
-	admin?: boolean;
 }

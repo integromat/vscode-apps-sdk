@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Make Apps Editor",
 	"description": "Helps to create, develop, download and deploy apps of the Make no-code visual integration and automation platform.",
-	"version": "1.3.28",
+	"version": "1.3.50",
 	"icon": "resources/make.png",
 	"repository": {
 		"type": "git",
@@ -23,68 +23,115 @@
 		"Extension Packs"
 	],
 	"activationEvents": [
+		"workspaceContains:**/makecomapp.json"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"jsonValidation": [
 			{
-				"fileMatch": "parameters.imljson",
+				"fileMatch": [
+					"parameters.imljson",
+					"*.params.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": "expect.imljson",
+				"fileMatch": [
+					"expect.imljson",
+					"*.mappable-params.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": "interface.imljson",
+				"fileMatch": [
+					"interface.imljson",
+					"*.interface.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
-				"fileMatch": "common.imljson",
+				"fileMatch": [
+					"common.imljson",
+					"common.json"
+				],
 				"url": "./syntaxes/imljson/schemas/common.json"
 			},
 			{
-				"fileMatch": "api.imljson",
+				"fileMatch": [
+					"api.imljson",
+					"*.communication.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "samples.imljson",
+				"fileMatch": [
+					"samples.imljson",
+					"*.samples.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/samples.json"
 			},
 			{
-				"fileMatch": "scopes.imljson",
+				"fileMatch": [
+					"scopes.imljson",
+					"*.scope-list.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/scopes.json"
 			},
 			{
-				"fileMatch": "scope.imljson",
+				"fileMatch": [
+					"scope.imljson",
+					"*.default-scope.iml.json",
+					"*.required-scope.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/scope.json"
 			},
 			{
-				"fileMatch": "epoch.imljson",
+				"fileMatch": [
+					"epoch.imljson",
+					"*.epoch.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/epoch.json"
 			},
 			{
-				"fileMatch": "attach.imljson",
+				"fileMatch": [
+					"attach.imljson",
+					"*.attach.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "detach.imljson",
+				"fileMatch": [
+					"detach.imljson",
+					"*.detach.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "publish.imljson",
+				"fileMatch": [
+					"publish.imljson",
+					"*.publish.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
-				"fileMatch": "base.imljson",
+				"fileMatch": [
+					"base.imljson",
+					"*.base.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
-				"fileMatch": "api-oauth.imljson",
+				"fileMatch": [
+					"api-oauth.imljson",
+					"*.oauth-communication.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
 			{
-				"fileMatch": "groups.json",
+				"fileMatch": [
+					"groups.json",
+					"*.groups.iml.json"
+				],
 				"url": "./syntaxes/imljson/schemas/groups.json"
 			}
 		],
@@ -92,7 +139,8 @@
 			{
 				"id": "imljson",
 				"extensions": [
-					".imljson"
+					".imljson",
+					".iml.json"
 				],
 				"aliases": [
 					"JSON with IML",
@@ -196,12 +244,12 @@
 			},
 			{
 				"command": "apps-sdk.delete",
-				"title": "Delete",
+				"title": "Delete component",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.app.delete",
-				"title": "Delete",
+				"title": "Delete app",
 				"category": "Make Apps"
 			},
 			{
@@ -226,7 +274,7 @@
 			},
 			{
 				"command": "apps-sdk.app.clone",
-				"title": "Clone",
+				"title": "Clone into new app",
 				"category": "Make Apps"
 			},
 			{
@@ -276,7 +324,7 @@
 			},
 			{
 				"command": "apps-sdk.module.clone",
-				"title": "Clone",
+				"title": "Clone into new module",
 				"category": "Make Apps"
 			},
 			{
@@ -352,6 +400,32 @@
 					"dark": "./resources/icons/dark/import.png",
 					"light": "./resources/icons/light/import.png"
 				}
+			},
+			{
+				"command": "apps-sdk.local-dev.deploy",
+				"title": "Deploy to Make (alpha)"
+			},
+			{
+				"command": "apps-sdk.local-dev.file-compare",
+				"title": "Compare with Make (alpha)"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-local-connection",
+				"title": "New Connection Component (alpha)",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-local-module",
+				"title": "New Module Component (alpha)",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.local-dev.clone-to-workspace",
+				"title": "Clone to Local Folder (alpha)"
+			},
+			{
+				"command": "apps-sdk.local-dev.pull-new-components",
+				"title": "Pull New Components From Make (alpha)"
 			}
 		],
 		"viewsContainers": {
@@ -413,259 +487,310 @@
 			"view/item/context": [
 				{
 					"command": "apps-sdk.function.new",
+					"group": "7_modification_online",
 					"when": "viewItem == functions && view == apps"
 				},
 				{
 					"command": "apps-sdk.function.test",
+					"group": "7_modification_online",
 					"when": "viewItem == function && view == apps"
 				},
 				{
 					"command": "apps-sdk.function.test",
+					"group": "7_modification_online",
 					"when": "viewItem == code && view == apps"
 				},
 				{
 					"command": "apps-sdk.function.test",
+					"group": "7_modification_online",
 					"when": "viewItem == test && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.new",
+					"group": "7_modification_online",
 					"when": "viewItem == rpcs && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.new",
+					"group": "7_modification_online",
 					"when": "viewItem == modules && view == apps"
 				},
 				{
 					"command": "apps-sdk.webhook.new",
+					"group": "7_modification_online",
 					"when": "viewItem == webhooks && view == apps"
 				},
 				{
 					"command": "apps-sdk.connection.new",
+					"group": "7_modification_online",
 					"when": "viewItem == connections && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == function && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == webhook && view == apps"
 				},
 				{
 					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == connection && view == apps"
 				},
 				{
 					"command": "apps-sdk.connection.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == connection && view == apps"
 				},
 				{
 					"command": "apps-sdk.webhook.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == webhook && view == apps"
 				},
 				{
 					"command": "apps-sdk.webhook.change-connection",
+					"group": "7_modification_online",
 					"when": "viewItem == webhook && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.visibility.public",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.clone",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.visibility.private",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-connection-or-webhook",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-type",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-type",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.change-type",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.change-connection",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.rpc.test",
+					"group": "7_modification_online",
 					"when": "viewItem == rpc && view == apps"
 				},
 				{
 					"command": "apps-sdk.changes.show",
+					"group": "7_modification_online",
 					"when": "viewItem == changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.delete",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.visibility.public",
+					"group": "7_modification_online",
 					"when": "viewItem == app && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.export",
-					"when": "viewItem == app && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.export",
-					"when": "viewItem == app_public && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.export",
-					"when": "viewItem == app_approved && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.export",
-					"when": "viewItem == app_approved_changed && view == apps"
+					"group": "7_modification_online",
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.visibility.private",
+					"group": "7_modification_online",
 					"when": "viewItem == app_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.get-icon",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.edit-metadata",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.changes.commit",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.changes.rollback",
+					"group": "7_modification_online",
 					"when": "viewItem == app_approved_changed && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.show-detail",
-					"when": "viewItem == app && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.show-detail",
-					"when": "viewItem == app_public && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.show-detail",
-					"when": "viewItem == app_approved && view == apps"
-				},
-				{
-					"command": "apps-sdk.app.show-detail",
-					"when": "viewItem == app_approved_changed && view == apps"
+					"group": "7_modification_online",
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == module && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == module_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.show-detail",
+					"group": "7_modification_online",
 					"when": "viewItem == module_approved && view == apps"
 				},
 				{
 					"command": "apps-sdk.app.clone",
-					"when": "viewItem == app && view == apps"
+					"group": "7_modification_online",
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				},
 				{
-					"command": "apps-sdk.app.clone",
-					"when": "viewItem == app_public && view == apps"
+					"command": "apps-sdk.local-dev.clone-to-workspace",
+					"group": "z_commands",
+					"when": "isPreReleaseVersion && (viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "apps-sdk.local-dev.pull-new-components",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json'"
 				},
 				{
-					"command": "apps-sdk.app.clone",
-					"when": "viewItem == app_approved && view == apps"
+					"command": "apps-sdk.local-dev.deploy",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename != undefined"
 				},
 				{
-					"command": "apps-sdk.app.clone",
-					"when": "viewItem == app_approved_changed && view == apps"
+					"command": "apps-sdk.local-dev.file-compare",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename =~ /\\.((readme\\.md)|(common\\.json)|((base|groups|communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples|code|test)\\.iml.json))$/"
+				},
+				{
+					"command": "apps-sdk.local-dev.create-local-connection",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
+				},
+				{
+					"command": "apps-sdk.local-dev.create-local-module",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
 				}
 			]
 		},
@@ -724,7 +849,9 @@
 		"vscePublishPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce publish --pre-release && npm run __deletePrereleaseFlag"
 	},
 	"devDependencies": {
-		"@types/glob": "^8.1.0",
+		"@types/lodash.camelcase": "^4.3.7",
+		"@types/lodash.clonedeep": "^4.5.7",
+		"@types/lodash.pick": "^4.4.7",
 		"@types/mocha": "^10.0.6",
 		"@types/node": "^16.18.38",
 		"@types/uuid": "^9.0.8",
@@ -740,7 +867,7 @@
 		"typescript": "^5.3.2"
 	},
 	"dependencies": {
-		"@integromat/iml": "^2.19.11",
+		"@integromat/iml": "^3.0.0",
 		"@integromat/udt": "^1.2.0",
 		"adm-zip": "^0.5.10",
 		"async-file": "^2.0.2",
@@ -750,10 +877,12 @@
 		"jimp": "^0.22.10",
 		"jsonc-parser": "^3.2.1",
 		"lodash.camelcase": "^4.3.0",
+		"lodash.clonedeep": "^4.5.0",
 		"lodash.kebabcase": "^4.1.1",
 		"lodash.pick": "^4.4.0",
 		"lodash.union": "^4.6.0",
 		"request-light": "^0.7.0",
+		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
 		"uuid": "^9.0.0",
