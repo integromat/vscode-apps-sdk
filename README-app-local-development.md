@@ -85,7 +85,7 @@ To be sure, what code is currently in Make, the developer can `Compare with Make
 
 3. Use the right mouse to click on any SDK app and select the `Clone to local workspace` context menu item.
 
-   ![Clone menu item](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/clone-to-local.png?raw=true)
+   ![Clone menu item](https://github.com/integromat/vscode-apps-sdk/blob/development/resources/readme/localdev/clone-to-local.png?raw=true)
 
 4. The process asks you to select a destination directory. The default is the `src`.
 
@@ -102,7 +102,7 @@ To be sure, what code is currently in Make, the developer can `Compare with Make
 
    *After this step the local development is ready to use! 👍*
 
-   ![Locally clonned app](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/cloned-locally.png?raw=true)
+   ![Locally clonned app](https://github.com/integromat/vscode-apps-sdk/blob/development/resources/readme/localdev/cloned-locally.png?raw=true)
 
 ### Local clone structure
 
@@ -114,11 +114,11 @@ Many actions can be also executed on a sub-part of the project only. For this ca
 
 Any part of the SDK app (including all changes) can be deployed back to Make (named as `remote origin`). For this action do a right mouse click to any code file, component directory, whole `src` directory or `makecomapp.json` file. Select the menu item `Deploy to Make` to start updating the SDK app in Make by local code files.
 
-![Context menu actions](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/context-menu-actions.png?raw=true)
+![Context menu actions](https://github.com/integromat/vscode-apps-sdk/blob/development/resources/readme/localdev/context-menu-actions.png?raw=true)
 
 If the component does not exist in Make yet, then the developer sees the info message with confirmation to create a new component in Make.
 
-![Component asymetry dialog](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/component-asymetry-new.png?raw=true)
+![Component asymetry dialog](https://github.com/integromat/vscode-apps-sdk/blob/development/resources/readme/localdev/component-asymetry-new.png?raw=true)
 
 ### Add new components into local files
 
@@ -170,7 +170,7 @@ Each locally developer SDK app is cloned from its remote origin. Origin (Make AP
 
 From the time you define the second origin (or more), you will be asked by VS Code dialog to choose the origin from the list on each interaction with a remote app in Make (deploy, pull, ...).
 
-![Multiple origins selection dialog](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/origin-selection.png?raw=true)
+![Multiple origins selection dialog](https://github.com/integromat/vscode-apps-sdk/blob/development/resources/readme/localdev/origin-selection.png?raw=true)
 
 The purpose of this feature is to cover the case, where developers have also another SDK app in Make used for the development or testing stage.
 
