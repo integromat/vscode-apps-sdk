@@ -17,10 +17,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": [
-					"label",
-					"options"
-				]
+				"required": ["label", "options"]
 			}
 		},
 		"options": {
@@ -35,15 +32,7 @@
 						"minLength": 1
 					},
 					"value": {
-						"type": [
-							"string",
-							"array",
-							"boolean",
-							"integer",
-							"null",
-							"number",
-							"object"
-						]
+						"type": ["string", "array", "boolean", "integer", "null", "number", "object"]
 					},
 					"nested": {
 						"$ref": "#/definitions/nested"
@@ -56,9 +45,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": [
-					"value"
-				]
+				"required": ["value"]
 			}
 		},
 		"nested": {
@@ -88,9 +75,7 @@
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"store"
-					]
+					"required": ["store"]
 				}
 			]
 		},
@@ -103,10 +88,7 @@
 		},
 		"parameter": {
 			"$id": "#parameter",
-			"type": [
-				"object",
-				"string"
-			],
+			"type": ["object", "string"],
 			"properties": {
 				"name": {
 					"type": "string",
@@ -175,15 +157,7 @@
 					"description": "Specification of a semantic type"
 				},
 				"default": {
-					"type": [
-						"boolean",
-						"array",
-						"integer",
-						"null",
-						"number",
-						"object",
-						"string"
-					],
+					"type": ["boolean", "array", "integer", "null", "number", "object", "string"],
 					"description": "Specifies the default value of the parameter"
 				},
 				"advanced": {
@@ -275,18 +249,14 @@
 											}
 										},
 										"additionalProperties": false,
-										"required": [
-											"name"
-										]
+										"required": ["name"]
 									}
 								}
 							]
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"type"
-					]
+					"required": ["type"]
 				},
 				"editable": {
 					"description": "If set to true, the user can map the value.",
@@ -308,9 +278,7 @@
 								}
 							},
 							"additionalProperties": false,
-							"required": [
-								"enabled"
-							]
+							"required": ["enabled"]
 						}
 					]
 				},
@@ -331,9 +299,7 @@
 								}
 							},
 							"additionalProperties": false,
-							"required": [
-								"help"
-							]
+							"required": ["help"]
 						}
 					]
 				},
@@ -358,10 +324,7 @@
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"url",
-						"label"
-					]
+					"required": ["url", "label"]
 				},
 				"mode": {
 					"oneOf": [
@@ -537,9 +500,7 @@
 				"validate": {}
 			},
 			"additionalProperties": false,
-			"required": [
-				"type"
-			],
+			"required": ["type"],
 			"if": {
 				"properties": {
 					"type": {

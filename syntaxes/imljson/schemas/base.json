@@ -101,14 +101,12 @@
 				}
 			},
 			"if": {
-				"required": [
-					"method"
-				],
+				"required": ["method"],
 				"properties": {
 					"method": {
 						"oneOf": [
 							{
-								"enum": ["POST", "PUT", "PATCH", "DELETE"]
+						"enum": ["POST", "PUT", "PATCH", "DELETE"]
 							},
 							{
 								"$ref": "sources.json#/definitions/stringWithIml"
@@ -118,10 +116,7 @@
 				}
 			},
 			"then": {
-				"required": [
-					"url",
-					"body"
-				]
+				"required": ["url", "body"]
 			},
 			"additionalProperties": false
 		}

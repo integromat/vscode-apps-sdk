@@ -119,9 +119,7 @@
 				}
 			},
 			"if": {
-				"required": [
-					"method"
-				],
+				"required": ["method"],
 				"properties": {
 					"method": {
 						"oneOf": [
@@ -136,10 +134,7 @@
 				}
 			},
 			"then": {
-				"required": [
-					"url",
-					"body"
-				]
+				"required": ["url", "body"]
 			},
 			"additionalProperties": false
 		}

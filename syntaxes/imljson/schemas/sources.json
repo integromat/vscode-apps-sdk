@@ -23,14 +23,7 @@
 			"type": "object",
 			"patternProperties": {
 				"^.+$": {
-					"type": [
-						"boolean",
-						"integer",
-						"null",
-						"number",
-						"string",
-						"array"
-					]
+					"type": ["boolean", "integer", "null", "number", "string", "array"]
 				}
 			},
 			"additionalProperties": false,
@@ -41,14 +34,7 @@
 			"type": "object",
 			"patternProperties": {
 				"^.+$": {
-					"type": [
-						"boolean",
-						"integer",
-						"null",
-						"number",
-						"string",
-						"array"
-					]
+					"type": ["boolean", "integer", "null", "number", "string", "array"]
 				}
 			},
 			"additionalProperties": false,
@@ -84,15 +70,7 @@
 		},
 		"body": {
 			"$id": "#body",
-			"type": [
-				"object",
-				"array",
-				"boolean",
-				"integer",
-				"null",
-				"number",
-				"string"
-			],
+			"type": ["object", "array", "boolean", "integer", "null", "number", "string"],
 			"description": "This directive specifies the request body."
 		},
 		"oauth-1": {
@@ -159,10 +137,7 @@
 				},
 				"body_hash": {
 					"description": "To use Request Body Hash, you can either manually generate it, or you can set this directive to true and the body hash will be generated automatically.",
-					"type": [
-						"string",
-						"boolean"
-					],
+					"type": ["string", "boolean"],
 					"default": true
 				}
 			}
@@ -185,32 +160,18 @@
 			"description": "This directive specifies whether to execute the request or not.",
 			"oneOf": [
 				{
-					"type": [
-						"boolean",
-						"string"
-					]
+					"type": ["boolean", "string"]
 				},
 				{
 					"type": "object",
 					"properties": {
 						"condition": {
 							"description": "Specifies if to execute the request or not.",
-							"type": [
-								"boolean",
-								"string"
-							]
+							"type": ["boolean", "string"]
 						},
 						"default": {
 							"description": "Specifies the module output when the condition is false.",
-							"type": [
-								"array",
-								"boolean",
-								"integer",
-								"null",
-								"number",
-								"object",
-								"string"
-							]
+							"type": ["array", "boolean", "integer", "null", "number", "object", "string"]
 						}
 					},
 					"additionalProperties": false

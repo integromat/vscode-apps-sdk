@@ -24,10 +24,7 @@
 			"$id": "#valid",
 			"oneOf": [
 				{
-					"type": [
-						"boolean",
-						"string"
-					]
+					"type": ["boolean", "string"]
 				},
 				{
 					"type": "object",
@@ -50,10 +47,7 @@
 		"limit": {
 			"$id": "#limit",
 			"description": "This directive specifies the maximum items that will be returned by the module.",
-			"type": [
-				"number",
-				"string"
-			]
+			"type": ["number", "string"]
 		},
 		"error": {
 			"description": "The error directive specifies the error type and the error message to show the user.",
@@ -91,15 +85,11 @@
 									"$ref": "enums.json#/definitions/error-type"
 								}
 							},
-							"required": [
-								"message"
-							],
+							"required": ["message"],
 							"additionalProperties": false
 						}
 					},
-					"required": [
-						"message"
-					],
+					"required": ["message"],
 					"additionalProperties": false
 				}
 			]
@@ -122,15 +112,10 @@
 						},
 						"condition": {
 							"description": "Specifies a filter that can be used to filter out unwanted items.",
-							"type": [
-								"string",
-								"boolean"
-							]
+							"type": ["string", "boolean"]
 						}
 					},
-					"required": [
-						"container"
-					],
+					"required": ["container"],
 					"additionalProperties": false
 				}
 			]
@@ -139,23 +124,12 @@
 			"description": "With the output directive you can specify how you want your module output to look.",
 			"$id": "#epoch-output",
 			"type": "object",
-			"required": [
-				"date",
-				"label"
-			]
+			"required": ["date", "label"]
 		},
 		"output": {
 			"description": "With the output directive you can specify how you want your module output to look.",
 			"$id": "#output",
-			"type": [
-				"object",
-				"array",
-				"boolean",
-				"integer",
-				"null",
-				"number",
-				"string"
-			]
+			"type": ["object", "array", "boolean", "integer", "null", "number", "string"]
 		},
 		"trigger": {
 			"description": "The trigger collection specifies directives that will control how the trigger will work and how your data will be processed.",
@@ -197,32 +171,17 @@
 					"maxLength": 512
 				}
 			},
-			"required": [
-				"type",
-				"order",
-				"id"
-			],
+			"required": ["type", "order", "id"],
 			"if": {
-				"required": [
-					"type"
-				],
+				"required": ["type"],
 				"properties": {
 					"type": {
-						"oneOf": [
-							{
-								"enum": ["date"]
-							},
-							{
-								"$ref": "sources.json#/definitions/stringWithIml"
-							}
-						]
+						"enum": ["date"]
 					}
 				}
 			},
 			"then": {
-				"required": [
-					"date"
-				]
+				"required": ["date"]
 			},
 			"additionalProperties": false
 		},
@@ -258,22 +217,11 @@
 		"uid": {
 			"description": "This directive allows you to save the user’s remote service Id. This is required when using Shared Webhooks.",
 			"$id": "#uid",
-			"type": [
-				"string",
-				"number"
-			]
+			"type": ["string", "number"]
 		},
 		"wrapper": {
 			"$id": "#wrapper",
-			"type": [
-				"object",
-				"array",
-				"boolean",
-				"integer",
-				"null",
-				"number",
-				"string"
-			],
+			"type": ["object", "array", "boolean", "integer", "null", "number", "string"],
 			"default": "{{output}}",
 			"description": "This directive lets you post process module output before returning it to the user. The output of the module will be available to you as the output context variable - the result of processing the output directive."
 		},
