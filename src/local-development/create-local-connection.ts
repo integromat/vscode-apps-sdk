@@ -47,7 +47,7 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 		}
 	}
 
-	// Find first not used ID (Connections use autoincrement ID based on app ID).
+	// Find first unused ID (Connection IDs are autoincremental. based on app ID).
 	const appId = makecomappJson.origins[0].appId;
 	let appConnectionNameSuffix: number | string = '';
 	while (makecomappJson.components.connection[appId + appConnectionNameSuffix] !== undefined) {
