@@ -87,11 +87,18 @@ To be sure, what code is currently in Make, the developer can `Compare with Make
 
    ![Clone menu item](https://github.com/integromat/vscode-apps-sdk/blob/poc-localdev/resources/readme/localdev/clone-to-local.png?raw=true)
 
-4. The process asks you to destination directory.  The default is the `src`.
+4. The process asks you to select a destination directory. The default is the `src`.
 
    *Note: If you intend to have multiple apps in a single workspace, each app must be cloned into a different subdirectory.*
 
 5. When the `clone` process is finished VS Code switches the view to File Explorer, where newly pulled files are placed and the app `README` file will be opened.
+
+6. GIT code versioning (optional step):
+
+   1. Create a new git repository in vscode app folder by `git init`.
+   2. Add all files and make first commit by `git add -a; git commit -m "init"`
+
+   ... Now your app code is versioned! You can use `git` commands as usual.
 
    *After this step the local development is ready to use! 👍*
 
@@ -99,7 +106,7 @@ To be sure, what code is currently in Make, the developer can `Compare with Make
 
 ### Local clone structure
 
-When the SDK app is cloned into local files, it is created into some subdirectory (mostly `src`). In this directory, the most important file is `makecomapp.json` which is the main file of the whole project. There is the list of all components, app metadata and links to all component code files. Anytime a new component is created, it must be defined in this `makecomapp.json` file. When a developer right-clicks to this file, he sees a couple of additional actions, which can manage/edit/develop the local project.
+When the SDK app is cloned into local files, it is created into some subdirectory (mostly `src`). In this directory, the most important file is `makecomapp.json` which is the main file of the whole project. There is the list of all components, app metadata and links to all component code files. Anytime a new component is created, it must be defined in this `makecomapp.json` file. When a developer right-clicks to this file, he can perform a couple of additional actions for managing/editing/deploying the project local code.
 
 Many actions can be also executed on a sub-part of the project only. For this case, the right-click can be used on any component's subdirectory or on any component code file.
 
@@ -117,11 +124,11 @@ If the component does not exist in Make yet, then the developer sees the info me
 
 Because local component creation is not implemented yet, please create a new component online and then pull it into local code as a temporary workaround:
 
-To add a new SDK app `connection` or `module` component into local files there are three ways:
+To add a new SDK app `connection` or `module` component into local files there are three possible approaches:
 
-- local assisted
-- local manual files edit
-- online and then pull new components
+- Assisted component adding
+- Manual adding file(s) of new component from scratch
+- Online component adding + pull new components
 
 #### Assisted component adding
 
@@ -133,7 +140,7 @@ The alternative way is to right-click on an appropriate directory with the list 
 
 This action creates appropriate code files and defines the new component in `makecomapp.json`.
 
-#### Manual component adding
+#### Manual adding file(s) of new component from scratch
 
 **IMPORTANT NOTE: This feature is under development and it is not fully implemented yet.**
 
@@ -144,8 +151,6 @@ You can create new components manually by the same steps as the assisted compone
 2. Create the required code files of the component. Note: Each type of component requires another set of code files. In this step, the easiest way is to copy/paste files from another existing similar component.
 
 3. Add component details and the references to files created in step 2 into the `makecomapp.json` file placed in the component root directory. Again, the easiest way is to copy/paste the structure from another similar existing component.
-
--->
 
 #### Online component adding + pull new components
 
