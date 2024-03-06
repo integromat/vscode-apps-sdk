@@ -1,10 +1,7 @@
 import { AppComponentType } from '../types/app-component-type.types';
 import { CodeDef } from '../local-development/types/code-def.types';
 import { componentTypesDeployOrder } from './component-types-order';
-import {
-	ComponentCodeType,
-	GeneralCodeType,
-} from '../local-development/types/code-type.types';
+import { ComponentCodeType, GeneralCodeType } from '../local-development/types/code-type.types';
 import { keys } from '../utils/typed-object';
 
 const imljsonc = {
@@ -38,10 +35,7 @@ export const generalCodesDefinition: Record<GeneralCodeType, CodeDef> = {
  * Defines all types of app components (like module, connection, ...)
  * and the appropriate code files for each component type.
  */
-export const componentsCodesDefinition: Record<
-	AppComponentType,
-	Partial<Record<ComponentCodeType, CodeDef>>
-> = {
+export const componentsCodesDefinition: Record<AppComponentType, Partial<Record<ComponentCodeType, CodeDef>>> = {
 	connection: {
 		communication: {
 			...imljsonc,
@@ -101,7 +95,13 @@ export const componentsCodesDefinition: Record<
 		mappableParams: { ...imljsonc, apiCodeType: 'expect', filename: 'mappable-params' },
 		interface: { ...imljsonc, apiCodeType: 'interface' },
 		samples: { ...imljsonc, apiCodeType: 'samples' },
-		// scope: imljsonc, // Looks like not visible anywhere, so disabling.
+		scope: {
+			...imljsonc,
+			apiCodeType: 'scope',
+			onlyFor: (componentMedatata) =>
+				// Note: In the product it is additional rule for `scope` code visibility: module must have associated an OAuth connection
+				['trigger', 'action', 'search', 'universal'].includes(componentMedatata.moduleType!),
+		},
 	},
 	rpc: {
 		communication: { ...imljsonc, apiCodeType: 'api', filename: 'communication' },

@@ -30,7 +30,7 @@ export async function downloadSource({
 	appComponentType: AppComponentType | 'app';
 	appComponentName: string;
 	codeType: CodeType;
-	origin: LocalAppOriginWithSecret,
+	origin: LocalAppOriginWithSecret;
 	destinationPath: vscode.Uri;
 }): Promise<void> {
 	log('debug', `Pull ${appComponentType} ${appComponentName}: code ${codeType}`);
@@ -57,6 +57,15 @@ export async function downloadSource({
 		} else {
 			codeContent = '[]';
 		}
+	}
+
+	// Special improvement:
+	//   Add the code comment into module scope if code is empty.
+	const isEmptyArrayTest = /^\s*\[\s*\]\s*$/;
+	if (appComponentType === 'module' && codeType === 'scope' && isEmptyArrayTest.test(codeContent)) {
+		codeContent =
+			'Code below is relevant only if an OAuth type connection is associated with the module. In other cases, it is ignored.\n' +
+			codeContent;
 	}
 
 	// Save the received code to the temp directory
@@ -156,6 +165,6 @@ export async function uploadSource({
 
 function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
 	return componentType === 'app'
-			? getGeneralCodeDefinition(codeType as GeneralCodeType)
-			: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
+		? getGeneralCodeDefinition(codeType as GeneralCodeType)
+		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
 }

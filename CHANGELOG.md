@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Unreleased
+----------
+
+### Changes
+
+- Implemented ability clone/edit/deploy of module `scope`.
+
 1.3.50 (pre-release) [2023-01-04]
 --------------------
 
