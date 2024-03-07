@@ -38,6 +38,10 @@ export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata 
 export interface AppComponentMetadata {
 	label?: string;
 	description?: string;
+	/**
+	 * Relevant for connections only. It describes a type of component itself.
+	 * Note: This does NOT describing the type of a connection referenced in `connection` or `altConnection` property.
+	 */
 	connectionType?: ConnectionType;
 	webhookType?: WebhookType;
 	/**
@@ -46,11 +50,11 @@ export interface AppComponentMetadata {
 	 */
 	moduleType?: ModuleType;
 	actionCrud?: Crud;
-	/** Valid for modules, webhooks, RPCs only */
+	/** Relevant for modules, webhooks, RPCs only. */
 	connection?: string | null;
-	/** Valid for modules, webhooks, RPCs only */
+	/** Relevant for modules, webhooks, RPCs only. */
 	altConnection?: string | null;
-	/** Valid for module subtype "instant_trigger" only */
+	/** Relevant for module subtype "instant_trigger" only. */
 	webhook?: string | null;
 }
 

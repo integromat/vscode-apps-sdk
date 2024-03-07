@@ -9,7 +9,7 @@ type ConnectionCodeType =
 
 type WebhookCodeType = 'communication' | 'params' | 'attach' | 'detach' | 'update' | 'requiredScope';
 
-type ModuleCodeType = 'communication' | 'epoch' | 'staticParams' | 'mappableParams' | 'interface' | 'samples';
+type ModuleCodeType = 'communication' | 'epoch' | 'staticParams' | 'mappableParams' | 'interface' | 'samples' | 'scope';
 
 type RpcCodeType = 'communication' | 'params';
 
