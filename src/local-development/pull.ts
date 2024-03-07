@@ -10,7 +10,7 @@ import { getAllRemoteComponentsSummaries } from './component-summaries';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode } from './code-pull-deploy';
 import { askForProjectOrigin } from './dialog-select-origin';
-import { getAppComponentTypes } from '../services/component-code-def';
+import { generalCodesDefinition, getAppComponentTypes } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { catchError } from '../error-handling';
@@ -84,8 +84,23 @@ export async function pullComponents(
 	const remoteAppComponents = await getAllRemoteComponentsSummaries(origin);
 	const newComponents: Awaited<ReturnType<typeof pullComponents>> = [];
 
-	// TODO pull general codes. See list in `generalCodesDefinition`, `getGeneralCodeDefinition()`
+	// Pull app general codes (in `all` pull mode only)
+	if (pullMode === 'all') {
+		for (const [codeType] of entries(generalCodesDefinition)) {
+			const codeLocalRelativePath = makecomappJson.generalCodeFiles[codeType];
+			const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
+			// Pull code from API to local file
+			await pullComponentCode({
+				appComponentType: 'app', // The `app` type with name `` is the special
+				appComponentName: '',
+				codeType,
+				origin,
+				destinationPath: codeLocalAbsolutePath,
+			});
+		}
+	}
 
+	// Pull app components
 	for (const componentType of getAppComponentTypes()) {
 		for (const [componentName, remoteComponentMetadata] of Object.entries(remoteAppComponents[componentType])) {
 			const existingComponentMetadata = makecomappJson.components[componentType][componentName];
