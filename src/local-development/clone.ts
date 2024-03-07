@@ -10,7 +10,7 @@ import App from '../tree/App';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import { generalCodesDefinition } from '../services/component-code-def';
-import { downloadSource } from './code-deploy-download';
+import { pullComponentCode } from './code-pull-deploy';
 import { generateDefaultLocalFilename } from './local-file-paths';
 import { catchError } from '../error-handling';
 import { pullNewComponents } from './pull';
@@ -96,8 +96,8 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				undefined,
 			);
 			const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-			// Download code from API to local file
-			await downloadSource({
+			// Pull code from API to local file
+			await pullComponentCode({
 				appComponentType: 'app', // The `app` type with name `` is the special
 				appComponentName: '', //
 				codeType,

@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { uploadSource } from './code-deploy-download';
-import { getAllComponentsSummaries } from './component-summaries';
+import { deployComponentCode } from './code-pull-deploy';
+import { getAllRemoteComponentsSummaries } from './component-summaries';
 import { askForOrigin } from './dialog-select-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { diffComponentsPresence } from './diff-components-presence';
@@ -58,7 +58,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			progresDialogReport('Initial analytics');
 
 			// Get all existing remote components
-			const allComponentsSummariesInCloud = await getAllComponentsSummaries(origin);
+			const allComponentsSummariesInCloud = await getAllRemoteComponentsSummaries(origin);
 
 			// Compare remote component list with local makecomapp.json
 			const componentAddingRemoving = diffComponentsPresence(
@@ -176,7 +176,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 				// Upload via API
 				try {
-					await uploadSource({
+					await deployComponentCode({
 						appComponentType: component.componentType,
 						appComponentName: component.componentName,
 						codeType: component.codeType,

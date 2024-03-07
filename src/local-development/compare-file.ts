@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { catchError } from '../error-handling';
 import { log } from '../output-channel';
-import { downloadSource } from '../local-development/code-deploy-download';
-import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
-import { findCodeByFilePath } from '../local-development/find-code-by-filepath';
-import { askForOrigin } from '../local-development/dialog-select-origin';
+import { pullComponentCode } from './code-pull-deploy';
+import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
+import { findCodeByFilePath } from './find-code-by-filepath';
+import { askForOrigin } from './dialog-select-origin';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {
@@ -45,7 +45,7 @@ async function localFileCompare(file: vscode.Uri) {
 	const newTmpFile = tempFilename(file);
 
 	await withProgressDialog({ title: '' }, async (_progress, _cancellationToken) => {
-		await downloadSource({
+		await pullComponentCode({
 			appComponentType: componentDetails.componentType,
 			appComponentName: componentDetails.componentName,
 			codeType: componentDetails.codeType,

@@ -19,8 +19,7 @@ const ENVIRONMENT_VERSION = 2;
  * @param codeType
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
-export async function downloadSource({
-	// TODO Rename downloadSource to pullSource
+export async function pullComponentCode({
 	appComponentType,
 	appComponentName,
 	codeType,
@@ -127,7 +126,7 @@ function getCodeApiUrl({
 	return origin.baseUrl + '/v2' + urn;
 }
 
-export async function uploadSource({
+export async function deployComponentCode({
 	appComponentType,
 	appComponentName,
 	codeType,

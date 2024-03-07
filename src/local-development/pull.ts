@@ -5,9 +5,9 @@ import {
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
 import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
-import { getAllComponentsSummaries } from './component-summaries';
+import { getAllRemoteComponentsSummaries } from './component-summaries';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
-import { downloadSource } from './code-deploy-download';
+import { pullComponentCode } from './code-pull-deploy';
 import { askForProjectOrigin } from './dialog-select-origin';
 import { getAppComponentTypes } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
@@ -52,14 +52,14 @@ export async function pullNewComponents(
 	origin: LocalAppOriginWithSecret,
 ): Promise<{ componentType: AppComponentType; componentName: string }[]> {
 	const makecomappJson = await getMakecomappJson(localAppRootdir);
-	const cloudAppComponents = await getAllComponentsSummaries(origin);
+	const cloudAppComponents = await getAllRemoteComponentsSummaries(origin);
 	const newComponents: Awaited<ReturnType<typeof pullNewComponents>> = [];
 
 	for (const componentType of getAppComponentTypes()) {
 		for (const [componentName, componentMetadata] of Object.entries(cloudAppComponents[componentType])) {
 			if (!makecomappJson.components[componentType][componentName]) {
 				// Local component not exists, so pull it
-				pullComponent(componentType, componentName, componentMetadata, localAppRootdir, origin);
+				pullNewComponent(componentType, componentName, componentMetadata, localAppRootdir, origin);
 				newComponents.push({ componentType, componentName });
 			}
 		}
@@ -73,7 +73,7 @@ export async function pullNewComponents(
  *
  * Creates all necessary local files and adds component to makecomapp.json manifest.
  */
-async function pullComponent(
+async function pullNewComponent(
 	componentType: AppComponentType,
 	componentName: string,
 	componentMetadata: AppComponentMetadata,
@@ -92,8 +92,9 @@ async function pullComponent(
 		),
 	};
 	// Download code files
-	await downloadCodeFiles(componentType, componentName, localAppRootdir, origin, componentMetadataWithCodefiles);
-	// Write new component into makecomapp.json file
+	await pullComponentCodes(componentType, componentName, localAppRootdir, origin, componentMetadataWithCodefiles);
+
+	// Write new (or update existing) component into makecomapp.json file
 	await upsertComponentInMakecomappjson(
 		componentType,
 		componentName,
@@ -108,18 +109,18 @@ async function pullComponent(
  * Downloads all files of component specified in `componentMetadata.codeFiles`
  * from remote origin to local file system.
  */
-async function downloadCodeFiles(
+async function pullComponentCodes(
 	appComponentType: AppComponentType,
 	appComponentName: string,
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 ): Promise<void> {
-	log('debug', `Clone all codes of ${appComponentType} ${appComponentName}`);
+	log('debug', `Pull ${appComponentType} ${appComponentName}: all codes`);
 	// Download codes from API to local files
 	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-		await downloadSource({
+		await pullComponentCode({
 			appComponentType,
 			appComponentName,
 			codeType,

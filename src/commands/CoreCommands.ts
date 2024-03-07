@@ -729,7 +729,7 @@ export class CoreCommands {
 			'apps-sdk.load-source',
 			catchError('Load My Apps file from API', async (item) => {
 
-				// TODO Refactor this to use `downloadSource()` function.
+				// TODO Refactor this to use `pullComponentCode()` function.
 
 				// Compose directory structure
 				let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(

@@ -12,10 +12,10 @@ import { getModuleDefFromId } from '../services/module-types-naming';
 /**
  * Gets list of all components from remote origin (in Make).
  */
-export async function getAllComponentsSummaries(
+export async function getAllRemoteComponentsSummaries(
 	origin: LocalAppOriginWithSecret,
 ): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {
-	const components: Awaited<ReturnType<typeof getAllComponentsSummaries>> = {
+	const components: Awaited<ReturnType<typeof getAllRemoteComponentsSummaries>> = {
 		connection: {},
 		webhook: {},
 		module: {},
@@ -34,21 +34,21 @@ export async function getAllComponentsSummaries(
 			};
 			switch (appComponentType) {
 				case 'connection':
-					componentMetadata['connectionType'] = (
+					componentMetadata.connectionType = (
 						appComponentSummary as ComponentsApiResponseConnectionItem
 					).type;
 					break;
 				case 'webhook':
-					componentMetadata['webhookType'] = (appComponentSummary as ComponentsApiResponseWebhookItem).type;
+					componentMetadata.webhookType = (appComponentSummary as ComponentsApiResponseWebhookItem).type;
 
 					break;
 				case 'module':
-					componentMetadata['description'] = appComponentSummary.description;
-					componentMetadata['moduleType'] = getModuleDefFromId(
+					componentMetadata.description = appComponentSummary.description;
+					componentMetadata.moduleType = getModuleDefFromId(
 						(appComponentSummary as ComponentsApiResponseModuleItem).typeId,
 					).type;
-					if (componentMetadata['moduleType'] === 'action') {
-						componentMetadata['actionCrud'] = (appComponentSummary as ComponentsApiResponseModuleItem).crud;
+					if (componentMetadata.moduleType === 'action') {
+						componentMetadata.actionCrud = (appComponentSummary as ComponentsApiResponseModuleItem).crud;
 					}
 					break;
 			}
