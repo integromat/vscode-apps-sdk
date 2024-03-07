@@ -63,7 +63,7 @@ export async function pullComponentCode({
 	const isEmptyArrayTest = /^\s*\[\s*\]\s*$/;
 	if (appComponentType === 'module' && codeType === 'scope' && isEmptyArrayTest.test(codeContent)) {
 		codeContent =
-			'Code below is relevant only if an OAuth type connection is associated with the module. In other cases, it is ignored.\n' +
+			'// Code below is relevant only if an OAuth type connection is associated with the module. In other cases, it is ignored.\n' +
 			codeContent;
 	}
 
