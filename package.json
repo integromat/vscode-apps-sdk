@@ -426,6 +426,10 @@
 			{
 				"command": "apps-sdk.local-dev.pull-new-components",
 				"title": "Pull New Components From Make (alpha)"
+			},
+			{
+				"command": "apps-sdk.local-dev.pull-all-components",
+				"title": "Pull All Components From Make (alpha)"
 			}
 		],
 		"viewsContainers": {
@@ -769,6 +773,11 @@
 			"explorer/context": [
 				{
 					"command": "apps-sdk.local-dev.pull-new-components",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json'"
+				},
+				{
+					"command": "apps-sdk.local-dev.pull-all-components",
 					"group": "7_modification",
 					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json'"
 				},

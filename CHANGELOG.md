@@ -7,6 +7,7 @@ Unreleased
 ### Changes
 
 - Implemented ability clone/edit/deploy of module `scope`.
+- Implemented command "pull all components from Make"
 
 1.3.50 (pre-release) [2023-01-04]
 --------------------

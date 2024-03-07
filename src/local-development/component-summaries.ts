@@ -1,6 +1,6 @@
 import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { getAppComponentTypes } from '../services/component-code-def';
-import { getAppComponents } from '../services/get-app-components';
+import { getAppComponentDetails, getAppComponents } from '../services/get-app-components';
 import {
 	ComponentsApiResponseConnectionItem,
 	ComponentsApiResponseItem,
@@ -51,6 +51,21 @@ export async function getAllRemoteComponentsSummaries(
 						componentMetadata.actionCrud = (appComponentSummary as ComponentsApiResponseModuleItem).crud;
 					}
 					break;
+			}
+
+			// Load additional/specific properties
+			if (['module', 'webhook', 'rpc'].includes(appComponentType)) {
+				const componentDetails = await getAppComponentDetails(
+					appComponentType,
+					appComponentSummary.name,
+					origin,
+				);
+				// Add `altConnection`
+				componentMetadata.altConnection = componentDetails.altConnection;
+				// Add reference from Instant Trigger to Webhook
+				if (appComponentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
+					componentMetadata.webhook = componentDetails.webhook;
+				}
 			}
 
 			components[appComponentType][appComponentSummary.name] = componentMetadata;

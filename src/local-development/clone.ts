@@ -13,7 +13,7 @@ import { generalCodesDefinition } from '../services/component-code-def';
 import { pullComponentCode } from './code-pull-deploy';
 import { generateDefaultLocalFilename } from './local-file-paths';
 import { catchError } from '../error-handling';
-import { pullNewComponents } from './pull';
+import { pullComponents } from './pull';
 import { storeSecret } from './secrets-storage';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
@@ -115,7 +115,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
 		);
 		// Pull all app's components
-		await pullNewComponents(localAppRootdir, origin);
+		await pullComponents(localAppRootdir, origin, 'all');
 
 		// VSCode show readme.md and open explorer
 		const readmeUri = vscode.Uri.joinPath(
