@@ -18,6 +18,7 @@ export interface LocalAppOrigin {
 	label?: string;
 	baseUrl: string;
 	appId: string;
+	idMapping: AppIdMapping;
 	appVersion: number;
 	apikeyFile: string;
 }
@@ -28,9 +29,15 @@ export interface LocalAppOriginWithSecret extends LocalAppOrigin {
 
 export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
 
+type AppIdMapping = Record<AppComponentType, IdMappingItem[]>;
+
+interface IdMappingItem {
+	local: string;
+	remote: string;
+}
+
 /** Component ID => Component metadata */
 export type AppComponentsMetadata<T> = Record<string, T>;
-
 
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
 	codeFiles: ComponentCodeFilesMetadata;

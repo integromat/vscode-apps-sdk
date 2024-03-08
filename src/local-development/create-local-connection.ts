@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
-import { getComponentPseudoId } from './component-pseudo-id';
+import { generateComponentInternalId } from './component-internal-id';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { askFreeText } from './helpers/ask-free-text';
@@ -54,7 +54,7 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 		appConnectionNameSuffix = typeof appConnectionNameSuffix === 'string' ? 2 : appConnectionNameSuffix + 1;
 	}
 	const newConnectionTempId = appId + appConnectionNameSuffix;
-	const newConnectionPseudoId = getComponentPseudoId('connection', newConnectionTempId, appId);
+	const newConnectionPseudoId = generateComponentInternalId('connection', newConnectionTempId, appId);
 
 	// Ask for connection label
 	const connectionLabel = await askFreeText({

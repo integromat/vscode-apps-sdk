@@ -1,7 +1,6 @@
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import * as vscode from 'vscode';
-import { getComponentPseudoId } from './component-pseudo-id';
 import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
 import { CodeDef } from './types/code-def.types';
 import { CodeType } from './types/code-type.types';
@@ -62,12 +61,11 @@ export async function generateDefaultLocalFilename(
  */
 export async function generateComponentDefaultCodeFilesPaths(
 	componentType: AppComponentType,
-	componentId: string,
+	componentInternalId: string,
 	componentMetadata: AppComponentMetadata,
 	localAppRootdir: vscode.Uri,
-	appId?: string,
+	appId?: string, // TODO Remove
 ): Promise<ComponentCodeFilesMetadata> {
-	const componentPseudoId = getComponentPseudoId(componentType, componentId, appId);
 	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentPseudoId, localAppRootdir);
 
 	// Detect, which codes are appropriate to the component
@@ -83,7 +81,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 			codeDef,
 			codeType,
 			componentType,
-			componentPseudoId,
+			componentInternalId,
 			componentMetadata,
 		);
 		componentCodeMetadata[codeType] =

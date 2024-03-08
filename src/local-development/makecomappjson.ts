@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { TextDecoder, TextEncoder } from 'node:util';
 import throat from 'throat';
 import * as vscode from 'vscode';
-import { AppComponentMetadataWithCodeFiles, MakecomappJson } from './types/makecomapp.types';
+import { AppComponentMetadataWithCodeFiles, LocalAppOrigin, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
 import { isValidID } from './helpers/validate-id';
@@ -150,13 +150,25 @@ export async function renameConnectionInMakecomappJson(
  */
 export async function upsertComponentInMakecomappjson(
 	componentType: AppComponentType,
-	componentName: string,
+	remoteComponentName: string,
+	internalComponentId: string,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 	anyProjectPath: vscode.Uri,
 ) {
 	await limitConcurrency(async () => {
 		const makecomappJson = await getMakecomappJson(anyProjectPath);
-		makecomappJson.components[componentType][componentName] = componentMetadata;
+		makecomappJson.components[componentType][internalComponentId] = componentMetadata;
+
+		// TODO Update origin -> idMapping to { local: internalComponentId: remote: remoteComponentName }
+
 		await updateMakecomappJson(anyProjectPath, makecomappJson);
 	});
+}
+
+export function getComponentInternalId(
+	origin: LocalAppOrigin,
+	componentType: AppComponentType,
+	remoteComponentName: string,
+): string | undefined {
+	return origin.idMapping[componentType].find((mapping) => mapping.remote === remoteComponentName)?.local;
 }

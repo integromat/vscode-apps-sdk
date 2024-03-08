@@ -56,9 +56,17 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		baseUrl: 'https://' + environment.url,
 		appId: context.name,
 		appVersion: context.version,
+		idMapping: {
+			connection: [],
+			module: [],
+			function: [],
+			rpc: [],
+			webhook: [],
+		},
 		apikeyFile: path.posix.relative(localAppRootdir.path, apikeyFileUri.path),
 		apikey: environment.apikey,
 	};
+	const originWithoutApiKey = pick(origin, ['label', 'baseUrl', 'appId', 'appVersion', 'idMapping', 'apikeyFile']);
 
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,
@@ -70,7 +78,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			rpc: {},
 			webhook: {},
 		},
-		origins: [pick(origin, ['label', 'baseUrl', 'appId', 'appVersion', 'apikeyFile'])],
+		origins: [originWithoutApiKey],
 	};
 
 	// Save .gitignore: exclude secrets dir, common data.
@@ -99,7 +107,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			// Pull code from API to local file
 			await pullComponentCode({
 				appComponentType: 'app', // The `app` type with name `` is the special
-				appComponentName: '', //
+				appComponentName: '',
 				codeType,
 				origin,
 				destinationPath: codeLocalAbsolutePath,
@@ -114,6 +122,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			makeappJsonPath,
 			new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
 		);
+
 		// Pull all app's components
 		await pullComponents(localAppRootdir, origin, 'all');
 

@@ -5,7 +5,12 @@ import {
 	ComponentCodeFilesMetadata,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
+import {
+	getComponentInternalId,
+	getMakecomappJson,
+	getMakecomappRootDir,
+	upsertComponentInMakecomappjson,
+} from './makecomappjson';
 import { getAllRemoteComponentsSummaries } from './component-summaries';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode } from './code-pull-deploy';
@@ -16,6 +21,7 @@ import { log } from '../output-channel';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
+import { generateComponentInternalId } from './component-internal-id';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -100,20 +106,51 @@ export async function pullComponents(
 		}
 	}
 
-	// Pull app components
+	// Pull app components from remote
 	for (const componentType of getAppComponentTypes()) {
-		for (const [componentName, remoteComponentMetadata] of Object.entries(remoteAppComponents[componentType])) {
-			const existingComponentMetadata = makecomappJson.components[componentType][componentName];
-			if (!existingComponentMetadata) {
-				pullComponent(componentType, componentName, remoteComponentMetadata, localAppRootdir, origin);
-				newComponents.push({ componentType, componentName });
+		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
+			remoteAppComponents[componentType],
+		)) {
+			const componentInternalId = getComponentInternalId(origin, componentType, remoteComponentName);
+			const existingComponentMetadata =
+				componentInternalId && makecomappJson.components[componentType][componentInternalId];
+			if (!componentInternalId || !existingComponentMetadata) {
+				// Pull a new component (unexisting in local workspace)
+
+				// Generate new component internal ID
+				const newComponentInternalId = await generateComponentInternalId(
+					componentType,
+					remoteComponentName,
+					origin.appId,
+					localAppRootdir,
+				);
+
+				// Pull from remote
+				pullComponent(
+					componentType,
+					remoteComponentName,
+					newComponentInternalId,
+					remoteComponentMetadata,
+					localAppRootdir,
+					origin,
+				);
+				newComponents.push({ componentType, componentName: remoteComponentName });
 			} else if (pullMode === 'all') {
+				// Pull/update already existing component
+
 				// Construct updated component metadata and save it
 				const updatedComponentMedatada: AppComponentMetadataWithCodeFiles = {
 					...existingComponentMetadata, // Use previous `codeFiles`
 					...remoteComponentMetadata, // Update all other properties by fresh one loaded from remote
 				};
-				pullComponent(componentType, componentName, updatedComponentMedatada, localAppRootdir, origin);
+				pullComponent(
+					componentType,
+					remoteComponentName,
+					componentInternalId,
+					updatedComponentMedatada,
+					localAppRootdir,
+					origin,
+				);
 			}
 		}
 	}
@@ -128,7 +165,8 @@ export async function pullComponents(
  */
 async function pullComponent(
 	componentType: AppComponentType,
-	componentName: string,
+	remoteComponentName: string,
+	componentInternalId: string,
 	componentMetadata: AppComponentMetadata | AppComponentMetadataWithCodeFiles,
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
@@ -143,7 +181,7 @@ async function pullComponent(
 			existingLocalCodeFiles ??
 			(await generateComponentDefaultCodeFilesPaths(
 				componentType,
-				componentName,
+				componentInternalId,
 				componentMetadata,
 				localAppRootdir,
 				origin.appId,
@@ -151,17 +189,24 @@ async function pullComponent(
 	};
 
 	// Download code files
-	await pullComponentCodes(componentType, componentName, localAppRootdir, origin, componentMetadataWithCodefiles);
+	await pullComponentCodes(
+		componentType,
+		remoteComponentName,
+		localAppRootdir,
+		origin,
+		componentMetadataWithCodefiles,
+	);
 
 	// Write new (or update existing) component into makecomapp.json file
 	await upsertComponentInMakecomappjson(
 		componentType,
-		componentName,
+		remoteComponentName,
+		componentInternalId,
 		componentMetadataWithCodefiles,
 		localAppRootdir,
 	);
 
-	return [componentName, componentMetadataWithCodefiles];
+	return [remoteComponentName, componentMetadataWithCodefiles];
 }
 
 /**
