@@ -108,7 +108,12 @@ export async function pullComponents(
 				pullComponent(componentType, componentName, remoteComponentMetadata, localAppRootdir, origin);
 				newComponents.push({ componentType, componentName });
 			} else if (pullMode === 'all') {
-				pullComponent(componentType, componentName, existingComponentMetadata, localAppRootdir, origin);
+				// Construct updated component metadata and save it
+				const updatedComponentMedatada: AppComponentMetadataWithCodeFiles = {
+					...existingComponentMetadata, // Use previous `codeFiles`
+					...remoteComponentMetadata, // Update all other properties by fresh one loaded from remote
+				};
+				pullComponent(componentType, componentName, updatedComponentMedatada, localAppRootdir, origin);
 			}
 		}
 	}

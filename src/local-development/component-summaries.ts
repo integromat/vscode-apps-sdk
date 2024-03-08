@@ -60,10 +60,23 @@ export async function getAllRemoteComponentsSummaries(
 					appComponentSummary.name,
 					origin,
 				);
-				// Add `altConnection`
+				// Add `connection` and `altConnection`
+				if (componentDetails.connection === undefined) {
+					// This should not occure on production. It is here for input validation only.
+					throw new Error(`Missing expected property 'connection' on remote ${appComponentType} ${appComponentSummary.name}.`);
+				}
+				if (componentDetails.altConnection === undefined) {
+					// This should not occure on production. It is here for input validation only.
+					throw new Error(`Missing expected property 'altConnection' on remote ${appComponentType} ${appComponentSummary.name}.`);
+				}
+				componentMetadata.connection = componentDetails.connection;
 				componentMetadata.altConnection = componentDetails.altConnection;
 				// Add reference from Instant Trigger to Webhook
 				if (appComponentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
+					if (componentDetails.webhook === undefined) {
+						// This should not occure on production. It is here for input validation only.
+						throw new Error(`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${appComponentType} ${appComponentSummary.name}.`);
+					}
 					componentMetadata.webhook = componentDetails.webhook;
 				}
 			}
