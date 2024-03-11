@@ -1,6 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
 import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
-import { CreateAppComponentPostAction } from './types/create-component-post-action.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { log } from '../output-channel';
 import { AppComponentType } from '../types/app-component-type.types';
@@ -17,6 +16,7 @@ const ENVIRONMENT_VERSION = 2;
  * Note: Content will stay filled by templated codes. No local codes are updates by this function.
  *
  * @param opt.componentName New component ID (for components, where it can be defined by user)
+ * @returns New component name
  */
 export async function createRemoteAppComponent(opt: {
 	appName: string;
@@ -25,16 +25,16 @@ export async function createRemoteAppComponent(opt: {
 	componentName: string;
 	componentMetadata: AppComponentMetadata;
 	origin: LocalAppOriginWithSecret;
-}): Promise<CreateAppComponentPostAction[]> {
+}): Promise<string> {
 	try {
 		switch (opt.componentType) {
 			case 'connection': {
 				const newConnId = await createRemoteConnection(opt);
-				return [{ renameConnection: { oldId: opt.componentName, newId: newConnId } }];
+				return newConnId;
 			}
 			case 'module':
 				await createRemoteModule(opt);
-				return [];
+				return opt.componentName;
 			default:
 				throw new Error(`Creation of ${opt.componentType} ${opt.componentName} not implemented yet. Sorry.`);
 		}

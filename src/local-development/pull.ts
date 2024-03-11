@@ -86,7 +86,7 @@ export async function pullComponents(
 	pullMode: 'new-only' | 'all',
 ): Promise<{ componentType: AppComponentType; componentName: string }[]> {
 	const makecomappJson = await getMakecomappJson(localAppRootdir);
-	const remoteAppComponents = await getAllRemoteComponentsSummaries(localAppRootdir, origin);
+	const remoteAppComponents = await getAllRemoteComponentsSummaries(localAppRootdir, origin, 'local');
 	const newComponents: Awaited<ReturnType<typeof pullComponents>> = [];
 
 	// Pull app general codes (in `all` pull mode only)

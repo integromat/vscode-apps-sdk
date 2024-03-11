@@ -14,11 +14,13 @@ import { remoteComponentNameToInternalId } from './makecomappjson';
 /**
  * Gets list of all components from remote origin (in Make).
  *
- * Note: The function sideeffect is that it registers/writes all new components ID mappings into makecomapp.json file.
+ * Note: If `returnedIdType==='local'`, then the function has side-effect:
+ *       It registers/writes all new components ID mappings into makecomapp.json file.
  */
 export async function getAllRemoteComponentsSummaries(
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
+	returnedIdType: 'local' | 'remote',
 ): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {
 	const components: Awaited<ReturnType<typeof getAllRemoteComponentsSummaries>> = {
 		connection: {},
@@ -78,22 +80,28 @@ export async function getAllRemoteComponentsSummaries(
 						`Missing expected property 'altConnection' on remote ${appComponentType} ${appComponentSummary.name}.`,
 					);
 				}
-				componentMetadata.connection = componentDetails.connection
-					? await remoteComponentNameToInternalId(
-							'connection',
-							componentDetails.connection,
-							anyProjectPath,
-							origin,
-					  )
-					: null;
-				componentMetadata.altConnection = componentDetails.altConnection
-					? await remoteComponentNameToInternalId(
-							'connection',
-							componentDetails.altConnection,
-							anyProjectPath,
-							origin,
-					  )
-					: null;
+				componentMetadata.connection = componentDetails.connection;
+				if (returnedIdType === 'local' && componentMetadata.connection) {
+					// Translate remote name to local ID.
+					componentMetadata.connection = await remoteComponentNameToInternalId(
+						'connection',
+						componentMetadata.connection,
+						anyProjectPath,
+						origin,
+					);
+				}
+
+				componentMetadata.altConnection = componentDetails.altConnection;
+				if (returnedIdType === 'local' && componentMetadata.altConnection) {
+					// Translate remote name to local ID.
+					componentMetadata.altConnection = await remoteComponentNameToInternalId(
+						'connection',
+						componentMetadata.altConnection,
+						anyProjectPath,
+						origin,
+					);
+				}
+
 				// Add reference from Instant Trigger to Webhook
 				if (appComponentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
 					if (componentDetails.webhook === undefined) {
@@ -102,14 +110,16 @@ export async function getAllRemoteComponentsSummaries(
 							`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${appComponentType} ${appComponentSummary.name}.`,
 						);
 					}
-					componentMetadata.webhook = componentDetails.webhook
-						? await remoteComponentNameToInternalId(
-								'webhook',
-								componentDetails.webhook,
-								anyProjectPath,
-								origin,
-						  )
-						: null;
+					componentMetadata.webhook = componentDetails.webhook;
+					if (returnedIdType === 'local' && componentMetadata.webhook) {
+						// Translate remote name to local ID.
+						componentMetadata.webhook = await remoteComponentNameToInternalId(
+							'webhook',
+							componentMetadata.webhook,
+							anyProjectPath,
+							origin,
+						);
+					}
 				}
 			}
 

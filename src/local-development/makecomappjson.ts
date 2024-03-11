@@ -8,7 +8,6 @@ import { MAKECOMAPP_FILENAME } from './consts';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
 import { isValidID } from './helpers/validate-id';
 import { getCurrentWorkspace } from '../services/workspace';
-import { log } from '../output-channel';
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 
@@ -112,40 +111,6 @@ async function updateMakecomappJson(anyProjectPath: vscode.Uri, newMakecomappJso
 }
 
 /**
- * Renames connection ID in makecomapp.json. Renames also all references of the connection.
- */
-export async function renameConnectionInMakecomappJson(
-	anyProjectPath: vscode.Uri,
-	oldConnectionName: string,
-	newConnectionName: string,
-): Promise<void> {
-	log('debug', `makecomapp.json: Rename connetion ${oldConnectionName} => ${newConnectionName}`);
-
-	const makecomappJson = await getMakecomappJson(anyProjectPath);
-
-	// Rename the connection itself
-	const connections = makecomappJson.components.connection;
-	const newConnections = Object.fromEntries(
-		Object.entries(connections).map(([connectionName, connectionMetadata]) => {
-			return [connectionName === oldConnectionName ? newConnectionName : connectionName, connectionMetadata];
-		}),
-	);
-	makecomappJson.components.connection = newConnections;
-
-	// Rename referecne: connections mentioned in modules
-	Object.values(makecomappJson.components.module).forEach((moduleMetadata) => {
-		if (moduleMetadata.connection === oldConnectionName) {
-			moduleMetadata.connection = newConnectionName;
-		}
-		if (moduleMetadata.altConnection === oldConnectionName) {
-			moduleMetadata.altConnection = newConnectionName;
-		}
-	});
-	// Write changes to file
-	await updateMakecomappJson(anyProjectPath, makecomappJson);
-}
-
-/**
  * Insert or update the component in makecomapp.json file.
  */
 export async function upsertComponentInMakecomappjson(
@@ -183,40 +148,72 @@ export async function upsertComponentInMakecomappjson(
 		const makecomappJson = await getMakecomappJson(anyProjectPath);
 		makecomappJson.components[componentType][internalComponentId] = componentMetadata;
 
-		// TODO Tohle je mozna duplikace, co je k nicemu
-
 		// Add origin->idMapping to { local: internalComponentId: remote: remoteComponentName }
 		if (origin && remoteComponentName) {
-			const originInMakecomappJson = getOriginObject(makecomappJson, origin);
-			const existingIdMappingItems = originInMakecomappJson.idMapping[componentType].filter(
-				(idMappingItem) =>
-					idMappingItem.local === internalComponentId || idMappingItem.remote === remoteComponentName,
+			await _addComponentIdMapping(
+				componentType,
+				internalComponentId,
+				remoteComponentName,
+				anyProjectPath,
+				origin,
 			);
-			if (existingIdMappingItems.length > 0) {
-				// Mapping already exists. Check the consistency of the pair.
-				if (existingIdMappingItems.length > 1) {
-					throw new Error(
-						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where mismatch found for local=${internalComponentId}, remote=${remoteComponentName}.`,
-					);
-				} else if (
-					existingIdMappingItems[0].local !== internalComponentId ||
-					existingIdMappingItems[0].remote !== remoteComponentName
-				) {
-					throw new Error(
-						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${internalComponentId} or remote=${remoteComponentName}, but it is paired with another unexpected component ID.`,
-					);
-				}
-			} else {
-				// Create new ID mapping, because does not exist yet.
-				originInMakecomappJson.idMapping[componentType].push({
-					local: internalComponentId,
-					remote: remoteComponentName,
-				});
-			}
 		}
 
 		await updateMakecomappJson(anyProjectPath, makecomappJson);
 	});
+}
+
+export async function addComponentIdMapping(
+	componentType: AppComponentType,
+	internalComponentId: string,
+	remoteComponentName: string,
+	anyProjectPath: vscode.Uri,
+	origin: LocalAppOrigin,
+) {
+	return await limitConcurrency(async () => {
+		return _addComponentIdMapping(componentType, internalComponentId, remoteComponentName, anyProjectPath, origin);
+	});
+}
+
+/**
+ * @private Do not use directly. Need to be wrapped by `limitConcurrency()` in parent method.
+ */
+async function _addComponentIdMapping(
+	componentType: AppComponentType,
+	internalComponentId: string,
+	remoteComponentName: string,
+	anyProjectPath: vscode.Uri,
+	origin: LocalAppOrigin,
+) {
+	const makecomappJson = await getMakecomappJson(anyProjectPath);
+	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
+	const existingIdMappingItems = originInMakecomappJson.idMapping[componentType].filter(
+		(idMappingItem) => idMappingItem.local === internalComponentId || idMappingItem.remote === remoteComponentName,
+	);
+	if (existingIdMappingItems.length > 0) {
+		// Mapping already exists. Check the consistency of the pair.
+		if (existingIdMappingItems.length > 1) {
+			throw new Error(
+				`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where mismatch found for local=${internalComponentId}, remote=${remoteComponentName}.`,
+			);
+		} else if (
+			existingIdMappingItems[0].local !== internalComponentId ||
+			existingIdMappingItems[0].remote !== remoteComponentName
+		) {
+			throw new Error(
+				`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${internalComponentId} or remote=${remoteComponentName}, but it is paired with another unexpected component ID.`,
+			);
+		}
+	} else {
+		// Create new ID mapping, because does not exist yet.
+		originInMakecomappJson.idMapping[componentType].push({
+			local: internalComponentId,
+			remote: remoteComponentName,
+		});
+	}
+
+	// Save updated makecomapp.json file
+	await updateMakecomappJson(anyProjectPath, makecomappJson);
 }
 
 /**
@@ -265,13 +262,26 @@ export async function remoteComponentNameToInternalId(
 	});
 }
 
+export function getLocalIdToRemoteComponentNameMapping(
+	componentType: AppComponentType,
+	makecomappJson: MakecomappJson,
+	origin: LocalAppOrigin,
+): Record<string, string> {
+	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
+
+	const mapping = originInMakecomappJson.idMapping[componentType].reduce((obj, idMappingItem) => {
+		obj[idMappingItem.local] = idMappingItem.remote;
+		return obj;
+	}, {} as Record<string, string>);
+	return mapping;
+}
+
 export async function generateAndReserveComponentInternalId(
 	componentType: AppComponentType,
 	expectedRemoteComponentId: string,
-	anyProjectPath: vscode.Uri
+	anyProjectPath: vscode.Uri,
 ): Promise<string> {
 	return await limitConcurrency(async () => {
-
 		const componentInternalId = await _generateComponentInternalId(
 			componentType,
 			expectedRemoteComponentId,
@@ -288,7 +298,6 @@ export async function generateAndReserveComponentInternalId(
 		return componentInternalId;
 	});
 }
-
 
 /**
  * Returns the new free/unused local component ID, which can be used in makecomapp.json file.
@@ -337,7 +346,8 @@ async function _generateComponentInternalId(
 	// Note: Here is the hack, that local component can be not filled fully, but is `null`.
 	//       In this case it is reserved for some future use and consider it also as already used.
 	while (
-		makecomappJson.components[componentType][`${componenInternalIdPrefix}${componentUnusedIndex ?? ''}`] !== undefined ||
+		makecomappJson.components[componentType][`${componenInternalIdPrefix}${componentUnusedIndex ?? ''}`] !==
+			undefined ||
 		originInMakecomappJson?.idMapping[componentType].find(
 			(idMappingItem) => idMappingItem.local === `${componenInternalIdPrefix}${componentUnusedIndex ?? ''}`,
 		)
