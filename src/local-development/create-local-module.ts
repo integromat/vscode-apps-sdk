@@ -119,5 +119,12 @@ async function createLocalModule(
 	}
 
 	// Write changes to makecomapp.json file
-	await upsertComponentInMakecomappjson('module', moduleName, moduleMetadataWithCodeFiles, makeappRootdir);
+	await upsertComponentInMakecomappjson(
+		'module',
+		moduleName,
+		null,
+		moduleMetadataWithCodeFiles,
+		makeappRootdir,
+		null,
+	);
 }

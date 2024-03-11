@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { getAppComponentTypes } from '../services/component-code-def';
 import { getAppComponentDetails, getAppComponents } from '../services/get-app-components';
@@ -8,11 +9,15 @@ import {
 	ComponentsApiResponseWebhookItem,
 } from '../types/get-component-api-response.types';
 import { getModuleDefFromId } from '../services/module-types-naming';
+import { remoteComponentNameToInternalId } from './makecomappjson';
 
 /**
  * Gets list of all components from remote origin (in Make).
+ *
+ * Note: The function sideeffect is that it registers/writes all new components ID mappings into makecomapp.json file.
  */
 export async function getAllRemoteComponentsSummaries(
+	anyProjectPath: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 ): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {
 	const components: Awaited<ReturnType<typeof getAllRemoteComponentsSummaries>> = {
@@ -63,21 +68,48 @@ export async function getAllRemoteComponentsSummaries(
 				// Add `connection` and `altConnection`
 				if (componentDetails.connection === undefined) {
 					// This should not occure on production. It is here for input validation only.
-					throw new Error(`Missing expected property 'connection' on remote ${appComponentType} ${appComponentSummary.name}.`);
+					throw new Error(
+						`Missing expected property 'connection' on remote ${appComponentType} ${appComponentSummary.name}.`,
+					);
 				}
 				if (componentDetails.altConnection === undefined) {
 					// This should not occure on production. It is here for input validation only.
-					throw new Error(`Missing expected property 'altConnection' on remote ${appComponentType} ${appComponentSummary.name}.`);
+					throw new Error(
+						`Missing expected property 'altConnection' on remote ${appComponentType} ${appComponentSummary.name}.`,
+					);
 				}
-				componentMetadata.connection = componentDetails.connection;
-				componentMetadata.altConnection = componentDetails.altConnection;
+				componentMetadata.connection = componentDetails.connection
+					? await remoteComponentNameToInternalId(
+							'connection',
+							componentDetails.connection,
+							anyProjectPath,
+							origin,
+					  )
+					: null;
+				componentMetadata.altConnection = componentDetails.altConnection
+					? await remoteComponentNameToInternalId(
+							'connection',
+							componentDetails.altConnection,
+							anyProjectPath,
+							origin,
+					  )
+					: null;
 				// Add reference from Instant Trigger to Webhook
 				if (appComponentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
 					if (componentDetails.webhook === undefined) {
 						// This should not occure on production. It is here for input validation only.
-						throw new Error(`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${appComponentType} ${appComponentSummary.name}.`);
+						throw new Error(
+							`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${appComponentType} ${appComponentSummary.name}.`,
+						);
 					}
-					componentMetadata.webhook = componentDetails.webhook;
+					componentMetadata.webhook = componentDetails.webhook
+						? await remoteComponentNameToInternalId(
+								'webhook',
+								componentDetails.webhook,
+								anyProjectPath,
+								origin,
+						  )
+						: null;
 				}
 			}
 

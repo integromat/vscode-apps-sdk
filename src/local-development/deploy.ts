@@ -58,7 +58,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			progresDialogReport('Initial analytics');
 
 			// Get all existing remote components
-			const allComponentsSummariesInCloud = await getAllRemoteComponentsSummaries(origin);
+			const allComponentsSummariesInCloud = await getAllRemoteComponentsSummaries(anyProjectPath, origin);
 
 			// Compare remote component list with local makecomapp.json
 			const componentAddingRemoving = diffComponentsPresence(

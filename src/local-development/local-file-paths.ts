@@ -64,9 +64,8 @@ export async function generateComponentDefaultCodeFilesPaths(
 	componentInternalId: string,
 	componentMetadata: AppComponentMetadata,
 	localAppRootdir: vscode.Uri,
-	appId?: string, // TODO Remove
 ): Promise<ComponentCodeFilesMetadata> {
-	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentPseudoId, localAppRootdir);
+	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentInternalId, localAppRootdir);
 
 	// Detect, which codes are appropriate to the component
 	const componentCodesDef = entries(getAppComponentCodesDefinition(componentType)).filter(

@@ -6,9 +6,9 @@ import {
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
 import {
-	getComponentInternalId,
 	getMakecomappJson,
 	getMakecomappRootDir,
+	remoteComponentNameToInternalId,
 	upsertComponentInMakecomappjson,
 } from './makecomappjson';
 import { getAllRemoteComponentsSummaries } from './component-summaries';
@@ -21,7 +21,6 @@ import { log } from '../output-channel';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
-import { generateComponentInternalId } from './component-internal-id';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -87,7 +86,7 @@ export async function pullComponents(
 	pullMode: 'new-only' | 'all',
 ): Promise<{ componentType: AppComponentType; componentName: string }[]> {
 	const makecomappJson = await getMakecomappJson(localAppRootdir);
-	const remoteAppComponents = await getAllRemoteComponentsSummaries(origin);
+	const remoteAppComponents = await getAllRemoteComponentsSummaries(localAppRootdir, origin);
 	const newComponents: Awaited<ReturnType<typeof pullComponents>> = [];
 
 	// Pull app general codes (in `all` pull mode only)
@@ -111,25 +110,19 @@ export async function pullComponents(
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
 			remoteAppComponents[componentType],
 		)) {
-			const componentInternalId = getComponentInternalId(origin, componentType, remoteComponentName);
-			const existingComponentMetadata =
-				componentInternalId && makecomappJson.components[componentType][componentInternalId];
-			if (!componentInternalId || !existingComponentMetadata) {
-				// Pull a new component (unexisting in local workspace)
-
-				// Generate new component internal ID
-				const newComponentInternalId = await generateComponentInternalId(
-					componentType,
-					remoteComponentName,
-					origin.appId,
-					localAppRootdir,
-				);
-
-				// Pull from remote
+			const componentInternalId = await remoteComponentNameToInternalId(
+				componentType,
+				remoteComponentName,
+				localAppRootdir,
+				origin,
+			);
+			const existingComponentMetadata = makecomappJson.components[componentType][componentInternalId];
+			if (!existingComponentMetadata) {
+				// Pull a new component (unexisting in local workspace) from remote
 				pullComponent(
 					componentType,
 					remoteComponentName,
-					newComponentInternalId,
+					componentInternalId,
 					remoteComponentMetadata,
 					localAppRootdir,
 					origin,
@@ -184,7 +177,6 @@ async function pullComponent(
 				componentInternalId,
 				componentMetadata,
 				localAppRootdir,
-				origin.appId,
 			)),
 	};
 
@@ -200,10 +192,11 @@ async function pullComponent(
 	// Write new (or update existing) component into makecomapp.json file
 	await upsertComponentInMakecomappjson(
 		componentType,
-		remoteComponentName,
 		componentInternalId,
+		remoteComponentName,
 		componentMetadataWithCodefiles,
 		localAppRootdir,
+		origin,
 	);
 
 	return [remoteComponentName, componentMetadataWithCodefiles];
