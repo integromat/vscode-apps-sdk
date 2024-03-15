@@ -4,7 +4,7 @@ import { CodeType } from './code-type.types';
 
 export interface CodePath {
 	componentType: AppComponentType | AppGeneralType;
-	componentName: string;
+	componentLocalId: string;
 	codeType: CodeType;
 	localFile: vscode.Uri;
 }

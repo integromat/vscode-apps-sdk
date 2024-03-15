@@ -107,7 +107,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 			// Pull code from API to local file
 			await pullComponentCode({
 				appComponentType: 'app', // The `app` type with name `` is the special
-				appComponentName: '',
+				remoteComponentName: '',
 				codeType,
 				origin,
 				destinationPath: codeLocalAbsolutePath,

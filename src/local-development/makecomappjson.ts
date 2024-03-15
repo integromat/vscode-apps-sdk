@@ -8,7 +8,7 @@ import { MAKECOMAPP_FILENAME } from './consts';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
 import { isValidID } from './helpers/validate-id';
 import { getCurrentWorkspace } from '../services/workspace';
-import { AppComponentType } from '../types/app-component-type.types';
+import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 
 const limitConcurrency = throat(1);
@@ -262,15 +262,66 @@ export async function remoteComponentNameToInternalId(
 	});
 }
 
+/**
+ *
+ * @throws {Error} If remote component name not exists.
+ */
+export function getComponentRemoteName(
+	componentType: AppComponentType | AppGeneralType,
+	componentLocalId: string,
+	makeappJson: MakecomappJson,
+	origin: LocalAppOrigin,
+): string {
+	const localIdToRemoteComponentNameMapping = getLocalIdToRemoteComponentNameMapping(
+		componentType,
+		makeappJson,
+		origin,
+	);
+
+	const remoteComponentName: string | undefined = localIdToRemoteComponentNameMapping[componentLocalId];
+	if (!remoteComponentName) {
+		throw new Error(
+			`The ${componentType} "${componentLocalId}" is not paired to any remote ${componentType} in origin ${
+				origin.label ?? origin.appId
+			}.`,
+		);
+	}
+	return remoteComponentName;
+}
+
 export function getLocalIdToRemoteComponentNameMapping(
-	componentType: AppComponentType,
+	componentType: AppComponentType | AppGeneralType,
 	makecomappJson: MakecomappJson,
 	origin: LocalAppOrigin,
 ): Record<string, string> {
+	if (componentType === 'app') {
+		// This is special case, where "Common", "Readme" (etc.) are considered as members of virtual "app" compoment type, which has single component with ID ``.
+		return { '': '' };
+	}
+
 	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
 
 	const mapping = originInMakecomappJson.idMapping[componentType].reduce((obj, idMappingItem) => {
 		obj[idMappingItem.local] = idMappingItem.remote;
+		return obj;
+	}, {} as Record<string, string>);
+	return mapping;
+}
+
+export function getRemoteComponentNameToLocalIdMapping(
+	componentType: AppComponentType | AppGeneralType,
+	makecomappJson: MakecomappJson,
+	origin: LocalAppOrigin,
+): Record<string, string> {
+	if (componentType === 'app') {
+		// This is special case, where "Common", "Readme" (etc.) are considered as members of virtual "app" compoment type, which has single component with ID ``.
+		return { '': '' };
+	}
+
+	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
+
+	const mapping = originInMakecomappJson.idMapping[componentType].reduce((obj, idMappingItem) => {
+		obj[idMappingItem.remote] = idMappingItem.local;
 		return obj;
 	}, {} as Record<string, string>);
 	return mapping;
@@ -365,19 +416,28 @@ async function _generateComponentInternalId(
  * Used for editation this object for case, when input `origin` can be a clone of this object.
  */
 function getOriginObject(makecomappJson: MakecomappJson, origin: LocalAppOrigin): LocalAppOrigin {
-	const originInMakecomappJson = makecomappJson.origins.find((or) => compareOrigins(or, origin));
-	if (!originInMakecomappJson) {
+	const originInMakecomappJsons = makecomappJson.origins.filter((requestedOrigin) =>
+		compareOrigins(requestedOrigin, origin),
+	);
+	if (originInMakecomappJsons.length === 0) {
 		throw new Error(
 			'Internal error. System was not able to find the actually used origin in "makecomapp.json" file.',
 		);
 	}
-	return originInMakecomappJson;
+	if (originInMakecomappJsons.length > 1) {
+		throw new Error(
+			'Please, update origin\'s labels in "makecomapp.json" to be unique. Explanation: Cannot continue, because you have multiple origins defined in "makecomapp.json", which looks similar.',
+		);
+	}
+
+	return originInMakecomappJsons[0];
 }
 
 function compareOrigins(origin1: LocalAppOrigin, origin2: LocalAppOrigin): boolean {
 	return (
 		origin1.appId === origin2.appId &&
 		origin1.appVersion === origin2.appVersion &&
-		origin1.baseUrl === origin2.baseUrl
+		origin1.baseUrl === origin2.baseUrl &&
+		origin1.label === origin2.label
 	);
 }

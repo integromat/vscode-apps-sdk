@@ -97,7 +97,7 @@ export async function pullComponents(
 			// Pull code from API to local file
 			await pullComponentCode({
 				appComponentType: 'app', // The `app` type with name `` is the special
-				appComponentName: '',
+				remoteComponentName: '',
 				codeType,
 				origin,
 				destinationPath: codeLocalAbsolutePath,
@@ -208,18 +208,18 @@ async function pullComponent(
  */
 async function pullComponentCodes(
 	appComponentType: AppComponentType,
-	appComponentName: string,
+	remoteComponentName: string,
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 ): Promise<void> {
-	log('debug', `Pull ${appComponentType} ${appComponentName}: all codes`);
+	log('debug', `Pull ${appComponentType} ${remoteComponentName}: all codes`);
 	// Download codes from API to local files
 	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		await pullComponentCode({
 			appComponentType,
-			appComponentName,
+			remoteComponentName,
 			codeType,
 			origin,
 			destinationPath: codeLocalAbsolutePath,

@@ -3,7 +3,7 @@ import * as path from 'path';
 import { catchError } from '../error-handling';
 import { log } from '../output-channel';
 import { pullComponentCode } from './code-pull-deploy';
-import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
+import { getComponentRemoteName, getMakecomappJson, getMakecomappRootDir, getRemoteComponentNameToLocalIdMapping } from './makecomappjson';
 import { findCodeByFilePath } from './find-code-by-filepath';
 import { askForOrigin } from './dialog-select-origin';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
@@ -11,10 +11,7 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.file-compare',
-		catchError(
-			'Compare with Make',
-			localFileCompare
-		)
+		catchError('Compare with Make', localFileCompare),
 	);
 }
 
@@ -34,11 +31,19 @@ async function localFileCompare(file: vscode.Uri) {
 		return;
 	}
 
+	const remoteComponentName = getComponentRemoteName(
+		componentDetails.componentType,
+		componentDetails.componentLocalId,
+		makeappJson,
+		origin,
+	);
+
 	log(
 		'debug',
-		`Pulling ${componentDetails.componentType} ${componentDetails.componentName} in file ${
-			path.posix.relative(makeappRootdir.path, file.path)
-		} from ${origin.baseUrl} app ${origin.appId} version ${origin.appVersion} ...`
+		`Pulling ${componentDetails.componentType} ${componentDetails.componentLocalId} in file ${path.posix.relative(
+			makeappRootdir.path,
+			file.path,
+		)} from ${origin.baseUrl} app ${origin.appId} version ${origin.appVersion} ...`,
 	);
 
 	// Download the cloud file version into temp file
@@ -47,7 +52,7 @@ async function localFileCompare(file: vscode.Uri) {
 	await withProgressDialog({ title: '' }, async (_progress, _cancellationToken) => {
 		await pullComponentCode({
 			appComponentType: componentDetails.componentType,
-			appComponentName: componentDetails.componentName,
+			remoteComponentName: remoteComponentName,
 			codeType: componentDetails.codeType,
 			origin,
 			destinationPath: newTmpFile,
@@ -60,7 +65,7 @@ async function localFileCompare(file: vscode.Uri) {
 		'vscode.diff',
 		newTmpFile,
 		file,
-		`Remote ${origin.label ?? 'Origin'} ↔ ${relativeFilepath}`
+		`Remote ${origin.label ?? 'Origin'} ↔ ${relativeFilepath}`,
 	);
 	// Delete temp file
 	await vscode.workspace.fs.delete(newTmpFile);

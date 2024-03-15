@@ -8,6 +8,7 @@ import {
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { addComponentIdMapping, getLocalIdToRemoteComponentNameMapping } from './makecomappjson';
+import { askForSelectLinkedComponent } from './dialog-select-linked-app';
 
 /**
  * Compares list of components from two sources and returns,
@@ -44,7 +45,23 @@ export async function diffComponentsPresence(
 		remoteOnly: [],
 	};
 
-	// Fill `newComponents`
+	// Fill `remoteOnly`
+	for (const [componentType, components] of entries(remoteComponents)) {
+		for (const [componentName, componentMetadata] of entries(components)) {
+			const isLocalComponentKnown = origin.idMapping[componentType].find(
+				(idMappingItem) => idMappingItem.remote === componentName,
+			);
+			if (isLocalComponentKnown === undefined) {
+				ret.remoteOnly.push({
+					componentType,
+					componentName,
+					componentMetadata,
+				});
+			}
+		}
+	}
+
+	// Fill `localOnly`
 	for (const [componentType, components] of entries(makecomappJson.components)) {
 		const localToRemoteMapping = getLocalIdToRemoteComponentNameMapping(componentType, makecomappJson, origin);
 
@@ -56,8 +73,10 @@ export async function diffComponentsPresence(
 				const unlinkedComponponentNames = ret.remoteOnly
 					.filter((remoteComponent) => remoteComponent.componentType === componentType)
 					.map((remoteComponent) => remoteComponent.componentName);
-				const selectedRemoteComponentName: string | '' | undefined = await askForSelectLinkedComponent(
+				const selectedRemoteComponentName: string | null = await askForSelectLinkedComponent(componentType,
 					unlinkedComponponentNames,
+					componentLocalId,
+					componentMetadata.label,
 				);
 
 				if (selectedRemoteComponentName) {
@@ -70,32 +89,14 @@ export async function diffComponentsPresence(
 						origin,
 					);
 					// Now, the component is linked with existing remote.
-				} else if (selectedRemoteComponentName === '') {
+				} else if (selectedRemoteComponentName === null) {
 					// New component will be created in remote
 					ret.localOnly.push({
 						componentType,
 						componentLocalId: componentLocalId,
 						componentMetadata,
 					});
-				} else if (selectedRemoteComponentName === undefined) {
-					throw new Error('Cancelled by user.');
 				}
-			}
-		}
-	}
-
-	// Fill `missingComponents`
-	for (const [componentType, components] of entries(remoteComponents)) {
-		for (const [componentName, componentMetadata] of entries(components)) {
-			const isLocalComponentKnown = origin.idMapping[componentType].find(
-				(idMappingItem) => idMappingItem.remote === componentName,
-			);
-			if (isLocalComponentKnown === undefined) {
-				ret.remoteOnly.push({
-					componentType,
-					componentName,
-					componentMetadata,
-				});
 			}
 		}
 	}
