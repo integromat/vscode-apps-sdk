@@ -165,8 +165,8 @@ export async function upsertComponentInMakecomappjson(
 
 export async function addComponentIdMapping(
 	componentType: AppComponentType,
-	internalComponentId: string,
-	remoteComponentName: string,
+	internalComponentId: string | null,
+	remoteComponentName: string | null,
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOrigin,
 ) {
@@ -180,8 +180,8 @@ export async function addComponentIdMapping(
  */
 async function _addComponentIdMapping(
 	componentType: AppComponentType,
-	internalComponentId: string,
-	remoteComponentName: string,
+	internalComponentId: string | null,
+	remoteComponentName: string | null,
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOrigin,
 ) {

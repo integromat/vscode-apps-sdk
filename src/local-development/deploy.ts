@@ -4,14 +4,11 @@ import { deployComponentCode } from './code-pull-deploy';
 import { getAllRemoteComponentsSummaries } from './component-summaries';
 import { askForOrigin } from './dialog-select-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
-import { diffComponentsPresence } from './diff-components-presence';
-import { createRemoteAppComponent } from './create-remote-component';
+import { alignComponentMapping } from './diff-components-presence';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { CodePath } from './types/code-path.types';
 import {
-	addComponentIdMapping,
 	getComponentRemoteName,
-	getLocalIdToRemoteComponentNameMapping,
 	getMakecomappJson,
 	getMakecomappRootDir,
 } from '../local-development/makecomappjson';
@@ -66,60 +63,15 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				'remote',
 			);
 
-			// Compare remote component list with local makecomapp.json
-			const componentAddingRemoving = await diffComponentsPresence(
+			// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
+			await alignComponentMapping(
 				makecomappJson,
 				anyProjectPath,
 				origin,
 				allComponentsSummariesInCloud,
 			);
-			// Refresh the local representation of makecomapp.json (method diffComponentsPresence() changed the file)
-			makecomappJson = await getMakecomappJson(anyProjectPath);
-			// New components = new components in makecomapp.json & components to deploy. These components must be created in remote before code deploy.
-			const newComponentsToCreate = componentAddingRemoving.localOnly.filter((newComponentInMakecomappjson) =>
-				codesToDeploy.find(
-					(codeToDeploy) =>
-						codeToDeploy.componentType === newComponentInMakecomappjson.componentType &&
-						codeToDeploy.componentLocalId === newComponentInMakecomappjson.componentLocalId,
-				),
-			);
 
 			progresDialogReport('Deploying');
-
-			// Create remote components that has been found in local
-			let componentToCreate: (typeof newComponentsToCreate)[0] | undefined;
-			while ((componentToCreate = newComponentsToCreate.shift())) {
-				const localIdToRemoteComponentnameMapping = getLocalIdToRemoteComponentNameMapping(
-					componentToCreate.componentType,
-					makecomappJson,
-					origin,
-				);
-
-				// Create new remote component in origin
-				const newComponentName = await createRemoteAppComponent({
-					appName: origin.appId,
-					appVersion: origin.appVersion,
-					...componentToCreate,
-					componentName:
-						localIdToRemoteComponentnameMapping[componentToCreate.componentLocalId] ??
-						componentToCreate.componentLocalId,
-					origin,
-				});
-				// Add new component to idMapping
-				await addComponentIdMapping(
-					componentToCreate.componentType,
-					componentToCreate.componentLocalId,
-					newComponentName,
-					anyProjectPath,
-					origin,
-				);
-				// Refresh the local representation of makecomapp.json (method addComponentIdMapping() changed the file)
-				makecomappJson = await getMakecomappJson(anyProjectPath);
-				// Remove the added component also from list `componentAddingRemoving.newComponents`
-				componentAddingRemoving.localOnly = componentAddingRemoving.localOnly.filter(
-					(component) => component !== componentToCreate,
-				);
-			}
 
 			/** Deployments errors */
 			const errors: { errorMessage: string; codePath: CodePath }[] = [];

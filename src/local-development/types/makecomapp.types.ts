@@ -32,8 +32,10 @@ export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponent
 type AppIdMapping = Record<AppComponentType, IdMappingItem[]>;
 
 interface IdMappingItem {
-	local: string;
-	remote: string;
+	/** Note: `null` means that the remote component is not paired to local. In consequences these remote components will be ignored during pull or deploy. */
+	local: string | null;
+	/** Note: `null` means that the local component is not paired to remote. In consequences these local components will be ignored during pull or deploy. */
+	remote: string | null;
 }
 
 /** Component ID => Component metadata */

@@ -2,29 +2,38 @@ import * as vscode from 'vscode';
 import { AppComponentType } from '../types/app-component-type.types';
 import { AppComponentMetadata } from './types/makecomapp.types';
 
+export const anwersSpecialCases = {
+	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),
+};
+
 /**
  *
- * @return componentName if one is selected. `null` if selected `create new`.
+ * @return componentName if one is selected. Or Symbor if answered to create or ignore.
  * @throws {Error} if dialog cancelled by user.
  */
 export async function askForSelectLinkedComponent(
+	componentLocation: 'local' | 'remote',
 	componentType: AppComponentType,
-	unlinkedRemoteComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
-	targetComponentLocalId: string,
-	targetComponentLabel: string | undefined,
-): Promise<string | null> {
-	const pickOptions: (vscode.QuickPickItem & { name: string | null; similarityScore: number })[] = [
-		// Offer all existing suitable remote components
-		...unlinkedRemoteComponents.map((component) => ({
-			label: `Existing ${componentType} "${component.componentMetadata.label}" [${component.componentName}]`,
+	componentIdOrName: string,
+	componentLabel: string | undefined,
+	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
+): Promise<string | null | symbol> {
+	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
+	const pickOptions: (vscode.QuickPickItem & { name: string | null | symbol; similarityScore: number })[] = [
+		// Offer all existing suitable counterparty components
+		...counterpartyComponents.map((component) => ({
+			label: `Existing ${counterpartyComponentsLocation} ${componentType} "${component.componentMetadata.label}" [${component.componentName}]`,
 			name: component.componentName,
 			similarityScore: countSimilarityScore(
-				{ label: targetComponentLabel, name: targetComponentLocalId },
+				{ label: componentLabel, name: componentIdOrName },
 				{ label: component.componentMetadata.label, name: component.componentName },
 			),
 		})),
 		// and offer to create new one
-		{ label: `Create new ${componentType} in remote`, name: null, similarityScore: -1 },
+		{ label: `Create new ${counterpartyComponentsLocation} ${componentType}`, name: anwersSpecialCases.CREATE_NEW_COMPONENT, similarityScore: -1 },
+		// and offer to create ignore
+		{ label: `Ignore / do not link with ${counterpartyComponentsLocation}`, name: null, similarityScore: -2 },
+
 	];
 
 	// Most similar remote connection should be on the top (as the first choice)
@@ -32,9 +41,9 @@ export async function askForSelectLinkedComponent(
 
 	const componentNamePick = await vscode.window.showQuickPick<(typeof pickOptions)[0]>(pickOptions, {
 		ignoreFocusOut: true,
-		title: `Select the remote ${componentType}, which the local ${componentType} "${
-			targetComponentLabel ?? '[no-label]'
-		}" [${targetComponentLocalId}] should be linked to:`,
+		title: `Select the ${counterpartyComponentsLocation} ${componentType}, which the ${componentLocation} ${componentType} "${
+			componentLabel ?? '[no-label]'
+		}" [${componentIdOrName}] should be linked to:`,
 	});
 	if (componentNamePick === undefined) {
 		throw new Error('Cancelled by user.');
