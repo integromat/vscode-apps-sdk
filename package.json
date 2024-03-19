@@ -116,7 +116,7 @@
 			{
 				"fileMatch": [
 					"base.imljson",
-					"*.base.iml.json"
+					"base.iml.json"
 				],
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
@@ -129,8 +129,7 @@
 			},
 			{
 				"fileMatch": [
-					"groups.json",
-					"*.groups.iml.json"
+					"groups.json"
 				],
 				"url": "./syntaxes/imljson/schemas/groups.json"
 			}

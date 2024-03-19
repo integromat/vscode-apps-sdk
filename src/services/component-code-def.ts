@@ -16,10 +16,9 @@ const json = {
 
 export const generalCodesDefinition: Record<GeneralCodeType, CodeDef> = {
 	base: {
+		...imljsonc,
 		apiCodeType: 'base',
 		filename: 'general/base',
-		fileext: 'imljson',
-		mimetype: 'application/jsonc',
 	},
 	common: { apiCodeType: 'common', ...json, filename: 'general/common' },
 	readme: {
