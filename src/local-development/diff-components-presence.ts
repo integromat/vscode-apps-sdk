@@ -8,7 +8,7 @@ import {
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { addComponentIdMapping, getLocalIdToRemoteComponentNameMapping } from './makecomappjson';
-import { askForSelectLinkedComponent } from './dialog-select-linked-app';
+import { askForSelectLinkedComponent } from './dialog-select-linked-component';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 
 /**
