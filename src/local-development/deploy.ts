@@ -73,6 +73,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				origin,
 				allComponentsSummariesInCloud,
 			);
+			// Refresh the local representation of makecomapp.json (method diffComponentsPresence() changed the file)
+			makecomappJson = await getMakecomappJson(anyProjectPath);
 			// New components = new components in makecomapp.json & components to deploy. These components must be created in remote before code deploy.
 			const newComponentsToCreate = componentAddingRemoving.localOnly.filter((newComponentInMakecomappjson) =>
 				codesToDeploy.find(

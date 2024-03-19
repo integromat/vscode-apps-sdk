@@ -279,7 +279,7 @@ export function getComponentRemoteName(
 	);
 
 	const remoteComponentName: string | undefined = localIdToRemoteComponentNameMapping[componentLocalId];
-	if (!remoteComponentName) {
+	if (remoteComponentName === undefined) {
 		throw new Error(
 			`The ${componentType} "${componentLocalId}" is not paired to any remote ${componentType} in origin ${
 				origin.label ?? origin.appId
