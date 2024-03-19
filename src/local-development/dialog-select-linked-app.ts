@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { AppComponentType } from '../types/app-component-type.types';
+import { AppComponentMetadata } from './types/makecomapp.types';
 
 /**
  *
@@ -8,15 +9,15 @@ import { AppComponentType } from '../types/app-component-type.types';
  */
 export async function askForSelectLinkedComponent(
 	componentType: AppComponentType,
-	unlinkedComponentNames: string[],
+	unlinkedRemoteComponents: {componentName: string, componentMetadata: AppComponentMetadata }[],
 	targetComponentLocalId: string,
 	targetComponentLabel: string | undefined,
 ): Promise<string | null> {
 	const pickOptions: (vscode.QuickPickItem & { name: string | null })[] = [
 		// Offer all existing suitable remote components
-		...unlinkedComponentNames.map((name) => ({
-			label: `Existing ${componentType} "${name}"`,
-			name,
+		...unlinkedRemoteComponents.map((component) => ({
+			label: `Existing ${componentType} "${component.componentMetadata.label}" [${component.componentName}]`,
+			name: component.componentName,
 		})),
 		// and offer to create new one
 		{ label: `Create new ${componentType} in remote`, name: null },

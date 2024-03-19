@@ -9,6 +9,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { addComponentIdMapping, getLocalIdToRemoteComponentNameMapping } from './makecomappjson';
 import { askForSelectLinkedComponent } from './dialog-select-linked-app';
+import { progresDialogReport } from '../utils/vscode-progress-dialog';
 
 /**
  * Compares list of components from two sources and returns,
@@ -69,12 +70,14 @@ export async function diffComponentsPresence(
 			if (localToRemoteMapping[componentLocalId] === undefined) {
 				// Local component is not linked to remote
 
+				progresDialogReport('Asking user for additional information (see dialog on the top)');
+
 				// Ask for "Select remote component, which should be linked with. Or new component will be created."
-				const unlinkedComponponentNames = ret.remoteOnly
+				const unlinkedComponents = ret.remoteOnly
 					.filter((remoteComponent) => remoteComponent.componentType === componentType)
-					.map((remoteComponent) => remoteComponent.componentName);
-				const selectedRemoteComponentName: string | null = await askForSelectLinkedComponent(componentType,
-					unlinkedComponponentNames,
+				const selectedRemoteComponentName: string | null = await askForSelectLinkedComponent(
+					componentType,
+					unlinkedComponents,
 					componentLocalId,
 					componentMetadata.label,
 				);
@@ -88,7 +91,15 @@ export async function diffComponentsPresence(
 						anyProjectPath,
 						origin,
 					);
-					// Now, the component is linked with existing remote.
+
+					// Remove newly linked component from `unlinkedComponponentNames`.
+					ret.remoteOnly = ret.remoteOnly.filter(
+						(component) =>
+							component.componentType !== componentType ||
+							component.componentName !== selectedRemoteComponentName,
+					);
+
+					// Note: Now, the component is fully linked with existing remote.
 				} else if (selectedRemoteComponentName === null) {
 					// New component will be created in remote
 					ret.localOnly.push({
@@ -100,6 +111,8 @@ export async function diffComponentsPresence(
 			}
 		}
 	}
+
+	progresDialogReport('');
 
 	return ret;
 }
