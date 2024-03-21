@@ -15,6 +15,8 @@ import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper'
 /**
  * Compares list of components from two sources. If some component is missing on one side,
  * it is created and paired in mapping, or original component is marked for ignorring.
+ *
+ * IMPORTANT: Changes the `makecomapp.json` file.
  */
 export async function alignComponentMapping(
 	makecomappJson: MakecomappJson,
