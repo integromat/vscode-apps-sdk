@@ -116,6 +116,10 @@ export async function pullComponents(
 				localAppRootdir,
 				origin,
 			);
+			if (componentInternalId === null) {
+				continue;
+				// Because the mapping defines this remote component as "ignore".
+			}
 			const existingComponentMetadata = makecomappJson.components[componentType][componentInternalId];
 			if (!existingComponentMetadata) {
 				// Pull a new component (unexisting in local workspace) from remote

@@ -8,13 +8,13 @@ import { alignComponentMapping } from './diff-components-presence';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { CodePath } from './types/code-path.types';
 import {
-	getComponentRemoteName,
 	getMakecomappJson,
 	getMakecomappRootDir,
 } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, errorToString, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -91,17 +91,21 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				);
 
 				// Find the remote component name
+				const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+				const remoteComponentName = componentIdMapping.getRemoteNameStrict(
+					component.componentType,
+					component.componentLocalId,
+				);
+				if (remoteComponentName === null) {
+					// Mapping explicitely says "ignore this local component"
+					continue;
+				}
 
 				// Upload via API
 				try {
 					await deployComponentCode({
 						appComponentType: component.componentType,
-						remoteComponentName: getComponentRemoteName(
-							component.componentType,
-							component.componentLocalId,
-							makecomappJson,
-							origin,
-						),
+						remoteComponentName: remoteComponentName,
 						codeType: component.codeType,
 						origin,
 						sourcePath: component.localFile,

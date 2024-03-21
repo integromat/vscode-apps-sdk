@@ -7,10 +7,11 @@ import {
 } from './types/makecomapp.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
-import { addComponentIdMapping, getLocalIdToRemoteComponentNameMapping } from './makecomappjson';
+import { addComponentIdMapping } from './makecomappjson';
 import { anwersSpecialCases, askForSelectLinkedComponent } from './dialog-select-linked-component';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { createRemoteAppComponent } from './create-remote-component';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 /**
  * Compares list of components from two sources. If some component is missing on one side,
  * it is created and paired in mapping, or original component is marked for ignorring.
@@ -58,10 +59,10 @@ export async function alignComponentMapping(
 
 	// Fill `localOnly`
 	for (const [componentType, components] of entries(makecomappJson.components)) {
-		const localToRemoteMapping = getLocalIdToRemoteComponentNameMapping(componentType, makecomappJson, origin);
+		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 
 		for (const [componentLocalId, componentMetadata] of entries(components)) {
-			if (localToRemoteMapping[componentLocalId] === undefined) {
+			if (componentIdMapping.getRemoteName(componentType, componentLocalId) === undefined) {
 				// Local component is not linked to remote
 				localOnly.push({
 					componentType,

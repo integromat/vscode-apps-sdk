@@ -3,10 +3,11 @@ import * as path from 'path';
 import { catchError } from '../error-handling';
 import { log } from '../output-channel';
 import { pullComponentCode } from './code-pull-deploy';
-import { getComponentRemoteName, getMakecomappJson, getMakecomappRootDir, getRemoteComponentNameToLocalIdMapping } from './makecomappjson';
+import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
 import { findCodeByFilePath } from './find-code-by-filepath';
 import { askForOrigin } from './dialog-select-origin';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -19,24 +20,28 @@ export function registerCommands(): void {
  * Pulls the file from Make and shows the comparision with the local file.
  */
 async function localFileCompare(file: vscode.Uri) {
-	const makeappJson = await getMakecomappJson(file);
+	const makecomappJson = await getMakecomappJson(file);
 
 	const makeappRootdir = getMakecomappRootDir(file);
 
 	const fileRelativePath = path.posix.relative(makeappRootdir.path, file.path); // Relative to makecomapp.json
-	const componentDetails = findCodeByFilePath(fileRelativePath, makeappJson, makeappRootdir);
+	const componentDetails = findCodeByFilePath(fileRelativePath, makecomappJson, makeappRootdir);
 
-	const origin = await askForOrigin(makeappJson.origins, makeappRootdir, 'app cloning to local');
+	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'app cloning to local');
 	if (!origin) {
 		return;
 	}
 
-	const remoteComponentName = getComponentRemoteName(
+	const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+	const remoteComponentName = componentIdMapping.getRemoteNameStrict(
 		componentDetails.componentType,
 		componentDetails.componentLocalId,
-		makeappJson,
-		origin,
 	);
+	if (remoteComponentName === null) {
+		throw new Error(
+			`No paired remote component for local ${componentDetails.componentType} ${componentDetails.componentLocalId}. Local component is defined as "being ignored".`,
+		);
+	}
 
 	log(
 		'debug',
