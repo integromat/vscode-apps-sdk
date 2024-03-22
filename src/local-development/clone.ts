@@ -13,7 +13,7 @@ import { generalCodesDefinition } from '../services/component-code-def';
 import { pullComponentCode } from './code-pull-deploy';
 import { generateDefaultLocalFilename } from './local-file-paths';
 import { catchError } from '../error-handling';
-import { pullComponents } from './pull';
+import { pullAllComponents } from './pull';
 import { storeSecret } from './secrets-storage';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
@@ -124,7 +124,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		);
 
 		// Pull all app's components
-		await pullComponents(localAppRootdir, origin, 'all');
+		await pullAllComponents(localAppRootdir, origin); // TODO I see here the problem, that for each component it will ask me to create new local.
 
 		// VSCode show readme.md and open explorer
 		const readmeUri = vscode.Uri.joinPath(

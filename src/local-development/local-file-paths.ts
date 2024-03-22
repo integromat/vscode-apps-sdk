@@ -61,11 +61,11 @@ export async function generateDefaultLocalFilename(
  */
 export async function generateComponentDefaultCodeFilesPaths(
 	componentType: AppComponentType,
-	componentInternalId: string,
+	componentLocalId: string,
 	componentMetadata: AppComponentMetadata,
 	localAppRootdir: vscode.Uri,
 ): Promise<ComponentCodeFilesMetadata> {
-	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentInternalId, localAppRootdir);
+	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentLocalId, localAppRootdir);
 
 	// Detect, which codes are appropriate to the component
 	const componentCodesDef = entries(getAppComponentCodesDefinition(componentType)).filter(
@@ -80,7 +80,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 			codeDef,
 			codeType,
 			componentType,
-			componentInternalId,
+			componentLocalId,
 			componentMetadata,
 		);
 		componentCodeMetadata[codeType] =

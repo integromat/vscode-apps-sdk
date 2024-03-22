@@ -60,13 +60,12 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			const allComponentsSummariesInCloud = await getAllRemoteComponentsSummaries(
 				anyProjectPath,
 				origin,
-				'remote',
 			);
 
 			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
 			await alignComponentMapping(
 				makecomappJson,
-				anyProjectPath,
+				makeappRootdir,
 				origin,
 				allComponentsSummariesInCloud,
 			);

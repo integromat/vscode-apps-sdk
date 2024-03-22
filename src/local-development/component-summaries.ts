@@ -9,18 +9,15 @@ import {
 	ComponentsApiResponseWebhookItem,
 } from '../types/get-component-api-response.types';
 import { getModuleDefFromId } from '../services/module-types-naming';
-import { remoteComponentNameToInternalId } from './makecomappjson';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
 /**
  * Gets list of all components from remote origin (in Make).
- *
- * Note: If `returnedIdType==='local'`, then the function has side-effect:
- *       It registers/writes all new components ID mappings into makecomapp.json file.
+ * All component references are as remote component name (not as Local ID).
  */
 export async function getAllRemoteComponentsSummaries(
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-	returnedIdType: 'local' | 'remote',
 ): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {
 	const components: Awaited<ReturnType<typeof getAllRemoteComponentsSummaries>> = {
 		connection: {},
@@ -81,26 +78,8 @@ export async function getAllRemoteComponentsSummaries(
 					);
 				}
 				componentMetadata.connection = componentDetails.connection;
-				if (returnedIdType === 'local' && componentMetadata.connection) {
-					// Translate remote name to local ID.
-					componentMetadata.connection = await remoteComponentNameToInternalId(
-						'connection',
-						componentMetadata.connection,
-						anyProjectPath,
-						origin,
-					);
-				}
 
 				componentMetadata.altConnection = componentDetails.altConnection;
-				if (returnedIdType === 'local' && componentMetadata.altConnection) {
-					// Translate remote name to local ID.
-					componentMetadata.altConnection = await remoteComponentNameToInternalId(
-						'connection',
-						componentMetadata.altConnection,
-						anyProjectPath,
-						origin,
-					);
-				}
 
 				// Add reference from Instant Trigger to Webhook
 				if (appComponentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
@@ -111,15 +90,6 @@ export async function getAllRemoteComponentsSummaries(
 						);
 					}
 					componentMetadata.webhook = componentDetails.webhook;
-					if (returnedIdType === 'local' && componentMetadata.webhook) {
-						// Translate remote name to local ID.
-						componentMetadata.webhook = await remoteComponentNameToInternalId(
-							'webhook',
-							componentMetadata.webhook,
-							anyProjectPath,
-							origin,
-						);
-					}
 				}
 			}
 
@@ -128,4 +98,41 @@ export async function getAllRemoteComponentsSummaries(
 	}
 
 	return components;
+}
+
+export function convertComponentMetadataRemoteNamesToLocalIds(
+	componentMetadata: AppComponentMetadata,
+	componentIdMapping: ComponentIdMappingHelper,
+): AppComponentMetadata {
+	const updatedComponentMedatada: AppComponentMetadata = {
+		...componentMetadata,
+	};
+	if (updatedComponentMedatada.connection) {
+		updatedComponentMedatada.connection =
+			componentIdMapping.getLocalIdStrict('connection', updatedComponentMedatada.connection);
+		if (updatedComponentMedatada.connection === null) {
+			delete updatedComponentMedatada.connection;
+			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
+			//   For this case, do not store (and manage) this reference.
+		}
+	}
+	if (updatedComponentMedatada.altConnection) {
+		updatedComponentMedatada.altConnection =
+			componentIdMapping.getLocalIdStrict('connection', updatedComponentMedatada.altConnection);
+		if (updatedComponentMedatada.altConnection === null) {
+			delete updatedComponentMedatada.altConnection;
+			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
+			//   For this case, do not store (and manage) this reference.
+		}
+	}
+	if (updatedComponentMedatada.webhook) {
+		updatedComponentMedatada.webhook =
+			componentIdMapping.getLocalIdStrict('webhook', updatedComponentMedatada.webhook);
+		if (updatedComponentMedatada.webhook === null) {
+			delete updatedComponentMedatada.webhook;
+			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
+			//   For this case, do not store (and manage) this reference.
+		}
+	}
+	return updatedComponentMedatada;
 }

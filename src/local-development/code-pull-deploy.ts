@@ -5,12 +5,13 @@ import { AxiosRequestConfig } from 'axios';
 import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from '../services/component-code-def';
 import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
-import { LocalAppOriginWithSecret } from './types/makecomapp.types';
+import { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { CodeType, ComponentCodeType, GeneralCodeType, ApiCodeType } from './types/code-type.types';
 import { CodeDef } from './types/code-def.types';
+import { entries } from '../utils/typed-object';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -174,4 +175,29 @@ function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType)
 	return componentType === 'app'
 		? getGeneralCodeDefinition(codeType as GeneralCodeType)
 		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
+}
+
+/**
+ * Downloads all files of component specified in `componentMetadata.codeFiles`
+ * from remote origin to local file system.
+ */
+export async function pullComponentCodes(
+	appComponentType: AppComponentType,
+	remoteComponentName: string,
+	localAppRootdir: vscode.Uri,
+	origin: LocalAppOriginWithSecret,
+	componentMetadata: AppComponentMetadataWithCodeFiles,
+): Promise<void> {
+	log('debug', `Pull ${appComponentType} ${remoteComponentName}: all codes`);
+	// Download codes from API to local files
+	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
+		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
+		await pullComponentCode({
+			appComponentType,
+			remoteComponentName,
+			codeType,
+			origin,
+			destinationPath: codeLocalAbsolutePath,
+		});
+	}
 }

@@ -27,6 +27,9 @@ export function migrateMakecomappJsonFile(origMakecomappJson: MakecomappJson): {
 			}
 		});
 	}
+
+	// TODO Add mapping  if not exists
+
 	return {
 		changesApplied: migrationApplied,
 		makecomappJson,
