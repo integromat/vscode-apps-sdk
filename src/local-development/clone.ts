@@ -1,30 +1,26 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import { existsSync } from 'fs';
-import { TextEncoder } from 'util';
+import { existsSync } from 'node:fs';
+import * as path from 'node:path';
+import { TextEncoder } from 'node:util';
 import pick from 'lodash.pick';
-import { getCurrentWorkspace } from '../services/workspace';
-import { getCurrentEnvironment } from '../providers/configuration';
+import * as vscode from 'vscode';
 import { LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
-import App from '../tree/App';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
-import { generalCodesDefinition } from '../services/component-code-def';
-import { pullComponentCode } from './code-pull-deploy';
 import { generateDefaultLocalFilename } from './local-file-paths';
-import { catchError } from '../error-handling';
 import { pullAllComponents } from './pull';
 import { storeSecret } from './secrets-storage';
+import { getCurrentWorkspace } from '../services/workspace';
+import { getCurrentEnvironment } from '../providers/configuration';
+import App from '../tree/App';
+import { generalCodesDefinition } from '../services/component-code-def';
+import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.clone-to-workspace',
-		catchError(
-			'Clone app to workspace',
-			cloneAppToWorkspace,
-		),
+		catchError('Clone app to workspace', cloneAppToWorkspace),
 	);
 }
 
@@ -92,7 +88,6 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	await vscode.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
 
 	await withProgressDialog({ title: `Cloning app ${origin.appId}` }, async () => {
-
 		// #region Process all app's general codes
 		for (const [codeType, codeDef] of entries(generalCodesDefinition)) {
 			const codeLocalRelativePath = await generateDefaultLocalFilename(
@@ -103,15 +98,6 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				undefined,
 				undefined,
 			);
-			const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
-			// Pull code from API to local file
-			await pullComponentCode({
-				appComponentType: 'app', // The `app` type with name `` is the special
-				remoteComponentName: '',
-				codeType,
-				origin,
-				destinationPath: codeLocalAbsolutePath,
-			});
 			// Add to makecomapp.json
 			makecomappJson.generalCodeFiles[codeType] = codeLocalRelativePath;
 		}
@@ -124,7 +110,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		);
 
 		// Pull all app's components
-		await pullAllComponents(localAppRootdir, origin); // TODO I see here the problem, that for each component it will ask me to create new local.
+		await pullAllComponents(localAppRootdir, origin, 'cloneAsNew');
 
 		// VSCode show readme.md and open explorer
 		const readmeUri = vscode.Uri.joinPath(

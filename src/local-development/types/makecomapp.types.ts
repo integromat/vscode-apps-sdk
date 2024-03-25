@@ -27,7 +27,8 @@ export interface LocalAppOriginWithSecret extends LocalAppOrigin {
 	apikey: string;
 }
 
-export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
+export type AppComponentTypesMetadataNoNull<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
+export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadataOrNullComponents<T>>;
 
 type AppIdMapping = Record<AppComponentType, IdMappingItem[]>;
 
@@ -40,6 +41,9 @@ interface IdMappingItem {
 
 /** Component ID => Component metadata */
 export type AppComponentsMetadata<T> = Record<string, T>;
+
+/** Component ID => Component metadata or null (null can be temporary in makecomapp.json file) */
+type AppComponentsMetadataOrNullComponents<T> = Record<string, T | null>; // Note: `null` is used only temporary if component name is reserved, but not implemeted yet.
 
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
 	codeFiles: ComponentCodeFilesMetadata;

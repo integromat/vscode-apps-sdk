@@ -4,19 +4,20 @@ import * as vscode from 'vscode';
 import {
 	AppComponentMetadata,
 	AppComponentMetadataWithCodeFiles,
-	AppComponentTypesMetadata,
+	AppComponentTypesMetadataNoNull,
 	LocalAppOriginWithSecret,
 	MakecomappJson,
 } from './types/makecomapp.types';
-import { AppComponentType } from '../types/app-component-type.types';
-import { entries } from '../utils/typed-object';
 import { addComponentIdMapping } from './makecomappjson';
-import { anwersSpecialCases, askForSelectLinkedComponent } from './dialog-select-linked-component';
-import { progresDialogReport } from '../utils/vscode-progress-dialog';
+import { anwersSpecialCases, askForSelectMappedComponent } from './dialog-select-linked-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { deployComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { createLocalEmptyComponent } from './create-local-empty-component';
+import { AppComponentType } from '../types/app-component-type.types';
+import { entries } from '../utils/typed-object';
+import { progresDialogReport } from '../utils/vscode-progress-dialog';
+
 /**
  * Compares list of components from two sources. If some component is missing on one side,
  * it is created and paired in mapping, or original component is marked for ignorring.
@@ -27,7 +28,9 @@ export async function alignComponentMapping(
 	makecomappJson: MakecomappJson,
 	makecomappRootDir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-	remoteComponents: AppComponentTypesMetadata<AppComponentMetadata>,
+	remoteComponents: AppComponentTypesMetadataNoNull<AppComponentMetadata>,
+	newLocalComponentResolution: 'askUser' | 'ignore',
+	newRemoteComponentResolution: 'askUser' | 'cloneAsNew' | 'ignore',
 ): Promise<void> {
 	/**
 	 * Existing in `makecomappJson`, missing in `remoteComponents`
@@ -69,6 +72,10 @@ export async function alignComponentMapping(
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 
 		for (const [componentLocalId, componentMetadata] of entries(components)) {
+			if (componentMetadata === null) {
+				// Not a fully existing component, but the reserved ID only. Ignore.
+				continue;
+			}
 			if (componentIdMapping.getRemoteName(componentType, componentLocalId) === undefined) {
 				// Local component is not linked to remote
 				localOnly.push({
@@ -80,162 +87,190 @@ export async function alignComponentMapping(
 		}
 	}
 
-	// Ask user to link `localOnly` component(s) with unlinked remote, or create new remote component
-	let localOnlyComponent: (typeof localOnly)[0];
-	while ((localOnlyComponent = localOnly.shift()!)) {
-		// TODO refactor to WHILE of SHIFT.
-		// Local component is not linked to remote
+	// Resolve 'localOnly'
+	if (newLocalComponentResolution !== 'ignore') {
+		// Ask user to link `localOnly` component(s) with unlinked remote, or create new remote component
+		let localOnlyComponent: (typeof localOnly)[0];
+		while ((localOnlyComponent = localOnly.shift()!)) {
+			// Local component is not linked to remote
 
-		progresDialogReport('Asking user for additional information (see dialog on the top)');
+			progresDialogReport('Asking user for additional information (see dialog on the top)');
 
-		// Ask for "Select remote component, which should be linked with. Or new component will be created."
-		const unlinkedComponents = remoteOnly.filter(
-			(remoteComponent) => remoteComponent.componentType === localOnlyComponent.componentType,
-		);
-		const selectedRemoteComponentName = await askForSelectLinkedComponent(
-			'local',
-			localOnlyComponent.componentType,
-			localOnlyComponent.componentLocalId,
-			localOnlyComponent.componentMetadata.label,
-			unlinkedComponents,
-		);
-
-		if (typeof selectedRemoteComponentName === 'string') {
-			// Link internal ID with already existing remote component.
-			await addComponentIdMapping(
-				localOnlyComponent.componentType,
-				localOnlyComponent.componentLocalId,
-				selectedRemoteComponentName,
-				makecomappRootDir,
-				origin,
+			// Ask for "Select remote component, which should be linked with. Or new component will be created."
+			const unlinkedComponents = remoteOnly.filter(
+				(remoteComponent) => remoteComponent.componentType === localOnlyComponent.componentType,
 			);
-
-			// Remove newly linked component from `remoteOnly`.
-			remoteOnly = remoteOnly.filter(
-				(component) =>
-					component.componentType !== localOnlyComponent.componentType ||
-					component.componentName !== selectedRemoteComponentName,
-			);
-
-			// Note: Now, the local component is fully linked with existing remote.
-		} else {
-			switch (selectedRemoteComponentName) {
-				case anwersSpecialCases.CREATE_NEW_COMPONENT: {
-					// Create new remote compoments (becuse it not exist)
-					const newRemoteComponentName = await createRemoteAppComponent({
-						appName: origin.appId,
-						appVersion: origin.appVersion,
-						componentType: localOnlyComponent.componentType,
-						componentMetadata: localOnlyComponent.componentMetadata,
-						componentName: localOnlyComponent.componentLocalId,
-						origin,
-					});
-
-					// Push local codes to new remote component
-					for (const [codeType, codeLocalRelativePath] of entries(
-						localOnlyComponent.componentMetadata.codeFiles,
-					)) {
-						await deployComponentCode({
-							appComponentType: localOnlyComponent.componentType,
-							codeType,
-							remoteComponentName: newRemoteComponentName,
-							origin,
-							sourcePath: vscode.Uri.joinPath(makecomappRootDir, codeLocalRelativePath),
-						});
-
-						// TODO Implement: Deploy also other configuration (connection, altConnection, webhook).
-					}
-
-					// Add new remote component to idMapping (link with existing local component).
-					await addComponentIdMapping(
+			let selectedRemoteComponentName: string | symbol | null;
+			switch (newLocalComponentResolution) {
+				case 'askUser':
+					selectedRemoteComponentName = await askForSelectMappedComponent(
+						'local',
 						localOnlyComponent.componentType,
 						localOnlyComponent.componentLocalId,
-						newRemoteComponentName,
-						makecomappRootDir,
-						origin,
+						localOnlyComponent.componentMetadata.label,
+						unlinkedComponents,
 					);
 					break;
-				}
+				// Note: `case 'ignore':` skipped by parent `if` condition
 				default:
-					throw new Error(`Unknown special answer "${selectedRemoteComponentName?.description}"`);
+					throw new Error(
+						`Unknown function parameter newLocalComponentResolution = ${newLocalComponentResolution}`,
+					);
+			}
+
+			if (typeof selectedRemoteComponentName === 'string' || selectedRemoteComponentName === null) {
+				// Link internal ID with already existing remote component.
+				await addComponentIdMapping(
+					localOnlyComponent.componentType,
+					localOnlyComponent.componentLocalId,
+					selectedRemoteComponentName,
+					makecomappRootDir,
+					origin,
+				);
+
+				// Remove newly linked component from `remoteOnly`.
+				remoteOnly = remoteOnly.filter(
+					(component) =>
+						component.componentType !== localOnlyComponent.componentType ||
+						component.componentName !== selectedRemoteComponentName,
+				);
+
+				// Note: Now, the local component is fully linked with existing remote.
+			} else {
+				switch (selectedRemoteComponentName) {
+					case anwersSpecialCases.CREATE_NEW_COMPONENT: {
+						// Create new remote compoments (becuse it not exist)
+						const newRemoteComponentName = await createRemoteAppComponent({
+							appName: origin.appId,
+							appVersion: origin.appVersion,
+							componentType: localOnlyComponent.componentType,
+							componentMetadata: localOnlyComponent.componentMetadata,
+							componentName: localOnlyComponent.componentLocalId,
+							origin,
+						});
+
+						// Push local codes to new remote component
+						for (const [codeType, codeLocalRelativePath] of entries(
+							localOnlyComponent.componentMetadata.codeFiles,
+						)) {
+							await deployComponentCode({
+								appComponentType: localOnlyComponent.componentType,
+								codeType,
+								remoteComponentName: newRemoteComponentName,
+								origin,
+								sourcePath: vscode.Uri.joinPath(makecomappRootDir, codeLocalRelativePath),
+							});
+
+							// TODO Implement: Deploy also other configuration (connection, altConnection, webhook).
+						}
+
+						// Add new remote component to idMapping (link with existing local component).
+						await addComponentIdMapping(
+							localOnlyComponent.componentType,
+							localOnlyComponent.componentLocalId,
+							newRemoteComponentName,
+							makecomappRootDir,
+							origin,
+						);
+						break;
+					}
+					default:
+						throw new Error(`Unknown special answer "${selectedRemoteComponentName?.description}"`);
+				}
 			}
 		}
 	}
 
-	// Ask user to link `remoteOnly` component(s) with unlinked local, or pull as new local compoment
-	let remoteOnlyComponent: (typeof remoteOnly)[0];
-	while ((remoteOnlyComponent = remoteOnly.shift()!)) {
-		// Remote component is not linked to local
+	// Resolve 'remoteOnly'
+	if (newRemoteComponentResolution !== 'ignore') {
+		// Ask user to link `remoteOnly` component(s) with unlinked local, or pull as new local compoment
+		let remoteOnlyComponent: (typeof remoteOnly)[0];
+		while ((remoteOnlyComponent = remoteOnly.shift()!)) {
+			// Remote component is not linked to local
 
-		progresDialogReport('Asking user for additional information (see dialog on the top)');
+			progresDialogReport('Asking user for additional information (see dialog on the top)');
 
-		// Ask for "Select remote component, which should be linked with. Or new component will be created."
-		const unlinkedComponents = localOnly
-			.filter((localComponent) => localComponent.componentType === remoteOnlyComponent.componentType)
-			.map((localComponent) => ({
-				componentName: localComponent.componentLocalId,
-				componentMetadata: localComponent.componentMetadata,
-			}));
-		const selectedLocalComponentId = await askForSelectLinkedComponent(
-			'remote',
-			remoteOnlyComponent.componentType,
-			remoteOnlyComponent.componentName,
-			remoteOnlyComponent.componentMetadata.label,
-			unlinkedComponents,
-		);
+			// Ask for "Select remote component, which should be linked with. Or new component will be created."
+			const unlinkedComponents = localOnly
+				.filter((localComponent) => localComponent.componentType === remoteOnlyComponent.componentType)
+				.map((localComponent) => ({
+					componentName: localComponent.componentLocalId,
+					componentMetadata: localComponent.componentMetadata,
+				}));
 
-		if (typeof selectedLocalComponentId === 'string') {
-			// Link internal ID with already existing remote component.
-			await addComponentIdMapping(
-				remoteOnlyComponent.componentType,
-				selectedLocalComponentId,
-				remoteOnlyComponent.componentName,
-				makecomappRootDir,
-				origin,
-			);
-
-			// Remove newly linked component from `localOnly`.
-			localOnly = localOnly.filter(
-				(component) =>
-					component.componentType !== remoteOnlyComponent.componentType ||
-					component.componentLocalId !== selectedLocalComponentId,
-			);
-
-			// Note: Now, the remote component is fully linked with existing local.
-		} else {
-			switch (selectedLocalComponentId) {
-				case anwersSpecialCases.CREATE_NEW_COMPONENT: {
-					// Create new empty local component
-					const newComponent = await createLocalEmptyComponent(
+			let selectedLocalComponentId: string | symbol | null;
+			switch (newRemoteComponentResolution) {
+				case 'askUser':
+					selectedLocalComponentId = await askForSelectMappedComponent(
+						'remote',
 						remoteOnlyComponent.componentType,
 						remoteOnlyComponent.componentName,
-						remoteOnlyComponent.componentMetadata,
-						makecomappRootDir,
-					);
-					// Pull existing codes to new local component
-					await pullComponentCodes(
-						remoteOnlyComponent.componentType,
-						remoteOnlyComponent.componentName,
-						makecomappRootDir,
-						origin,
-						newComponent.componentMetadata,
-					);
-					// Link it with existing remote component
-					await addComponentIdMapping(
-						remoteOnlyComponent.componentType,
-						newComponent.componentLocalId,
-						remoteOnlyComponent.componentName,
-						makecomappRootDir,
-						origin,
+						remoteOnlyComponent.componentMetadata.label,
+						unlinkedComponents,
 					);
 					break;
-				}
+				case 'cloneAsNew':
+					selectedLocalComponentId = anwersSpecialCases.CREATE_NEW_COMPONENT;
+					break;
+				// Note: `case 'ignore':` skipped by parent `if` condition
 				default:
-					throw new Error(`Special answer "${selectedLocalComponentId?.description}" is unknown`);
+					throw new Error(
+						`Unknown function parameter newRemoteComponentResolution = ${newRemoteComponentResolution}`,
+					);
+			}
+
+			if (typeof selectedLocalComponentId === 'string' || selectedLocalComponentId === null) {
+				// Link internal ID with already existing remote component.
+				await addComponentIdMapping(
+					remoteOnlyComponent.componentType,
+					selectedLocalComponentId,
+					remoteOnlyComponent.componentName,
+					makecomappRootDir,
+					origin,
+				);
+
+				// Remove newly linked component from `localOnly`.
+				localOnly = localOnly.filter(
+					(component) =>
+						component.componentType !== remoteOnlyComponent.componentType ||
+						component.componentLocalId !== selectedLocalComponentId,
+				);
+
+				// Note: Now, the remote component is fully linked with existing local.
+			} else {
+				switch (selectedLocalComponentId) {
+					case anwersSpecialCases.CREATE_NEW_COMPONENT: {
+						// Create new empty local component
+						const newComponent = await createLocalEmptyComponent(
+							remoteOnlyComponent.componentType,
+							remoteOnlyComponent.componentName,
+							remoteOnlyComponent.componentMetadata,
+							makecomappRootDir,
+						);
+						// Pull existing codes to new local component
+						await pullComponentCodes(
+							remoteOnlyComponent.componentType,
+							remoteOnlyComponent.componentName,
+							makecomappRootDir,
+							origin,
+							newComponent.componentMetadata,
+						);
+						// Link it with existing remote component
+						await addComponentIdMapping(
+							remoteOnlyComponent.componentType,
+							newComponent.componentLocalId,
+							remoteOnlyComponent.componentName,
+							makecomappRootDir,
+							origin,
+						);
+						break;
+					}
+					default:
+						throw new Error(`Special answer "${selectedLocalComponentId?.description}" is unknown`);
+				}
 			}
 		}
 	}
 
 	progresDialogReport('');
 }
-

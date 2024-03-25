@@ -11,7 +11,7 @@ export const anwersSpecialCases = {
  * @return componentName if one is selected. Or Symbor if answered to create or ignore.
  * @throws {Error} if dialog cancelled by user.
  */
-export async function askForSelectLinkedComponent(
+export async function askForSelectMappedComponent( // TODO Rename to '..mapped..'
 	componentLocation: 'local' | 'remote',
 	componentType: AppComponentType,
 	componentIdOrName: string,
@@ -32,7 +32,7 @@ export async function askForSelectLinkedComponent(
 		// and offer to create new one
 		{ label: `Create new ${counterpartyComponentsLocation} ${componentType}`, name: anwersSpecialCases.CREATE_NEW_COMPONENT, similarityScore: -1 },
 		// and offer to create ignore
-		{ label: `Ignore / do not link with ${counterpartyComponentsLocation}`, name: null, similarityScore: -2 },
+		{ label: `Ignore permanently / do not map with ${counterpartyComponentsLocation}`, name: null, similarityScore: -2 },
 
 	];
 
@@ -41,9 +41,9 @@ export async function askForSelectLinkedComponent(
 
 	const componentNamePick = await vscode.window.showQuickPick<(typeof pickOptions)[0]>(pickOptions, {
 		ignoreFocusOut: true,
-		title: `Select the ${counterpartyComponentsLocation} ${componentType}, which the ${componentLocation} ${componentType} "${
+		title: `Select a counterparty for unmapped ${componentLocation} ${componentType} "${
 			componentLabel ?? '[no-label]'
-		}" [${componentIdOrName}] should be linked to:`,
+		}" [${componentIdOrName}]:`,
 	});
 	if (componentNamePick === undefined) {
 		throw new Error('Cancelled by user.');

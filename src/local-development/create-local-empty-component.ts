@@ -10,6 +10,8 @@ import { AppComponentType } from '../types/app-component-type.types';
  * Creates new component in local development.
  *
  * Creates all necessary files and adds new component to makecomapp.json
+ *
+ * @param expectedComponentLocalId - Can contain an expected local ID or can contain also the original component remote name.
  */
 export async function createLocalEmptyComponent(
 	componentType: AppComponentType,
@@ -73,7 +75,7 @@ export async function createLocalEmptyComponent(
 	// Write changes to makecomapp.json file
 	await upsertComponentInMakecomappjson(
 		componentType,
-		expectedComponentLocalId,
+		newComponentLocalId,
 		null,
 		componentMetadataWithCodeFiles,
 		makeappRootdir,

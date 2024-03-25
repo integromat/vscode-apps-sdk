@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata, AppComponentTypesMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import {
+	AppComponentMetadata,
+	AppComponentTypesMetadataNoNull,
+	LocalAppOriginWithSecret,
+} from './types/makecomapp.types';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { getAppComponentTypes } from '../services/component-code-def';
 import { getAppComponentDetails, getAppComponents } from '../services/get-app-components';
 import {
@@ -9,7 +14,6 @@ import {
 	ComponentsApiResponseWebhookItem,
 } from '../types/get-component-api-response.types';
 import { getModuleDefFromId } from '../services/module-types-naming';
-import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
 /**
  * Gets list of all components from remote origin (in Make).
@@ -18,7 +22,7 @@ import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper'
 export async function getAllRemoteComponentsSummaries(
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-): Promise<AppComponentTypesMetadata<AppComponentMetadata>> {
+): Promise<AppComponentTypesMetadataNoNull<AppComponentMetadata>> {
 	const components: Awaited<ReturnType<typeof getAllRemoteComponentsSummaries>> = {
 		connection: {},
 		webhook: {},
@@ -108,8 +112,10 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 		...componentMetadata,
 	};
 	if (updatedComponentMedatada.connection) {
-		updatedComponentMedatada.connection =
-			componentIdMapping.getLocalIdStrict('connection', updatedComponentMedatada.connection);
+		updatedComponentMedatada.connection = componentIdMapping.getLocalIdStrict(
+			'connection',
+			updatedComponentMedatada.connection,
+		);
 		if (updatedComponentMedatada.connection === null) {
 			delete updatedComponentMedatada.connection;
 			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
@@ -117,8 +123,10 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 		}
 	}
 	if (updatedComponentMedatada.altConnection) {
-		updatedComponentMedatada.altConnection =
-			componentIdMapping.getLocalIdStrict('connection', updatedComponentMedatada.altConnection);
+		updatedComponentMedatada.altConnection = componentIdMapping.getLocalIdStrict(
+			'connection',
+			updatedComponentMedatada.altConnection,
+		);
 		if (updatedComponentMedatada.altConnection === null) {
 			delete updatedComponentMedatada.altConnection;
 			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
@@ -126,8 +134,10 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 		}
 	}
 	if (updatedComponentMedatada.webhook) {
-		updatedComponentMedatada.webhook =
-			componentIdMapping.getLocalIdStrict('webhook', updatedComponentMedatada.webhook);
+		updatedComponentMedatada.webhook = componentIdMapping.getLocalIdStrict(
+			'webhook',
+			updatedComponentMedatada.webhook,
+		);
 		if (updatedComponentMedatada.webhook === null) {
 			delete updatedComponentMedatada.webhook;
 			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.

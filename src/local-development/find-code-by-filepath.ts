@@ -66,7 +66,7 @@ export function findCodesByFilePath(
 	for (const [componentType, appComponents] of entries(appComponentsMetadata)) {
 		for (const componentLocalId of keys(appComponents)) {
 			const codeFilesMetadata: ComponentCodeFilesMetadata =
-				appComponents[componentLocalId].codeFiles || {};
+				appComponents[componentLocalId]?.codeFiles ?? {};
 			for (const [codeType, codeFilePath] of entries(codeFilesMetadata)) {
 				const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 				const codeExactMatch = codeFilePath === relativePath;

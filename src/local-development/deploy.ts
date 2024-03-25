@@ -68,6 +68,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				makeappRootdir,
 				origin,
 				allComponentsSummariesInCloud,
+				'askUser',
+				'ignore',
 			);
 			// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
 			makecomappJson = await getMakecomappJson(anyProjectPath);

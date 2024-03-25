@@ -35,7 +35,7 @@ export function registerCommands(): void {
 				return;
 			}
 			await withProgressDialog({ title: '' }, async (_progress, _cancellationToken) => {
-				await pullAllComponents(localAppRootdir, origin);
+				await pullAllComponents(localAppRootdir, origin, 'askUser');
 			});
 			vscode.window.showInformationMessage('All local app component files has been updated.');
 		}),
@@ -50,6 +50,7 @@ export function registerCommands(): void {
 export async function pullAllComponents(
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
+	newRemoteComponentResolution: 'askUser' | 'cloneAsNew'
 ): Promise<void> {
 	let makecomappJson = await getMakecomappJson(localAppRootdir);
 	const allRemoteComponentsSummaries = await getAllRemoteComponentsSummaries(localAppRootdir, origin);
@@ -59,6 +60,8 @@ export async function pullAllComponents(
 		localAppRootdir,
 		origin,
 		allRemoteComponentsSummaries,
+		'ignore',
+		newRemoteComponentResolution,
 	);
 	// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
 	makecomappJson = await getMakecomappJson(localAppRootdir);
@@ -83,17 +86,17 @@ export async function pullAllComponents(
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
 			allRemoteComponentsSummaries[componentType],
 		)) {
-			const componentInternalId = componentIdMapping.getLocalIdStrict(
+			const componentLocalId = componentIdMapping.getLocalIdStrict(
 				componentType,
 				remoteComponentName,
 			);
-			if (componentInternalId === null) {
+			if (componentLocalId === null) {
 				continue;
 				// Because the mapping defines this remote component as "ignore".
 			}
-			const existingComponentMetadata = makecomappJson.components[componentType][componentInternalId];
+			const existingComponentMetadata = makecomappJson.components[componentType][componentLocalId];
 			if (!existingComponentMetadata) {
-				throw new Error(`Local ${componentType} ${componentInternalId} expected, but not found in 'makecomapp.json'. Unexpected Error.`);
+				throw new Error(`Local ${componentType} "${componentLocalId}" expected, but not found in 'makecomapp.json'. Unexpected Error.`);
 				// Note: This should not happen, because previously called `alignComponentMapping()` must to also integrate all new/unknown remote component to local one.
 			}
 
@@ -108,7 +111,7 @@ export async function pullAllComponents(
 			pullComponent(
 				componentType,
 				remoteComponentName,
-				componentInternalId,
+				componentLocalId,
 				updatedComponentMedatada,
 				localAppRootdir,
 				origin,
