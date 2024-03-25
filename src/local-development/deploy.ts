@@ -2,7 +2,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { deployComponentCode } from './code-pull-deploy';
 import { getRemoteComponentsSummary } from './remote-components-summary';
-import { askForOrigin } from './dialog-select-origin';
+import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';

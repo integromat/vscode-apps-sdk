@@ -1,13 +1,13 @@
+import * as path from 'node:path';
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { catchError } from '../error-handling';
-import { log } from '../output-channel';
 import { pullComponentCode } from './code-pull-deploy';
 import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
 import { findCodeByFilePath } from './find-code-by-filepath';
-import { askForOrigin } from './dialog-select-origin';
-import { withProgressDialog } from '../utils/vscode-progress-dialog';
+import { askForOrigin } from './ask-origin';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { catchError } from '../error-handling';
+import { log } from '../output-channel';
+import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(

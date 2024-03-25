@@ -9,7 +9,7 @@ import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjso
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponentsSummary } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
-import { askForProjectOrigin } from './dialog-select-origin';
+import { askForProjectOrigin } from './ask-origin';
 import { alignComponentsMapping } from './align-components-mapping';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { generalCodesDefinition, getAppComponentTypes } from '../services/component-code-def';

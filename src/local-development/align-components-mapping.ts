@@ -6,7 +6,7 @@ import {
 	MakecomappJson,
 } from './types/makecomapp.types';
 import { addComponentIdMapping } from './makecomappjson';
-import { anwersSpecialCases, askForSelectMappedComponent } from './dialog-select-linked-component';
+import { anwersSpecialCases, askForSelectMappedComponent } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { deployComponentCode, pullComponentCodes } from './code-pull-deploy';

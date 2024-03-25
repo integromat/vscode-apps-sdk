@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { AppComponentType } from '../types/app-component-type.types';
 import { AppComponentMetadata } from './types/makecomapp.types';
+import { AppComponentType } from '../types/app-component-type.types';
 
 export const anwersSpecialCases = {
 	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),
@@ -11,7 +11,7 @@ export const anwersSpecialCases = {
  * @return componentName if one is selected. Or Symbor if answered to create or ignore.
  * @throws {Error} if dialog cancelled by user.
  */
-export async function askForSelectMappedComponent( // TODO Rename to '..mapped..'
+export async function askForSelectMappedComponent(
 	componentLocation: 'local' | 'remote',
 	componentType: AppComponentType,
 	componentIdOrName: string,
@@ -30,10 +30,17 @@ export async function askForSelectMappedComponent( // TODO Rename to '..mapped..
 			),
 		})),
 		// and offer to create new one
-		{ label: `Create new ${counterpartyComponentsLocation} ${componentType}`, name: anwersSpecialCases.CREATE_NEW_COMPONENT, similarityScore: -1 },
+		{
+			label: `Create new ${counterpartyComponentsLocation} ${componentType}`,
+			name: anwersSpecialCases.CREATE_NEW_COMPONENT,
+			similarityScore: -1,
+		},
 		// and offer to create ignore
-		{ label: `Ignore permanently / do not map with ${counterpartyComponentsLocation}`, name: null, similarityScore: -2 },
-
+		{
+			label: `Ignore permanently / do not map with ${counterpartyComponentsLocation}`,
+			name: null,
+			similarityScore: -2,
+		},
 	];
 
 	// Most similar remote connection should be on the top (as the first choice)
