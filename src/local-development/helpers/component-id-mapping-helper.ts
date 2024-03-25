@@ -1,6 +1,6 @@
-import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
-import { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import { getOriginObject } from './get-origin-object';
+import { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
+import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 
 export class ComponentIdMappingHelper {
 	constructor(private makecomappJson: MakecomappJson, private origin: LocalAppOrigin) {}
@@ -13,9 +13,8 @@ export class ComponentIdMappingHelper {
 
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
-		const matchedMappings = originInMakecomappJson.idMapping[componentType].filter(
-			(mapping) => mapping.local === localId,
-		);
+		const matchedMappings =
+			originInMakecomappJson.idMapping?.[componentType].filter((mapping) => mapping.local === localId) ?? [];
 
 		if (matchedMappings.length === 0) {
 			return undefined;
@@ -46,9 +45,8 @@ export class ComponentIdMappingHelper {
 
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
-		const matchedMappings = originInMakecomappJson.idMapping[componentType].filter(
-			(mapping) => mapping.remote === remoteName,
-		);
+		const matchedMappings =
+			originInMakecomappJson.idMapping?.[componentType].filter((mapping) => mapping.remote === remoteName) ?? [];
 
 		if (matchedMappings.length === 0) {
 			return undefined;
@@ -70,7 +68,4 @@ export class ComponentIdMappingHelper {
 
 		return localId;
 	}
-
 }
-
-

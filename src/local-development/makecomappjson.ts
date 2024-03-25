@@ -182,11 +182,12 @@ async function _addComponentIdMapping(
 ) {
 	const makecomappJson = await getMakecomappJson(anyProjectPath);
 	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
-	const existingIdMappingItems = originInMakecomappJson.idMapping[componentType].filter(
-		(idMappingItem) =>
-			(idMappingItem.local !== null && idMappingItem.local === componentLocalId) ||
-			(idMappingItem.remote !== null && idMappingItem.remote === remoteComponentName),
-	);
+	const existingIdMappingItems =
+		originInMakecomappJson.idMapping?.[componentType].filter(
+			(idMappingItem) =>
+				(idMappingItem.local !== null && idMappingItem.local === componentLocalId) ||
+				(idMappingItem.remote !== null && idMappingItem.remote === remoteComponentName),
+		) ?? [];
 	if (existingIdMappingItems.length > 0) {
 		// Mapping already exists. Check the consistency of the pair.
 		if (existingIdMappingItems.length > 1) {
@@ -203,6 +204,15 @@ async function _addComponentIdMapping(
 		}
 	} else {
 		// Create new ID mapping, because does not exist yet.
+		if (!originInMakecomappJson.idMapping) {
+			originInMakecomappJson.idMapping = {
+				connection: [],
+				module: [],
+				function: [],
+				rpc: [],
+				webhook: [],
+			};
+		}
 		originInMakecomappJson.idMapping[componentType].push({
 			local: componentLocalId,
 			remote: remoteComponentName,
@@ -271,10 +281,7 @@ async function _generateComponentLocalId(
 			if (probableOrigins.length === 1) {
 				const componentPostfix = expectedRemoteComponentId.substring(probableOrigins[0].appId.length);
 				if (/^[0-9]{1,2}$/.test(componentPostfix)) {
-					componentUnusedIndex = Number.parseInt(
-						componentPostfix,
-						10,
-					);
+					componentUnusedIndex = Number.parseInt(componentPostfix, 10);
 				}
 			}
 			break;
@@ -290,7 +297,7 @@ async function _generateComponentLocalId(
 	while (
 		makecomappJson.components[componentType][`${componentLocalIdPrefix}${componentUnusedIndex ?? ''}`] !==
 			undefined ||
-		originInMakecomappJson?.idMapping[componentType].find(
+		originInMakecomappJson?.idMapping?.[componentType].find(
 			(idMappingItem) => idMappingItem.local === `${componentLocalIdPrefix}${componentUnusedIndex ?? ''}`,
 		)
 	) {

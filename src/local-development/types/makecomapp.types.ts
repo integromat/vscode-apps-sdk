@@ -18,7 +18,7 @@ export interface LocalAppOrigin {
 	label?: string;
 	baseUrl: string;
 	appId: string;
-	idMapping: AppIdMapping;
+	idMapping?: AppIdMapping;
 	appVersion: number;
 	apikeyFile: string;
 }

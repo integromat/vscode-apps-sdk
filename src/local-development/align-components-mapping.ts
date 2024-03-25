@@ -52,7 +52,7 @@ export async function alignComponentsMapping(
 	// Fill `remoteOnly`
 	for (const [componentType, components] of entries(remoteComponentsSummary)) {
 		for (const [componentName, componentMetadata] of entries(components)) {
-			const isLocalComponentKnown = origin.idMapping[componentType].find(
+			const isLocalComponentKnown = origin.idMapping?.[componentType].find(
 				(idMappingItem) => idMappingItem.remote === componentName,
 			);
 			if (isLocalComponentKnown === undefined) {
