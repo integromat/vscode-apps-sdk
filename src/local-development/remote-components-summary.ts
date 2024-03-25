@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
-import {
-	AppComponentMetadata,
-	AppComponentTypesMetadataNoNull,
-	LocalAppOriginWithSecret,
-} from './types/makecomapp.types';
+import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { RemoteComponentsSummary } from './types/remote-components-summary.types';
 import { getAppComponentTypes } from '../services/component-code-def';
 import { getAppComponentDetails, getAppComponents } from '../services/get-app-components';
 import {
@@ -16,14 +13,14 @@ import {
 import { getModuleDefFromId } from '../services/module-types-naming';
 
 /**
- * Gets list of all components from remote origin (in Make).
- * All component references are as remote component name (not as Local ID).
+ * Gets list of all components in remote origin (in Make).
+ * All component references are in their remote component names (not as Local IDs).
  */
-export async function getAllRemoteComponentsSummaries(
+export async function getRemoteComponentsSummary(
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-): Promise<AppComponentTypesMetadataNoNull<AppComponentMetadata>> {
-	const components: Awaited<ReturnType<typeof getAllRemoteComponentsSummaries>> = {
+): Promise<RemoteComponentsSummary> {
+	const components: Awaited<ReturnType<typeof getRemoteComponentsSummary>> = {
 		connection: {},
 		webhook: {},
 		module: {},

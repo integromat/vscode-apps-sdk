@@ -1,20 +1,17 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { deployComponentCode } from './code-pull-deploy';
-import { getAllRemoteComponentsSummaries } from './component-summaries';
+import { getRemoteComponentsSummary } from './remote-components-summary';
 import { askForOrigin } from './dialog-select-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
-import { alignComponentMapping } from './diff-components-presence';
+import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { CodePath } from './types/code-path.types';
-import {
-	getMakecomappJson,
-	getMakecomappRootDir,
-} from '../local-development/makecomappjson';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, errorToString, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
-import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -57,17 +54,14 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			progresDialogReport('Initial analytics');
 
 			// Get all existing remote components
-			const allComponentsSummariesInCloud = await getAllRemoteComponentsSummaries(
-				anyProjectPath,
-				origin,
-			);
+			const remoteComponentsSummary = await getRemoteComponentsSummary(anyProjectPath, origin);
 
 			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
-			await alignComponentMapping(
+			await alignComponentsMapping(
 				makecomappJson,
 				makeappRootdir,
 				origin,
-				allComponentsSummariesInCloud,
+				remoteComponentsSummary,
 				'askUser',
 				'ignore',
 			);

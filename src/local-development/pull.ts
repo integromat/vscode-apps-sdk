@@ -5,22 +5,18 @@ import {
 	ComponentCodeFilesMetadata,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import {
-	getMakecomappJson,
-	getMakecomappRootDir,
-	upsertComponentInMakecomappjson,
-} from './makecomappjson';
-import { getAllRemoteComponentsSummaries, convertComponentMetadataRemoteNamesToLocalIds } from './component-summaries';
+import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
+import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponentsSummary } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { askForProjectOrigin } from './dialog-select-origin';
+import { alignComponentsMapping } from './align-components-mapping';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { generalCodesDefinition, getAppComponentTypes } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
-import { alignComponentMapping } from './diff-components-presence';
-import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
 export function registerCommands(): void {
 	/**
@@ -50,16 +46,16 @@ export function registerCommands(): void {
 export async function pullAllComponents(
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-	newRemoteComponentResolution: 'askUser' | 'cloneAsNew'
+	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 ): Promise<void> {
 	let makecomappJson = await getMakecomappJson(localAppRootdir);
-	const allRemoteComponentsSummaries = await getAllRemoteComponentsSummaries(localAppRootdir, origin);
+	const remoteAppComponentsSummary = await getRemoteComponentsSummary(localAppRootdir, origin);
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
-	await alignComponentMapping(
+	await alignComponentsMapping(
 		makecomappJson,
 		localAppRootdir,
 		origin,
-		allRemoteComponentsSummaries,
+		remoteAppComponentsSummary,
 		'ignore',
 		newRemoteComponentResolution,
 	);
@@ -84,19 +80,18 @@ export async function pullAllComponents(
 	for (const componentType of getAppComponentTypes()) {
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
-			allRemoteComponentsSummaries[componentType],
+			remoteAppComponentsSummary[componentType],
 		)) {
-			const componentLocalId = componentIdMapping.getLocalIdStrict(
-				componentType,
-				remoteComponentName,
-			);
+			const componentLocalId = componentIdMapping.getLocalIdStrict(componentType, remoteComponentName);
 			if (componentLocalId === null) {
 				continue;
 				// Because the mapping defines this remote component as "ignore".
 			}
 			const existingComponentMetadata = makecomappJson.components[componentType][componentLocalId];
 			if (!existingComponentMetadata) {
-				throw new Error(`Local ${componentType} "${componentLocalId}" expected, but not found in 'makecomapp.json'. Unexpected Error.`);
+				throw new Error(
+					`Local ${componentType} "${componentLocalId}" expected, but not found in 'makecomapp.json'. Unexpected Error.`,
+				);
 				// Note: This should not happen, because previously called `alignComponentMapping()` must to also integrate all new/unknown remote component to local one.
 			}
 

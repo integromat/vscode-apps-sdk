@@ -1,10 +1,7 @@
-// TODO rename file to be same as function name.
-
 import * as vscode from 'vscode';
 import {
 	AppComponentMetadata,
 	AppComponentMetadataWithCodeFiles,
-	AppComponentTypesMetadataNoNull,
 	LocalAppOriginWithSecret,
 	MakecomappJson,
 } from './types/makecomapp.types';
@@ -14,6 +11,7 @@ import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { deployComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { createLocalEmptyComponent } from './create-local-empty-component';
+import { RemoteComponentsSummary } from './types/remote-components-summary.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
@@ -24,11 +22,11 @@ import { progresDialogReport } from '../utils/vscode-progress-dialog';
  *
  * IMPORTANT: Changes the `makecomapp.json` file.
  */
-export async function alignComponentMapping(
+export async function alignComponentsMapping(
 	makecomappJson: MakecomappJson,
 	makecomappRootDir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-	remoteComponents: AppComponentTypesMetadataNoNull<AppComponentMetadata>,
+	remoteComponentsSummary: RemoteComponentsSummary,
 	newLocalComponentResolution: 'askUser' | 'ignore',
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew' | 'ignore',
 ): Promise<void> {
@@ -52,7 +50,7 @@ export async function alignComponentMapping(
 	}[] = [];
 
 	// Fill `remoteOnly`
-	for (const [componentType, components] of entries(remoteComponents)) {
+	for (const [componentType, components] of entries(remoteComponentsSummary)) {
 		for (const [componentName, componentMetadata] of entries(components)) {
 			const isLocalComponentKnown = origin.idMapping[componentType].find(
 				(idMappingItem) => idMappingItem.remote === componentName,
