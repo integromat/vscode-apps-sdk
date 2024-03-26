@@ -21,9 +21,14 @@ export interface ComponentsApiResponseModuleItem {
  * /api/v2/sdk/apps/[appId]/[appVersion]/modules/[moduleId]
  */
 export interface ModuleComponentDetailsApiResponseItem extends ComponentsApiResponseModuleItem {
+	/** Remote connection Name */
 	connection: string | null;
+	/** Remote altConnection Name */
 	altConnection: string | null;
-	/* Used for "dedicated webhook" only. Null in other cases. */
+	/**
+	 * Remote webhook name.
+	 * Used for "dedicated webhook" only. Null in other cases.
+	 */
 	webhook: string | null;
 }
 

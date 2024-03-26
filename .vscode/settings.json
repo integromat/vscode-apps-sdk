@@ -5,7 +5,7 @@
     "typescript.preferences.quoteStyle": "single",
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        // "editor.formatOnSave": true
+        "editor.formatOnSave": true
     },
     "importSorter.generalConfiguration.sortOnBeforeSave": true,
     "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
