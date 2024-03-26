@@ -7,6 +7,8 @@ export const anwersSpecialCases = {
 };
 
 /**
+ * Opens dialog, which asks user to do with component unmapped to counterparty.
+ * Note: If answer is obvious, the dialog is skipped and function will "autoanswer".
  *
  * @return componentName if one is selected. Or Symbor if answered to create or ignore.
  * @throws {Error} if dialog cancelled by user.
@@ -19,6 +21,20 @@ export async function askForSelectMappedComponent(
 	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
 ): Promise<string | null | symbol> {
 	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
+
+	// Try to autoanswer if the answer is obvious (local and remote components matched)
+	const matchedComponents = counterpartyComponents.filter(
+		(cc) =>
+			countSimilarityScore(
+				{ name: componentIdOrName, label: componentLabel },
+				{ name: cc.componentName, label: cc.componentMetadata.label },
+			) > 0,
+	);
+	if (matchedComponents.length === 1) {
+		return matchedComponents[0].componentName;
+	}
+
+	// Prepare dialog options
 	const pickOptions: (vscode.QuickPickItem & { name: string | null | symbol; similarityScore: number })[] = [
 		// Offer all existing suitable counterparty components
 		...counterpartyComponents.map((component) => ({
