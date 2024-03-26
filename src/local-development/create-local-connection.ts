@@ -1,17 +1,10 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
-import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
-import {
-	generateAndReserveComponentLocalId,
-	getMakecomappJson,
-	getMakecomappRootDir,
-	upsertComponentInMakecomappjson,
-} from './makecomappjson';
+import { AppComponentMetadata } from './types/makecomapp.types';
+import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
 import { MAKECOMAPP_FILENAME } from './consts';
-import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { askFreeText } from './helpers/ask-free-text';
+import { createLocalEmptyComponent } from './create-local-empty-component';
 import { catchError } from '../error-handling';
-import { entries } from '../utils/typed-object';
 import { ConnectionType } from '../types/component-types.types';
 
 export function registerCommands(): void {
@@ -26,7 +19,7 @@ export function registerCommands(): void {
  */
 async function onCreateLocalConnectionClick(file: vscode.Uri) {
 	const makecomappJson = await getMakecomappJson(file);
-	const makeappRootdir = getMakecomappRootDir(file);
+	const makeappRootDir = getMakecomappRootDir(file);
 
 	if (!makecomappJson.origins[0]?.appId) {
 		throw new Error(
@@ -83,46 +76,8 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 		connectionType: connectionTypePick.id,
 	};
 
-	const newConnectionLocalId = await generateAndReserveComponentLocalId('connection', '', makeappRootdir);
-	const connectionMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
-		...connectionMetadata,
-		codeFiles: await generateComponentDefaultCodeFilesPaths(
-			// Generate Local file paths (Relative to app rootdir) + store metadata
-			'connection',
-			newConnectionLocalId, // Use 'connection2','connection3',... connections directory name (ignore prefix with app ID).
-			connectionMetadata,
-			makeappRootdir,
-		),
-	};
-	// Create new code files
-	await createLocalConnection(newConnectionLocalId, connectionMetadataWithCodeFiles, makeappRootdir);
+	const newConnection = await createLocalEmptyComponent('connection', '', connectionMetadata, makeappRootDir);
 
 	// OK info message
-	vscode.window.showInformationMessage(`Connection "${newConnectionLocalId}" sucessfully created locally.`);
-}
-
-/**
- * Creates new Connection in local development.
- *
- * Creates all necessary files and adds new connection to makecomapp.json
- */
-async function createLocalConnection(
-	connectionName: string,
-	connectionMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles,
-	makeappRootdir: vscode.Uri,
-) {
-	for (const [codeType, codeFilePath] of entries(connectionMetadataWithCodeFiles.codeFiles)) {
-		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
-		await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
-	}
-
-	// Write changes to makecomapp.json file
-	await upsertComponentInMakecomappjson(
-		'connection',
-		connectionName,
-		null,
-		connectionMetadataWithCodeFiles,
-		makeappRootdir,
-		null,
-	);
+	vscode.window.showInformationMessage(`Connection "${newConnection.componentLocalId}" sucessfully created locally.`);
 }
