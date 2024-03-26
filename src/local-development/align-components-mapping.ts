@@ -153,7 +153,8 @@ export async function alignComponentsMapping(
 
 						/* Skipped here: Deploy local codes to new remote component.
 						 * Skipped here: Deploy also other configuration (connection, altConnection, webhook).
-						 *   Because this section called by "bulkDeploy()" function, this parent process these steps. */
+						 *   It is because this section is called by "pullAllComponents()",
+						 *   where this skipped step is handled by parent itself. */
 
 						// Add new remote component to idMapping (link with existing local component).
 						await addComponentIdMapping(
@@ -238,14 +239,11 @@ export async function alignComponentsMapping(
 							remoteOnlyComponent.componentMetadata,
 							makecomappRootDir,
 						);
-						// Pull existing codes to new local component
-						await pullComponentCodes(
-							remoteOnlyComponent.componentType,
-							remoteOnlyComponent.componentName,
-							makecomappRootDir,
-							origin,
-							newComponent.componentMetadata,
-						);
+
+						/* Skipped here: Pull existing codes to new local component
+						 *   It is because this section is called by "pullAllComponents()",
+						 *   where this skipped step is handled by parent itself. */
+
 						// Link it with existing remote component
 						await addComponentIdMapping(
 							remoteOnlyComponent.componentType,
