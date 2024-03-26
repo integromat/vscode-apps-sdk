@@ -147,20 +147,9 @@ export async function alignComponentsMapping(
 							origin,
 						});
 
-						// Push local codes to new remote component
-						for (const [codeType, codeLocalRelativePath] of entries(
-							localOnlyComponent.componentMetadata.codeFiles,
-						)) {
-							await deployComponentCode({
-								appComponentType: localOnlyComponent.componentType,
-								codeType,
-								remoteComponentName: newRemoteComponentName,
-								origin,
-								sourcePath: vscode.Uri.joinPath(makecomappRootDir, codeLocalRelativePath),
-							});
-
-							// TODO Implement: Deploy also other configuration (connection, altConnection, webhook).
-						}
+						/* Skipped here: Deploy local codes to new remote component.
+						 * Skipped here: Deploy also other configuration (connection, altConnection, webhook).
+						 *   Because this section called by "bulkDeploy()" function, this parent process these steps. */
 
 						// Add new remote component to idMapping (link with existing local component).
 						await addComponentIdMapping(
