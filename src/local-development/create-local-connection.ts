@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
-import { generateAndReserveComponentInternalId, getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
+import {
+	generateAndReserveComponentLocalId,
+	getMakecomappJson,
+	getMakecomappRootDir,
+	upsertComponentInMakecomappjson,
+} from './makecomappjson';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { askFreeText } from './helpers/ask-free-text';
@@ -49,15 +54,6 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 		}
 	}
 
-	// Find first unused ID (Connection IDs are autoincremental. based on app ID).
-	const appId = makecomappJson.origins[0].appId;
-	let appConnectionNameSuffix: number | string = '';
-	while (makecomappJson.components.connection[appId + appConnectionNameSuffix] !== undefined) {
-		appConnectionNameSuffix = typeof appConnectionNameSuffix === 'string' ? 2 : appConnectionNameSuffix + 1;
-	}
-	const newConnectionTempId = appId + appConnectionNameSuffix;
-	const newConnectionInternalId = await generateAndReserveComponentInternalId('connection', newConnectionTempId, makeappRootdir);
-
 	// Ask for connection label
 	const connectionLabel = await askFreeText({
 		subject: 'Label (title) of new connection to be created',
@@ -87,21 +83,22 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 		connectionType: connectionTypePick.id,
 	};
 
+	const newConnectionLocalId = await generateAndReserveComponentLocalId('connection', '', makeappRootdir);
 	const connectionMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
 		...connectionMetadata,
 		codeFiles: await generateComponentDefaultCodeFilesPaths(
 			// Generate Local file paths (Relative to app rootdir) + store metadata
 			'connection',
-			newConnectionInternalId, // Use 'connection2','connection3',... connections directory name (ignore prefix with app ID).
+			newConnectionLocalId, // Use 'connection2','connection3',... connections directory name (ignore prefix with app ID).
 			connectionMetadata,
 			makeappRootdir,
 		),
 	};
 	// Create new code files
-	await createLocalConnection(newConnectionTempId, connectionMetadataWithCodeFiles, makeappRootdir);
+	await createLocalConnection(newConnectionLocalId, connectionMetadataWithCodeFiles, makeappRootdir);
 
 	// OK info message
-	vscode.window.showInformationMessage(`Connection "${newConnectionTempId}" sucessfully created locally.`);
+	vscode.window.showInformationMessage(`Connection "${newConnectionLocalId}" sucessfully created locally.`);
 }
 
 /**
