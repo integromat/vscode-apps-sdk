@@ -195,35 +195,39 @@ async function _addComponentIdMapping(
 				(idMappingItem.local !== null && idMappingItem.local === componentLocalId) ||
 				(idMappingItem.remote !== null && idMappingItem.remote === remoteComponentName),
 		) ?? [];
-	if (existingIdMappingItems.length > 0) {
-		// Mapping already exists. Check the consistency of the pair.
-		if (existingIdMappingItems.length > 1) {
+	switch (existingIdMappingItems.length) {
+		case 0:
+			// Create new ID mapping, because does not exist yet.
+			if (!originInMakecomappJson.idMapping) {
+				originInMakecomappJson.idMapping = {
+					connection: [],
+					module: [],
+					function: [],
+					rpc: [],
+					webhook: [],
+				};
+			}
+			originInMakecomappJson.idMapping[componentType].push({
+				local: componentLocalId,
+				remote: remoteComponentName,
+			});
+			break;
+		case 1:
+			// Mapping already exists. Check if it is the same one.
+			if (
+				existingIdMappingItems[0].local !== componentLocalId ||
+				existingIdMappingItems[0].remote !== remoteComponentName
+			) {
+				throw new Error(
+					`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
+				);
+			} // else // already exists the same mapping. Nothing to do.
+			break;
+		default: // length >= 2
+			// Multiple mapping already exists.
 			throw new Error(
-				`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where mismatch found for local=${componentLocalId}, remote=${remoteComponentName}.`,
+				`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where multiple records found for (local=${componentLocalId} or remote=${remoteComponentName}).`,
 			);
-		} else if (
-			existingIdMappingItems[0].local !== componentLocalId ||
-			existingIdMappingItems[0].remote !== remoteComponentName
-		) {
-			throw new Error(
-				`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is paired with another unexpected component ID.`,
-			);
-		}
-	} else {
-		// Create new ID mapping, because does not exist yet.
-		if (!originInMakecomappJson.idMapping) {
-			originInMakecomappJson.idMapping = {
-				connection: [],
-				module: [],
-				function: [],
-				rpc: [],
-				webhook: [],
-			};
-		}
-		originInMakecomappJson.idMapping[componentType].push({
-			local: componentLocalId,
-			remote: remoteComponentName,
-		});
 	}
 
 	// Save updated makecomapp.json file
