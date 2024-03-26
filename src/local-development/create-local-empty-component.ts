@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
-import { generateAndReserveComponentInternalId, upsertComponentInMakecomappjson } from './makecomappjson';
+import { generateAndReserveComponentLocalId, upsertComponentInMakecomappjson } from './makecomappjson';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { entries } from '../utils/typed-object';
@@ -8,8 +8,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 
 /**
  * Creates new component in local development.
- *
- * Creates all necessary files and adds new component to makecomapp.json
+ * = Creates all necessary files and adds new component with `componentMetadata` to `makecomapp.json`.
  *
  * @param expectedComponentLocalId - Can contain an expected local ID or can contain also the original component remote name.
  */
@@ -50,7 +49,7 @@ export async function createLocalEmptyComponent(
 		}
 	}
 
-	const newComponentLocalId = await generateAndReserveComponentInternalId(
+	const newComponentLocalId = await generateAndReserveComponentLocalId(
 		componentType,
 		expectedComponentLocalId,
 		makeappRootdir,

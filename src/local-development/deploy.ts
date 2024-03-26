@@ -123,6 +123,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 			}
 
+			// TODO Implement: Deploy the metadata (connection, altConnection, Webhook, label, description,...) to all touched components.
+
 			// Display errors
 			if (errors.length > 0) {
 				showErrorDialog(`Failed ${errors.length} of ${codesToDeploy.length} codes deployments`, {
@@ -135,7 +137,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 						.join('\n\n'),
 				});
 			} else if (codesToDeploy.length >= 2) {
-				vscode.window.showInformationMessage(`Sucessfully deployed ${codesToDeploy.length} codes`);
+				vscode.window.showInformationMessage(`Successfully deployed ${codesToDeploy.length} codes`);
 			}
 		},
 	);

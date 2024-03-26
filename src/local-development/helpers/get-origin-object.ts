@@ -22,7 +22,10 @@ export function getOriginObject(makecomappJson: MakecomappJson, origin: LocalApp
 	return originInMakecomappJsons[0];
 }
 
-
+/**
+ * Returns true if both origins objects are same.
+ * Purpose: The `origin1` or `origin2` object can be the deep clonned and it is needed to find if both has been borned from same source.
+ */
 function compareOrigins(origin1: LocalAppOrigin, origin2: LocalAppOrigin): boolean {
 	return (
 		origin1.appId === origin2.appId &&

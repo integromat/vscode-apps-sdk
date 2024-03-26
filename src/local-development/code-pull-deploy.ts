@@ -1,16 +1,16 @@
 import * as path from 'node:path';
-import * as vscode from 'vscode';
-import * as Core from '../Core';
 import { AxiosRequestConfig } from 'axios';
-import { getGeneralCodeDefinition, getAppComponentCodeDefinition } from '../services/component-code-def';
-import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { TextDecoder, TextEncoder } from 'util';
+import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import { ApiCodeType, CodeType, ComponentCodeType, GeneralCodeType } from './types/code-type.types';
+import { CodeDef } from './types/code-def.types';
+import * as Core from '../Core';
+import { getAppComponentCodeDefinition, getGeneralCodeDefinition } from '../services/component-code-def';
+import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
-import { CodeType, ComponentCodeType, GeneralCodeType, ApiCodeType } from './types/code-type.types';
-import { CodeDef } from './types/code-def.types';
 import { entries } from '../utils/typed-object';
 
 const ENVIRONMENT_VERSION = 2;
@@ -18,7 +18,7 @@ const ENVIRONMENT_VERSION = 2;
 /**
  * Download the code from the API and save it to the local destination
  *
- * Note: If `appComponentType` === 'app' => remoteComponentName should be ''.
+ * Note: If `appComponentType` === 'app' => remoteComponentName must be ''.
  *
  * @return void, because the code is saved to the destination file.
  * @param codeType
@@ -178,7 +178,7 @@ function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType)
 }
 
 /**
- * Downloads all files of component specified in `componentMetadata.codeFiles`
+ * Pulls all files of component specified in `componentMetadata.codeFiles`
  * from remote origin to local file system.
  */
 export async function pullComponentCodes(

@@ -112,7 +112,8 @@ async function updateMakecomappJson(anyProjectPath: vscode.Uri, newMakecomappJso
 }
 
 /**
- * Insert or update the component in makecomapp.json file.
+ * Insert or update the component into `makecomapp.json` file.
+ * Adds/updates also the component ID-mapping.
  */
 export async function upsertComponentInMakecomappjson(
 	componentType: AppComponentType,
@@ -158,6 +159,9 @@ export async function upsertComponentInMakecomappjson(
 	});
 }
 
+/**
+ * Adds/edit component ID-mapping.
+ */
 export async function addComponentIdMapping(
 	componentType: AppComponentType,
 	internalComponentId: string | null,
@@ -171,7 +175,8 @@ export async function addComponentIdMapping(
 }
 
 /**
- * @private Do not use directly. Need to be wrapped by `limitConcurrency()` in parent method.
+ * Adds/edit component ID-mapping.
+ * @private For internal module usage only. Do not use directly, because it needs to be wrapped by `limitConcurrency()` in parent method.
  */
 async function _addComponentIdMapping(
 	componentType: AppComponentType,
@@ -182,6 +187,8 @@ async function _addComponentIdMapping(
 ) {
 	const makecomappJson = await getMakecomappJson(anyProjectPath);
 	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
+
+	// Check existing ID-mapping for consistency with the request to map `componentLocalId`<=>`remoteComponentName`
 	const existingIdMappingItems =
 		originInMakecomappJson.idMapping?.[componentType].filter(
 			(idMappingItem) =>
@@ -223,7 +230,14 @@ async function _addComponentIdMapping(
 	await updateMakecomappJson(anyProjectPath, makecomappJson);
 }
 
-export async function generateAndReserveComponentInternalId(
+/**
+ * Generates the new component local ID, which can be used in `makecomapp.json` file for new component added in future.
+ * There is guarantee that the returned local ID is not used yet.
+ * The generated local ID is also reserved by adding it to makecomapp.json as empty component (= component metadata is `null`).
+ * There is expectation that parent function will continue to finalize the component by adding component metadata or (or abort the reservation).
+ * @return Component ID.
+ */
+export async function generateAndReserveComponentLocalId(
 	componentType: AppComponentType,
 	expectedRemoteComponentId: string,
 	anyProjectPath: vscode.Uri,
@@ -237,8 +251,8 @@ export async function generateAndReserveComponentInternalId(
 		);
 		const makecomappJson = await getMakecomappJson(anyProjectPath);
 
-		makecomappJson.components[componentType][componentInternalId] = null as any;
-		// Note: The `null` is not officially available value for that interface, but the null is filled there only for a short time, so using this hack.
+		makecomappJson.components[componentType][componentInternalId] = null;
+		// Explanation: `null` is filled there only for a short time as "local ID reserved".
 
 		await updateMakecomappJson(anyProjectPath, makecomappJson);
 

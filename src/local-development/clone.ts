@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { TextEncoder } from 'node:util';
 import pick from 'lodash.pick';
 import * as vscode from 'vscode';
-import { LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
+import { LocalAppOrigin, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import { generateDefaultLocalFilename } from './local-file-paths';
@@ -62,7 +62,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		apikeyFile: path.posix.relative(localAppRootdir.path, apikeyFileUri.path),
 		apikey: environment.apikey,
 	};
-	const originWithoutApiKey = pick(origin, ['label', 'baseUrl', 'appId', 'appVersion', 'idMapping', 'apikeyFile']);
+	const originWithoutApiKey: LocalAppOrigin = pick(origin, ['label', 'baseUrl', 'appId', 'appVersion', 'idMapping', 'apikeyFile']);
 
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,

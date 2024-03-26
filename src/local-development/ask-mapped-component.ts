@@ -79,6 +79,10 @@ interface ScoreInputObj {
 	label: string | undefined;
 }
 
+/**
+ * Indentifies the similarity of components based on their names and labels.
+ * @return positive number if there is some similarity. Higher score means higher similarity. Zero if no similarity found.
+ */
 function countSimilarityScore(obj1: ScoreInputObj, obj2: ScoreInputObj): number {
 	let totalScore = 0;
 

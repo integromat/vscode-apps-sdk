@@ -9,7 +9,6 @@ import { addComponentIdMapping } from './makecomappjson';
 import { anwersSpecialCases, askForSelectMappedComponent } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import { deployComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { createLocalEmptyComponent } from './create-local-empty-component';
 import { RemoteComponentsSummary } from './types/remote-components-summary.types';
 import { AppComponentType } from '../types/app-component-type.types';
@@ -18,7 +17,12 @@ import { progresDialogReport } from '../utils/vscode-progress-dialog';
 
 /**
  * Compares list of components from two sources. If some component is missing on one side,
- * it is created and paired in mapping, or original component is marked for ignorring.
+ * it is created and paired in mapping, or original component is marked for ignoring.
+ *
+ * If local or remote component is created on ond site, the codes are not synced (deployed or pulled).
+ * This function has purpose to align (create) components itself only, but not sync theirs codes.
+ * Explanation: It is because this function is designed to be called from "deploy" or "push" functions,
+ * where the deployment or push is alredy handled itself.
  *
  * IMPORTANT: Changes the `makecomapp.json` file.
  */

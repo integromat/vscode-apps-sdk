@@ -2,6 +2,9 @@ import { getOriginObject } from './get-origin-object';
 import { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 
+/**
+ * Provides helping function to find remote component name from local ID and vice versa.
+ */
 export class ComponentIdMappingHelper {
 	constructor(private makecomappJson: MakecomappJson, private origin: LocalAppOrigin) {}
 
@@ -37,7 +40,10 @@ export class ComponentIdMappingHelper {
 		return remoteComponentName;
 	}
 
-	getLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null | undefined {
+	private getLocalId(
+		componentType: AppComponentType | AppGeneralType,
+		remoteName: string,
+	): string | null | undefined {
 		if (componentType === 'app') {
 			// This is special case, where "Common", "Readme" (etc.) are considered as members of virtual "app" compoment type, which has single component with ID ``.
 			return '';

@@ -16,7 +16,7 @@ const ENVIRONMENT_VERSION = 2;
  * Note: Content will stay filled by templated codes. No local codes are updates by this function.
  *
  * @param opt.componentName New component ID (for components, where it can be defined by user)
- * @returns New component name
+ * @returns Remote component name of new remote component
  */
 export async function createRemoteAppComponent(opt: {
 	appName: string;
@@ -142,7 +142,7 @@ interface CreateModuleApiResponse {
 		label: string;
 		description: string;
 		typeId: number;
-		crud: string | null; // todo CRUD type
+		crud: string | null; // TODO Improve Typescript type to own CRUD type instead of string
 		connection: string | null;
 		webhook: string | null;
 	};

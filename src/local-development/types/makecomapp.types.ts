@@ -18,7 +18,7 @@ export interface LocalAppOrigin {
 	label?: string;
 	baseUrl: string;
 	appId: string;
-	idMapping?: AppIdMapping;
+	idMapping?: ComponentIdMapping;
 	appVersion: number;
 	apikeyFile: string;
 }
@@ -29,9 +29,12 @@ export interface LocalAppOriginWithSecret extends LocalAppOrigin {
 
 export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
 
-type AppIdMapping = Record<AppComponentType, IdMappingItem[]>;
+/**
+ * List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).
+ */
+type ComponentIdMapping = Record<AppComponentType, ComponentIdMappingItem[]>;
 
-interface IdMappingItem {
+interface ComponentIdMappingItem {
 	/** Note: `null` means that the remote component is not paired to local. In consequences these remote components will be ignored during pull or deploy. */
 	local: string | null;
 	/** Note: `null` means that the local component is not paired to remote. In consequences these local components will be ignored during pull or deploy. */
@@ -44,6 +47,7 @@ type AppComponentsMetadata<T> = Record<string, T | null>; // Note: `null` is use
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
 	codeFiles: ComponentCodeFilesMetadata;
 }
+
 export interface AppComponentMetadata {
 	label?: string;
 	description?: string;

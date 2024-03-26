@@ -20,7 +20,7 @@ import { entries } from '../utils/typed-object';
 
 export function registerCommands(): void {
 	/**
-	 * Command for pulling all components. Adds new and updates existing.
+	 * Command for pulling all components. Adds new components and updates locally existing.
 	 */
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.pull-all-components',
@@ -77,6 +77,7 @@ export async function pullAllComponents(
 	}
 
 	// Pull app components from remote
+	// Note: All remote components have already existing local counterparties because of previously called `alignComponentsMapping()`.
 	for (const componentType of getAppComponentTypes()) {
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
@@ -95,14 +96,13 @@ export async function pullAllComponents(
 				// Note: This should not happen, because previously called `alignComponentMapping()` must to also integrate all new/unknown remote component to local one.
 			}
 
-			// Pull/update already existing component
-
-			// Construct updated component metadata and save it
+			// Prepate updated component metadata (merge with previous one)
 			const updatedComponentMedatada: AppComponentMetadataWithCodeFiles = {
 				...existingComponentMetadata, // Use previous `codeFiles`
 				// + Update all other properties by fresh one loaded from remote
 				...convertComponentMetadataRemoteNamesToLocalIds(remoteComponentMetadata, componentIdMapping),
 			};
+			// Pull/update already existing component + save updated component metadata
 			pullComponent(
 				componentType,
 				remoteComponentName,
@@ -116,30 +116,32 @@ export async function pullAllComponents(
 }
 
 /**
- * Pulls specified component from remote origin into local development.
+ * Pulls the component from remote origin and save it into local workspace.
+ * It means creates/updates all necessary local files.
+ * Also saves the `updatedComponentMetadata` as new metadata into `makecomapp.json` file.
+ * Also adds/updates the component ID-mapping.
  *
- * Creates all necessary local files and adds component to makecomapp.json manifest.
  */
 async function pullComponent(
 	componentType: AppComponentType,
 	remoteComponentName: string,
-	componentInternalId: string,
-	componentMetadata: AppComponentMetadata | AppComponentMetadataWithCodeFiles,
+	componentLocalId: string,
+	updatedComponentMetadata: AppComponentMetadata | AppComponentMetadataWithCodeFiles,
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 ) {
 	// Generate code files paths if local component does not exist yet
 	const existingLocalCodeFiles: ComponentCodeFilesMetadata | undefined = (
-		componentMetadata as AppComponentMetadataWithCodeFiles
+		updatedComponentMetadata as AppComponentMetadataWithCodeFiles
 	).codeFiles;
 	const componentMetadataWithCodefiles = <AppComponentMetadataWithCodeFiles>{
-		...componentMetadata,
+		...updatedComponentMetadata,
 		codeFiles:
 			existingLocalCodeFiles ??
 			(await generateComponentDefaultCodeFilesPaths(
 				componentType,
-				componentInternalId,
-				componentMetadata,
+				componentLocalId,
+				updatedComponentMetadata,
 				localAppRootdir,
 			)),
 	};
@@ -156,7 +158,7 @@ async function pullComponent(
 	// Write new (or update existing) component into makecomapp.json file
 	await upsertComponentInMakecomappjson(
 		componentType,
-		componentInternalId,
+		componentLocalId,
 		remoteComponentName,
 		componentMetadataWithCodefiles,
 		localAppRootdir,
