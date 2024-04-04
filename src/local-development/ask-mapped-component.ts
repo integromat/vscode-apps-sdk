@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AppComponentMetadata } from './types/makecomapp.types';
 import { AppComponentType } from '../types/app-component-type.types';
 
-export const anwersSpecialCases = {
+export const specialAnswers = {
 	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),
 };
 
@@ -48,7 +48,7 @@ export async function askForSelectMappedComponent(
 		// and offer to create new one
 		{
 			label: `Create new ${counterpartyComponentsLocation} ${componentType}`,
-			name: anwersSpecialCases.CREATE_NEW_COMPONENT,
+			name: specialAnswers.CREATE_NEW_COMPONENT,
 			similarityScore: -1,
 		},
 		// and offer to create ignore

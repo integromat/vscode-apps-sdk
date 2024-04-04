@@ -6,7 +6,7 @@ import {
 	MakecomappJson,
 } from './types/makecomapp.types';
 import { addComponentIdMapping } from './makecomappjson';
-import { anwersSpecialCases, askForSelectMappedComponent } from './ask-mapped-component';
+import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { createLocalEmptyComponent } from './create-local-empty-component';
@@ -140,7 +140,7 @@ export async function alignComponentsMapping(
 				// Note: Now, the local component is fully linked with existing remote.
 			} else {
 				switch (selectedRemoteComponentName) {
-					case anwersSpecialCases.CREATE_NEW_COMPONENT: {
+					case specialAnswers.CREATE_NEW_COMPONENT: {
 						// Create new remote compoments (becuse it not exist)
 						const newRemoteComponentName = await createRemoteAppComponent({
 							appName: origin.appId,
@@ -202,7 +202,7 @@ export async function alignComponentsMapping(
 					);
 					break;
 				case 'cloneAsNew':
-					selectedLocalComponentId = anwersSpecialCases.CREATE_NEW_COMPONENT;
+					selectedLocalComponentId = specialAnswers.CREATE_NEW_COMPONENT;
 					break;
 				// Note: `case 'ignore':` skipped by parent `if` condition
 				default:
@@ -231,7 +231,7 @@ export async function alignComponentsMapping(
 				// Note: Now, the remote component is fully linked with existing local.
 			} else {
 				switch (selectedLocalComponentId) {
-					case anwersSpecialCases.CREATE_NEW_COMPONENT: {
+					case specialAnswers.CREATE_NEW_COMPONENT: {
 						// Create new empty local component
 						const newComponent = await createLocalEmptyComponent(
 							remoteOnlyComponent.componentType,
