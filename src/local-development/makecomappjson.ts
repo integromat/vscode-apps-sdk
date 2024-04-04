@@ -305,7 +305,7 @@ async function _generateComponentLocalId(
 			break;
 		}
 		default:
-			// Node: module's and function's IDs are specified by user. Do not change it in local.
+			// Note: module's and function's IDs are specified by user. Do not change it in local files.
 			componentLocalIdPrefix = expectedRemoteComponentId;
 	}
 
