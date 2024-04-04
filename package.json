@@ -410,12 +410,12 @@
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-connection",
-				"title": "New Connection Component (beta)",
+				"title": "New Local Connection Component (beta)",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-module",
-				"title": "New Module Component (beta)",
+				"title": "New Local Module Component (beta)",
 				"category": "Make Apps"
 			},
 			{
