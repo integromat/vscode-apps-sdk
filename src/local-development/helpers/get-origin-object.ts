@@ -1,12 +1,20 @@
 import { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 
 /**
- * Returns the origin object freom makecomapp.json.
- * Used for editation this object for case, when input `origin` can be a clone of this object.
+ * Finds and returns the fresh/up-to-date reference to makecomapp.json's origin object.
+ *
+ * Explanation:
+ *
+ *   The `makecomapp.json` file is always considered as source of thruth.
+ *   This function is used for finding the fresh/up-to-date origin's data based on some older/outdated/cloned version of origin.
+ *   Most cases of getting a fresh version of `outdatedOrigin` is because `idMapping` data can be changed by another part of this extension.
+ *
+ * @return Fresh up-to-date version of `outdatedOrigin`.
+ *
  */
-export function getOriginObject(makecomappJson: MakecomappJson, origin: LocalAppOrigin): LocalAppOrigin {
+export function getOriginObject(makecomappJson: MakecomappJson, outdatedOrigin: LocalAppOrigin): LocalAppOrigin {
 	const originInMakecomappJsons = makecomappJson.origins.filter((requestedOrigin) =>
-		compareOrigins(requestedOrigin, origin),
+		compareOrigins(requestedOrigin, outdatedOrigin),
 	);
 	if (originInMakecomappJsons.length === 0) {
 		throw new Error(
