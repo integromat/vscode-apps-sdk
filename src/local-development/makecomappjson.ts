@@ -238,7 +238,7 @@ async function _addComponentIdMapping(
  * Generates the new component local ID, which can be used in `makecomapp.json` file for new component added in future.
  * There is guarantee that the returned local ID is not used yet.
  * The generated local ID is also reserved by adding it to makecomapp.json as empty component (= component metadata is `null`).
- * There is expectation that parent function will continue to finalize the component by adding component metadata or (or abort the reservation).
+ * There is expectation that parent function will continue to finalize the component by adding component metadata (or abort the reservation).
  * @return Component ID.
  */
 export async function generateAndReserveComponentLocalId(
