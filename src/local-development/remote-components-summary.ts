@@ -113,7 +113,7 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 		...componentMetadata,
 	};
 	if (updatedComponentMedatada.connection) {
-		updatedComponentMedatada.connection = componentIdMapping.getLocalIdStrict(
+		updatedComponentMedatada.connection = componentIdMapping.getExistingLocalId(
 			'connection',
 			updatedComponentMedatada.connection,
 		);
@@ -124,7 +124,7 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 		}
 	}
 	if (updatedComponentMedatada.altConnection) {
-		updatedComponentMedatada.altConnection = componentIdMapping.getLocalIdStrict(
+		updatedComponentMedatada.altConnection = componentIdMapping.getExistingLocalId(
 			'connection',
 			updatedComponentMedatada.altConnection,
 		);
@@ -135,7 +135,7 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 		}
 	}
 	if (updatedComponentMedatada.webhook) {
-		updatedComponentMedatada.webhook = componentIdMapping.getLocalIdStrict(
+		updatedComponentMedatada.webhook = componentIdMapping.getExistingLocalId(
 			'webhook',
 			updatedComponentMedatada.webhook,
 		);

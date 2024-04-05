@@ -33,7 +33,7 @@ async function localFileCompare(file: vscode.Uri) {
 	}
 
 	const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
-	const remoteComponentName = componentIdMapping.getRemoteNameStrict(
+	const remoteComponentName = componentIdMapping.getExistingRemoteName(
 		componentDetails.componentType,
 		componentDetails.componentLocalId,
 	);

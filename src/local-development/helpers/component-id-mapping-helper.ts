@@ -30,7 +30,7 @@ export class ComponentIdMappingHelper {
 		return matchedMappings[0].remote;
 	}
 
-	getRemoteNameStrict(componentType: AppComponentType | AppGeneralType, localId: string): string | null {
+	getExistingRemoteName(componentType: AppComponentType | AppGeneralType, localId: string): string | null {
 		const remoteComponentName = this.getRemoteName(componentType, localId);
 
 		if (remoteComponentName === undefined) {
@@ -65,7 +65,7 @@ export class ComponentIdMappingHelper {
 		return matchedMappings[0].local;
 	}
 
-	getLocalIdStrict(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null {
+	getExistingLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null {
 		const localId = this.getLocalId(componentType, remoteName);
 
 		if (localId === undefined) {

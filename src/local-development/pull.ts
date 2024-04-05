@@ -83,7 +83,7 @@ export async function pullAllComponents(
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
 			remoteAppComponentsSummary[componentType],
 		)) {
-			const componentLocalId = componentIdMapping.getLocalIdStrict(componentType, remoteComponentName);
+			const componentLocalId = componentIdMapping.getExistingLocalId(componentType, remoteComponentName);
 			if (componentLocalId === null) {
 				continue;
 				// Because the mapping defines this remote component as "ignore".

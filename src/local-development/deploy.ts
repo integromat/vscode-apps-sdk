@@ -89,7 +89,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 				// Find the remote component name
 				const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
-				const remoteComponentName = componentIdMapping.getRemoteNameStrict(
+				const remoteComponentName = componentIdMapping.getExistingRemoteName(
 					component.componentType,
 					component.componentLocalId,
 				);
