@@ -6,8 +6,10 @@ Unreleased
 
 ### Changes
 
-- Implemented ability clone/edit/deploy of module `scope`.
-- Implemented command "pull all components from Make"
+- Apps local development: Implemented the cloning/edit/deployment of module `scope`.
+- Apps local development: Implemented command "pull all components from Make".
+- Apps local development: Implemented ability to have multiple app origins.
+- Apps local development: Implemented the new components creation in local workspace.
 
 1.3.50 (pre-release) [2023-01-04]
 --------------------
