@@ -285,7 +285,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
 							})
 						default:
-							throw new Error(`Unknown or unsupported module type ${element.type}.`);
+							throw new Error(`Unknown or unsupported module type "${element.type}".`);
 					}
 				case "rpc":
 					return [

@@ -1,5 +1,5 @@
-Upcoming feature: Local development (alpha version)
-===================================================
+Upcoming feature: Apps local development (beta version)
+=======================================================
 
 ```text/plain
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

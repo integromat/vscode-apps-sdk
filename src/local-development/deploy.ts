@@ -1,18 +1,14 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { deployComponentCode } from './code-pull-deploy';
-import { getAllRemoteComponentsSummaries } from './component-summaries';
-import { askForOrigin } from './dialog-select-origin';
+import { getRemoteComponentsSummary } from './remote-components-summary';
+import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
-import { diffComponentsPresence } from './diff-components-presence';
-import { createRemoteAppComponent } from './create-remote-component';
+import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { CodePath } from './types/code-path.types';
-import {
-	getMakecomappJson,
-	getMakecomappRootDir,
-	renameConnectionInMakecomappJson,
-} from '../local-development/makecomappjson';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, errorToString, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
@@ -25,7 +21,7 @@ export function registerCommands(): void {
  * Recursively uploads all local code files under `anyProjectPath` into remote Make.
  */
 async function bulkDeploy(anyProjectPath: vscode.Uri) {
-	const makecomappJson = await getMakecomappJson(anyProjectPath);
+	let makecomappJson = await getMakecomappJson(anyProjectPath);
 	const makeappRootdir = getMakecomappRootDir(anyProjectPath);
 	const stat = await vscode.workspace.fs.stat(anyProjectPath);
 	const fileIsDirectory = stat.type === vscode.FileType.Directory;
@@ -58,110 +54,27 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			progresDialogReport('Initial analytics');
 
 			// Get all existing remote components
-			const allComponentsSummariesInCloud = await getAllRemoteComponentsSummaries(origin);
+			const remoteComponentsSummary = await getRemoteComponentsSummary(anyProjectPath, origin);
 
-			// Compare remote component list with local makecomapp.json
-			const componentAddingRemoving = diffComponentsPresence(
-				makecomappJson.components,
-				allComponentsSummariesInCloud,
+			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
+			await alignComponentsMapping(
+				makecomappJson,
+				makeappRootdir,
+				origin,
+				remoteComponentsSummary,
+				'askUser',
+				'ignore',
 			);
-			// New components = new components in makecomapp.json & components to deploy. These components must be created in remote before code deploy.
-			const newComponentsToCreate = componentAddingRemoving.newComponents.filter((newComponentInMakecomappjson) =>
-				codesToDeploy.find(
-					(codeToDeploy) =>
-						codeToDeploy.componentType === newComponentInMakecomappjson.componentType &&
-						codeToDeploy.componentName === newComponentInMakecomappjson.componentName,
-				),
-			);
-			if (newComponentsToCreate.length > 0 || componentAddingRemoving.missingComponents.length > 0) {
-				// Ask for continue in case of new component(s) found
-				progresDialogReport('Waiting for your response');
-				const confirmAnswer = await vscode.window.showWarningMessage(
-					'Components asymetry found between local files and remote Make',
-					{
-						modal: true,
-						detail: [
-							newComponentsToCreate.length > 0
-								? `New ${newComponentsToCreate.length} local components\n` +
-								  '(will be created at remote Make):\n' +
-								  newComponentsToCreate
-										.map((newC) => '➕\xA0' + newC.componentType + '\xA0' + newC.componentName)
-										.join(', ')
-								: '',
-							componentAddingRemoving.missingComponents.length > 0
-								? `NOTE: Missing ${componentAddingRemoving.missingComponents.length} local components:\n` +
-								  '(exists in remote Make, but missing in local project):\n' +
-								  componentAddingRemoving.missingComponents
-										.map(
-											(missingC) =>
-												'➖\xA0' + missingC.componentType + '\xA0' + missingC.componentName,
-										)
-										.join(', ')
-								: '',
-							'MAKE SURE THIS IS SOMETHING YOU INTEND' +
-								(componentAddingRemoving ? ' and there is no typo in some of local component ID' : '') +
-								'.',
-						].join('\n\n'),
-					},
-					{ title: 'Continue' },
-				);
-				if (confirmAnswer?.title !== 'Continue' || canceled) {
-					return;
-				}
-			}
+			// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
+			makecomappJson = await getMakecomappJson(anyProjectPath);
 
 			progresDialogReport('Deploying');
-
-			// Create remote components that has been found in local
-			let componentToCreate: (typeof newComponentsToCreate)[0] | undefined;
-			while ((componentToCreate = newComponentsToCreate.shift())) {
-				// Create new remote component in origin
-				const postActions = await createRemoteAppComponent({
-					appName: origin.appId,
-					appVersion: origin.appVersion,
-					...componentToCreate,
-					origin,
-				});
-				// Process post-actions
-				for (const postAction of postActions) {
-					if (postAction.renameConnection) {
-						await renameConnectionInMakecomappJson(
-							makeappRootdir,
-							postAction.renameConnection.oldId,
-							postAction.renameConnection.newId,
-						);
-					}
-				}
-				// Remove the added component also from list `componentAddingRemoving.newComponents`
-				componentAddingRemoving.newComponents = componentAddingRemoving.newComponents.filter(
-					(component) => component !== componentToCreate,
-				);
-			}
-
-			// Skip local components non existing in remote Make
-			// Note: In current alghoritm it should not skip anything, because all components has been created in remove above.
-			const codesToDeployFinal = codesToDeploy.filter((codePath) => {
-				const componentIsMissingInRemote = Boolean(
-					componentAddingRemoving.newComponents.find(
-						(missingRemoteComponent) =>
-							missingRemoteComponent.componentType === codePath.componentType &&
-							missingRemoteComponent.componentName === codePath.componentName,
-					),
-				);
-				if (componentIsMissingInRemote) {
-					log(
-						'debug',
-						`Skipping to deploy ${codePath.componentType} ${codePath.componentName} ${codePath.codeType} because does not exist on Make yet.`,
-					);
-				}
-				return !componentIsMissingInRemote;
-			});
 
 			/** Deployments errors */
 			const errors: { errorMessage: string; codePath: CodePath }[] = [];
 
 			// Deploy codes one-by-one
-			for (const component of codesToDeployFinal) {
+			for (const component of codesToDeploy) {
 				// Update the progress bar
 				progress.report({
 					increment: 100 / codesToDeploy.length,
@@ -169,16 +82,27 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 				log(
 					'debug',
-					`Deploying ${component.componentType} ${component.componentName} ${
+					`Deploying ${component.componentType} ${component.componentLocalId} ${
 						component.codeType
 					} from ${path.posix.relative(makeappRootdir.path, anyProjectPath.path)}`,
 				);
+
+				// Find the remote component name
+				const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+				const remoteComponentName = componentIdMapping.getExistingRemoteName(
+					component.componentType,
+					component.componentLocalId,
+				);
+				if (remoteComponentName === null) {
+					// Mapping explicitely says "ignore this local component"
+					continue;
+				}
 
 				// Upload via API
 				try {
 					await deployComponentCode({
 						appComponentType: component.componentType,
-						appComponentName: component.componentName,
+						remoteComponentName: remoteComponentName,
 						codeType: component.codeType,
 						origin,
 						sourcePath: component.localFile,
@@ -191,7 +115,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				// Log 'done' to console
 				log(
 					'debug',
-					`Deployed ${component.componentType} ${component.componentName} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
+					`Deployed ${component.componentType} ${component.componentLocalId} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
 				// Handle the user "cancel" button press
 				if (canceled) {
@@ -199,19 +123,21 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 			}
 
+			// TODO Implement: Deploy the metadata (connection, altConnection, Webhook, label, description,...) to all touched components.
+
 			// Display errors
 			if (errors.length > 0) {
-				showErrorDialog(`Failed ${errors.length} of ${codesToDeployFinal.length} codes deployments`, {
+				showErrorDialog(`Failed ${errors.length} of ${codesToDeploy.length} codes deployments`, {
 					modal: true,
 					detail: errors
 						.map(
 							(err) =>
-								`** ${err.codePath.componentType} ${err.codePath.componentName} - ${err.codePath.codeType} **\n${err.errorMessage}`,
+								`** ${err.codePath.componentType} ${err.codePath.componentLocalId} - ${err.codePath.codeType} **\n${err.errorMessage}`,
 						)
 						.join('\n\n'),
 				});
-			} else if (codesToDeployFinal.length >= 2) {
-				vscode.window.showInformationMessage(`Sucessfully deployed ${codesToDeployFinal.length} codes`)
+			} else if (codesToDeploy.length >= 2) {
+				vscode.window.showInformationMessage(`Successfully deployed ${codesToDeploy.length} codes`);
 			}
 		},
 	);

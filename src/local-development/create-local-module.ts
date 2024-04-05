@@ -7,6 +7,7 @@ import { askModuleID } from './helpers/ask-component-id';
 import { askFreeText } from './helpers/ask-free-text';
 import { Crud } from './types/crud.types';
 import { optionalAddModuleToDefaultGroup } from './groups-json';
+import { createLocalEmptyComponent } from './create-local-empty-component';
 import { catchError } from '../error-handling';
 import { entries } from '../utils/typed-object';
 import { moduleTypes } from '../services/module-types-naming';
@@ -25,7 +26,7 @@ const crudTypes: Crud[] = ['create', 'read', 'update', 'delete'];
  * Handle the VS Code right click and select "create module".
  */
 async function onCreateLocalModuleClick(file: vscode.Uri) {
-	const makeappRootdir = getMakecomappRootDir(file);
+	const makeappRootDir = getMakecomappRootDir(file);
 
 	// Ask for module ID
 	const moduleID = await askModuleID();
@@ -83,41 +84,12 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 		actionCrud: actionCrud,
 	};
 
-	const moduleMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
-		...moduleMetadata,
-		codeFiles: await generateComponentDefaultCodeFilesPaths(
-			// Generate Local file paths (Relative to app rootdir) + store metadata
-			'module',
-			moduleID,
-			moduleMetadata,
-			makeappRootdir,
-		),
-	};
-	// Create new code files
-	await createLocalModule(moduleID, moduleMetadataWithCodeFiles, makeappRootdir);
+	const newModule = await createLocalEmptyComponent('module', moduleID, moduleMetadata, makeappRootDir);
+
 
 	// Update groups.json (if file is filled/used)
-	await optionalAddModuleToDefaultGroup(makeappRootdir, moduleID);
+	await optionalAddModuleToDefaultGroup(makeappRootDir, newModule.componentLocalId);
 
 	// OK info message
 	vscode.window.showInformationMessage(`Module "${moduleID}" sucessfully created locally.`);
-}
-
-/**
- * Creates new Module in local development.
- *
- * Creates all necessary files and adds new module to makecomapp.json
- */
-async function createLocalModule(
-	moduleName: string,
-	moduleMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles,
-	makeappRootdir: vscode.Uri,
-) {
-	for (const [codeType, codeFilePath] of entries(moduleMetadataWithCodeFiles.codeFiles)) {
-		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
-		await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
-	}
-
-	// Write changes to makecomapp.json file
-	await upsertComponentInMakecomappjson('module', moduleName, moduleMetadataWithCodeFiles, makeappRootdir);
 }

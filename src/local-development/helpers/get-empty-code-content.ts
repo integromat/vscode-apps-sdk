@@ -22,6 +22,7 @@ export function getEmptyCodeContent(codeType: CodeType): string {
 		case 'mappableParams':
 		case 'staticParams':
 		case 'defaultScope':
+		case 'scope':
 		case 'interface':
 		case 'groups':
 		case 'requiredScope':
@@ -33,6 +34,6 @@ export function getEmptyCodeContent(codeType: CodeType): string {
 		case 'test':
 			return '// Write the JavaScript code here...\n';
 		default:
-			throw new Error(`Unknown code type "${codeType}."`);
+			throw new Error(`Cannot create empty code, because code type "${codeType}" is unknown..`);
 	}
 }
