@@ -1,32 +1,30 @@
 import * as vscode from 'vscode';
-import { isValidID } from './validate-id';
-
-// const rulesDescription =
-//	'3-30 lowercase letters (a-z), numbers (0-9), and dashes (-). Must start with a letter, not end with a dash.';
-const moduleRulesDescription =
-	'3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.';
 
 /**
- * Display the VS Code input box to ask user to enter the module ID.
+ * Display the VS Code input box to ask user to enter the component local ID.
  * Makes the validation of entered value. If invalid, it repeats the question until valid or cancelled.
  */
-export async function askModuleID(): Promise<string | undefined> {
-	let moduleID: string | undefined;
+export async function askNewComponentLocalID(
+	componentTypeLabel: string,
+	mandatory: boolean,
+): Promise<string | undefined> {
+	// TODO IMPLEMENT `mandatory`
+
+	let componentID: string | undefined;
 	do {
-		moduleID = await vscode.window.showInputBox({
+		componentID = await vscode.window.showInputBox({
 			ignoreFocusOut: true,
 			placeHolder: 'Examples: get-something, list-something, update-something, ...',
 			title:
-				(moduleID !== undefined ? 'INVALID FORMAT. Try again to ' : '') +
-				'Enter the module ID (name) of new module to be created:',
-			prompt: 'Rules: ' + moduleRulesDescription,
-			value: moduleID,
+				(componentID !== undefined ? 'INVALID FORMAT. Try again to ' : '') +
+				`What local ID should be used for new local ${componentTypeLabel}?`,
+			prompt: 'Rules: 3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.',
+			value: componentID,
 		});
-		if (moduleID === undefined) {
+		if (componentID === undefined) {
+			// Cancelled by user
 			return undefined;
 		}
-	} while (!isValidID('module', moduleID));
-	return moduleID;
+	} while (!/^[a-zA-Z][0-9a-zA-Z]{2,47}$/.test(componentID));
+	return componentID;
 }
-
-

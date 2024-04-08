@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { AppComponentMetadata } from './types/makecomapp.types';
-import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
-import { MAKECOMAPP_FILENAME } from './consts';
+import { getMakecomappRootDir } from './makecomappjson';
 import { askFreeText } from './helpers/ask-free-text';
 import { createLocalEmptyComponent } from './create-local-empty-component';
+import { askNewComponentLocalID } from './helpers/ask-component-id';
 import { catchError } from '../error-handling';
 import { ConnectionType } from '../types/component-types.types';
 
@@ -15,16 +15,15 @@ export function registerCommands(): void {
 }
 
 /**
- * Handle the VS Code right click and select "create connection".
+ * Handle the VS Code right click and select "Create local connection".
  */
 async function onCreateLocalConnectionClick(file: vscode.Uri) {
-	const makecomappJson = await getMakecomappJson(file);
 	const makeappRootDir = getMakecomappRootDir(file);
 
-	if (!makecomappJson.origins[0]?.appId) {
-		throw new Error(
-			`Cannot create connection, because missing "appId" in "${MAKECOMAPP_FILENAME}" => first "origin".`,
-		);
+	// Ask for local ID
+	const connectionLocalID = await askNewComponentLocalID('connection', false);
+	if (connectionLocalID === undefined) {
+		return; /* Cancelled by user */
 	}
 
 	// Ask for connection label
@@ -43,8 +42,8 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 		{ type: 'basic', label: 'Basic Auth, API key auth, Token auth, etc.' },
 		{ type: 'oauth', label: 'Oauth 2' },
 	];
-	const connectionTypePick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: ConnectionType }>(
-		connectionTypes.map((connetionType) => ({ label: connetionType.label, id: connetionType.type })),
+	const connectionTypePick = await vscode.window.showQuickPick<vscode.QuickPickItem & (typeof connectionTypes)[0]>(
+		connectionTypes,
 		{ ignoreFocusOut: true, title: 'Select the type of connection to be created' },
 	);
 	if (!connectionTypePick) {
@@ -53,10 +52,15 @@ async function onCreateLocalConnectionClick(file: vscode.Uri) {
 
 	const connectionMetadata: AppComponentMetadata = {
 		label: connectionLabel,
-		connectionType: connectionTypePick.id,
+		connectionType: connectionTypePick.type,
 	};
 
-	const newConnection = await createLocalEmptyComponent('connection', '', connectionMetadata, makeappRootDir);
+	const newConnection = await createLocalEmptyComponent(
+		'connection',
+		connectionLocalID,
+		connectionMetadata,
+		makeappRootDir,
+	);
 
 	// OK info message
 	vscode.window.showInformationMessage(`Connection "${newConnection.componentLocalId}" sucessfully created locally.`);

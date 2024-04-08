@@ -410,12 +410,27 @@
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-connection",
-				"title": "New Local Connection Component (beta)",
+				"title": "New Local Component: Connection (beta)",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-local-webhook",
+				"title": "New Local Component: Webhook (beta)",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-module",
-				"title": "New Local Module Component (beta)",
+				"title": "New Local Component: Module (beta)",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-local-rpc",
+				"title": "New Local Component: Remote Procedure (beta)",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.local-dev.create-local-imlfunction",
+				"title": "New Local Component: Custom IML Function (beta)",
 				"category": "Make Apps"
 			},
 			{
@@ -787,9 +802,24 @@
 					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
 				},
 				{
+					"command": "apps-sdk.local-dev.create-local-webhook",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'webhooks'"
+				},
+				{
 					"command": "apps-sdk.local-dev.create-local-module",
 					"group": "7_modification",
 					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
+				},
+				{
+					"command": "apps-sdk.local-dev.create-local-rpc",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'rpc'"
+				},
+				{
+					"command": "apps-sdk.local-dev.create-local-imlfunction",
+					"group": "7_modification",
+					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'functions'"
 				}
 			]
 		},

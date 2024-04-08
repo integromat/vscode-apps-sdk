@@ -10,11 +10,11 @@ import { AppComponentType } from '../types/app-component-type.types';
  * Creates new component in local development.
  * = Creates all necessary files and adds new component with `componentMetadata` to `makecomapp.json`.
  *
- * @param expectedComponentLocalId - Can contain an expected local ID or can contain also the original component remote name.
+ * @param preferedComponentLocalId - Can contain an expected local ID or can contain also the original component remote name.
  */
 export async function createLocalEmptyComponent(
 	componentType: AppComponentType,
-	expectedComponentLocalId: string,
+	preferedComponentLocalId: string,
 	componentMetadata: AppComponentMetadata,
 	makeappRootdir: vscode.Uri,
 ): Promise<{ componentMetadata: AppComponentMetadataWithCodeFiles; componentLocalId: string }> {
@@ -23,26 +23,26 @@ export async function createLocalEmptyComponent(
 		case 'module':
 			if (!componentMetadata.moduleType) {
 				throw new Error(
-					`Cannot create local ${componentType}, because missing "componentMetadata.moduleType", but it is required for ${componentType} ${expectedComponentLocalId} creation.`,
+					`Cannot create local ${componentType}, because missing "componentMetadata.moduleType", but it is required for ${componentType} ${preferedComponentLocalId} creation.`,
 				);
 			}
 			if (componentMetadata.moduleType === 'action' && !componentMetadata.actionCrud) {
 				throw new Error(
-					`Cannot create local ${componentType}, because missing "componentMetadata.actionCrud", but it is required for ${componentType} ${expectedComponentLocalId} creation.`,
+					`Cannot create local ${componentType}, because missing "componentMetadata.actionCrud", but it is required for ${componentType} ${preferedComponentLocalId} creation.`,
 				);
 			}
 			break;
 		case 'connection':
 			if (!componentMetadata.connectionType) {
 				throw new Error(
-					`Cannot create local ${componentType}, because missing "componentMetadata.connectionType", but it is required for ${componentType} ${expectedComponentLocalId} creation.`,
+					`Cannot create local ${componentType}, because missing "componentMetadata.connectionType", but it is required for ${componentType} ${preferedComponentLocalId} creation.`,
 				);
 			}
 			break;
 		case 'webhook': {
 			if (!componentMetadata.webhookType) {
 				throw new Error(
-					`Cannot create local ${componentType}, because missing "componentMetadata.webhookType", but it is required for ${componentType} ${expectedComponentLocalId} creation.`,
+					`Cannot create local ${componentType}, because missing "componentMetadata.webhookType", but it is required for ${componentType} ${preferedComponentLocalId} creation.`,
 				);
 			}
 			break;
@@ -51,7 +51,7 @@ export async function createLocalEmptyComponent(
 
 	const newComponentLocalId = await generateAndReserveComponentLocalId(
 		componentType,
-		expectedComponentLocalId,
+		preferedComponentLocalId,
 		makeappRootdir,
 	);
 

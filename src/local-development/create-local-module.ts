@@ -1,15 +1,12 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
-import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
-import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
-import { getEmptyCodeContent } from './helpers/get-empty-code-content';
-import { askModuleID } from './helpers/ask-component-id';
+import { AppComponentMetadata } from './types/makecomapp.types';
+import { getMakecomappRootDir } from './makecomappjson';
+import { askNewComponentLocalID } from './helpers/ask-component-id';
 import { askFreeText } from './helpers/ask-free-text';
 import { Crud } from './types/crud.types';
 import { optionalAddModuleToDefaultGroup } from './groups-json';
 import { createLocalEmptyComponent } from './create-local-empty-component';
 import { catchError } from '../error-handling';
-import { entries } from '../utils/typed-object';
 import { moduleTypes } from '../services/module-types-naming';
 import { ModuleType } from '../types/component-types.types';
 
@@ -28,8 +25,8 @@ const crudTypes: Crud[] = ['create', 'read', 'update', 'delete'];
 async function onCreateLocalModuleClick(file: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(file);
 
-	// Ask for module ID
-	const moduleID = await askModuleID();
+	// Ask for module local ID
+	const moduleID = await askNewComponentLocalID('module', true);
 	if (moduleID === undefined) {
 		return; /* Cancelled by user */
 	}
@@ -85,7 +82,6 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	};
 
 	const newModule = await createLocalEmptyComponent('module', moduleID, moduleMetadata, makeappRootDir);
-
 
 	// Update groups.json (if file is filled/used)
 	await optionalAddModuleToDefaultGroup(makeappRootDir, newModule.componentLocalId);
