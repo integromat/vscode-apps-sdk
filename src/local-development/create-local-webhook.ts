@@ -16,8 +16,8 @@ export function registerCommands(): void {
 
 /**
  * Handles the VS Code right click and select "New Local Component: Webhook".
- * 
- * Asks user for couple of details about intended webhook and then creates it.
+ *
+ * Asks user for couple of details about intended webhook and then creates it, including local files.
  */
 async function onCreateLocalWebhookClick(file: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(file);

@@ -13,8 +13,8 @@ export function registerCommands(): void {
 
 /**
  * Handles the VS Code right click and select "Create local component: IML Function".
- * 
- * Asks user for couple of details about intended IML function and then creates it.
+ *
+ * Asks user for couple of details about intended IML function and then creates it, including local files.
  */
 async function onCreateLocalImlFunctionClick(anyProjectPath: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(anyProjectPath);

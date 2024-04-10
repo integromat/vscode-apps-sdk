@@ -15,7 +15,9 @@ export function registerCommands(): void {
 }
 
 /**
- * Handle the VS Code right click and select "Create local connection".
+ * Handle the VS Code right click and select "Create local component: Connection".
+ *
+ * Asks user for couple of details about intended connection and then creates it, including local files.
  */
 async function onCreateLocalConnectionClick(file: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(file);

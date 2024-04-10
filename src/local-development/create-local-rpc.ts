@@ -15,8 +15,8 @@ export function registerCommands(): void {
 
 /**
  * Handles the VS Code right click and select "New Local Component: Remote Procedure".
- * 
- * Asks user for couple of details about intended RPC and then creates it.
+ *
+ * Asks user for couple of details about intended RPC and then creates it, including local files.
  */
 async function onCreateLocalRpcClick(anyProjectPath: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(anyProjectPath);
@@ -63,6 +63,8 @@ async function onCreateLocalRpcClick(anyProjectPath: vscode.Uri) {
 }
 
 /**
+ * Shows the user dialog with a list of available app connections.
+ * User can select one, take the option "- no connection -".
  * @throws {Error} if dialog cancelled by user.
  */
 export async function askForLinkConnection(

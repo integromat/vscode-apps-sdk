@@ -21,8 +21,8 @@ const crudTypes: Crud[] = ['create', 'read', 'update', 'delete'];
 
 /**
  * Handles the VS Code right click and select "New Local Component: Module".
- * 
- * Asks user for couple of details about intended module and then creates it.
+ *
+ * Asks user for couple of details about intended module and then creates it, including local files.
  */
 async function onCreateLocalModuleClick(file: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(file);

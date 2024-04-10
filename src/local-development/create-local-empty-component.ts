@@ -7,10 +7,9 @@ import { entries } from '../utils/typed-object';
 import { AppComponentType } from '../types/app-component-type.types';
 
 /**
- * Creates new component in local development.
- * = Creates all necessary files and adds new component with `componentMetadata` to `makecomapp.json`.
+ * Handles the VS Code right click and select "Create local component: IML Function".
  *
- * @param preferedComponentLocalId - Can contain an expected local ID or can contain also the original component remote name.
+ * Asks user for couple of details about intended IML function and then creates it, including local files.
  */
 export async function createLocalEmptyComponent(
 	componentType: AppComponentType,
