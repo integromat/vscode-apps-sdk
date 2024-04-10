@@ -3,6 +3,7 @@ import { AppComponentMetadata } from './types/makecomapp.types';
 import { getMakecomappRootDir } from './makecomappjson';
 import { askFreeText } from './helpers/ask-free-text';
 import { createLocalEmptyComponent } from './create-local-empty-component';
+import { askNewComponentLocalID } from './helpers/ask-component-id';
 import { catchError } from '../error-handling';
 import { WebhookType } from '../types/component-types.types';
 
@@ -18,6 +19,12 @@ export function registerCommands(): void {
  */
 async function onCreateLocalWebhookClick(file: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(file);
+
+	// Ask for local ID
+	const connectionLocalID = await askNewComponentLocalID('webhook', false);
+	if (connectionLocalID === undefined) {
+		return; /* Cancelled by user */
+	}
 
 	// Ask for webhook label
 	const webhookLabel = await askFreeText({
@@ -48,7 +55,7 @@ async function onCreateLocalWebhookClick(file: vscode.Uri) {
 		webhookType: webhookTypePick.type,
 	};
 
-	const newWebhook = await createLocalEmptyComponent('webhook', '', webhookMetadata, makeappRootDir);
+	const newWebhook = await createLocalEmptyComponent('webhook', connectionLocalID, webhookMetadata, makeappRootDir);
 
 	// OK info message
 	vscode.window.showInformationMessage(`Webhook "${newWebhook.componentLocalId}" sucessfully created locally.`);
