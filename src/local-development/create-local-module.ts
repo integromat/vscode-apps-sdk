@@ -20,7 +20,9 @@ export function registerCommands(): void {
 const crudTypes: Crud[] = ['create', 'read', 'update', 'delete'];
 
 /**
- * Handle the VS Code right click and select "create module".
+ * Handles the VS Code right click and select "New Local Component: Module".
+ * 
+ * Asks user for couple of details about intended module and then creates it.
  */
 async function onCreateLocalModuleClick(file: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(file);

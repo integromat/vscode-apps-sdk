@@ -14,7 +14,9 @@ export function registerCommands(): void {
 }
 
 /**
- * Handle the VS Code right click and select "Create local component: Remote Procedure".
+ * Handles the VS Code right click and select "New Local Component: Remote Procedure".
+ * 
+ * Asks user for couple of details about intended RPC and then creates it.
  */
 async function onCreateLocalRpcClick(anyProjectPath: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(anyProjectPath);
