@@ -1,14 +1,14 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - "development"
+      - "master"
   pull_request:
     branches:
       - "**"
   workflow_dispatch:
-
-#  push:
-#    branches:
-#      - "**"
 
 # Cancel the previously running job when new Git commit has been received.
 concurrency:
