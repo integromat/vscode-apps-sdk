@@ -11,6 +11,7 @@ Change Log
 - Apps local development: Implemented ability to have multiple app origins.
 - Apps local development: Implemented the new components creation in local workspace.
 - Dependencies updated, migrated multiple libs `lodash.*` to single lib `lodash`.
+- Removed ability to create connection to legacy Integromat.
 
 1.3.50 (pre-release) [2024-01-04]
 --------------------

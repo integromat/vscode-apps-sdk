@@ -4,7 +4,6 @@ const axios = require('axios');
 
 const Core = require('../Core')
 const QuickPick = require('../QuickPick')
-const Validator = require('../Validator')
 const Meta = require('../Meta')
 
 const { v4: uuidv4 } = require('uuid');
@@ -12,29 +11,15 @@ const { v4: uuidv4 } = require('uuid');
 class EnvironmentCommands {
 	static async register(envChanger, _configuration) {
 
-        /**
-         * Add new environment
-         */
+		/**
+		 * Add new environment
+		 */
 		vscode.commands.registerCommand('apps-sdk.env.add', async () => {
-
-			// Prompt for environments
-			let version = await vscode.window.showQuickPick([
-				{
-					label: 'Integromat',
-					description: '1'
-				},
-				{
-					label: 'Make',
-					description: '2'
-				}], {
-				placeHolder: 'Choose an environment.'
-			});
 
 			// Prompt for URL
 			let url = await vscode.window.showInputBox({
-				prompt: version.description === '2' ? "Enter a new Make environment URL (without https:// and API version)" : "Enter a new Integromat environment URL (without https:// and API version)",
-				value: version.description === '2' ? "eu1.make.com/api" : "api.integromat.com",
-				// validateInput: Validator.urlFormat // As anybody can host Integromat almost anywhere, there's no place for some RegExp validation
+				prompt: "Enter a new Make environment URL (without https:// and API version)",
+				value: "eu1.make.com/api",
 			})
 
 			// Check if filled and unique
@@ -55,39 +40,32 @@ class EnvironmentCommands {
 			if (!Core.isFilled("version", "environment", name)) { return }
 
 			// Prompt for API key
-			let	apikey = await vscode.window.showInputBox({ prompt: `Enter your ${version.description === '2' ? 'Make' : "Integromat"} API key` })
+			let	apikey = await vscode.window.showInputBox({ prompt: `Enter your Make API key` })
 
 			// Check if filled
 			if (!Core.isFilled("API key", "your account", apikey, "An", false)) { return }
 
 			// Check the new token validity
-			if (version.description === '2') {
-				let uri = `https://${url}/v2/users/me`
-				try {
-					await axios({
-						url: uri,
-						headers: {
-							'Authorization': `Token ${apikey}`,
-							'x-imt-apps-sdk-version': Meta.version
-						}
-					})
-				} catch (err) {
-					const input = await vscode.window.showWarningMessage(
-						"Your token was probably not valid or some error ocured. Please try again to start using Make Apps SDK.",
-						"Add environment"
-					);
-					if (input === "Add environment") {
-						vscode.commands.executeCommand('apps-sdk.env.add');
-					}
-					return;
-				}
-			} else {
-				// Ping who-am-I endpoint
-				let uri = `https://${url}/v1/whoami`
-				let response = await Core.rpGet(uri, `Token ${apikey}`)
-				if (response === undefined) { return }
-			}
 
+			let uri = `https://${url}/v2/users/me`
+			try {
+				await axios({
+					url: uri,
+					headers: {
+						'Authorization': `Token ${apikey}`,
+						'x-imt-apps-sdk-version': Meta.version
+					}
+				})
+			} catch (err) {
+				const input = await vscode.window.showWarningMessage(
+					"Your token was probably not valid or some error ocured. Please try again to start using Make Apps SDK.",
+					"Add environment"
+				);
+				if (input === "Add environment") {
+					vscode.commands.executeCommand('apps-sdk.env.add');
+				}
+				return;
+			}
 			// RAW copy of environments, because _configuration is read only
 			let envs = JSON.parse(JSON.stringify(_configuration.environments))
 
@@ -98,7 +76,7 @@ class EnvironmentCommands {
 				url: url,
 				name: name,
 				apikey: apikey,
-				version: parseInt(version.description)
+				version: 2, // 2 = Make, 1 = Integromat (deprecated). TODO remove `version`
 			})
 
 			// Save all and reload the window
