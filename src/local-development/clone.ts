@@ -31,6 +31,35 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 
+	// Introductory info dialog "Before use"
+	const confirmAnswer = await vscode.window.showInformationMessage(
+		'Before use the Apps Local Development',
+		{
+			modal: true,
+			detail:
+				'ABOUT APPS LOCAL DEVELOPMENT:' +
+				'\n\n' +
+				'This feature enables you to clone your app from Make to the currently opened VS Code workspace (folder). ' +
+				'After cloning, your app will be placed in a local folder as local files, with the "makecomapp.json" file located in the project root. ' +
+				'This "makecomapp.json" serves as the starting point for the entire local structure. ' +
+				'To explore available actions for your locally cloned app, simply right-click on the "makecomapp.json" file. ' +
+				'These actions allow you to deploy all local changes back to Make, among other things.' +
+				'\n\n' +
+				'RECOMMENDATION AFTER CLONNING:' +
+				'\n\n' +
+				'We recommend initializing a GIT repository and committing the entire local project there.' +
+				'\n\n' +
+				'THIS FEATURE IS BETA:' +
+				'\n\n' +
+				'It means that some features may be missing or not yet finalized. ' +
+				'If any errors occur, consider removing local files and cloning again, or reverting to a previous GIT commit.',
+		},
+		{ title: 'Continue' },
+	);
+	if (confirmAnswer?.title !== 'Continue') {
+		return;
+	}
+
 	const localAppRootdir = await askForAppDirToClone();
 	if (!localAppRootdir) {
 		return;
@@ -62,7 +91,14 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		apikeyFile: path.posix.relative(localAppRootdir.path, apikeyFileUri.path),
 		apikey: environment.apikey,
 	};
-	const originWithoutApiKey: LocalAppOrigin = pick(origin, ['label', 'baseUrl', 'appId', 'appVersion', 'idMapping', 'apikeyFile']);
+	const originWithoutApiKey: LocalAppOrigin = pick(origin, [
+		'label',
+		'baseUrl',
+		'appId',
+		'appVersion',
+		'idMapping',
+		'apikeyFile',
+	]);
 
 	const makecomappJson: MakecomappJson = {
 		fileVersion: 1,
