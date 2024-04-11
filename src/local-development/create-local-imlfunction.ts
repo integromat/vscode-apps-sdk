@@ -20,7 +20,7 @@ async function onCreateLocalImlFunctionClick(anyProjectPath: vscode.Uri) {
 	const makeappRootDir = getMakecomappRootDir(anyProjectPath);
 
 	// Ask for local ID
-	const imlFunctionLocalId = await askNewComponentLocalID('IML function', true);
+	const imlFunctionLocalId = await askNewComponentLocalID('function', true);
 	if (imlFunctionLocalId === undefined) {
 		return; /* Cancelled by user */
 	}

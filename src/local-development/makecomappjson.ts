@@ -6,11 +6,11 @@ import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, LocalAppOrigin, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
-import { isValidID } from './helpers/validate-id';
+import { isComponentLocalIdValid } from './helpers/validate-id';
 import { getOriginObject } from './helpers/get-origin-object';
+import { entries } from '../utils/typed-object';
 import { getCurrentWorkspace } from '../services/workspace';
 import { AppComponentType } from '../types/app-component-type.types';
-import { entries } from '../utils/typed-object';
 
 const limitConcurrency = throat(1);
 
@@ -81,10 +81,10 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 		await updateMakecomappJson(anyProjectPath, upgraded.makecomappJson);
 	}
 
-	// Validate all compoments ID
+	// Validate all compoments local ID
 	for (const [componentType, components] of entries(makecomappJson.components)) {
 		for (const componentID of Object.keys(components)) {
-			if (!isValidID(componentType, componentID)) {
+			if (!isComponentLocalIdValid(componentType, componentID)) {
 				const e = new Error(
 					`${componentType} ID "${componentID}" defined in ${MAKECOMAPP_FILENAME} file is not valid ID. It does not meet requirements. Fix it first.`,
 				);
