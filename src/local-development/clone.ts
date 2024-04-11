@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 import { TextEncoder } from 'node:util';
-import pick from 'lodash.pick';
+import pick from 'lodash/pick';
 import * as vscode from 'vscode';
 import { LocalAppOrigin, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { askForAppDirToClone } from './ask-local-dir';

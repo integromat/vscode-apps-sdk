@@ -1,7 +1,7 @@
-import camelCase from 'lodash.camelcase';
+import camelCase from 'lodash/camelCase';
+import { apiV2SdkAppsBasePath } from './consts';
 import { AppComponentType } from '../types/app-component-type.types';
 import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
-import { apiV2SdkAppsBasePath } from './consts';
 import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
@@ -61,24 +61,23 @@ export async function getAppComponentDetails<T extends ComponentDetailsApiRespon
 
 	progresDialogReport(`Getting ${componentType} ${componentName} metadata`);
 
-	const responseData = (await requestMakeApi({
+	const responseData = await requestMakeApi({
 		url,
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 		},
-	}));
+	});
 	const item: T = responseData[camelCase(`app_${componentType}`)];
 
 	progresDialogReport('');
 	return item;
 }
 
-function getAppComponentsBaseUrl(
-	origin: LocalAppOriginWithSecret,
-	componentType: AppComponentType
-) {
-	return `${origin.baseUrl}/${apiV2SdkAppsBasePath}/${origin.appId}/` +
-	(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}/`) +
-	componentType + 's'
+function getAppComponentsBaseUrl(origin: LocalAppOriginWithSecret, componentType: AppComponentType) {
+	return (
+		`${origin.baseUrl}/${apiV2SdkAppsBasePath}/${origin.appId}/` +
+		(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}/`) +
+		componentType +
+		's'
+	);
 }
-

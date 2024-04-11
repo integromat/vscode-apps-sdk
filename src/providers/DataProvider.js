@@ -1,6 +1,6 @@
 /* eslint semi:"off" */
 const vscode = require('vscode')
-const union = require('lodash.union')
+const union = require('lodash/union');
 
 class DataProvider {
 	constructor(source, type) {
@@ -65,7 +65,7 @@ class DataProvider {
 				}
 				break;
 			// OAuth request format
-			case 'oauth':
+			case 'oauth': {
 				let variables = ["connection"]
 				// Scan for temp in all available keys
 				Object.keys(this.source).forEach(k => {
@@ -73,6 +73,7 @@ class DataProvider {
 				})
 				this.availableVariables = variables;
 				break;
+			}
 		}
 	}
 

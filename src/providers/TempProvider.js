@@ -1,6 +1,7 @@
+/* eslint semi: "off" */
 const vscode = require('vscode')
 const jsoncParser = require('jsonc-parser');
-const union = require('lodash.union')
+const union = require('lodash/union');
 
 class TempProvider {
 	constructor(name) {
@@ -73,7 +74,7 @@ class TempProvider {
 				}
 				break;
 			// OAuth request format
-			case 'api-oauth':
+			case 'api-oauth': {
 				let variables = ["temp"]
 				// Scan for temp in all available keys
 				Object.keys(request).forEach(k => {
@@ -81,6 +82,7 @@ class TempProvider {
 				})
 				this.availableVariables = variables;
 				break;
+			}
 		}
 	}
 

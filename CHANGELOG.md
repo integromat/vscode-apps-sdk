@@ -10,6 +10,7 @@ Unreleased
 - Apps local development: Implemented command "pull all components from Make".
 - Apps local development: Implemented ability to have multiple app origins.
 - Apps local development: Implemented the new components creation in local workspace.
+- Dependencies updated, migrated multiple libs `lodash.*` to single lib `lodash`.
 
 1.3.50 (pre-release) [2023-01-04]
 --------------------

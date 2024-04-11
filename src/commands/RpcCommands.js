@@ -5,16 +5,16 @@ const Core = require('../Core')
 const Validator = require('../Validator')
 const QuickPick = require('../QuickPick')
 
-const camelCase = require('lodash.camelcase');
-const path = require('path');
+const camelCase = require('lodash/camelCase');
+const path = require('node:path');
 const { showError } = require('../error-handling');
 
 class RpcCommands {
 	static async register(appsProvider, _authorization, _environment) {
 
-        /**
-         * New RPC
-         */
+		/**
+		 * New RPC
+		 */
 		vscode.commands.registerCommand('apps-sdk.rpc.new', async function (context) {
 
 			// Context workaround
@@ -55,9 +55,9 @@ class RpcCommands {
 			}
 		})
 
-        /**
-         * Edit RPC
-         */
+		/**
+		 * Edit RPC
+		 */
 		vscode.commands.registerCommand('apps-sdk.rpc.edit-metadata', async function (context) {
 
 			// Context check
@@ -91,9 +91,9 @@ class RpcCommands {
 			}
 		})
 
-        /**
-         * Change RPC connection
-         */
+		/**
+		 * Change RPC connection
+		 */
 		vscode.commands.registerCommand('apps-sdk.rpc.change-connection', async function (context) {
 
 			// Context check
@@ -234,9 +234,9 @@ class RpcCommands {
 			}
 		})
 
-        /**
-         * Test RPC
-         */
+		/**
+		 * Test RPC
+		 */
 		vscode.commands.registerCommand('apps-sdk.rpc.test', async function (context) {
 
 			// Context check

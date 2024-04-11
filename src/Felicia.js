@@ -1,7 +1,7 @@
 /* eslint indent: ["error",4,{"SwitchCase":1}], semi: "off" */
 const vscode = require('vscode');
 const { IML } = require('@integromat/iml');
-const camelCase = require('lodash.camelcase');
+const camelCase = require('lodash/camelCase');
 
 // Not a Formula, not a Forman, this is just a Felicia (from latin/italian "felice" = happy)
 // It will make you happy as it generates VSCode Forms for you based on Integromat Descriptive Syntax

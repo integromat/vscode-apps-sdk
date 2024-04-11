@@ -5,7 +5,7 @@ const Group = require('../tree/Group')
 const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
-const camelCase = require('lodash.camelcase');
+const camelCase = require('lodash/camelCase');
 const { downloadAndStoreAppIcon } = require('../libs/app-icon');
 
 class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
