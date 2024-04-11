@@ -1,32 +1,45 @@
 import * as vscode from 'vscode';
-import { isValidID } from './validate-id';
-
-// const rulesDescription =
-//	'3-30 lowercase letters (a-z), numbers (0-9), and dashes (-). Must start with a letter, not end with a dash.';
-const moduleRulesDescription =
-	'3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.';
+import { isComponentLocalIdValid } from './validate-id';
+import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 
 /**
- * Display the VS Code input box to ask user to enter the module ID.
+ * Displays the VS Code input box to ask user to enter the component local ID.
  * Makes the validation of entered value. If invalid, it repeats the question until valid or cancelled.
  */
-export async function askModuleID(): Promise<string | undefined> {
-	let moduleID: string | undefined;
+export async function askNewComponentLocalID(
+	componentType: AppComponentType,
+	mandatory: boolean,
+): Promise<string | undefined> {
+	let componentID: string | undefined;
 	do {
-		moduleID = await vscode.window.showInputBox({
+		componentID = await vscode.window.showInputBox({
 			ignoreFocusOut: true,
 			placeHolder: 'Examples: get-something, list-something, update-something, ...',
 			title:
-				(moduleID !== undefined ? 'INVALID FORMAT. Try again to ' : '') +
-				'Enter the module ID (name) of new module to be created:',
-			prompt: 'Rules: ' + moduleRulesDescription,
-			value: moduleID,
+				(componentID !== undefined ? 'INVALID FORMAT, TRY AGAIN: ' : '') +
+				`What local ID should be used for new local ${componentType}?` +
+				(mandatory ? '' : ' Answer is optional: Keep empty to autogenerate the ID.'),
+			prompt:
+				'Rules: ' +
+				'3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.' +
+				// This requirements are not exactly the truth. The real limitations are less strict,
+				//   but the decision is to not confuse developer by exact limitation specifications.
+				//   See `isComponentLocalIdValid()` for exact rules.
+				(mandatory ? '' : ' Or keep empty.'),
+			value: componentID,
 		});
-		if (moduleID === undefined) {
+		if (componentID === undefined) {
+			// Cancelled by user
 			return undefined;
 		}
-	} while (!isValidID('module', moduleID));
-	return moduleID;
+	} while (!componentIdAnswerIsValid(componentType, componentID, mandatory));
+	return componentID;
 }
 
-
+function componentIdAnswerIsValid(
+	componentType: AppComponentType | AppGeneralType,
+	componentID: string,
+	mandatory: boolean,
+): boolean {
+	return (!mandatory && componentID === '') || isComponentLocalIdValid(componentType, componentID);
+}
