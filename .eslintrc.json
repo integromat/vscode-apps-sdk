@@ -1,15 +1,14 @@
 {
 	"root": true,
 	"env": {
-		"node": true
+		"node": true,
+		"es6": true
 	},
-	"parser": "@typescript-eslint/parser",
-	"plugins": [
-		"@typescript-eslint"
-	],
+	"parserOptions": {
+		"ecmaVersion": "latest"
+	},
 	"extends": [
-		"eslint:recommended",
-		"plugin:@typescript-eslint/recommended"
+		"eslint:recommended"
 	],
 	"rules": {
 		"semi": [2, "always"],
@@ -20,6 +19,10 @@
 		// Be more strict to new TypeScript files.
 		{
 		  "files": ["**/*.ts", "**/*.tsx"],
+		  "parser": "@typescript-eslint/parser",
+		  "plugins": [
+			  "@typescript-eslint"
+		  ],
 		  "extends": [
 			"eslint:recommended",
 			"plugin:@typescript-eslint/recommended",

@@ -1,4 +1,4 @@
-/* eslint-disable indent,semi,@typescript-eslint/no-var-requires */
+/* eslint indent: ["error",4,{"SwitchCase":1}], semi: "off" */
 const path = require('node:path');
 const fs = require('node:fs');
 const vscode = require('vscode')

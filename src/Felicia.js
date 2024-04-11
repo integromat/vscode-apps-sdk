@@ -1,3 +1,4 @@
+/* eslint indent: ["error",4,{"SwitchCase":1}], semi: "off" */
 const vscode = require('vscode');
 const { IML } = require('@integromat/iml');
 const camelCase = require('lodash.camelcase');

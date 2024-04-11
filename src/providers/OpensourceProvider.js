@@ -1,4 +1,4 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable semi */
 const vscode = require('vscode');
 const App = require('../tree/App');
 const Group = require('../tree/Group')

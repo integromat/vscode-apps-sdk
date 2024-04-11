@@ -1,3 +1,4 @@
+/* eslint semi:"off" */
 const vscode = require('vscode')
 const union = require('lodash.union')
 
