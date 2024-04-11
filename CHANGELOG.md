@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Unreleased
-----------
+1.3.51 (pre-release) [2023-04-11]
+--------------------
 
 ### Changes
 
@@ -12,7 +12,7 @@ Unreleased
 - Apps local development: Implemented the new components creation in local workspace.
 - Dependencies updated, migrated multiple libs `lodash.*` to single lib `lodash`.
 
-1.3.50 (pre-release) [2023-01-04]
+1.3.50 (pre-release) [2024-01-04]
 --------------------
 
 ### Changes
