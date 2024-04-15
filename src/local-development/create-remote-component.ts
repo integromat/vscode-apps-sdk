@@ -8,6 +8,7 @@ import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
 import { errorToString } from '../error-handling';
+import { ConnectionType, WebhookType } from '../types/component-types.types';
 
 const ENVIRONMENT_VERSION = 2;
 
@@ -35,8 +36,20 @@ export async function createRemoteAppComponent(opt: {
 			case 'module':
 				await createRemoteModule(opt);
 				return opt.componentName;
+			case 'webhook': {
+				const newWebhookId = await createRemoteWebook(opt);
+				return newWebhookId;
+			}
+			case 'rpc':
+				await createRemoteRPC(opt);
+				return opt.componentName;
+			case 'function':
+				await createRemoteIMLFunction(opt);
+				return opt.componentName;
 			default:
-				throw new Error(`Creation of ${opt.componentType} ${opt.componentName} not implemented yet. Sorry.`);
+				throw new Error(
+					`Creation of ${opt.componentType} ${opt.componentName} not implemented or type is unknown.`,
+				);
 		}
 	} catch (e: any) {
 		throw new Error(
@@ -66,7 +79,7 @@ async function createRemoteConnection(opt: {
 	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
 		ENVIRONMENT_VERSION,
 		'app',
-	)}/`;
+	)}`;
 	const axiosConfig: AxiosRequestConfig = {
 		headers: {
 			Authorization: 'Token ' + opt.origin.apikey,
@@ -84,7 +97,7 @@ async function createRemoteConnection(opt: {
 interface CreateConnectionApiResponse {
 	appConnection: {
 		name: string;
-		type: 'basic' | 'oauth';
+		type: ConnectionType;
 		label: string;
 	};
 }
@@ -109,31 +122,147 @@ async function createRemoteModule(opt: {
 	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
 		ENVIRONMENT_VERSION,
 		'app',
-	)}/`;
+	)}`;
 	const axiosConfig: AxiosRequestConfig = {
 		headers: {
 			Authorization: 'Token ' + opt.origin.apikey,
 		},
-		url: `${baseUrl}${opt.origin.appId}/${opt.origin.appVersion}/${Core.pathDeterminer(
-			ENVIRONMENT_VERSION,
-			'module',
-		)}`,
+		url: `${baseUrl}/${opt.origin.appId}/${opt.origin.appVersion}/modules`,
 		method: 'POST',
 		data: {
 			name: opt.componentName,
 			label: opt.componentMetadata.label,
 			description: opt.componentMetadata.description,
 			typeId: getModuleDefFromType(opt.componentMetadata.moduleType).type_id,
-			connection: opt.componentMetadata.connection ?? '', // empty string in API represents the `null`
-			// TODO altConnection is not present during module creation in web UI. Check it
-			altConnection: opt.componentMetadata.altConnection,
-			webhook: opt.componentMetadata.webhook,
+			// TODO connection: opt.componentMetadata.connection ?? '', // empty string in API represents the `null`
+			// altConnection is not present during module creation in web UI. Check it
+			// TODO altConnection: opt.componentMetadata.altConnection ?? '', // empty string in API represents the `null`
+			// TODO webhook: opt.componentMetadata.webhook,
 			crud: opt.componentMetadata.actionCrud ?? '',
 		},
 	};
 	await requestMakeApi<CreateModuleApiResponse>(axiosConfig);
 
 	progresDialogReport('');
+}
+
+/**
+ * Creates a new Remote Procedure component in remote origin.
+ *
+ * IMPORTANT: Not suitable for legacy Integromat API.
+ */
+async function createRemoteRPC(opt: {
+	origin: LocalAppOriginWithSecret;
+	componentMetadata: AppComponentMetadata;
+	componentName: string;
+}): Promise<void> {
+	log('debug', `Creating RPC "${opt.componentName}" in remote app ${opt.origin.appId}`);
+	progresDialogReport(`Creating RPC ${opt.componentMetadata.label ?? opt.componentName} in remote`);
+
+	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
+		ENVIRONMENT_VERSION,
+		'app',
+	)}`;
+	const axiosConfig: AxiosRequestConfig = {
+		headers: {
+			Authorization: 'Token ' + opt.origin.apikey,
+		},
+		url: `${baseUrl}/${opt.origin.appId}/${opt.origin.appVersion}/${Core.pathDeterminer(
+			ENVIRONMENT_VERSION,
+			'rpc',
+		)}`,
+		method: 'POST',
+		data: {
+			name: opt.componentName,
+			label: opt.componentMetadata.label,
+			// TODO connection: ...
+		},
+	};
+	await requestMakeApi(axiosConfig);
+
+	progresDialogReport('');
+}
+
+/**
+ * Creates a new webhook component in remote origin.
+ *
+ * IMPORTANT: Not suitable for legacy Integromat API.
+ * @returns webhook ID (name)
+ */
+async function createRemoteWebook(opt: {
+	origin: LocalAppOriginWithSecret;
+	componentMetadata: AppComponentMetadata;
+}): Promise<string> {
+	log(
+		'debug',
+		`Create webhook "${opt.componentMetadata.label ?? '[unlabeled]'}" in remote app "${opt.origin.appId}"`,
+	);
+	progresDialogReport(`Creating webhook ${opt.componentMetadata.label ?? '[unlabeled]'} in remote`);
+
+	if (opt.componentMetadata.webhookType === undefined) {
+		throw new Error(`Webhook type must be defined, but missing. Check the ${MAKECOMAPP_FILENAME}.`);
+	}
+
+	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
+		ENVIRONMENT_VERSION,
+		'app',
+	)}`;
+	const axiosConfig: AxiosRequestConfig = {
+		headers: {
+			Authorization: 'Token ' + opt.origin.apikey,
+		},
+		url: `${baseUrl}/${opt.origin.appId}/${Core.pathDeterminer(ENVIRONMENT_VERSION, 'webhook')}`,
+		method: 'POST',
+		data: { type: opt.componentMetadata.webhookType, label: opt.componentMetadata.label },
+	};
+	const response = await requestMakeApi<CreateWebhookApiResponse>(axiosConfig);
+
+	progresDialogReport('');
+	return response.appWebhook.name; // Webhook ID (name)
+}
+
+/**
+ * Creates a new Remote Procedure component in remote origin.
+ *
+ * IMPORTANT: Not suitable for legacy Integromat API.
+ */
+async function createRemoteIMLFunction(opt: {
+	origin: LocalAppOriginWithSecret;
+	componentMetadata: AppComponentMetadata;
+	componentName: string;
+}): Promise<void> {
+	log('debug', `Creating Custom IML Function "${opt.componentName}" in remote app ${opt.origin.appId}`);
+	progresDialogReport(`Creating Custom IML Function ${opt.componentMetadata.label ?? opt.componentName} in remote`);
+
+	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
+		ENVIRONMENT_VERSION,
+		'app',
+	)}`;
+	const axiosConfig: AxiosRequestConfig = {
+		headers: {
+			Authorization: 'Token ' + opt.origin.apikey,
+		},
+		url: `${baseUrl}/${opt.origin.appId}/${opt.origin.appVersion}/${Core.pathDeterminer(
+			ENVIRONMENT_VERSION,
+			'function',
+		)}`,
+		method: 'POST',
+		data: {
+			name: opt.componentName,
+		},
+	};
+	await requestMakeApi(axiosConfig);
+
+	progresDialogReport('');
+}
+
+interface CreateWebhookApiResponse {
+	appWebhook: {
+		/** Webhook ID (name) */
+		name: string;
+		type: WebhookType;
+		label: string;
+	};
 }
 
 interface CreateModuleApiResponse {
