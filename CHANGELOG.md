@@ -6,11 +6,12 @@ Change Log
 
 ### Changes
 
-- Apps local development: Implemented the cloning/edit/deployment of module `scope`.
+- Apps local development: Implemented the cloning/edit/deployment of module's `scope`.
+- Apps local development: Project now stores also linked webhooks in Instant triggers.
 - Apps local development: Implemented command "pull all components from Make".
-- Apps local development: Implemented ability to have multiple app origins.
-- Apps local development: Implemented the new components creation in local workspace.
-- Dependencies updated, migrated multiple libs `lodash.*` to single lib `lodash`.
+- Apps local development: Implemented ability to have multiple app origins, then deploy the code to multiple apps (test, staging, production, etc).
+- Apps local development: Implemented the new local components creation.
+- Apps local development feature is beta (previously it was alpha version only).
 - Removed ability to create connection to legacy Integromat.
 
 1.3.50 (pre-release) [2024-01-04]
