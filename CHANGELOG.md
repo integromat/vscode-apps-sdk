@@ -5,6 +5,14 @@ Change Log
 --------------------
 
 - Fixed `Compare with Make` action missing on some file types.
+- Apps local development: Fixed the remote components creation.
+- The extension is more compatible. Min compatible version downgraded to VS Code 1.82 - August 2023.
+
+### Known bugs
+
+- PRC's references `connection`, `altConnetion` are ignored during "Deploy to Make".
+- Modules's references `connection`, `altConnetion` and `webhook` are ignored during "Deploy to Make".
+  - Consequences: Cannot create Instant Trigger Module because `webhook` reference is mandatory during module creation.
 
 1.3.51 (pre-release) [2023-04-11]
 --------------------

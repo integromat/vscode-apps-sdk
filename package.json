@@ -10,7 +10,7 @@
 	},
 	"publisher": "Integromat",
 	"engines": {
-		"vscode": "^1.88.0"
+		"vscode": "^1.82.0"
 	},
 	"keywords": [
 		"Make",
@@ -880,9 +880,9 @@
 	"devDependencies": {
 		"@types/lodash": "^4.17.0",
 		"@types/mocha": "^10.0.6",
-		"@types/node": "^18.18.2",
+		"@types/node": "~18.15.0",
 		"@types/uuid": "^9.0.8",
-		"@types/vscode": "^1.88.0",
+		"@types/vscode": "^1.82.0",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
 		"@vscode/test-electron": "^2.3.9",
