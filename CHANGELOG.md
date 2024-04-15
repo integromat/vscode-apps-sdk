@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+1.3.52 (pre-release) [2023-04-15]
+--------------------
+
+- Fixed `Compare with Make` action missing on some file types.
+
 1.3.51 (pre-release) [2023-04-11]
 --------------------
 
