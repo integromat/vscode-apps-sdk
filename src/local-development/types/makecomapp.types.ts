@@ -49,13 +49,33 @@ export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata 
 }
 
 export interface AppComponentMetadata {
+	/**
+	 * Relevance:
+	 *  - connection: yes
+	 *  - webhook: yes
+	 *  - module: yes
+	 *  - RPC: yes
+	 *  - IML function: no
+	 */
 	label?: string;
+
+	/**
+	 * Relevance:
+	 *  - connection: no
+	 *  - webhook: no
+	 *  - module: yes
+	 *  - RPC: no
+	 *  - IML function: no
+	 */
 	description?: string;
 	/**
 	 * Relevant for connections only. It describes a type of component itself.
 	 * Note: This does NOT describing the type of a connection referenced in `connection` or `altConnection` property.
 	 */
 	connectionType?: ConnectionType;
+	/**
+	 * Relevant for webhooks only.
+	 */
 	webhookType?: WebhookType;
 	/**
 	 * Note: In early alpha versions of the `makecomapp.json` the previous property name `moduleSubtype` has been used.
@@ -67,7 +87,7 @@ export interface AppComponentMetadata {
 	connection?: string | null;
 	/** Relevant for modules, webhooks, RPCs only. */
 	altConnection?: string | null;
-	/** Relevant for module subtype "instant_trigger" only. */
+	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
 	webhook?: string | null;
 }
 
