@@ -8,10 +8,12 @@ import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { CodePath } from './types/code-path.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { AppComponentMetadata } from './types/makecomapp.types';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, errorToString, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
+import { AppComponentType } from '../types/app-component-type.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -78,6 +80,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			/** Deployments errors */
 			const errors: { errorMessage: string; codePath: CodePath }[] = [];
 
+			const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+
 			// Deploy codes one-by-one
 			for (const component of codesToDeploy) {
 				// Update the progress bar
@@ -93,7 +97,6 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				);
 
 				// Find the remote component name
-				const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 				const remoteComponentName = componentIdMapping.getExistingRemoteName(
 					component.componentType,
 					component.componentLocalId,
@@ -128,7 +131,39 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 			}
 
-			// TODO Implement: Deploy the metadata (connection, altConnection, Webhook, label, description,...) to all touched components.
+			/*  Deploy the metadata (connection, altConnection, Webhook, label, description,...) to all touched components. */
+			/** keys = component unique identificator (for preventing the compoment duplication) */
+			const deployedComponents = new Map<string, { componentType: AppComponentType; componentLocalId: string }>();
+			// Find all components, whose metadata must be deployed.
+			for (const component of codesToDeploy) {
+				const componentUniqueID = component.componentType + '-' + component.componentLocalId;
+				if (component.componentType !== 'app') {
+					deployedComponents.set(componentUniqueID, {
+						componentType: component.componentType,
+						componentLocalId: component.componentLocalId,
+					});
+				}
+			}
+			for (const { componentType, componentLocalId } of deployedComponents.values()) {
+				const componentLocalMetadata = makecomappJson.components[componentType][componentLocalId];
+				if (componentLocalMetadata === null) {
+					continue;
+				}
+				if (componentLocalMetadata === undefined) {
+					throw new Error(
+						`Unexpected data error during deploy. Local component metadata of ${componentType} "${componentLocalId}" expected, but not found.`,
+					);
+				}
+				const componentRemoteName = componentIdMapping.getRemoteName(componentType, componentLocalId);
+				if (!componentRemoteName) {
+					// Component is marked as 'to ignore' in ID mapping.
+					continue;
+				}
+				const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
+				if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) {
+					await deployComponentMetadata(componentLocalMetadata, origin);
+				}
+			}
 
 			// Display errors
 			if (errors.length > 0) {
@@ -146,4 +181,19 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			}
 		},
 	);
+}
+
+function isComponentMetadataChanged(
+	componentType: AppComponentType,
+	localComponentMetadata: AppComponentMetadata,
+	remoteComponentMetadata: AppComponentMetadata,
+): boolean {
+	// TODO IMPLEMENT all rules
+
+	// JUST EXAMPLE
+	if (localComponentMetadata.label !== remoteComponentMetadata.label) {
+		return true;
+	}
+
+	return false;
 }
