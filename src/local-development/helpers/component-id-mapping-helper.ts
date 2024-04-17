@@ -40,6 +40,27 @@ export class ComponentIdMappingHelper {
 		return remoteComponentName;
 	}
 
+	/**
+	 * Takes the component reference (the component local ID) and returns the remote name in format for using in Make Rest API.
+	 * @returns remote component name that should be set. Or `null` for no reference should exists. Undefined for "do not change".
+	 */
+	getComponentReferenceRemoteNameForApiPatch(
+		referenceComponentType: AppComponentType,
+		referenceComponentLocalId: string | null | undefined,
+	): string | undefined | null {
+		if (referenceComponentLocalId === null) {
+			return null;
+		}
+		if (referenceComponentLocalId) {
+			const referenceRemoteName = this.getExistingRemoteName(referenceComponentType, referenceComponentLocalId);
+			if (referenceRemoteName !== null) {
+				return referenceRemoteName;
+			}
+			// else do not update it, because marked for ignoring in component ID mapping.
+			return undefined;
+		}
+	}
+
 	private getLocalId(
 		componentType: AppComponentType | AppGeneralType,
 		remoteName: string,

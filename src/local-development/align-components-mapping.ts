@@ -164,6 +164,7 @@ export async function alignComponentsMapping(
 								componentType: localOnlyComponent.componentType,
 								componentMetadata: localOnlyComponent.componentMetadata,
 								componentName: localOnlyComponent.componentLocalId,
+								makecomappJson,
 								origin,
 							});
 

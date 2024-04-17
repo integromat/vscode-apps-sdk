@@ -1,16 +1,16 @@
 import { AxiosRequestConfig } from 'axios';
-import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { getComponentRemoteMetadataToDeploy } from './deploy-metadata';
+import { getComponentApiUrl } from './helpers/api-url';
 import { log } from '../output-channel';
 import { AppComponentType } from '../types/app-component-type.types';
-import * as Core from '../Core';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
 import { errorToString } from '../error-handling';
 import { ConnectionType, WebhookType } from '../types/component-types.types';
-
-const ENVIRONMENT_VERSION = 2;
 
 /**
  * Creates new SDK App component in remote Make.
@@ -25,26 +25,116 @@ export async function createRemoteAppComponent(opt: {
 	componentType: AppComponentType;
 	componentName: string;
 	componentMetadata: AppComponentMetadata;
+	makecomappJson: MakecomappJson;
 	origin: LocalAppOriginWithSecret;
 }): Promise<string> {
 	try {
+		const infoMessage = `Creating ${opt.componentName} "${
+			opt.componentMetadata.label ?? opt.componentName
+		}" in remote app ${opt.origin.appId}`;
+		log('debug', infoMessage);
+		progresDialogReport(infoMessage);
+
+		const componentCreationUrl = getComponentApiUrl({
+			appComponentType: opt.componentType,
+			remoteComponentName: undefined,
+			origin: opt.origin,
+		});
+		const componentIdMapping = new ComponentIdMappingHelper(opt.makecomappJson, opt.origin);
+		const axiosConfig: AxiosRequestConfig = {
+			headers: {
+				Authorization: 'Token ' + opt.origin.apikey,
+			},
+			url: componentCreationUrl,
+			method: 'POST',
+			data: getComponentRemoteMetadataToDeploy('module', opt.componentMetadata, opt.makecomappJson, opt.origin),
+		};
+
+		// + add other metadata, which are not covered by `getComponentRemoteMetadataToDeploy`.
+
+		if (opt.componentType === 'module') {
+			// For Module: Add `typeId` of module
+			if (opt.componentMetadata.moduleType === undefined) {
+				throw new Error(
+					`"moduleType" type must be defined for module "${
+						opt.componentMetadata.label ?? opt.componentName
+					}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+				);
+			}
+			axiosConfig.data.typeId = getModuleDefFromType(opt.componentMetadata.moduleType).type_id;
+
+			// For Module Action: Add `crud`
+			if (opt.componentMetadata.moduleType === 'action') {
+				if (!opt.componentMetadata.actionCrud) {
+					throw new Error(
+						`"actionCrud" type must be defined for module "${
+							opt.componentMetadata.label ?? opt.componentName
+						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+					);
+				}
+				axiosConfig.data.crud = opt.componentMetadata.actionCrud;
+			}
+
+			// For Module Instant trigger: Add webhook reference (mandatory)
+			if (opt.componentMetadata.moduleType === 'instant_trigger') {
+				if (!opt.componentMetadata.webhook) {
+					throw new Error(
+						`"webhook" type must be defined for Instant Trigger module "${
+							opt.componentMetadata.label ?? opt.componentName
+						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+					);
+				}
+				axiosConfig.data.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
+					'webhook',
+					opt.componentMetadata.webhook,
+				);
+			}
+		}
+
+		// For Connection: Add `type`
+		if (opt.componentType === 'connection') {
+			if (opt.componentMetadata.connectionType === undefined) {
+				throw new Error(
+					`"connectionType" type must be defined for connection "${
+						opt.componentMetadata.label ?? opt.componentName
+					}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+				);
+			}
+			axiosConfig.data.type = opt.componentMetadata.connectionType;
+		}
+
+		// Webhook type: add `webhookType`
+		if (opt.componentType === 'webhook') {
+			if (opt.componentMetadata.webhookType === undefined) {
+				throw new Error(
+					`"webhookType" type must be defined for connection "${
+						opt.componentMetadata.label ?? opt.componentName
+					}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+				);
+			}
+			axiosConfig.data.type = opt.componentMetadata.webhookType;
+		}
+
+		// Module, RPC, function
+		if (['module', 'rpc', 'function'].includes(opt.componentType)) {
+			axiosConfig.data.name = opt.componentName;
+		}
+
+		// Send request to Make
+		const response = await requestMakeApi(axiosConfig);
+
+		progresDialogReport('');
+
 		switch (opt.componentType) {
-			case 'connection': {
-				const newConnId = await createRemoteConnection(opt);
-				return newConnId;
-			}
+			case 'connection':
+				return (response as CreateConnectionApiResponse).appConnection.name;
+			case 'webhook':
+				return (response as CreateWebhookApiResponse).appWebhook.name;
 			case 'module':
-				await createRemoteModule(opt);
 				return opt.componentName;
-			case 'webhook': {
-				const newWebhookId = await createRemoteWebook(opt);
-				return newWebhookId;
-			}
 			case 'rpc':
-				await createRemoteRPC(opt);
 				return opt.componentName;
 			case 'function':
-				await createRemoteIMLFunction(opt);
 				return opt.componentName;
 			default:
 				throw new Error(
@@ -61,199 +151,12 @@ export async function createRemoteAppComponent(opt: {
 	}
 }
 
-/**
- * Creates a new connection component in remote origin.
- *
- * IMPORTANT: Not suitable for legacy Integromat API.
- * @returns Connection ID (name)
- */
-async function createRemoteConnection(opt: {
-	origin: LocalAppOriginWithSecret;
-	componentMetadata: AppComponentMetadata;
-}): Promise<string> {
-	log(
-		'debug',
-		`Create connection "${opt.componentMetadata.label ?? '[unlabeled]'}" in remote app "${opt.origin.appId}"`,
-	);
-	progresDialogReport(`Creating connection ${opt.componentMetadata.label ?? '[unlabeled]'} in remote`);
-	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-		ENVIRONMENT_VERSION,
-		'app',
-	)}`;
-	const axiosConfig: AxiosRequestConfig = {
-		headers: {
-			Authorization: 'Token ' + opt.origin.apikey,
-		},
-		url: `${baseUrl}/${opt.origin.appId}/${Core.pathDeterminer(ENVIRONMENT_VERSION, 'connection')}`,
-		method: 'POST',
-		data: { label: opt.componentMetadata.label, type: opt.componentMetadata.connectionType },
-	};
-	const response = await requestMakeApi<CreateConnectionApiResponse>(axiosConfig);
-
-	progresDialogReport('');
-	return response.appConnection.name; // Connection ID (name)
-}
-
 interface CreateConnectionApiResponse {
 	appConnection: {
 		name: string;
 		type: ConnectionType;
 		label: string;
 	};
-}
-
-/**
- * Creates a new module component in remote origin.
- *
- * IMPORTANT: Not suitable for legacy Integromat API.
- */
-async function createRemoteModule(opt: {
-	origin: LocalAppOriginWithSecret;
-	componentMetadata: AppComponentMetadata;
-	componentName: string;
-}): Promise<void> {
-	log('debug', `Creating module "${opt.componentName}" in remote app ${opt.origin.appId}`);
-	progresDialogReport(`Creating module ${opt.componentMetadata.label ?? opt.componentName} in remote`);
-
-	if (opt.componentMetadata.moduleType === undefined) {
-		throw new Error(`Module type must be defined, but missing. Check the ${MAKECOMAPP_FILENAME}.`);
-	}
-
-	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-		ENVIRONMENT_VERSION,
-		'app',
-	)}`;
-	const axiosConfig: AxiosRequestConfig = {
-		headers: {
-			Authorization: 'Token ' + opt.origin.apikey,
-		},
-		url: `${baseUrl}/${opt.origin.appId}/${opt.origin.appVersion}/modules`,
-		method: 'POST',
-		data: {
-			name: opt.componentName,
-			label: opt.componentMetadata.label,
-			description: opt.componentMetadata.description,
-			typeId: getModuleDefFromType(opt.componentMetadata.moduleType).type_id,
-			// TODO connection: opt.componentMetadata.connection ?? '', // empty string in API represents the `null`
-			// altConnection is not present during module creation in web UI. Check it
-			// TODO altConnection: opt.componentMetadata.altConnection ?? '', // empty string in API represents the `null`
-			// TODO webhook: opt.componentMetadata.webhook,
-			crud: opt.componentMetadata.actionCrud ?? '',
-		},
-	};
-	await requestMakeApi<CreateModuleApiResponse>(axiosConfig);
-
-	progresDialogReport('');
-}
-
-/**
- * Creates a new Remote Procedure component in remote origin.
- *
- * IMPORTANT: Not suitable for legacy Integromat API.
- */
-async function createRemoteRPC(opt: {
-	origin: LocalAppOriginWithSecret;
-	componentMetadata: AppComponentMetadata;
-	componentName: string;
-}): Promise<void> {
-	log('debug', `Creating RPC "${opt.componentName}" in remote app ${opt.origin.appId}`);
-	progresDialogReport(`Creating RPC ${opt.componentMetadata.label ?? opt.componentName} in remote`);
-
-	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-		ENVIRONMENT_VERSION,
-		'app',
-	)}`;
-	const axiosConfig: AxiosRequestConfig = {
-		headers: {
-			Authorization: 'Token ' + opt.origin.apikey,
-		},
-		url: `${baseUrl}/${opt.origin.appId}/${opt.origin.appVersion}/${Core.pathDeterminer(
-			ENVIRONMENT_VERSION,
-			'rpc',
-		)}`,
-		method: 'POST',
-		data: {
-			name: opt.componentName,
-			label: opt.componentMetadata.label,
-			// TODO connection: ...
-		},
-	};
-	await requestMakeApi(axiosConfig);
-
-	progresDialogReport('');
-}
-
-/**
- * Creates a new webhook component in remote origin.
- *
- * IMPORTANT: Not suitable for legacy Integromat API.
- * @returns webhook ID (name)
- */
-async function createRemoteWebook(opt: {
-	origin: LocalAppOriginWithSecret;
-	componentMetadata: AppComponentMetadata;
-}): Promise<string> {
-	log(
-		'debug',
-		`Create webhook "${opt.componentMetadata.label ?? '[unlabeled]'}" in remote app "${opt.origin.appId}"`,
-	);
-	progresDialogReport(`Creating webhook ${opt.componentMetadata.label ?? '[unlabeled]'} in remote`);
-
-	if (opt.componentMetadata.webhookType === undefined) {
-		throw new Error(`Webhook type must be defined, but missing. Check the ${MAKECOMAPP_FILENAME}.`);
-	}
-
-	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-		ENVIRONMENT_VERSION,
-		'app',
-	)}`;
-	const axiosConfig: AxiosRequestConfig = {
-		headers: {
-			Authorization: 'Token ' + opt.origin.apikey,
-		},
-		url: `${baseUrl}/${opt.origin.appId}/${Core.pathDeterminer(ENVIRONMENT_VERSION, 'webhook')}`,
-		method: 'POST',
-		data: { type: opt.componentMetadata.webhookType, label: opt.componentMetadata.label },
-	};
-	const response = await requestMakeApi<CreateWebhookApiResponse>(axiosConfig);
-
-	progresDialogReport('');
-	return response.appWebhook.name; // Webhook ID (name)
-}
-
-/**
- * Creates a new Remote Procedure component in remote origin.
- *
- * IMPORTANT: Not suitable for legacy Integromat API.
- */
-async function createRemoteIMLFunction(opt: {
-	origin: LocalAppOriginWithSecret;
-	componentMetadata: AppComponentMetadata;
-	componentName: string;
-}): Promise<void> {
-	log('debug', `Creating Custom IML Function "${opt.componentName}" in remote app ${opt.origin.appId}`);
-	progresDialogReport(`Creating Custom IML Function ${opt.componentMetadata.label ?? opt.componentName} in remote`);
-
-	const baseUrl = `${opt.origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-		ENVIRONMENT_VERSION,
-		'app',
-	)}`;
-	const axiosConfig: AxiosRequestConfig = {
-		headers: {
-			Authorization: 'Token ' + opt.origin.apikey,
-		},
-		url: `${baseUrl}/${opt.origin.appId}/${opt.origin.appVersion}/${Core.pathDeterminer(
-			ENVIRONMENT_VERSION,
-			'function',
-		)}`,
-		method: 'POST',
-		data: {
-			name: opt.componentName,
-		},
-	};
-	await requestMakeApi(axiosConfig);
-
-	progresDialogReport('');
 }
 
 interface CreateWebhookApiResponse {
@@ -265,14 +168,14 @@ interface CreateWebhookApiResponse {
 	};
 }
 
-interface CreateModuleApiResponse {
-	appModule: {
-		name: string;
-		label: string;
-		description: string;
-		typeId: number;
-		crud: string | null; // TODO Improve Typescript type to own CRUD type instead of string
-		connection: string | null;
-		webhook: string | null;
-	};
-}
+// interface CreateModuleApiResponse {
+// 	appModule: {
+// 		name: string;
+// 		label: string;
+// 		description: string;
+// 		typeId: number;
+// 		crud: string | null; // TODO Improve Typescript type to own CRUD type instead of string
+// 		connection: string | null;
+// 		webhook: string | null;
+// 	};
+// }

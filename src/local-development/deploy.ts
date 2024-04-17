@@ -8,7 +8,7 @@ import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { CodePath } from './types/code-path.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import { AppComponentMetadata } from './types/makecomapp.types';
+import { deployComponentMetadata } from './deploy-metadata';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, errorToString, showErrorDialog } from '../error-handling';
@@ -159,10 +159,18 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					// Component is marked as 'to ignore' in ID mapping.
 					continue;
 				}
-				const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
-				if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) {
-					await deployComponentMetadata(componentLocalMetadata, origin);
-				}
+
+				// TODO Implement the optimalization: Update only if some change detected.
+				// const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
+				// if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) { deploy... }
+
+				await deployComponentMetadata(
+					componentType,
+					componentLocalId,
+					componentLocalMetadata,
+					makecomappJson,
+					origin,
+				);
 			}
 
 			// Display errors
@@ -181,19 +189,4 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			}
 		},
 	);
-}
-
-function isComponentMetadataChanged(
-	componentType: AppComponentType,
-	localComponentMetadata: AppComponentMetadata,
-	remoteComponentMetadata: AppComponentMetadata,
-): boolean {
-	// TODO IMPLEMENT all rules
-
-	// JUST EXAMPLE
-	if (localComponentMetadata.label !== remoteComponentMetadata.label) {
-		return true;
-	}
-
-	return false;
 }
