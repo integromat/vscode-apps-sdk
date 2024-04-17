@@ -5,15 +5,13 @@ import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ApiCodeType, CodeType, ComponentCodeType, GeneralCodeType } from './types/code-type.types';
 import { CodeDef } from './types/code-def.types';
-import * as Core from '../Core';
+import { getComponentApiUrl } from './helpers/api-url';
 import { getAppComponentCodeDefinition, getGeneralCodeDefinition } from '../services/component-code-def';
 import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
-
-const ENVIRONMENT_VERSION = 2;
 
 /**
  * Download the code from the API and save it to the local destination
@@ -94,41 +92,13 @@ function getCodeApiUrl({
 	apiCodeType: ApiCodeType;
 	origin: LocalAppOriginWithSecret;
 }): string {
-	// Compose directory structure
-	let urn = `/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(ENVIRONMENT_VERSION, 'app')}${
-		ENVIRONMENT_VERSION !== 2 ? '/' + origin.appId : ''
-	}`;
+	const componentUrl = getComponentApiUrl({ appComponentType, remoteComponentName, origin });
 
-	// Add version to URN for versionable items
-	if (Core.isVersionable(appComponentType)) {
-		urn += `${ENVIRONMENT_VERSION === 2 ? '/' + origin.appId : ''}/${origin.appVersion}`;
+	if (appComponentType === 'app' && apiCodeType === 'content') {
+		return `${componentUrl}/readme`;
+	} else {
+		return `${componentUrl}/${apiCodeType}`;
 	}
-
-	// Complete the URN by the type of item
-	switch (appComponentType) {
-		case 'connection':
-		case 'webhook':
-		case 'module':
-		case 'rpc':
-		case 'function':
-			urn += `/${appComponentType}s/${remoteComponentName}/${apiCodeType}`;
-			break;
-		// Base, common, readme, group
-		case 'app':
-			// Prepared for more app-level codes
-			switch (apiCodeType) {
-				case 'content':
-					urn += '/readme';
-					break;
-				default:
-					urn += `/${apiCodeType}`;
-					break;
-			}
-			break;
-		default:
-			throw new Error(`Unsupported component type: ${appComponentType} by getEndpointUrl().`);
-	}
-	return origin.baseUrl + '/v2' + urn;
 }
 
 export async function deployComponentCode({
