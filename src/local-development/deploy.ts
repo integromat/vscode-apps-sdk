@@ -64,14 +64,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			const remoteComponentsSummary = await getRemoteComponentsSummary(anyProjectPath, origin);
 
 			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
-			await alignComponentsMapping(
-				makecomappJson,
-				makeappRootdir,
-				origin,
-				remoteComponentsSummary,
-				'askUser',
-				'ignore',
-			);
+			await alignComponentsMapping(makeappRootdir, origin, remoteComponentsSummary, 'askUser', 'ignore');
 			// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
 			makecomappJson = await getMakecomappJson(anyProjectPath);
 

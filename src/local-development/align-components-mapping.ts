@@ -3,9 +3,8 @@ import {
 	AppComponentMetadata,
 	AppComponentMetadataWithCodeFiles,
 	LocalAppOriginWithSecret,
-	MakecomappJson,
 } from './types/makecomapp.types';
-import { addComponentIdMapping } from './makecomappjson';
+import { addComponentIdMapping, getMakecomappJson } from './makecomappjson';
 import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
@@ -27,13 +26,14 @@ import { progresDialogReport } from '../utils/vscode-progress-dialog';
  * IMPORTANT: Changes the `makecomapp.json` file.
  */
 export async function alignComponentsMapping(
-	makecomappJson: MakecomappJson,
 	makecomappRootDir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	remoteComponentsSummary: RemoteComponentsSummary,
 	newLocalComponentResolution: 'askUser' | 'ignore',
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew' | 'ignore',
 ): Promise<void> {
+	let makecomappJson = await getMakecomappJson(makecomappRootDir);
+
 	/**
 	 * Existing in `makecomappJson`, missing in `remoteComponents`
 	 * Common meaning: New local component, which not exists in remote Make yet.
@@ -164,7 +164,7 @@ export async function alignComponentsMapping(
 								componentType: localOnlyComponent.componentType,
 								componentMetadata: localOnlyComponent.componentMetadata,
 								componentName: localOnlyComponent.componentLocalId,
-								makecomappJson,
+								makecomappJson: makecomappJson,
 								origin,
 							});
 
@@ -277,6 +277,8 @@ export async function alignComponentsMapping(
 				}
 			}
 		}
+		// If called updated ID mapping by `addComponentIdMapping`, then it is needed to refresh the `makecomappJson` variable by fresh data
+		makecomappJson = await getMakecomappJson(makecomappRootDir);
 	}
 	progresDialogReport('');
 }
