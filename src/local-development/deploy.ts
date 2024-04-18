@@ -161,8 +161,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 
 				// TODO Implement the optimalization: Update only if some change detected.
-				// const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
-				// if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) { deploy... }
+				//   example: const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
+				//   example: if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) { deploy... }
 
 				await deployComponentMetadata(
 					componentType,
