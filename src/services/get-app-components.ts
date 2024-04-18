@@ -5,6 +5,7 @@ import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.
 import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
+import { getComponentApiUrl } from '../local-development/helpers/api-url';
 
 /**
  * Gets list of components summaries of the given type for the given app.
@@ -14,7 +15,11 @@ export async function getAppComponents<T extends ComponentsApiResponseItem>(
 	componentType: AppComponentType,
 	origin: LocalAppOriginWithSecret,
 ): Promise<T[]> {
-	const apiURL = getAppComponentsBaseUrl(origin, componentType);
+	const apiURL =
+		`${origin.baseUrl}/${apiV2SdkAppsBasePath}/${origin.appId}/` +
+		(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}/`) +
+		componentType +
+		's';
 
 	progresDialogReport(`Getting ${componentType}s list`);
 
@@ -44,25 +49,15 @@ export async function getAppComponentDetails<T extends ComponentDetailsApiRespon
 	componentName: string,
 	origin: LocalAppOriginWithSecret,
 ): Promise<T> {
-	let url: string;
-	switch (componentType) {
-		case 'function':
-		case 'rpc':
-		case 'module':
-			url = getAppComponentsBaseUrl(origin, componentType) + '/' + componentName;
-			break;
-		case 'connection':
-		case 'webhook':
-			url = `${origin.baseUrl}/${apiV2SdkAppsBasePath}/${componentType}s/` + componentName;
-			break;
-		default:
-			throw new Error(`Unknown component type "${componentType}"`);
-	}
-
+	const componentApiUrl = getComponentApiUrl({
+		appComponentType: componentType,
+		remoteComponentName: componentName,
+		origin,
+	});
 	progresDialogReport(`Getting ${componentType} ${componentName} metadata`);
 
 	const responseData = await requestMakeApi({
-		url,
+		url: componentApiUrl,
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 		},
@@ -71,13 +66,4 @@ export async function getAppComponentDetails<T extends ComponentDetailsApiRespon
 
 	progresDialogReport('');
 	return item;
-}
-
-function getAppComponentsBaseUrl(origin: LocalAppOriginWithSecret, componentType: AppComponentType) {
-	return (
-		`${origin.baseUrl}/${apiV2SdkAppsBasePath}/${origin.appId}/` +
-		(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}/`) +
-		componentType +
-		's'
-	);
 }
