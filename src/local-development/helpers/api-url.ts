@@ -26,6 +26,9 @@ export function getComponentApiUrl({
 	// Add version to URN for versionable items
 	if (Core.isVersionable(appComponentType)) {
 		url += `/${origin.appId}/${origin.appVersion}`;
+	} else if (!remoteComponentName) {
+		// Case of asking for URL for all component list / POST new component URL
+		url += `/${origin.appId}`;
 	}
 
 	// Complete the URN by the type of item
@@ -36,7 +39,6 @@ export function getComponentApiUrl({
 		case 'rpc':
 		case 'function':
 			return url + `/${appComponentType}s` + (remoteComponentName ? `/${remoteComponentName}` : '');
-			break;
 		// Base, common, readme, group
 		case 'app':
 			return url;
