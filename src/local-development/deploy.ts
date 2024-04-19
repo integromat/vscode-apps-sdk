@@ -24,8 +24,6 @@ export function registerCommands(): void {
  *
  * TODO fix order of creation
  *  - `groups` after modules
- *  - `modules` after webhooks
- *  - Resolve issue in API: If multiple components created in short time, it can miss on backend sometimes.
  */
 async function bulkDeploy(anyProjectPath: vscode.Uri) {
 	let makecomappJson = await getMakecomappJson(anyProjectPath);
