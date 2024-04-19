@@ -7,7 +7,6 @@ import * as Core from '../Core';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
-import { errorToString } from '../error-handling';
 import { ConnectionType, WebhookType } from '../types/component-types.types';
 
 const ENVIRONMENT_VERSION = 2;
@@ -48,16 +47,16 @@ export async function createRemoteAppComponent(opt: {
 				return opt.componentName;
 			default:
 				throw new Error(
-					`Creation of ${opt.componentType} ${opt.componentName} not implemented or type is unknown.`,
+					`Creation of ${opt.componentType} "${
+						opt.componentMetadata.label ?? opt.componentName
+					}" not implemented or type is unknown.`,
 				);
 		}
 	} catch (e: any) {
-		throw new Error(
-			`Failed to create ${opt.componentType} ${opt.componentName} in remote "${
-				opt.origin.label || opt.origin.appId
-			}". ${errorToString(e).message}`,
-			{ cause: e },
-		);
+		e.message = `Failed to create ${opt.componentType} "${
+			opt.componentMetadata.label ?? opt.componentName
+		}" in remote "${opt.origin.label || opt.origin.appId}". ${e.message}`;
+		throw e;
 	}
 }
 
