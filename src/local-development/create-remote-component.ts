@@ -35,7 +35,7 @@ export async function createRemoteAppComponent(opt: {
 		progresDialogReport(infoMessage);
 
 		const componentCreationUrl = getComponentApiUrl({
-			appComponentType: opt.componentType,
+			componentType: opt.componentType,
 			remoteComponentName: undefined,
 			origin: opt.origin,
 		});

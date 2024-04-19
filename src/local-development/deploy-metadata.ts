@@ -40,7 +40,7 @@ export async function deployComponentMetadata(
 		return;
 	}
 
-	const componentUrl = getComponentApiUrl({ appComponentType: componentType, remoteComponentName, origin });
+	const componentUrl = getComponentApiUrl({ componentType, remoteComponentName, origin });
 
 	const axiosConfig: AxiosRequestConfig = {
 		headers: {
