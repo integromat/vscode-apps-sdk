@@ -11,7 +11,7 @@ import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper'
 import { deployComponentMetadata } from './deploy-metadata';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
-import { catchError, errorToString, showErrorDialog } from '../error-handling';
+import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import { AppComponentType } from '../types/app-component-type.types';
 
@@ -109,9 +109,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 						sourcePath: component.localFile,
 					});
 				} catch (e: any) {
-					const message = errorToString(e).message;
-					log('error', message);
-					errors.push({ errorMessage: message, codePath: component });
+					log('error', e.message);
+					errors.push({ errorMessage: e.message, codePath: component });
 				}
 				// Log 'done' to console
 				log(
