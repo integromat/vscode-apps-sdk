@@ -1,5 +1,4 @@
 import camelCase from 'lodash/camelCase';
-import { apiV2SdkAppsBasePath } from './consts';
 import { AppComponentType } from '../types/app-component-type.types';
 import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
 import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
@@ -15,11 +14,7 @@ export async function getAppComponents<T extends ComponentsApiResponseItem>(
 	componentType: AppComponentType,
 	origin: LocalAppOriginWithSecret,
 ): Promise<T[]> {
-	const apiURL =
-		`${origin.baseUrl}/${apiV2SdkAppsBasePath}/${origin.appId}/` +
-		(['connection', 'webhook'].includes(componentType) ? '' : `${origin.appVersion}/`) +
-		componentType +
-		's';
+	const apiURL = getComponentApiUrl({ componentType, remoteComponentName: undefined, origin });
 
 	progresDialogReport(`Getting ${componentType}s list`);
 
@@ -46,18 +41,18 @@ export async function getAppComponents<T extends ComponentsApiResponseItem>(
  */
 export async function getAppComponentDetails<T extends ComponentDetailsApiResponseItem>(
 	componentType: AppComponentType,
-	componentName: string,
+	remoteComponentName: string,
 	origin: LocalAppOriginWithSecret,
 ): Promise<T> {
-	const componentApiUrl = getComponentApiUrl({
-		appComponentType: componentType,
-		remoteComponentName: componentName,
+	progresDialogReport(`Getting ${componentType} ${remoteComponentName} metadata`);
+
+	const url = getComponentApiUrl({
+		componentType,
+		remoteComponentName,
 		origin,
 	});
-	progresDialogReport(`Getting ${componentType} ${componentName} metadata`);
-
 	const responseData = await requestMakeApi({
-		url: componentApiUrl,
+		url,
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 		},

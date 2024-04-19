@@ -92,7 +92,7 @@ function getCodeApiUrl({
 	apiCodeType: ApiCodeType;
 	origin: LocalAppOriginWithSecret;
 }): string {
-	const componentUrl = getComponentApiUrl({ appComponentType, remoteComponentName, origin });
+	const componentUrl = getComponentApiUrl({ componentType: appComponentType, remoteComponentName, origin });
 
 	if (appComponentType === 'app' && apiCodeType === 'content') {
 		return `${componentUrl}/readme`;

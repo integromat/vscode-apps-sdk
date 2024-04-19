@@ -2,47 +2,46 @@ import { LocalAppOriginWithSecret } from '../types/makecomapp.types';
 import * as Core from '../../Core';
 import { AppComponentType } from '../../types/app-component-type.types';
 
-const ENVIRONMENT_VERSION = 2;
+const apiV2SdkAppsBasePath = 'v2/sdk/apps';
 
 /**
  * Gets endpoint URL for CRUD of the the given component.
  * If `remoteComponentName` is `undefined`, returns the url for component creation.
  */
 export function getComponentApiUrl({
-	appComponentType,
+	componentType,
 	remoteComponentName,
 	origin,
 }: {
-	appComponentType: AppComponentType | 'app';
+	componentType: AppComponentType | 'app';
 	remoteComponentName: string | undefined;
 	origin: LocalAppOriginWithSecret;
 }): string {
 	// Compose directory structure
-	let url = `${origin.baseUrl}/v2/${Core.pathDeterminer(ENVIRONMENT_VERSION, '__sdk')}${Core.pathDeterminer(
-		ENVIRONMENT_VERSION,
-		'app',
-	)}`;
+	let url = `${origin.baseUrl}/${apiV2SdkAppsBasePath}`;
 
 	// Add version to URN for versionable items
-	if (Core.isVersionable(appComponentType)) {
+	if (Core.isVersionable(componentType)) {
 		url += `/${origin.appId}/${origin.appVersion}`;
 	} else if (!remoteComponentName) {
-		// Case of asking for URL for all component list / POST new component URL
+		// Case URL:
+		//  1. list of all existing components
+		//  2. New component creation POST URL
 		url += `/${origin.appId}`;
 	}
 
 	// Complete the URN by the type of item
-	switch (appComponentType) {
+	switch (componentType) {
 		case 'connection':
 		case 'webhook':
 		case 'module':
 		case 'rpc':
 		case 'function':
-			return url + `/${appComponentType}s` + (remoteComponentName ? `/${remoteComponentName}` : '');
+			return url + `/${componentType}s` + (remoteComponentName ? `/${remoteComponentName}` : '');
 		// Base, common, readme, group
 		case 'app':
 			return url;
 		default:
-			throw new Error(`Unsupported component type: ${appComponentType} in getComponentApiUrl().`);
+			throw new Error(`Unsupported component type: ${componentType} in getComponentApiUrl().`);
 	}
 }
