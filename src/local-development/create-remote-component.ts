@@ -16,7 +16,7 @@ import { ConnectionType, WebhookType } from '../types/component-types.types';
  * Note: Content will stay filled by templated codes. No local codes are updates by this function.
  *
  * @param opt.componentName New component ID (for components, where it can be defined by user)
- * @returns Remote component name of new remote component
+ * @returns Actual remote component name of new remote component
  */
 export async function createRemoteAppComponent(opt: {
 	appName: string;
@@ -46,10 +46,12 @@ export async function createRemoteAppComponent(opt: {
 			},
 			url: componentCreationUrl,
 			method: 'POST',
+			// Add all editable component metadata
 			data: getComponentRemoteMetadataToDeploy('module', opt.componentMetadata, opt.makecomappJson, opt.origin),
 		};
 
-		// + add other metadata, which are not covered by `getComponentRemoteMetadataToDeploy`.
+		// Add metadata, which are not covered by `getComponentRemoteMetadataToDeploy`,
+		//   because there are persistent/not-editable after component creation.
 
 		if (opt.componentType === 'module') {
 			// For Module: Add `typeId` of module
@@ -124,6 +126,7 @@ export async function createRemoteAppComponent(opt: {
 
 		progresDialogReport('');
 
+		// Return the new component's actual remote name
 		switch (opt.componentType) {
 			case 'connection':
 				return (response as CreateConnectionApiResponse).appConnection.name;
@@ -167,6 +170,8 @@ interface CreateWebhookApiResponse {
 	};
 }
 
+// -- Disabled, because not used, but describes the actual API response format.
+// -- Keeping here for the future use.
 // interface CreateModuleApiResponse {
 // 	appModule: {
 // 		name: string;

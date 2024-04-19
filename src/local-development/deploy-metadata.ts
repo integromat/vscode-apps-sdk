@@ -7,13 +7,16 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 
+/**
+ * Sets the local component metadata into remote `origin`.
+ */
 export async function deployComponentMetadata(
 	componentType: AppComponentType,
 	componentLocalId: string,
 	componentMetadata: AppComponentMetadata,
 	makecomappJson: MakecomappJson,
 	origin: LocalAppOriginWithSecret,
-) {
+): Promise<void> {
 	log(
 		'debug',
 		`Deploying metadata of ${componentType} "${componentMetadata.label ?? componentLocalId}" into remote app "${
@@ -55,6 +58,10 @@ export async function deployComponentMetadata(
 	progresDialogReport('');
 }
 
+/**
+ * Generates list of metadata, which can be set during component creation and can be changed during component update.
+ * @return in format, which can be direclty used in REST API request body.
+ */
 export function getComponentRemoteMetadataToDeploy(
 	componentType: AppComponentType,
 	componentMetadata: AppComponentMetadata,

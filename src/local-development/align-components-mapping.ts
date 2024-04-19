@@ -92,7 +92,7 @@ export async function alignComponentsMapping(
 	/*
 	 * Whole list of `localOnly` + `remoteOnly` will be processed (aligned) now.
 	 *
-	 * Note: The order is important her .
+	 * Note: The order is important here.
 	 *       Connections and webhooks must be created first, because modules and RPCs can references on them,
 	 *       and it means that referenced webhooks/connections must already exists in time of referencing component creation.
 	 */
@@ -164,7 +164,7 @@ export async function alignComponentsMapping(
 								componentType: localOnlyComponent.componentType,
 								componentMetadata: localOnlyComponent.componentMetadata,
 								componentName: localOnlyComponent.componentLocalId,
-								makecomappJson: makecomappJson,
+								makecomappJson,
 								origin,
 							});
 
@@ -277,7 +277,8 @@ export async function alignComponentsMapping(
 				}
 			}
 		}
-		// If called updated ID mapping by `addComponentIdMapping`, then it is needed to refresh the `makecomappJson` variable by fresh data
+		// Because the ID mapping was probably updated by `addComponentIdMapping()` execution above,
+		//   it is needed to refresh the `makecomappJson` variable by fresh data.
 		makecomappJson = await getMakecomappJson(makecomappRootDir);
 	}
 	progresDialogReport('');
