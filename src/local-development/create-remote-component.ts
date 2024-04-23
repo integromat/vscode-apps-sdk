@@ -77,18 +77,12 @@ export async function createRemoteAppComponent(opt: {
 					axiosConfig.data.crud = opt.componentMetadata.actionCrud;
 				}
 
-				// For Module Instant trigger: Add webhook reference (mandatory)
-				if (opt.componentMetadata.moduleType === 'instant_trigger') {
-					if (!opt.componentMetadata.webhook) {
-						throw new Error(
-							`"webhook" type must be defined for Instant Trigger module "${
-								opt.componentMetadata.label ?? opt.componentName
-							}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-						);
-					}
-					axiosConfig.data.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
-						'webhook',
-						opt.componentMetadata.webhook,
+				// For Module Instant trigger: Check webhook mandatory reference
+				if (opt.componentMetadata.moduleType === 'instant_trigger' && !opt.componentMetadata.webhook) {
+					throw new Error(
+						`"webhook" type must be defined for Instant Trigger module "${
+							opt.componentMetadata.label ?? opt.componentName
+						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
 				}
 				break;
