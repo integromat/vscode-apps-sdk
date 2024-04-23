@@ -1,7 +1,14 @@
 Change Log
 ==========
 
-1.3.52 (pre-release) [2023-04-15]
+1.3.53 (pre-release) [unreleased]
+--------------------
+
+- Fixed: References `connection`, `altConnection`, `webhook` are correctly deployed to Make
+  during remote component creation and during "Deploy to Make".
+- Fixed: New Remote Instant Trigger Module creation works correctly now.
+
+1.3.52 (pre-release) [2024-04-15]
 --------------------
 
 - Fixed `Compare with Make` action missing on some file types.
@@ -14,7 +21,7 @@ Change Log
 - Modules's references `connection`, `altConnetion` and `webhook` are ignored during "Deploy to Make".
   - Consequences: Cannot create Instant Trigger Module because `webhook` reference is mandatory during module creation.
 
-1.3.51 (pre-release) [2023-04-11]
+1.3.51 (pre-release) [2024-04-11]
 --------------------
 
 ### Changes

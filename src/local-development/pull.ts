@@ -48,19 +48,17 @@ export async function pullAllComponents(
 	origin: LocalAppOriginWithSecret,
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 ): Promise<void> {
-	let makecomappJson = await getMakecomappJson(localAppRootdir);
 	const remoteAppComponentsSummary = await getRemoteComponentsSummary(localAppRootdir, origin);
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
 	await alignComponentsMapping(
-		makecomappJson,
 		localAppRootdir,
 		origin,
 		remoteAppComponentsSummary,
 		'ignore',
 		newRemoteComponentResolution,
 	);
-	// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
-	makecomappJson = await getMakecomappJson(localAppRootdir);
+	// Load fresh `makecomapp.json` file (because `alignComponentMapping()` changed it)
+	const makecomappJson = await getMakecomappJson(localAppRootdir);
 
 	// Pull app general codes
 	for (const [codeType] of entries(generalCodesDefinition)) {
