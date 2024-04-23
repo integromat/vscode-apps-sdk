@@ -1,9 +1,9 @@
-import { AxiosRequestConfig } from 'axios';
-import { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
+import type { AxiosRequestConfig } from 'axios';
+import type { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { getComponentApiUrl } from './helpers/api-url';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { log } from '../output-channel';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 

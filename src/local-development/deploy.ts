@@ -6,14 +6,14 @@ import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
-import { CodePath } from './types/code-path.types';
+import type { CodePath } from './types/code-path.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { deployComponentMetadata } from './deploy-metadata';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));

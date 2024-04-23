@@ -1,15 +1,15 @@
-import { AxiosRequestConfig } from 'axios';
-import { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
+import type { AxiosRequestConfig } from 'axios';
+import type { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { getComponentRemoteMetadataToDeploy } from './deploy-metadata';
 import { getComponentApiUrl } from './helpers/api-url';
 import { log } from '../output-channel';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
-import { ConnectionType, WebhookType } from '../types/component-types.types';
+import type { ConnectionType, WebhookType } from '../types/component-types.types';
 
 /**
  * Creates new SDK App component in remote Make.
@@ -53,70 +53,72 @@ export async function createRemoteAppComponent(opt: {
 		// Add metadata, which are not covered by `getComponentRemoteMetadataToDeploy`,
 		//   because there are persistent/not-editable after component creation.
 
-		if (opt.componentType === 'module') {
-			// For Module: Add `typeId` of module
-			if (opt.componentMetadata.moduleType === undefined) {
-				throw new Error(
-					`"moduleType" type must be defined for module "${
-						opt.componentMetadata.label ?? opt.componentName
-					}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-				);
-			}
-			axiosConfig.data.typeId = getModuleDefFromType(opt.componentMetadata.moduleType).type_id;
-
-			// For Module Action: Add `crud`
-			if (opt.componentMetadata.moduleType === 'action') {
-				if (!opt.componentMetadata.actionCrud) {
+		switch (opt.componentType) {
+			case 'module':
+				// For Module: Add `typeId` of module
+				if (opt.componentMetadata.moduleType === undefined) {
 					throw new Error(
-						`"actionCrud" type must be defined for module "${
+						`"moduleType" type must be defined for module "${
 							opt.componentMetadata.label ?? opt.componentName
 						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
 				}
-				axiosConfig.data.crud = opt.componentMetadata.actionCrud;
-			}
+				axiosConfig.data.typeId = getModuleDefFromType(opt.componentMetadata.moduleType).type_id;
 
-			// For Module Instant trigger: Add webhook reference (mandatory)
-			if (opt.componentMetadata.moduleType === 'instant_trigger') {
-				if (!opt.componentMetadata.webhook) {
+				// For Module Action: Add `crud`
+				if (opt.componentMetadata.moduleType === 'action') {
+					if (!opt.componentMetadata.actionCrud) {
+						throw new Error(
+							`"actionCrud" type must be defined for module "${
+								opt.componentMetadata.label ?? opt.componentName
+							}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+						);
+					}
+					axiosConfig.data.crud = opt.componentMetadata.actionCrud;
+				}
+
+				// For Module Instant trigger: Add webhook reference (mandatory)
+				if (opt.componentMetadata.moduleType === 'instant_trigger') {
+					if (!opt.componentMetadata.webhook) {
+						throw new Error(
+							`"webhook" type must be defined for Instant Trigger module "${
+								opt.componentMetadata.label ?? opt.componentName
+							}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+						);
+					}
+					axiosConfig.data.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
+						'webhook',
+						opt.componentMetadata.webhook,
+					);
+				}
+				break;
+
+			case 'connection':
+				// For Connection: Add `type`
+				if (opt.componentMetadata.connectionType === undefined) {
 					throw new Error(
-						`"webhook" type must be defined for Instant Trigger module "${
+						`"connectionType" type must be defined for connection "${
 							opt.componentMetadata.label ?? opt.componentName
 						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
 				}
-				axiosConfig.data.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
-					'webhook',
-					opt.componentMetadata.webhook,
-				);
-			}
+				axiosConfig.data.type = opt.componentMetadata.connectionType;
+				break;
+
+			case 'webhook':
+				// Webhook type: add `webhookType`
+				if (opt.componentMetadata.webhookType === undefined) {
+					throw new Error(
+						`"webhookType" type must be defined for connection "${
+							opt.componentMetadata.label ?? opt.componentName
+						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
+					);
+				}
+				axiosConfig.data.type = opt.componentMetadata.webhookType;
+				break;
 		}
 
-		// For Connection: Add `type`
-		if (opt.componentType === 'connection') {
-			if (opt.componentMetadata.connectionType === undefined) {
-				throw new Error(
-					`"connectionType" type must be defined for connection "${
-						opt.componentMetadata.label ?? opt.componentName
-					}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-				);
-			}
-			axiosConfig.data.type = opt.componentMetadata.connectionType;
-		}
-
-		// Webhook type: add `webhookType`
-		if (opt.componentType === 'webhook') {
-			if (opt.componentMetadata.webhookType === undefined) {
-				throw new Error(
-					`"webhookType" type must be defined for connection "${
-						opt.componentMetadata.label ?? opt.componentName
-					}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-				);
-			}
-			axiosConfig.data.type = opt.componentMetadata.webhookType;
-		}
-
-		// Module, RPC, function
+		// For Module, RPC, function: add `name` (ID)
 		if (['module', 'rpc', 'function'].includes(opt.componentType)) {
 			axiosConfig.data.name = opt.componentName;
 		}
