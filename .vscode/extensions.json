@@ -4,6 +4,6 @@
 	"recommendations": [
 		"dbaeumer.vscode-eslint",
 		"esbenp.prettier-vscode",
-		"mike-co.import-sorter"
+		"dozerg.tsimportsorter"
 	]
 }
