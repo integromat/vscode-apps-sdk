@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { AppComponentMetadata } from './types/makecomapp.types';
-import { getMakecomappRootDir } from './makecomappjson';
+import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
 import { askNewComponentLocalID } from './helpers/ask-component-id';
 import { askFreeText } from './helpers/ask-free-text';
 import { Crud } from './types/crud.types';
@@ -47,8 +47,8 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	// Ask for module description
 	const moduleDescription = await askFreeText({
 		subject: 'Description of new module to be created',
-		note: 'Rules: Optional. Use any free text.',
-		required: false,
+		note: 'Rules: Use any free text, but must not be empty.',
+		required: true,
 	});
 	if (moduleDescription === undefined) {
 		return; /* Cancelled by user */
@@ -63,11 +63,37 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 		return;
 	}
 
+	// Instant trigger: Ask for mandatory webhook
+	let instantTriggerWebhookLocalId: string | undefined = undefined;
+	if (moduleTypePick.id === 'instant_trigger') {
+		const makecomappJson = await getMakecomappJson(makeappRootDir);
+
+		const webhooksToQuickPick = Object.entries(makecomappJson.components.webhook)
+			.filter(([_webhookLocalId, webhookMetadata]) => webhookMetadata !== null)
+			.map(([webhookLocalId, webhookMetadata]) => ({
+				label: `Webhook "${webhookMetadata?.label || webhookLocalId}"`,
+				id: webhookLocalId,
+			}));
+		if (webhooksToQuickPick.length === 0) {
+			throw new Error(
+				'Cannot create the Instant trigger, because it must reference a webhook, but no webhook exists. Please create a webhook first.',
+			);
+		}
+		const webhookPick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: string }>(
+			webhooksToQuickPick,
+			{ ignoreFocusOut: true, title: 'Select webhook, which will be referenced to new Instant Trigger' },
+		);
+		if (!webhookPick) {
+			return; /* Cancelled by user */
+		}
+		instantTriggerWebhookLocalId = webhookPick.id;
+	}
+
 	// Ask for CRUD
 	let actionCrud: Crud | null = null;
 	if (moduleTypePick.id === 'action') {
 		const actionCrudPick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: Crud | null }>(
-			[...crudTypes.map((crud) => ({ label: crud!, id: crud })), { label: 'none', id: null }],
+			[...crudTypes.map((crud) => ({ label: crud!, id: crud })), { label: '- empty -', id: null }],
 			{ ignoreFocusOut: true, title: 'Select the type of action module to be created' },
 		);
 		if (!actionCrudPick) {
@@ -81,6 +107,7 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 		description: moduleDescription,
 		moduleType: moduleTypePick.id,
 		actionCrud: actionCrud,
+		webhook: instantTriggerWebhookLocalId,
 	};
 
 	const newModule = await createLocalEmptyComponent('module', moduleID, moduleMetadata, makeappRootDir);

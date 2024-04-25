@@ -2,13 +2,12 @@ import type { AxiosRequestConfig } from 'axios';
 import type { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import { getComponentRemoteMetadataToDeploy } from './deploy-metadata';
+import { getApiBodyForComponentMetadataDeploy } from './deploy-metadata';
 import { getComponentApiUrl } from './helpers/api-url';
 import { log } from '../output-channel';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
-import { getModuleDefFromType } from '../services/module-types-naming';
 import type { ConnectionType, WebhookType } from '../types/component-types.types';
 
 /**
@@ -47,7 +46,7 @@ export async function createRemoteAppComponent(opt: {
 			url: componentCreationUrl,
 			method: 'POST',
 			// Add all editable component metadata
-			data: getComponentRemoteMetadataToDeploy('module', opt.componentMetadata, opt.makecomappJson, opt.origin),
+			data: getApiBodyForComponentMetadataDeploy('module', opt.componentMetadata, opt.makecomappJson, opt.origin),
 		};
 
 		// Add metadata, which are not covered by `getComponentRemoteMetadataToDeploy`,
@@ -55,28 +54,6 @@ export async function createRemoteAppComponent(opt: {
 
 		switch (opt.componentType) {
 			case 'module':
-				// For Module: Add `typeId` of module
-				if (opt.componentMetadata.moduleType === undefined) {
-					throw new Error(
-						`"moduleType" type must be defined for module "${
-							opt.componentMetadata.label ?? opt.componentName
-						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-					);
-				}
-				axiosConfig.data.typeId = getModuleDefFromType(opt.componentMetadata.moduleType).type_id;
-
-				// For Module Action: Add `crud`
-				if (opt.componentMetadata.moduleType === 'action') {
-					if (!opt.componentMetadata.actionCrud) {
-						throw new Error(
-							`"actionCrud" type must be defined for module "${
-								opt.componentMetadata.label ?? opt.componentName
-							}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-						);
-					}
-					axiosConfig.data.crud = opt.componentMetadata.actionCrud;
-				}
-
 				// For Module Instant trigger: Check webhook mandatory reference
 				if (opt.componentMetadata.moduleType === 'instant_trigger' && !opt.componentMetadata.webhook) {
 					throw new Error(

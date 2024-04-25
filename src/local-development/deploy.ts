@@ -6,14 +6,14 @@ import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
-import type { CodePath } from './types/code-path.types';
+import type { CodeType } from './types/code-type.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { deployComponentMetadata } from './deploy-metadata';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
 import { log } from '../output-channel';
 import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
-import type { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -69,7 +69,12 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			progresDialogReport('Deploying');
 
 			/** Deployments errors */
-			const errors: { errorMessage: string; codePath: CodePath }[] = [];
+			const errors: {
+				errorMessage: string;
+				componentType: AppComponentType | AppGeneralType;
+				componentLocalId: string;
+				codeType?: CodeType;
+			}[] = [];
 
 			const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 
@@ -108,7 +113,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					});
 				} catch (e: any) {
 					log('error', e.message);
-					errors.push({ errorMessage: e.message, codePath: component });
+					errors.push({ errorMessage: e.message, ...component });
 				}
 				// Log 'done' to console
 				log(
@@ -154,13 +159,21 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				//   example: const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
 				//   example: if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) { deploy... }
 
-				await deployComponentMetadata(
-					componentType,
-					componentLocalId,
-					componentLocalMetadata,
-					makecomappJson,
-					origin,
-				);
+				try {
+					await deployComponentMetadata(
+						componentType,
+						componentLocalId,
+						componentLocalMetadata,
+						makecomappJson,
+						origin,
+					);
+				} catch (e: any) {
+					errors.push({
+						errorMessage: `Failed to deploy metadata. ${e.message}`,
+						componentType,
+						componentLocalId,
+					});
+				}
 			}
 
 			// Display errors
@@ -170,7 +183,9 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					detail: errors
 						.map(
 							(err) =>
-								`** ${err.codePath.componentType} ${err.codePath.componentLocalId} - ${err.codePath.codeType} **\n${err.errorMessage}`,
+								`** ${err.componentType} "${err.componentLocalId}" - ${
+									err.codeType ? ' - ' + err.codeType : ''
+								} **\n${err.errorMessage}`,
 						)
 						.join('\n\n'),
 				});

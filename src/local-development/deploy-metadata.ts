@@ -6,6 +6,7 @@ import { log } from '../output-channel';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
+import { getModuleDefFromType } from '../services/module-types-naming';
 
 /**
  * Sets the local component metadata into remote `origin`.
@@ -32,7 +33,7 @@ export async function deployComponentMetadata(
 		return undefined;
 	}
 
-	const metadataToUpdate = getComponentRemoteMetadataToDeploy(
+	const metadataToUpdate = getApiBodyForComponentMetadataDeploy(
 		componentType,
 		componentMetadata,
 		makecomappJson,
@@ -62,29 +63,43 @@ export async function deployComponentMetadata(
  * Generates list of metadata, which can be set during component creation and can be changed during component update.
  * @return in format, which can be direclty used in REST API request body.
  */
-export function getComponentRemoteMetadataToDeploy(
+export function getApiBodyForComponentMetadataDeploy(
 	componentType: AppComponentType,
 	componentMetadata: AppComponentMetadata,
 	makecomappJson: MakecomappJson,
 	origin: LocalAppOriginWithSecret,
-): Record<string, string | null | undefined> {
-	const metadataToUpdate: Record<string, string | null | undefined> = {};
+): Record<string, string | number | null | undefined> {
+	const updatingMetadataApiProps: ReturnType<typeof getApiBodyForComponentMetadataDeploy> = {};
 
 	const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 
 	// Update `label`
 	if (['connection', 'module', 'webhook', 'rpc'].includes(componentType) && componentMetadata.label) {
-		metadataToUpdate.label = componentMetadata.label;
+		updatingMetadataApiProps.label = componentMetadata.label;
 	}
 
 	// Update `description`
 	if (componentType === 'module' && componentMetadata.description) {
-		metadataToUpdate.description = componentMetadata.description;
+		updatingMetadataApiProps.description = componentMetadata.description;
+	}
+
+	// Update module type
+	if (componentType === 'module' && componentMetadata.moduleType) {
+		updatingMetadataApiProps.typeId = getModuleDefFromType(componentMetadata.moduleType).type_id;
+	}
+
+	// Update action module's `crud`
+	if (
+		componentType === 'module' &&
+		componentMetadata.moduleType === 'action' &&
+		componentMetadata.actionCrud !== undefined
+	) {
+		updatingMetadataApiProps.crud = componentMetadata.actionCrud;
 	}
 
 	// Update `webhook` reference
 	if (componentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
-		metadataToUpdate.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
+		updatingMetadataApiProps.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
 			'webhook',
 			componentMetadata.webhook,
 		);
@@ -92,15 +107,15 @@ export function getComponentRemoteMetadataToDeploy(
 
 	// Update `connection`, `altConnection` references
 	if (['module', 'webhook', 'rpc'].includes(componentType)) {
-		metadataToUpdate.connection = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
+		updatingMetadataApiProps.connection = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
 			'connection',
 			componentMetadata.connection,
 		);
-		metadataToUpdate.altConnection = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
+		updatingMetadataApiProps.altConnection = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
 			'connection',
 			componentMetadata.altConnection,
 		);
 	}
 
-	return metadataToUpdate;
+	return updatingMetadataApiProps;
 }
