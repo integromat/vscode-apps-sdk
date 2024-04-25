@@ -1,7 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import type { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
-import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { getApiBodyForComponentMetadataDeploy } from './deploy-metadata';
 import { getComponentApiUrl } from './helpers/api-url';
 import { log } from '../output-channel';
@@ -38,7 +37,6 @@ export async function createRemoteAppComponent(opt: {
 			remoteComponentName: undefined,
 			origin: opt.origin,
 		});
-		const componentIdMapping = new ComponentIdMappingHelper(opt.makecomappJson, opt.origin);
 		const axiosConfig: AxiosRequestConfig = {
 			headers: {
 				Authorization: 'Token ' + opt.origin.apikey,
@@ -54,18 +52,12 @@ export async function createRemoteAppComponent(opt: {
 
 		switch (opt.componentType) {
 			case 'module':
-				// For Module Instant trigger: Add webhook reference (mandatory)
-				if (opt.componentMetadata.moduleType === 'instant_trigger') {
-					if (!opt.componentMetadata.webhook) {
-						throw new Error(
-							`"webhook" type must be defined for Instant Trigger module "${
-								opt.componentMetadata.label ?? opt.componentName
-							}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
-						);
-					}
-					axiosConfig.data.webhook = componentIdMapping.getComponentReferenceRemoteNameForApiPatch(
-						'webhook',
-						opt.componentMetadata.webhook,
+				// For Module Instant trigger: Check webhook mandatory reference
+				if (opt.componentMetadata.moduleType === 'instant_trigger' && !opt.componentMetadata.webhook) {
+					throw new Error(
+						`"webhook" reference must be defined for Instant Trigger module "${
+							opt.componentMetadata.label ?? opt.componentName
+						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
 				}
 				break;
@@ -74,7 +66,7 @@ export async function createRemoteAppComponent(opt: {
 				// For Connection: Add `type`
 				if (opt.componentMetadata.connectionType === undefined) {
 					throw new Error(
-						`"connectionType" type must be defined for connection "${
+						`"connectionType" must be defined for connection "${
 							opt.componentMetadata.label ?? opt.componentName
 						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
@@ -86,7 +78,7 @@ export async function createRemoteAppComponent(opt: {
 				// Webhook type: add `webhookType`
 				if (opt.componentMetadata.webhookType === undefined) {
 					throw new Error(
-						`"webhookType" type must be defined for connection "${
+						`"webhookType" must be defined for webhook "${
 							opt.componentMetadata.label ?? opt.componentName
 						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
