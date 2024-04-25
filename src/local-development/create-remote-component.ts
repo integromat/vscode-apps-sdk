@@ -8,6 +8,7 @@ import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import type { ConnectionType, WebhookType } from '../types/component-types.types';
+import { version as ExtensionVersion } from '../Meta';
 
 /**
  * Creates new SDK App component in remote Make.
@@ -40,6 +41,8 @@ export async function createRemoteAppComponent(opt: {
 		const axiosConfig: AxiosRequestConfig = {
 			headers: {
 				Authorization: 'Token ' + opt.origin.apikey,
+				'x-imt-vsce-localmode': true,
+				'x-imt-apps-sdk-version': ExtensionVersion,
 			},
 			url: componentCreationUrl,
 			method: 'POST',

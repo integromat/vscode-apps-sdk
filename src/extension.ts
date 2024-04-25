@@ -1,4 +1,6 @@
 import * as path from 'node:path';
+import TelemetryReporter from '@vscode/extension-telemetry';
+import * as appInsights from 'applicationinsights';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 import * as vscode from 'vscode';
@@ -18,9 +20,9 @@ import {
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
-
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
+
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 import RpcCommands = require('./commands/RpcCommands');
 import ModuleCommands = require('./commands/ModuleCommands');
@@ -31,6 +33,28 @@ import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
+
+/**
+ * APP INSIGHTS
+ */
+const azureInstrumentationKey = 'f9b9d6d5-2058-46ae-9ba8-56bc993474e3';
+appInsights
+	.setup(process.env.APPLICATIONINSIGHTSKEY || azureInstrumentationKey)
+	.setAutoCollectRequests(true)
+	.setAutoCollectPerformance(true, true)
+	.setAutoCollectExceptions(true)
+	.setAutoCollectDependencies(true)
+	.setAutoCollectConsole(true, false)
+	.setAutoCollectPreAggregatedMetrics(true)
+	.setSendLiveMetrics(false)
+	.setInternalLogging(false, true)
+	.enableWebInstrumentation(false)
+	.start();
+
+/**
+ * APP TELEMETRY
+ */
+let telemetryReporter: any;
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -232,6 +256,15 @@ export async function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
+	/**
+	 * TELEMETRY START
+	 */
+	// create telemetry reporter on extension activation
+	telemetryReporter = new TelemetryReporter(azureInstrumentationKey);
+	// ensure it gets properly disposed. Upon disposal the events will be flushed
+	context.subscriptions.push(telemetryReporter);
+	sendTelemetry('activated', { version: _environment.version });
+
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }
 
@@ -245,6 +278,8 @@ export async function deactivate() {
 	}
 	log('info', 'Deactivating the Extension ...');
 	await client.stop();
+
+	telemetryReporter.dispose();
 }
 
 /**
@@ -263,4 +298,25 @@ function getCurrentEnvironmentOrUndefined(): AppsSdkConfigurationEnvironment | u
  */
 export function testsOnly_getImljsonLanguageClient() {
 	return client;
+}
+
+export function sendTelemetry(eventName: string, stringObj?: any, numericObj?: any) {
+	if (isTelemetryEnabled()) {
+		telemetryReporter.sendTelemetryEvent(eventName, stringObj, numericObj);
+	}
+}
+
+export function sendTelemetryError(eventName: string, stringObj?: any, numericObj?: any) {
+	if (isTelemetryEnabled()) {
+		telemetryReporter.sendTelemetryErrorEvent(eventName, stringObj, numericObj);
+	}
+}
+
+export function isTelemetryEnabled() {
+	const _configuration = getConfiguration();
+	if (_configuration.get('telemetry') && _configuration.get('telemetry.disableTelemetry')) {
+		return false;
+	} else {
+		return true;
+	}
 }

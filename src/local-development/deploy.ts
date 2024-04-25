@@ -13,6 +13,7 @@ import { getMakecomappJson, getMakecomappRootDir } from '../local-development/ma
 import { log } from '../output-channel';
 import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
+import { sendTelemetry } from '../extension';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 
 export function registerCommands(): void {
@@ -120,6 +121,9 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					'debug',
 					`Deployed ${component.componentType} ${component.componentLocalId} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
+
+				sendTelemetry('deploy_component_code', { appComponentType: component.componentType });
+
 				// Handle the user "cancel" button press
 				if (canceled) {
 					break;
