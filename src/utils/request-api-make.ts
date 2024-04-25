@@ -31,15 +31,24 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 						},
 					})
 				).data;
-			} catch (e: any) {
-				if ((<AxiosError>e).response?.status === 429) {
+			} catch (err: any) {
+				if ((<AxiosError>err).response?.status === 429) {
 					progresDialogReport('Too many requests into Make. Slowing down. Please wait.');
 					await setTimeout(5000); // Bloks also anothers requests (because of `limitConcurrently`)
-					throw e;
+					throw err;
 				} else {
-					throw new Error(`Failed API request to Make with response error: ${errorToString(e).message}`, {
-						cause: e,
-					});
+					// TODO Do not put the APi URL as part of error message. Instead of it, implement the log the URL based on `cause` original error. Implement it in `error-handling.ts` -> `showAndLogError()`.
+					throw new Error(
+						'Rejected the Make request ' +
+							(err.request?.method || '').toUpperCase() +
+							' ' +
+							err.request?.host +
+							err.request?.path +
+							', response: ' +
+							// Extract error messages from API response body
+							errorToString(err),
+						{ cause: err },
+					);
 				}
 			}
 		});

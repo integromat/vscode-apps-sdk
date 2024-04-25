@@ -36,6 +36,8 @@ export function errorToString(err: Error | AxiosError<any> | string): { message:
 			} else if (typeof err.response?.data === 'string') {
 				// Axios can return JSON error message stringified, so try to parse them.
 				errMessages.push(String(err.response.data));
+			} else if (err.response?.data instanceof Object) {
+				errMessages.push(JSON.stringify(err.response?.data));
 			} else {
 				errMessages.push(err.response?.status + ' ' + (err.response?.statusText ?? 'Unknown response error'));
 			}
@@ -82,15 +84,18 @@ export function showAndLogError(err: Error | AxiosError<any> | string, actionTit
 
 	// Log to console
 	if (err instanceof AxiosError) {
+		// Note: This section is here, because old codes still calls `axios` directly, instead of using `requestMakeApi()`.
+
 		// Log Request CRUD + path
 		log(
 			'error',
 			'Rejected the Make request ' +
 				(err.request?.method || '').toUpperCase() +
 				' ' +
+				err.request?.host +
 				err.request?.path +
-				(err.response?.data instanceof Object ? '\n\t' + JSON.stringify(err.response?.data) : '') +
-				(typeof err.response?.data === 'string' ? '\n\t' + err.response?.data : ''),
+				', response: ' +
+				improvedErrors.message,
 		);
 	} else if (err instanceof Error && !improvedErrors.isImproved) {
 		// Log to VS Code console
