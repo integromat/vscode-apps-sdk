@@ -7,6 +7,7 @@ Change Log
 - Fixed: References `connection`, `altConnection`, `webhook` are correctly deployed to Make
   during remote component creation and during "Deploy to Make".
 - Fixed: New Remote Instant Trigger Module creation works correctly now.
+- Improved the local Instant Trigger Module creation wizard.
 - Fixed: Action module CRUD is optional value now.
 - Improved: Module type and CRUD are updated by "Deploy to Make".
 
