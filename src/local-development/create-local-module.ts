@@ -47,8 +47,8 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	// Ask for module description
 	const moduleDescription = await askFreeText({
 		subject: 'Description of new module to be created',
-		note: 'Rules: Optional. Use any free text.',
-		required: false,
+		note: 'Rules: Use any free text, but must not be empty.',
+		required: true,
 	});
 	if (moduleDescription === undefined) {
 		return; /* Cancelled by user */
