@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-1.3.53 (pre-release) [unreleased]
+1.3.53 (pre-release) [2024-04-25]
 --------------------
 
 - Fixed: References `connection`, `altConnection`, `webhook` are correctly deployed to Make
@@ -10,6 +10,7 @@ Change Log
 - Improved the local Instant Trigger Module creation wizard.
 - Fixed: Action module CRUD is optional value now.
 - Improved: Module type and CRUD are updated by "Deploy to Make".
+- Improved error messages in case of API request fail.
 
 1.3.52 (pre-release) [2024-04-15]
 --------------------
