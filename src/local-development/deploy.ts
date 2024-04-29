@@ -93,6 +93,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					} from ${path.posix.relative(makeappRootdir.path, anyProjectPath.path)}`,
 				);
 
+				sendTelemetry('deploy_component_code', { appComponentType: component.componentType });
+
 				// Find the remote component name
 				const remoteComponentName = componentIdMapping.getExistingRemoteName(
 					component.componentType,
@@ -121,8 +123,6 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					'debug',
 					`Deployed ${component.componentType} ${component.componentLocalId} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
-
-				sendTelemetry('deploy_component_code', { appComponentType: component.componentType });
 
 				// Handle the user "cancel" button press
 				if (canceled) {

@@ -127,6 +127,8 @@ export async function deployComponentCode({
 		} -> ${appComponentType} ${remoteComponentName} -> code ${codeType}`,
 	);
 
+	sendTelemetry('deploy_component_code', { appComponentType, remoteComponentName });
+
 	const codeDef = getCodeDef(appComponentType, codeType);
 
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
@@ -146,8 +148,6 @@ export async function deployComponentCode({
 		transformRequest: (data) => data, // Do not expect the `data` to be JSON
 	};
 	await requestMakeApi(axiosConfig);
-
-	sendTelemetry('deploy_component_code', { appComponentType, remoteComponentName });
 
 	progresDialogReport('');
 }
