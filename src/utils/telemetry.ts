@@ -4,7 +4,6 @@ import { getConfiguration } from '../providers/configuration';
 
 const _configuration = getConfiguration();
 const azureInstrumentationKey = 'f9b9d6d5-2058-46ae-9ba8-56bc993474e3';
-const telemetryReporter = new TelemetryReporter(azureInstrumentationKey);
 
 /**
  * @module
@@ -12,11 +11,9 @@ const telemetryReporter = new TelemetryReporter(azureInstrumentationKey);
  */
 
 /**
- * Primitive function to create instance - can be class/singleton in future
+ * Create instance
  */
-export function getTelemetryReporter(): TelemetryReporter {
-	return telemetryReporter;
-}
+export const telemetryReporter = new TelemetryReporter(azureInstrumentationKey);
 
 /**
  * Primitive function to start app insights

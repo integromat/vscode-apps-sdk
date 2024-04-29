@@ -12,8 +12,8 @@ import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
-import { sendTelemetry } from '../extension';
 import { version as ExtensionVersion } from '../Meta';
+import { sendTelemetry } from '../utils/telemetry';
 
 /**
  * Download the code from the API and save it to the local destination

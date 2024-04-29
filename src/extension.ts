@@ -31,12 +31,12 @@ import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
-import { getTelemetryReporter, sendTelemetry, startAppInsights } from './utils/telemetry';
+import { telemetryReporter, sendTelemetry, startAppInsights } from './utils/telemetry';
 import TelemetryReporter from '@vscode/extension-telemetry';
 
 let client: vscodeLanguageclient.LanguageClient;
 
-let telemetryReporter: TelemetryReporter;
+let telemetry: TelemetryReporter;
 
 export async function activate(context: vscode.ExtensionContext) {
 	log('debug', `Extension ${version} starting...`);
@@ -243,10 +243,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	startAppInsights();
 
 	// create telemetry reporter on extension activation
-	telemetryReporter = getTelemetryReporter();
+	telemetry = telemetryReporter;
 
 	// ensure it gets properly disposed. Upon disposal the events will be flushed
-	context.subscriptions.push(telemetryReporter);
+	context.subscriptions.push(telemetry);
 	sendTelemetry('activated', { version: _environment.version });
 
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
@@ -263,7 +263,7 @@ export async function deactivate() {
 	log('info', 'Deactivating the Extension ...');
 	await client.stop();
 
-	telemetryReporter.dispose();
+	telemetry.dispose();
 }
 
 /**

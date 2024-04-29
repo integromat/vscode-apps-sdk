@@ -13,8 +13,8 @@ import { getMakecomappJson, getMakecomappRootDir } from '../local-development/ma
 import { log } from '../output-channel';
 import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
-import { sendTelemetry } from '../extension';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
+import { sendTelemetry } from '../utils/telemetry';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
