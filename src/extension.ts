@@ -20,7 +20,6 @@ import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
-
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 import RpcCommands = require('./commands/RpcCommands');
 import ModuleCommands = require('./commands/ModuleCommands');
