@@ -4,6 +4,11 @@ Change Log
 1.3.53 (pre-release) [2024-04-25]
 --------------------
 
+- Implemented telemetry. Follows official VSC extension guidelines and respects user's VSCode global telemetry preference.
+
+1.3.53 (pre-release) [unreleased]
+--------------------
+
 - Fixed: References `connection`, `altConnection`, `webhook` are correctly deployed to Make
   during remote component creation and during "Deploy to Make".
 - Fixed: New Remote Instant Trigger Module creation works correctly now.
