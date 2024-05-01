@@ -12,6 +12,8 @@ import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
+import { version as ExtensionVersion } from '../Meta';
+import { sendTelemetry } from '../utils/telemetry';
 
 /**
  * Download the code from the API and save it to the local destination
@@ -36,6 +38,9 @@ export async function pullComponentCode({
 	destinationPath: vscode.Uri;
 }): Promise<void> {
 	log('debug', `Pull ${appComponentType} ${remoteComponentName}: code ${codeType}`);
+
+	sendTelemetry('pull_component_code', { appComponentType, remoteComponentName });
+
 	progresDialogReport(`Pulling ${appComponentType} ${remoteComponentName} code ${codeType}`);
 
 	const codeDef = getCodeDef(appComponentType, codeType);
@@ -45,6 +50,8 @@ export async function pullComponentCode({
 		url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
+			'x-imt-vsce-localmode': true,
+			'x-imt-apps-sdk-version': ExtensionVersion,
 		},
 		transformResponse: (res) => res, // Do not parse the response into JSON
 	});
@@ -120,6 +127,8 @@ export async function deployComponentCode({
 		} -> ${appComponentType} ${remoteComponentName} -> code ${codeType}`,
 	);
 
+	sendTelemetry('deploy_component_code', { appComponentType, remoteComponentName });
+
 	const codeDef = getCodeDef(appComponentType, codeType);
 
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
@@ -132,6 +141,8 @@ export async function deployComponentCode({
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 			'Content-Type': codeDef.mimetype,
+			'x-imt-vsce-localmode': true,
+			'x-imt-apps-sdk-version': ExtensionVersion,
 		},
 		data: sourceContent,
 		transformRequest: (data) => data, // Do not expect the `data` to be JSON
@@ -159,6 +170,9 @@ export async function pullComponentCodes(
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 ): Promise<void> {
 	log('debug', `Pull ${appComponentType} ${remoteComponentName}: all codes`);
+
+	sendTelemetry('pull_component_codes', { appComponentType, remoteComponentName });
+
 	// Download codes from API to local files
 	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);

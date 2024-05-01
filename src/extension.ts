@@ -18,7 +18,6 @@ import {
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
-
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
@@ -31,6 +30,7 @@ import ChangesCommands = require('./commands/ChangesCommands');
 import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
+import { telemetryReporter, sendTelemetry, startAppInsights } from './utils/telemetry';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -232,6 +232,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
+	/**
+	 * TELEMETRY & APP INSIGHTS START
+	 */
+	// start azure app insights
+	startAppInsights();
+
+	// ensure it gets properly disposed. Upon disposal the events will be flushed
+	context.subscriptions.push(telemetryReporter);
+	sendTelemetry('activated', { version: _environment.version });
+
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }
 
@@ -245,6 +255,8 @@ export async function deactivate() {
 	}
 	log('info', 'Deactivating the Extension ...');
 	await client.stop();
+
+	telemetryReporter.dispose();
 }
 
 /**

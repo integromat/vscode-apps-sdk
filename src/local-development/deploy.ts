@@ -14,6 +14,7 @@ import { log } from '../output-channel';
 import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
+import { sendTelemetry } from '../utils/telemetry';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -92,6 +93,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					} from ${path.posix.relative(makeappRootdir.path, anyProjectPath.path)}`,
 				);
 
+				sendTelemetry('deploy_component_code', { appComponentType: component.componentType });
+
 				// Find the remote component name
 				const remoteComponentName = componentIdMapping.getExistingRemoteName(
 					component.componentType,
@@ -120,6 +123,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					'debug',
 					`Deployed ${component.componentType} ${component.componentLocalId} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
+
 				// Handle the user "cancel" button press
 				if (canceled) {
 					break;

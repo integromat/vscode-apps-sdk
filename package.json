@@ -896,7 +896,9 @@
 	"dependencies": {
 		"@integromat/iml": "^3.0.0",
 		"@integromat/udt": "^1.2.1",
+		"@vscode/extension-telemetry": "^0.9.6",
 		"adm-zip": "^0.5.12",
+		"applicationinsights": "^2.9.5",
 		"async-file": "^2.0.2",
 		"axios": "^1.6.8",
 		"compressing": "^1.10.0",
