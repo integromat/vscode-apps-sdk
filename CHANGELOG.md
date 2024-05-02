@@ -1,12 +1,12 @@
 Change Log
 ==========
 
-1.3.53 (pre-release) [2024-04-25]
+1.3.54 (pre-release) [2024-05-02]
 --------------------
 
 - Implemented telemetry. Follows official VSC extension guidelines and respects user's VSCode global telemetry preference.
 
-1.3.53 (pre-release) [unreleased]
+1.3.53 (pre-release) [2024-04-25]
 --------------------
 
 - Fixed: References `connection`, `altConnection`, `webhook` are correctly deployed to Make
