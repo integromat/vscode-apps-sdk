@@ -22,14 +22,15 @@ updates:
         update-types:
           - "version-update:semver-major"
     groups:
-      dependencies-minor-update:
-        patterns:
-          - "*"
+      "devDeps minor update":
+        dependency-type: "development"
         update-types:
           - minor
           - patch
-      dependencies-major-update:
-        patterns:
-          - "*"
+      "deps minor update":
+        dependency-type: "production"
         update-types:
-          - major
+          - minor
+          - patch
+      # Others:
+      # Major dependencies are not grouped, because they should be resolved one by one.
