@@ -44,7 +44,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 		throw new Error('Sorry, no associated component code with this file/path found.');
 	}
 
-	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'the deployment');
+	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'the deployment', true);
 	if (!origin) {
 		return;
 	}
