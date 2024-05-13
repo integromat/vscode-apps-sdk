@@ -1,10 +1,14 @@
 import path from 'path';
 import * as vscode from 'vscode';
-import { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { TextDecoder } from 'util';
-import { getMakecomappJson } from './makecomappjson';
+import { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import { addEmptyOriginInMakecomappjson, getMakecomappJson } from './makecomappjson';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { getCurrentWorkspace } from '../services/workspace';
+
+export const specialAnswers = {
+	ADD_ORIGIN: Symbol('Deploy into another app'),
+};
 
 /**
  * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
@@ -29,39 +33,95 @@ export async function askForOrigin(
 	origins: LocalAppOrigin[],
 	makeappRootdir: vscode.Uri,
 	purposeLabel?: string,
+	enableFeatureAddNewOrigin: boolean = false,
 ): Promise<LocalAppOriginWithSecret | undefined> {
-	return includeApiKey(await askForOrigin2(origins, purposeLabel), makeappRootdir);
+	return includeApiKey(
+		await askForOrigin2(origins, makeappRootdir, purposeLabel, enableFeatureAddNewOrigin),
+		makeappRootdir,
+	);
 }
 
-async function askForOrigin2(origins: LocalAppOrigin[], purposeLabel?: string): Promise<LocalAppOrigin | undefined> {
+async function askForOrigin2(
+	origins: LocalAppOrigin[],
+	makeappRootdir: vscode.Uri,
+	purposeLabel?: string,
+	enableFeatureAddNewOrigin: boolean = false,
+): Promise<LocalAppOrigin | undefined> {
 	if (!Array.isArray(origins)) {
 		throw new Error('Origins should be the array.');
 	}
 
-	if (origins.length === 0) {
-		return undefined;
+	if (origins.length === 0 && !enableFeatureAddNewOrigin) {
+		// No existing origin is available and not possible offer the new creation of new one.
+		throw new Error(
+			'No origin exists. At least one is required, therefore cannot continue. Please, define an origin in "makecomapp.json" first.',
+		);
 	}
 
-	if (origins.length === 1) {
+	if (origins.length === 1 && !enableFeatureAddNewOrigin) {
+		// Single existing origin is available and not possible offer the new creation of new one.
+		// Return the existing origin without asking user.
 		return origins[0];
 	}
 
-	const selected = await vscode.window.showQuickPick(
-		origins.map((origin, index) => {
-			const label = origin.label || origin.appId + ' v' + origin.appVersion;
-			const originHost = new URL(origin.baseUrl).host;
-			return <{ origin: LocalAppOrigin } & vscode.QuickPickItem>{
-				label,
-				description: '(' + (origin.label ? `${origin.appId} ` : '') + 'at ' + originHost + ')',
-				picked: index === 0,
-				origin: origin,
-			};
-		}),
-		{
-			ignoreFocusOut: true,
-			title: 'Select the app origin' + (purposeLabel ? ` for ${purposeLabel}` : '') + ':',
-		},
-	);
+	const quickPickOptions = origins.map((origin, index) => {
+		const label = origin.label || origin.appId + ' v' + origin.appVersion;
+		let originHost: string;
+		try {
+			originHost = new URL(origin.baseUrl).host;
+		} catch (err: any) {
+			err.message = `Invalid baseUrl "${origin.baseUrl}" in origin "${
+				origin.label || origin.appId
+			}". Need to be fixed in "makecomapp.json"`;
+			// TODO: Open the file and put cursor to invalid URL.
+			throw err;
+		}
+		return <{ origin: LocalAppOrigin | symbol } & vscode.QuickPickItem>{
+			label,
+			description: '(' + (origin.label ? `${origin.appId} ` : '') + 'at ' + originHost + ')',
+			picked: index === 0,
+			origin: origin,
+		};
+	});
+
+	if (enableFeatureAddNewOrigin) {
+		quickPickOptions.push({
+			label: specialAnswers.ADD_ORIGIN.description!,
+			description: '(add new remote to origins)',
+			origin: specialAnswers.ADD_ORIGIN,
+		});
+	}
+
+	const selected = await vscode.window.showQuickPick(quickPickOptions, {
+		ignoreFocusOut: true,
+		title: 'Select the app origin' + (purposeLabel ? ` for ${purposeLabel}` : '') + ':',
+	});
+
+	if (typeof selected?.origin === 'symbol') {
+		switch (selected.origin) {
+			case specialAnswers.ADD_ORIGIN: {
+				const newOrigin = await addEmptyOriginInMakecomappjson(makeappRootdir);
+
+				await vscode.commands.executeCommand(
+					'vscode.open',
+					vscode.Uri.joinPath(makeappRootdir, MAKECOMAPP_FILENAME),
+				);
+				// Open "makecomapp.json" and highlight the problematic origin
+				await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
+				await vscode.commands.executeCommand('editor.actions.findWithArgs', {
+					searchString: `"${newOrigin.label}"`,
+					isCaseSensitive: true,
+				});
+				await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
+
+				throw new Error(
+					'I have added structure of new origin in "makecomapp.json" file for you. Fill values "-FILL-ME-" and then repeat the required action again.',
+				);
+			}
+			default:
+				throw new Error(`Unknown special answer "${selected.description}"`);
+		}
+	}
 
 	return selected?.origin;
 }
