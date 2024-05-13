@@ -52,10 +52,15 @@ async function askForOrigin2(
 	}
 
 	if (origins.length === 0 && !enableFeatureAddNewOrigin) {
-		return undefined;
+		// No existing origin is available and not possible offer the new creation of new one.
+		throw new Error(
+			'No origin exists. At least one is required, therefore cannot continue. Please, define an origin in "makecomapp.json" first.'
+		);
 	}
 
 	if (origins.length === 1 && !enableFeatureAddNewOrigin) {
+		// Single existing origin is available and not possible offer the new creation of new one.
+		// Return the existing origin without asking user.
 		return origins[0];
 	}
 
