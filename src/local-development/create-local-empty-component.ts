@@ -25,9 +25,9 @@ export async function createLocalEmptyComponent(
 					`Cannot create local ${componentType}, because missing "componentMetadata.moduleType", but it is required for ${componentType} ${preferedComponentLocalId} creation.`,
 				);
 			}
-			if (componentMetadata.moduleType === 'action' && !componentMetadata.actionCrud) {
+			if (componentMetadata.moduleType === 'action' && componentMetadata.actionCrud === undefined) {
 				throw new Error(
-					`Cannot create local ${componentType}, because missing "componentMetadata.actionCrud", but it is required for ${componentType} ${preferedComponentLocalId} creation.`,
+					`Cannot create local ${componentType}, because missing "componentMetadata.actionCrud", but it is required to be defined for ${componentType} ${preferedComponentLocalId} creation.`,
 				);
 			}
 			break;
