@@ -54,7 +54,7 @@ async function askForOrigin2(
 	if (origins.length === 0 && !enableFeatureAddNewOrigin) {
 		// No existing origin is available and not possible offer the new creation of new one.
 		throw new Error(
-			'No origin exists. At least one is required, therefore cannot continue. Please, define an origin in "makecomapp.json" first.'
+			'No origin exists. At least one is required, therefore cannot continue. Please, define an origin in "makecomapp.json" first.',
 		);
 	}
 
@@ -66,7 +66,16 @@ async function askForOrigin2(
 
 	const quickPickOptions = origins.map((origin, index) => {
 		const label = origin.label || origin.appId + ' v' + origin.appVersion;
-		const originHost = new URL(origin.baseUrl).host;
+		let originHost: string;
+		try {
+			originHost = new URL(origin.baseUrl).host;
+		} catch (err: any) {
+			err.message = `Invalid baseUrl "${origin.baseUrl}" in origin "${
+				origin.label || origin.appId
+			}". Need to be fixed in "makecomapp.json"`;
+			// TODO: Open the file and put cursor to invalid URL.
+			throw err;
+		}
 		return <{ origin: LocalAppOrigin | symbol } & vscode.QuickPickItem>{
 			label,
 			description: '(' + (origin.label ? `${origin.appId} ` : '') + 'at ' + originHost + ')',
@@ -91,7 +100,19 @@ async function askForOrigin2(
 	if (typeof selected?.origin === 'symbol') {
 		switch (selected.origin) {
 			case specialAnswers.ADD_ORIGIN: {
-				await addEmptyOriginInMakecomappjson(makeappRootdir);
+				const newOrigin = await addEmptyOriginInMakecomappjson(makeappRootdir);
+
+				await vscode.commands.executeCommand(
+					'vscode.open',
+					vscode.Uri.joinPath(makeappRootdir, MAKECOMAPP_FILENAME),
+				);
+				// Open "makecomapp.json" and highlight the problematic origin
+				await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
+				await vscode.commands.executeCommand('editor.actions.findWithArgs', {
+					searchString: `"${newOrigin.label}"`,
+					isCaseSensitive: true,
+				});
+				await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
 
 				throw new Error(
 					'I have added structure of new origin in "makecomapp.json" file for you. Fill values "-FILL-ME-" and then repeat the required action again.',

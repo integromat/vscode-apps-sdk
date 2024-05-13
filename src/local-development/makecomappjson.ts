@@ -159,19 +159,21 @@ export async function upsertComponentInMakecomappjson(
 	});
 }
 
-export async function addEmptyOriginInMakecomappjson(anyProjectPath: vscode.Uri): Promise<void> {
-	await limitConcurrency(async () => {
+export async function addEmptyOriginInMakecomappjson(anyProjectPath: vscode.Uri): Promise<LocalAppOrigin> {
+	return await limitConcurrency(async () => {
 		const makecomappJson = await getMakecomappJson(anyProjectPath);
-		makecomappJson.origins.push({
-			label: '-FILL-ME- - Example: Testing App',
+		const newOrigin: LocalAppOrigin = {
+			label: '-FILL-ME- - Example: Testing App ' + Math.floor(Math.random() * 1000),
 			appId: '-FILL-ME-',
 			baseUrl: '-FILL-ME- - Example: https://eu1.make.com/api',
 			appVersion: 1,
 			apikeyFile:
 				(makecomappJson.origins[0]?.apikeyFile ?? '../secrets/apikey') +
 				' - OR FILL AND CREATE ANOTHER NEW FILE',
-		});
+		};
+		makecomappJson.origins.push(newOrigin);
 		await updateMakecomappJson(anyProjectPath, makecomappJson);
+		return newOrigin;
 	});
 }
 
