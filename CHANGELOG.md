@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+1.3.55 (pre-release) [2024-05-13]
+--------------------
+
+- Fix: Action modules have the `crud` as optional only now.
+
 1.3.54 (pre-release) [2024-05-02]
 --------------------
 
