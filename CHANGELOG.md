@@ -1,7 +1,13 @@
 Change Log
 ==========
 
-1.3.55 (pre-release) [2024-05-14]
+1.3.56 (pre-release) [2024-05-16]
+--------------------
+
+- Refactored: VSC extension version verification
+- Added: 'imt-vsce-local-mode' header to selected requests
+
+1.3.55 (pre-release) [2024-05-06]
 --------------------
 
 - Fix: Action modules have the `crud` as optional only now.

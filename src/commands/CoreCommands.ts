@@ -29,13 +29,9 @@ export class CoreCommands {
 	currentGroupsProvider: vscode.Disposable | undefined;
 	staticImlProvider: StaticImlProvider;
 	sipInit: boolean;
-	tempListener: null;  // TODO remove, not used
+	tempListener: null; // TODO remove, not used
 
-	constructor(
-		appsProvider: AppsProvider,
-		_authorization: string,
-		_environment: Environment,
-	) {
+	constructor(appsProvider: AppsProvider, _authorization: string, _environment: Environment) {
 		this.appsProvider = appsProvider;
 		this._authorization = _authorization;
 		this._environment = _environment;
@@ -96,7 +92,7 @@ export class CoreCommands {
 			headers: {
 				'Content-Type': 'application/jsonc',
 				Authorization: this._authorization,
-				'x-imt-apps-sdk-version': Meta.version,
+				'imt-apps-sdk-version': Meta.version,
 			},
 			transformRequest: (data: any) => data,
 		};
@@ -704,7 +700,7 @@ export class CoreCommands {
 					url: url,
 					headers: {
 						Authorization: _authorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						'imt-apps-sdk-version': Meta.version,
 					},
 					transformResponse: (res) => res, // Do not parse the response into JSON
 				});
@@ -728,7 +724,6 @@ export class CoreCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.load-source',
 			catchError('Load My Apps file from API', async (item) => {
-
 				// TODO Refactor this to use `pullComponentCode()` function.
 
 				// Compose directory structure
@@ -808,7 +803,7 @@ export class CoreCommands {
 					url: url,
 					headers: {
 						Authorization: _authorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						'imt-apps-sdk-version': Meta.version,
 					},
 					transformResponse: (res) => {
 						return res;

@@ -32,7 +32,7 @@ class AccountCommands {
 						url: uri,
 						headers: {
 							'Authorization': `Token ${apikey}`,
-							'x-imt-apps-sdk-version': Meta.version
+							'imt-apps-sdk-version': Meta.version
 						}
 					})
 				} catch (err) {
