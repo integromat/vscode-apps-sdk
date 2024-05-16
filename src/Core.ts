@@ -5,14 +5,14 @@ import { Environment } from './types/environment.types';
 import { showAndLogError } from './error-handling';
 import { requestMakeApi } from './utils/request-api-make';
 
-export async function rpGet(uri: string, authorization: string, qs?: Record<string, string|string[]|boolean>) {
+export async function rpGet(uri: string, authorization: string, qs?: Record<string, string | string[] | boolean>) {
 	try {
 		return await requestMakeApi({
 			url: uri,
 			headers: {
 				Authorization: authorization,
 			},
-			params: qs
+			params: qs,
 		});
 	} catch (err: any) {
 		showAndLogError(err, 'rpGet');
@@ -25,28 +25,32 @@ export function getApp(item: any): any {
 }
 
 export function isVersionable(item: string) {
-	return !(["connection", "webhook", "connections", "webhooks"].includes(item));
+	return !['connection', 'webhook', 'connections', 'webhooks'].includes(item);
 }
 
 export function contextGuard(context: any) {
 	if (context === undefined || context === null) {
-		vscode.window.showErrorMessage("This command should not be called directly. Please use it from application context menu.");
+		vscode.window.showErrorMessage(
+			'This command should not be called directly. Please use it from application context menu.',
+		);
 		return false;
 	}
 	return true;
 }
 
 export function envGuard(environment: Environment, available: number[]) {
-	if (!(available.includes(environment.version))) {
-		vscode.window.showErrorMessage(`Not available in this version of Integromat.`);
+	if (!available.includes(environment.version)) {
+		vscode.window.showErrorMessage('Not available in this version of Integromat.');
 		return false;
 	}
 	return true;
 }
 
 export function isFilled(subject: string, object: string, thing: any, article?: string, the?: boolean) {
-	if (thing === undefined || thing === "" || thing === null) {
-		vscode.window.showWarningMessage(`${article || "A"} ${subject} for ${the === false ? "" : "the"} ${object} has not been specified.`);
+	if (thing === undefined || thing === '' || thing === null) {
+		vscode.window.showWarningMessage(
+			`${article || 'A'} ${subject} for ${the === false ? '' : 'the'} ${object} has not been specified.`,
+		);
 		return false;
 	}
 	return true;
@@ -94,10 +98,9 @@ export async function patchEntity(authorization: string, body: any, url: string)
 			Authorization: authorization,
 		},
 	});
-
 }
 
-export async function editEntityPlain(authorization: string, value: string|undefined, url: string) {
+export async function editEntityPlain(authorization: string, value: string | undefined, url: string) {
 	return requestMakeApi({
 		method: 'PUT',
 		url: url,
@@ -130,26 +133,33 @@ export async function getAppObject(environment: Environment, authorization: stri
 }
 
 export function getIconHtml(uri: string, color: string, dir: string) {
-	return (fs.readFileSync(path.join(dir, 'static', 'icon.html'), "utf8")).replace("___iconbase", uri).replace("___theme", color);
+	return fs
+		.readFileSync(path.join(dir, 'static', 'icon.html'), 'utf8')
+		.replace('___iconbase', uri)
+		.replace('___theme', color);
 }
 
 export function getRpcTestHtml(name: string, app: string, version: string, dir: string) {
-	return (fs.readFileSync(path.join(dir, 'static', 'rpc-test.html'), "utf8")).replace("___rpcName", name).replace("___appName", app).replace("___version", version);
+	return fs
+		.readFileSync(path.join(dir, 'static', 'rpc-test.html'), 'utf8')
+		.replace('___rpcName', name)
+		.replace('___appName', app)
+		.replace('___version', version);
 }
 
 export function getUdtGeneratorHtml(dir: string) {
-	return (fs.readFileSync(path.join(dir, 'static', 'udt-gen.html'), 'utf-8'));
+	return fs.readFileSync(path.join(dir, 'static', 'udt-gen.html'), 'utf-8');
 }
 
 export function getAppDetailHtml(dir: string) {
-	return (fs.readFileSync(path.join(dir, 'static', 'app-detail.html'), 'utf-8'));
+	return fs.readFileSync(path.join(dir, 'static', 'app-detail.html'), 'utf-8');
 }
 
 export function getModuleDetailHtml(dir: string) {
-	return (fs.readFileSync(path.join(dir, 'static', 'module-detail.html'), 'utf-8'));
+	return fs.readFileSync(path.join(dir, 'static', 'module-detail.html'), 'utf-8');
 }
 
-export function compareCountries(a: { picked: boolean, label: string }, b: { picked: boolean, label: string }) {
+export function compareCountries(a: { picked: boolean; label: string }, b: { picked: boolean; label: string }) {
 	// Sort by PICK
 	if (a.picked && !b.picked) return -1;
 	if (b.picked && !a.picked) return 1;
@@ -162,12 +172,11 @@ export function compareApps(a: { bareLabel: string }, b: { bareLabel: string }) 
 	return a.bareLabel.localeCompare(b.bareLabel);
 }
 
-export function jsonString(text: any, sectionGuard: string|undefined): string {
-
+export function jsonString(text: any, sectionGuard: string | undefined): string {
 	// Section Guard to prevent NULLs in exported filed
 	if (sectionGuard !== undefined) {
 		if (text === null) {
-			if (sectionGuard === "samples") {
+			if (sectionGuard === 'samples') {
 				text = {};
 			} else {
 				text = [];
@@ -213,7 +222,6 @@ export function pathDeterminer(version: number, originalPath: string): string {
 			}
 	}
 }
-
 
 interface SdkApp {
 	name: string;

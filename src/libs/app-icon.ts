@@ -1,11 +1,11 @@
-import * as path from "node:path";
-import { existsSync } from "node:fs";
-import * as download from "image-downloader";
-import * as Meta from "../Meta";
-import { Environment } from "../types/environment.types";
-import Jimp from "jimp";
-import { log } from "../output-channel";
-import { appsIconTempDir } from "../temp-dir";
+import * as path from 'node:path';
+import { existsSync } from 'node:fs';
+import * as download from 'image-downloader';
+import * as Meta from '../Meta';
+import { Environment } from '../types/environment.types';
+import Jimp from 'jimp';
+import { log } from '../output-channel';
+import { appsIconTempDir } from '../temp-dir';
 
 /**
  * Downloads PNG icon from Make API and stores it in local temp dir.
@@ -14,15 +14,19 @@ import { appsIconTempDir } from "../temp-dir";
  *          0 = no icon.
  */
 export async function downloadAndStoreAppIcon(
-	app: IApp, apiBaseUrl: string, apiAuthorization: string, environment: Environment, isAppOpensource: boolean
+	app: IApp,
+	apiBaseUrl: string,
+	apiAuthorization: string,
+	environment: Environment,
+	isAppOpensource: boolean,
 ): Promise<number> {
 	try {
-		let iconVersion = 0;  // TODO Investigate usage of iconVersion. Remove if not needed.
+		let iconVersion = 0; // TODO Investigate usage of iconVersion. Remove if not needed.
 		let iconLocalPath: ReturnType<typeof getIconLocalPath>;
 		do {
 			iconVersion++;
 			iconLocalPath = getIconLocalPath(app.name, app.version, iconVersion, false);
-		} while (existsSync(`${iconLocalPath.dark}.old`));  // TODO Investigate the usage of `.old` files. Remove if not needed.
+		} while (existsSync(`${iconLocalPath.dark}.old`)); // TODO Investigate the usage of `.old` files. Remove if not needed.
 
 		if (!existsSync(iconLocalPath.dark)) {
 			// Download new icon from API to localdir
@@ -30,8 +34,8 @@ export async function downloadAndStoreAppIcon(
 			try {
 				await download.image({
 					headers: {
-						"Authorization": apiAuthorization,
-						'x-imt-apps-sdk-version': Meta.version
+						Authorization: apiAuthorization,
+						'x-imt-apps-sdk-version': Meta.version,
 					},
 					url: (() => {
 						switch (environment.version) {
@@ -42,7 +46,7 @@ export async function downloadAndStoreAppIcon(
 								return `${apiBaseUrl}/app/${app.name}/${app.version}/icon/512`;
 						}
 					})(),
-					dest: iconLocalPath.dark
+					dest: iconLocalPath.dark,
 				});
 			} catch (err: any) {
 				// App icon not saved in Make
@@ -51,7 +55,6 @@ export async function downloadAndStoreAppIcon(
 
 			await generateAlternativeIcons(iconLocalPath, getIconLocalPath(app.name, app.version, iconVersion, true));
 		}
-
 
 		return iconVersion;
 	} catch (err: any) {
@@ -67,8 +70,8 @@ export async function downloadAndStoreAppIcon(
  *  - public light-mode icon (inverted colors + green square in the bottom right corner)
  */
 export async function generateAlternativeIcons(
-	iconLocalPath: { dark: string, light: string },
-	publicIconLocalPath: { dark: string, light: string },
+	iconLocalPath: { dark: string; light: string },
+	publicIconLocalPath: { dark: string; light: string },
 ) {
 	if (!existsSync(iconLocalPath.dark)) {
 		throw new Error(`Icon file ${iconLocalPath.dark} alternatives cannot be generated. File does not exist.`);
@@ -110,9 +113,12 @@ export function getIconLocalPath(appName: string, appVersion: number, iconVersio
 	return {
 		// Default icon. It is the icon for dark theme.
 		// Note: Dark is the default icon data source. All other icons are edited clone of this dark original.
-		dark: path.join(appsIconTempDir, `${appName}.${appVersion}.${iconVersion}${publicIcon ? ".public" : ""}.png`),
+		dark: path.join(appsIconTempDir, `${appName}.${appVersion}.${iconVersion}${publicIcon ? '.public' : ''}.png`),
 		// Icon for light theme.
-		light: path.join(appsIconTempDir, `${appName}.${appVersion}.${iconVersion}.lightmode${publicIcon ? ".public" : ""}.png`)
+		light: path.join(
+			appsIconTempDir,
+			`${appName}.${appVersion}.${iconVersion}.lightmode${publicIcon ? '.public' : ''}.png`,
+		),
 	};
 }
 
@@ -124,7 +130,7 @@ async function generatePublicIcon(sourceImgPath: string, destinationImgPath: str
 	// Load original icon
 	const icon = await Jimp.read(sourceImgPath);
 	// Load the green square
-	const mask = await Jimp.read(path.join(__dirname, '..','..', 'resources', 'icons', 'masks', 'public.png'));
+	const mask = await Jimp.read(path.join(__dirname, '..', '..', 'resources', 'icons', 'masks', 'public.png'));
 	icon.blit(mask, 320, 320);
 	// Save the new file with `.public.png` suffix
 	await icon.writeAsync(destinationImgPath);

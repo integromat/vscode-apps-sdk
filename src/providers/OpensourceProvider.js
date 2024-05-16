@@ -60,7 +60,7 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			apps.sort(Core.compareApps)
 			return apps
 		}
-        /*
+		/*
          * LEVEL 1 - GROUP
          */
 		else if (element.level === 0) {
@@ -74,7 +74,7 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				new Group(`docs`, "Docs", element)
 			]
 		}
-        /*
+		/*
          * LEVEL 2 - ITEM OR CODE
          */
 		else if (element.level === 1) {
