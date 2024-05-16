@@ -7,6 +7,10 @@ Change Log
 - Fix: Action modules have the `crud` as optional only now.
 - Added the feature for adding new origin (adds the un-filled template into `makecomapp.json`).
 
+### Known bugs
+
+- Common files are not committed to GIT. In consequences, if an app is cloned from GIT, then the local app is broken, because common files are expected, but do not exist. The extension cannot handle this issue and the Pull and Deploy actions are not working in this case.
+
 1.3.54 (pre-release) [2024-05-02]
 --------------------
 
