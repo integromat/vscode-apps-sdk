@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-1.3.56 (pre-release) [2024-05-16]
+1.3.56 (pre-release) [unreleased]
 --------------------
 
 - Refactored: VSC extension version verification
