@@ -11,8 +11,8 @@ class AccountCommands {
 	static async register(_configuration) {
 
 		/**
-         * Login command
-         */
+		 * Login command
+		 */
 		vscode.commands.registerCommand('apps-sdk.login', async () => {
 
 			// Load environment from configuration

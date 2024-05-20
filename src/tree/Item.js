@@ -6,9 +6,6 @@ class Item extends EnhancedTreeItem {
 	constructor(id, label, parent, supertype, type, isPublic, isApproved, changes, description, crud) {
 		let temp = label
 		label = temp + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "")
-		if (supertype === "module") {
-			/* TODO is this needed? */
-		}
 		if (supertype === "connection") {
 			label += ` (${type})`
 		}
