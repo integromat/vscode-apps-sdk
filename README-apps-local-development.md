@@ -128,7 +128,7 @@ You can create new app component (module, webhook, etc.) in two ways:
 
 - __or__ Create component online and then pull to local by:
 
-    1. Create a new app component online (via the online part of VS Code Extension or via "My Apps" in the Make web interface).
+    1. Create a new app component online (via the online part of VS Code Extension or via "Custom Apps" in the Make web interface).
 
     2. Right-click over the `makecomapps.json` and click `Pull New Components from Make`.
 

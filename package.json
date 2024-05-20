@@ -455,7 +455,7 @@
 			"integromat-apps": [
 				{
 					"id": "apps",
-					"name": "My apps"
+					"name": "Custom apps"
 				},
 				{
 					"id": "opensource",
