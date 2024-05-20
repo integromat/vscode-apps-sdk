@@ -185,4 +185,4 @@ module.exports = {
 			"description": "9"
 		}
 	]
-}
+};

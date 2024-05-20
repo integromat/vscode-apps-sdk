@@ -60,9 +60,9 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			apps.sort(Core.compareApps)
 			return apps
 		}
-        /*
-         * LEVEL 1 - GROUP
-         */
+		/*
+		 * LEVEL 1 - GROUP
+		 */
 		else if (element.level === 0) {
 			return [
 				new Group(`general`, "General", element),
@@ -74,9 +74,9 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				new Group(`docs`, "Docs", element)
 			]
 		}
-        /*
-         * LEVEL 2 - ITEM OR CODE
-         */
+		/*
+		 * LEVEL 2 - ITEM OR CODE
+		 */
 		else if (element.level === 1) {
 			// General
 			if (element.id.includes("general")) {
