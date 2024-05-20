@@ -1,9 +1,9 @@
 import { setTimeout } from 'node:timers/promises';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import throat from 'throat';
 import { progresDialogReport } from './vscode-progress-dialog';
 import * as Meta from '../Meta';
 import { errorToString } from '../error-handling';
-import throat from 'throat';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 const limitConcurrently = throat(2);
 
