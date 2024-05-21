@@ -78,7 +78,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 	for (const [codeType, codeDef] of componentCodesDef) {
 		if (codeType === 'common' && !includeCommonFiles) {
 			// Ignore the common data file, because required to ignore
-			componentCodeMetadata[codeType] === null;
+			componentCodeMetadata[codeType] = null;
 		} else {
 			// Local file path (Relative to app rootdir)
 			const codeFilename = await generateDefaultLocalFilename(
