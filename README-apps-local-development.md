@@ -193,5 +193,3 @@ The local development feature is fully compatible with GIT. Use `git init` at an
 During the app clone to the local workspace, the `.gitignore` file is created automatically with the following files to exclude from GIT:
 
 - `.secret` directory, because contains the private API key(s).
-- `common.js` general code file, because it can contain some secrets or other private data.
-- `*.common.js` connection code file, because it can contain some secrets or other private data.
