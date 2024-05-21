@@ -174,8 +174,12 @@ export async function pullComponentCodes(
 	sendTelemetry('pull_component_codes', { appComponentType, remoteComponentName });
 
 	// Download codes from API to local files
-	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
-		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
+	for (const [codeType, codeFilePath] of entries(componentMetadata.codeFiles)) {
+		if (codeFilePath === null) {
+			// Skip the ignored component code
+			continue;
+		}
+		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeFilePath);
 		await pullComponentCode({
 			appComponentType,
 			remoteComponentName,
