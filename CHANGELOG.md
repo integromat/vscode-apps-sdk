@@ -1,6 +1,8 @@
 Change Log
 ==========
 
+- Improved deployment error messages.
+
 1.3.55 (pre-release) [2024-05-14]
 --------------------
 
