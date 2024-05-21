@@ -29,13 +29,9 @@ export class CoreCommands {
 	currentGroupsProvider: vscode.Disposable | undefined;
 	staticImlProvider: StaticImlProvider;
 	sipInit: boolean;
-	tempListener: null;  // TODO remove, not used
+	tempListener: null; // TODO remove, not used
 
-	constructor(
-		appsProvider: AppsProvider,
-		_authorization: string,
-		_environment: Environment,
-	) {
+	constructor(appsProvider: AppsProvider, _authorization: string, _environment: Environment) {
 		this.appsProvider = appsProvider;
 		this._authorization = _authorization;
 		this._environment = _environment;
@@ -727,8 +723,7 @@ export class CoreCommands {
 		 */
 		vscode.commands.registerCommand(
 			'apps-sdk.load-source',
-			catchError('Load My Apps file from API', async (item) => {
-
+			catchError('Load Custom Apps file from API', async (item) => {
 				// TODO Refactor this to use `pullComponentCode()` function.
 
 				// Compose directory structure
