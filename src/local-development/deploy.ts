@@ -178,7 +178,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			// Display errors
 			if (errors.length > 0) {
 				// Log errors
-				log('error', `Deployment finished with ${errors.length} errors:`)
+				log('error', `Deployment finished with ${errors.length} errors:`);
 				for (const err of errors) {
 					log('error', ' - ' + deploymentErrorToString(err, false));
 				}
@@ -198,8 +198,10 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 							? `\n\n ... and ${errors.length - MAX_DISPLAYED_ERRORS} other errors.`
 							: ''),
 				});
-			} else if (codesToDeploy.length >= 2) {
-				vscode.window.showInformationMessage(`Successfully deployed ${codesToDeploy.length} codes`);
+			} else if (codesToDeploy.length > 0) {
+				vscode.window.showInformationMessage(
+					`Successfully deployed ${codesToDeploy.length} ${codesToDeploy.length === 1 ? 'code' : 'codes'}.`,
+				);
 			}
 		},
 	);
