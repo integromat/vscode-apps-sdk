@@ -75,7 +75,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				'COMMON DATA INCLUDE/EXCLUDE:' +
 				'\n\n' +
 				'Common data could contain sensitive data or secrets. It depends on your app design. ' +
-				'We recommended to exclude common data files from the app local clone. ' +
+				'We recommend that you exclude common data files from the local clone of the application. ' +
 				'If you are decide to include it, be aware that these common data files will be also the part of your GIT commits.',
 		},
 		{ title: 'Exclude (more safe)' },
