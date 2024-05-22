@@ -14,7 +14,7 @@ export class MakecomappJsonFile {
 	private constructor(public content: MakecomappJson, private anyProjectPath: vscode.Uri) {}
 
 	/**
-	 * Creates new class instance with the fresly loaded file content.
+	 * Creates new class instance with the freshly loaded file content.
 	 * @param anyProjectPath
 	 * @returns New class instance
 	 */
