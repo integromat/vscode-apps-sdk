@@ -80,7 +80,7 @@ export async function pullAllComponents(
 	}
 
 	// Pull app components from remote
-	// Note: All remote components have already existing local counterparties because of previously called `alignComponentsMapping()`.
+	// Note: All remote components already have local counterparts due to previously called `alignComponentsMapping()`.
 	for (const componentType of getAppComponentTypes()) {
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
