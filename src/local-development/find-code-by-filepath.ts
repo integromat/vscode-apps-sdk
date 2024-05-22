@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
-import { AppComponentType } from '../types/app-component-type.types';
-import {
-
-	ComponentCodeFilesMetadata,
-	MakecomappJson,
-} from '../local-development/types/makecomapp.types';
-import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { CodePath } from './types/code-path.types';
+import { AppComponentType } from '../types/app-component-type.types';
+import { ComponentCodeFilesMetadata, MakecomappJson } from '../local-development/types/makecomapp.types';
+import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { entries, keys } from '../utils/typed-object';
 
 /**
@@ -44,6 +40,10 @@ export function findCodesByFilePath(
 
 	// Try to find in app's direct configuration codes
 	for (const [codeType, codeFilePath] of entries(makecomappJson.generalCodeFiles)) {
+		if (codeFilePath === null) {
+			// Skip ignored component codes
+			continue;
+		}
 		const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 		const codeExactMatch = codeFilePath === relativePath;
 		if (codeIsInSubdir || codeExactMatch) {
@@ -65,9 +65,12 @@ export function findCodesByFilePath(
 	const appComponentsMetadata = makecomappJson.components;
 	for (const [componentType, appComponents] of entries(appComponentsMetadata)) {
 		for (const componentLocalId of keys(appComponents)) {
-			const codeFilesMetadata: ComponentCodeFilesMetadata =
-				appComponents[componentLocalId]?.codeFiles ?? {};
+			const codeFilesMetadata: ComponentCodeFilesMetadata = appComponents[componentLocalId]?.codeFiles ?? {};
 			for (const [codeType, codeFilePath] of entries(codeFilesMetadata)) {
+				if (codeFilePath === null) {
+					// Skip ignored component codes
+					continue;
+				}
 				const codeIsInSubdir = codeFilePath.startsWith(relativePath) || relativePath === '/';
 				const codeExactMatch = codeFilePath === relativePath;
 				if (codeIsInSubdir || codeExactMatch) {
@@ -86,11 +89,13 @@ export function findCodesByFilePath(
 			}
 		}
 	}
-	return ret
-		// Sort codes to correct order to avoid break some dependency/relation
-		.sort((codePath1, codePath2) => {
-			return orderToDeploy[codePath1.componentType] - orderToDeploy[codePath2.componentType];
-		});
+	return (
+		ret
+			// Sort codes to correct order to avoid break some dependency/relation
+			.sort((codePath1, codePath2) => {
+				return orderToDeploy[codePath1.componentType] - orderToDeploy[codePath2.componentType];
+			})
+	);
 }
 
 const orderToDeploy: Record<AppComponentType | 'app', number> = {

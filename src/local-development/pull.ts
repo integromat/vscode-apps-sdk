@@ -5,13 +5,14 @@ import {
 	ComponentCodeFilesMetadata,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { getMakecomappJson, getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
+import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponentsSummary } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { askForProjectOrigin } from './ask-origin';
 import { alignComponentsMapping } from './align-components-mapping';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 import { generalCodesDefinition, getAppComponentTypes } from '../services/component-code-def';
 import { AppComponentType } from '../types/app-component-type.types';
 import { catchError } from '../error-handling';
@@ -58,11 +59,15 @@ export async function pullAllComponents(
 		newRemoteComponentResolution,
 	);
 	// Load fresh `makecomapp.json` file (because `alignComponentMapping()` changed it)
-	const makecomappJson = await getMakecomappJson(localAppRootdir);
+	const makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
 
 	// Pull app general codes
 	for (const [codeType] of entries(generalCodesDefinition)) {
-		const codeLocalRelativePath = makecomappJson.generalCodeFiles[codeType];
+		const codeLocalRelativePath = makecomappJsonFile.content.generalCodeFiles[codeType];
+		if (codeLocalRelativePath === null) {
+			// Skip ignored component codes.
+			continue;
+		}
 		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
 		// Pull code from API to local file
 		await pullComponentCode({
@@ -75,9 +80,9 @@ export async function pullAllComponents(
 	}
 
 	// Pull app components from remote
-	// Note: All remote components have already existing local counterparties because of previously called `alignComponentsMapping()`.
+	// Note: All remote components already have local counterparts due to previously called `alignComponentsMapping()`.
 	for (const componentType of getAppComponentTypes()) {
-		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
 		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
 			remoteAppComponentsSummary[componentType],
 		)) {
@@ -86,7 +91,7 @@ export async function pullAllComponents(
 				continue;
 				// Because the mapping defines this remote component as "ignore".
 			}
-			const existingComponentMetadata = makecomappJson.components[componentType][componentLocalId];
+			const existingComponentMetadata = makecomappJsonFile.content.components[componentType][componentLocalId];
 			if (!existingComponentMetadata) {
 				throw new Error(
 					`Local ${componentType} "${componentLocalId}" expected, but not found in 'makecomapp.json'. Unexpected Error.`,
@@ -108,6 +113,7 @@ export async function pullAllComponents(
 				updatedComponentMedatada,
 				localAppRootdir,
 				origin,
+				makecomappJsonFile.isCommonDataIncluded,
 			);
 		}
 	}
@@ -127,8 +133,10 @@ async function pullComponent(
 	updatedComponentMetadata: AppComponentMetadata | AppComponentMetadataWithCodeFiles,
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
+	includeCommonFiles: boolean,
 ) {
-	// Generate code files paths if local component does not exist yet
+	// Generate code files paths if local component does not exist yet.
+	//   (In this case the `updatedComponentMetadata` param value is being provided without `codeFiles`.)
 	const existingLocalCodeFiles: ComponentCodeFilesMetadata | undefined = (
 		updatedComponentMetadata as AppComponentMetadataWithCodeFiles
 	).codeFiles;
@@ -141,6 +149,7 @@ async function pullComponent(
 				componentLocalId,
 				updatedComponentMetadata,
 				localAppRootdir,
+				includeCommonFiles,
 			)),
 	};
 
