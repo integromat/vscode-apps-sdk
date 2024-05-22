@@ -91,11 +91,21 @@ export interface AppComponentMetadata {
 	webhook?: string | null;
 }
 
-/** General Code Type => Code Local File Path */
-export type GeneralCodeFilesMetadata = Record<GeneralCodeType, CodeFilePath>;
+/**
+ * General Code Type => Code Local File Path.
+ *
+ *  If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).
+ *  The `null` used primarly for common data in case a developer decided to not include common data in local project.
+ */
+export type GeneralCodeFilesMetadata = Record<GeneralCodeType, CodeFilePath | null>;
 
-/** Component's Code Type => Code Local File Path */
-export type ComponentCodeFilesMetadata = Partial<Record<ComponentCodeType, CodeFilePath>>;
+/**
+ * Component's Code Type => Code Local File Path
+ *
+ *  If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).
+ *  The `null` used primarly for common data in case a developer decided to not include common data in local project.
+ */
+export type ComponentCodeFilesMetadata = Partial<Record<ComponentCodeType, CodeFilePath | null>>;
 
 /**
  * Relative filepath in local filesystem.

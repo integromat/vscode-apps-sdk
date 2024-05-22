@@ -64,6 +64,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 	componentLocalId: string,
 	componentMetadata: AppComponentMetadata,
 	localAppRootdir: vscode.Uri,
+	includeCommonFiles: boolean,
 ): Promise<ComponentCodeFilesMetadata> {
 	const componentDir = await reserveComponentCodeFilesDirectory(componentType, componentLocalId, localAppRootdir);
 
@@ -75,16 +76,21 @@ export async function generateComponentDefaultCodeFilesPaths(
 	const componentCodeMetadata: ComponentCodeFilesMetadata = {};
 	// Process all codes
 	for (const [codeType, codeDef] of componentCodesDef) {
-		// Local file path (Relative to app rootdir)
-		const codeFilename = await generateDefaultLocalFilename(
-			codeDef,
-			codeType,
-			componentType,
-			componentLocalId,
-			componentMetadata,
-		);
-		componentCodeMetadata[codeType] =
-			path.posix.relative(localAppRootdir.path, componentDir.path) + '/' + codeFilename;
+		if (codeType === 'common' && !includeCommonFiles) {
+			// common data files were selected to ignore
+			componentCodeMetadata[codeType] = null;
+		} else {
+			// Local file path (Relative to app rootdir)
+			const codeFilename = await generateDefaultLocalFilename(
+				codeDef,
+				codeType,
+				componentType,
+				componentLocalId,
+				componentMetadata,
+			);
+			componentCodeMetadata[codeType] =
+				path.posix.relative(localAppRootdir.path, componentDir.path) + '/' + codeFilename;
+		}
 	}
 	return componentCodeMetadata;
 }
