@@ -6,7 +6,7 @@ const Validator = require('../Validator');
 const QuickPick = require('../QuickPick');
 const Enum = require('../Enum');
 const Meta = require('../Meta');
-const Felicia = require('../Felicia');
+const { Felicia } = require('../Felicia');
 
 const kebabCase = require('lodash/kebabCase');
 const pick = require('lodash/pick');
