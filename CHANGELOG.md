@@ -1,17 +1,28 @@
 Change Log
 ==========
 
-1.3.56 (pre-release) [unreleased]
+1.3.xx (pre-release) [unreleased]
 --------------------
 
 - Refactored: VSC extension version verification
 - Added: 'imt-vsce-local-mode' header to selected requests
+
+1.3.56 (pre-release) [2024-05-23]
+--------------------
+
+- During the app clone a user chooses to exclude or include the app's common data. If common data are included, they are also committed to GIT.
+- Common data files are not being added to `.gitignore` anymore.
+- Improved deployment error messages.
 
 1.3.55 (pre-release) [2024-05-06]
 --------------------
 
 - Fix: Action modules have the `crud` as optional only now.
 - Added the feature for adding new origin (adds the un-filled template into `makecomapp.json`).
+
+### Known bugs
+
+- Common files are not committed to GIT. In consequences, if an app is cloned from GIT, then the local app is broken, because common files are expected, but do not exist. The extension cannot handle this issue and the Pull and Deploy actions are not working in this case.
 
 1.3.54 (pre-release) [2024-05-02]
 --------------------

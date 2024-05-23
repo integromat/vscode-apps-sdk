@@ -62,13 +62,35 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	const localAppRootdir = await askForAppDirToClone();
 	if (!localAppRootdir) {
+		// Cancelled by user
 		return;
 	}
 
+	// Ask to "Clone common data? Yes/No"
+	const commonDataAnswer = await vscode.window.showInformationMessage(
+		'Include also all common data?',
+		{
+			modal: true,
+			detail:
+				'COMMON DATA INCLUDE/EXCLUDE:' +
+				'\n\n' +
+				'Common data could contain sensitive data or secrets. It depends on your app design. ' +
+				'We recommend that you exclude common data files from the local clone of the application. ' +
+				'If you decide to include it, be aware that these common data files will also be part of your GIT commits.',
+		},
+		{ title: 'Exclude (more secure)' },
+		{ title: 'Include (for advanced users only)' },
+	);
+	if (!commonDataAnswer) {
+		// Cancelled by user
+		return;
+	}
+
+	const includeCommonData = commonDataAnswer.title.startsWith('Include');
+
 	const environment = getCurrentEnvironment();
 
-	// makecomapp.json
-	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME);
+	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME); // TODO rename to `makecomappJsonPath`
 	// If manifest exists, cancel this task.
 	if (existsSync(makeappJsonPath.fsPath)) {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
@@ -113,10 +135,10 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		origins: [originWithoutApiKey],
 	};
 
-	// Save .gitignore: exclude secrets dir, common data.
+	// Save .gitignore: exclude secrets dir.
 	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
 	const secretsDirRelativeToWorkspaceRoot = path.posix.relative(workspaceRoot.path, apikeyDir.path);
-	const gitignoreLines: string[] = ['common.json', '*.common.json', secretsDirRelativeToWorkspaceRoot];
+	const gitignoreLines: string[] = [secretsDirRelativeToWorkspaceRoot];
 	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
 	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
 	// Create apikey file
@@ -135,7 +157,8 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				undefined,
 			);
 			// Add to makecomapp.json
-			makecomappJson.generalCodeFiles[codeType] = codeLocalRelativePath;
+			makecomappJson.generalCodeFiles[codeType] =
+				codeType === 'common' && !includeCommonData ? null : codeLocalRelativePath;
 		}
 		// #endregion Process all app's general codes
 

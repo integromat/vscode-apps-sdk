@@ -70,17 +70,12 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			progresDialogReport('Deploying');
 
 			/** Deployments errors */
-			const errors: {
-				errorMessage: string;
-				componentType: AppComponentType | AppGeneralType;
-				componentLocalId: string;
-				codeType?: CodeType;
-			}[] = [];
+			const errors: DeploymentError[] = [];
 
 			const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
 
 			// Deploy codes one-by-one
-			for (const component of codesToDeploy) {
+			for (const componentCode of codesToDeploy) {
 				// Update the progress bar
 				progress.report({
 					increment: 100 / codesToDeploy.length,
@@ -88,17 +83,17 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 				log(
 					'debug',
-					`Deploying ${component.componentType} ${component.componentLocalId} ${
-						component.codeType
+					`Deploying ${componentCode.componentType} ${componentCode.componentLocalId} ${
+						componentCode.codeType
 					} from ${path.posix.relative(makeappRootdir.path, anyProjectPath.path)}`,
 				);
 
-				sendTelemetry('deploy_component_code', { appComponentType: component.componentType });
+				sendTelemetry('deploy_component_code', { appComponentType: componentCode.componentType });
 
 				// Find the remote component name
 				const remoteComponentName = componentIdMapping.getExistingRemoteName(
-					component.componentType,
-					component.componentLocalId,
+					componentCode.componentType,
+					componentCode.componentLocalId,
 				);
 				if (remoteComponentName === null) {
 					// Mapping explicitely says "ignore this local component"
@@ -108,20 +103,20 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				// Upload via API
 				try {
 					await deployComponentCode({
-						appComponentType: component.componentType,
+						appComponentType: componentCode.componentType,
 						remoteComponentName: remoteComponentName,
-						codeType: component.codeType,
+						codeType: componentCode.codeType,
 						origin,
-						sourcePath: component.localFile,
+						sourcePath: componentCode.localFile,
 					});
 				} catch (e: any) {
 					log('error', e.message);
-					errors.push({ errorMessage: e.message, ...component });
+					errors.push({ errorMessage: e.message, ...componentCode });
 				}
 				// Log 'done' to console
 				log(
 					'debug',
-					`Deployed ${component.componentType} ${component.componentLocalId} ${component.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
+					`Deployed ${componentCode.componentType} ${componentCode.componentLocalId} ${componentCode.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 				);
 
 				// Handle the user "cancel" button press
@@ -182,20 +177,51 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 			// Display errors
 			if (errors.length > 0) {
+				// Log errors
+				log('error', `Deployment finished with ${errors.length} errors:`);
+				for (const err of errors) {
+					log('error', ' - ' + deploymentErrorToString(err, false));
+				}
+
+				// Display the modal error dialog
+				const MAX_DISPLAYED_ERRORS = 4;
 				showErrorDialog(`Failed ${errors.length} of ${codesToDeploy.length} codes deployments`, {
 					modal: true,
-					detail: errors
-						.map(
-							(err) =>
-								`** ${err.componentType} "${err.componentLocalId}" - ${
-									err.codeType ? ' - ' + err.codeType : ''
-								} **\n${err.errorMessage}`,
-						)
-						.join('\n\n'),
+					detail:
+						// Display first X errors
+						errors
+							.filter((_value, index) => index < MAX_DISPLAYED_ERRORS)
+							.map((deploymentError) => deploymentErrorToString(deploymentError, true))
+							.join('\n\n') +
+						// + info "and Y other errors"
+						(errors.length > MAX_DISPLAYED_ERRORS
+							? `\n\n ... and ${errors.length - MAX_DISPLAYED_ERRORS} other errors.`
+							: ''),
 				});
-			} else if (codesToDeploy.length >= 2) {
-				vscode.window.showInformationMessage(`Successfully deployed ${codesToDeploy.length} codes`);
+			} else if (codesToDeploy.length > 0) {
+				vscode.window.showInformationMessage(
+					`Successfully deployed ${codesToDeploy.length} ${codesToDeploy.length === 1 ? 'code' : 'codes'}.`,
+				);
 			}
 		},
 	);
+}
+
+function deploymentErrorToString(err: DeploymentError, multiline: boolean): string {
+	const header =
+		(err.componentType === 'app' ? 'Generic' : err.componentType + '"' + err.componentLocalId + '"') +
+		`: ${err.codeType ? ' - ' + err.codeType : ''}`;
+
+	if (multiline) {
+		return `** ${header} **\n${err.errorMessage}`;
+	} else {
+		return `Error in ${header}: ${err.errorMessage}`;
+	}
+}
+
+interface DeploymentError {
+	errorMessage: string;
+	componentType: AppComponentType | AppGeneralType;
+	componentLocalId: string;
+	codeType?: CodeType;
 }

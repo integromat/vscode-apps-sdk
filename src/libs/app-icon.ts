@@ -1,9 +1,9 @@
 import * as path from 'node:path';
 import { existsSync } from 'node:fs';
 import * as download from 'image-downloader';
+import Jimp from 'jimp';
 import * as Meta from '../Meta';
 import { Environment } from '../types/environment.types';
-import Jimp from 'jimp';
 import { log } from '../output-channel';
 import { appsIconTempDir } from '../temp-dir';
 
@@ -18,7 +18,7 @@ export async function downloadAndStoreAppIcon(
 	apiBaseUrl: string,
 	apiAuthorization: string,
 	environment: Environment,
-	isAppOpensource: boolean,
+	_isAppOpensource: boolean,
 ): Promise<number> {
 	try {
 		let iconVersion = 0; // TODO Investigate usage of iconVersion. Remove if not needed.

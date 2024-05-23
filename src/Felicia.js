@@ -6,12 +6,6 @@ const camelCase = require('lodash/camelCase');
 // Not a Formula, not a Forman, this is just a Felicia (from latin/italian "felice" = happy)
 // It will make you happy as it generates VSCode Forms for you based on Integromat Descriptive Syntax
 
-class ValidationError extends Error {
-    constructor(message) {
-        super(message);
-    }
-}
-
 const types = {
     select: async(field, context) => {
 
@@ -69,7 +63,7 @@ const types = {
         });
 
         if (field.required === true && (value === null || value === '')) {
-            throw new ValidationError(`Field ${field.name} is required.`);
+            throw new Error(`Field ${field.name} is required.`);
         }
 
         return value;
@@ -101,14 +95,22 @@ const types = {
         });
 
         if (field.required === true && (value === undefined || value === null || value === '')) {
-            throw new ValidationError(`Field ${field.name} is required.`);
+            throw new Error(`Field ${field.name} is required.`);
         }
 
         return value;
     }
 }
 
-module.exports = async(config) => {
+/**
+ * Generates VSCode Forms for you based on Integromat Descriptive Syntax.
+ *
+ * Not a Formula, not a Forman, this is just a Felicia (from latin/italian "felice" = happy).
+ *
+ * Implemented in https://github.com/integromat/vscode-apps-sdk/commit/897b351e7bf8433211d7f4de5c04a0e69042c93a
+ * by Domink Kadera on Jun 11, 2020.
+ */
+async function Felicia(config) {
     try {
         const data = {};
         for (const field of config) {
@@ -125,3 +127,5 @@ module.exports = async(config) => {
         return undefined;
     }
 }
+
+module.exports = { Felicia };

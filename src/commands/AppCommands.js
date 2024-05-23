@@ -6,7 +6,7 @@ const Validator = require('../Validator');
 const QuickPick = require('../QuickPick');
 const Enum = require('../Enum');
 const Meta = require('../Meta');
-const Felicia = require('../Felicia');
+const { Felicia } = require('../Felicia');
 
 const kebabCase = require('lodash/kebabCase');
 const pick = require('lodash/pick');
@@ -354,7 +354,7 @@ class AppCommands {
 						method: 'DELETE',
 						url: uri,
 						headers: {
-							'Authorization': _authorization,
+							Authorization: _authorization,
 							'imt-apps-sdk-version': Meta.version
 						},
 					});
@@ -430,7 +430,7 @@ class AppCommands {
 						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
 						method: 'PUT',
 						headers: {
-							'Authorization': _authorization,
+							Authorization: _authorization,
 							'imt-apps-sdk-version': Meta.version,
 							'Content-Type': 'image/png',
 						}
@@ -905,13 +905,15 @@ class AppCommands {
 					try {
 						await download.image({
 							headers: {
-								'Authorization': _authorization,
+								Authorization: _authorization,
 								'imt-apps-sdk-version': Meta.version
 							},
 							url: `${urn}/icon/512`,
 							dest: path.join(archive, 'assets', 'icon.png')
 						});
-					} catch (err) { }
+					} catch (err) {
+						/* TODO throw error message */
+					}
 
 					/**
 					 * 10 - Note the format
@@ -1351,7 +1353,7 @@ class AppCommands {
 					const requestConfig = {
 						url: uri,
 						headers: {
-							'Authorization': _authorization,
+							Authorization: _authorization,
 							'imt-apps-sdk-version': Meta.version,
 							'content-type': r.type
 						},

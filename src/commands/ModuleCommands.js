@@ -7,7 +7,7 @@ const Core = require('../Core')
 const Validator = require('../Validator')
 const Enum = require('../Enum')
 const QuickPick = require('../QuickPick')
-const Felicia = require('../Felicia');
+const { Felicia } = require('../Felicia');
 const { showError } = require('../error-handling');
 const { translateModuleTypeId } = require('../services/module-types-naming');
 

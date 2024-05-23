@@ -723,7 +723,7 @@ export class CoreCommands {
 		 */
 		vscode.commands.registerCommand(
 			'apps-sdk.load-source',
-			catchError('Load My Apps file from API', async (item) => {
+			catchError('Load Custom Apps file from API', async (item) => {
 				// TODO Refactor this to use `pullComponentCode()` function.
 
 				// Compose directory structure

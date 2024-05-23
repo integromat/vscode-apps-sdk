@@ -52,7 +52,7 @@ class EnvironmentCommands {
 				await axios({
 					url: uri,
 					headers: {
-						'Authorization': `Token ${apikey}`,
+						Authorization: `Token ${apikey}`,
 						'imt-apps-sdk-version': Meta.version,
 					}
 				})

@@ -3,6 +3,7 @@ import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types
 import { generateAndReserveComponentLocalId, upsertComponentInMakecomappjson } from './makecomappjson';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
+import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 import { entries } from '../utils/typed-object';
 import { AppComponentType } from '../types/app-component-type.types';
 
@@ -54,6 +55,8 @@ export async function createLocalEmptyComponent(
 		makeappRootdir,
 	);
 
+	const includeCommonData = (await MakecomappJsonFile.fromLocalProject(makeappRootdir)).isCommonDataIncluded;
+
 	const componentMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
 		...componentMetadata,
 		// Generate Local file paths (Relative to app rootdir) + store metadata
@@ -62,12 +65,15 @@ export async function createLocalEmptyComponent(
 			newComponentLocalId,
 			componentMetadata,
 			makeappRootdir,
+			includeCommonData,
 		),
 	};
 	// Write empty files (empty JSON objects or arrays)
 	for (const [codeType, codeFilePath] of entries(componentMetadataWithCodeFiles.codeFiles)) {
-		const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
-		await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
+		if (codeFilePath) {
+			const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
+			await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
+		} // else skip ignored cide files (mostly common data files are being ignored).
 	}
 
 	// Write changes to makecomapp.json file

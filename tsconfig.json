@@ -4,7 +4,22 @@
 		// https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
 		"module": "node16",
 		"target": "ES2022",
-		"lib": ["ES2022"],
+		"lib": [
+			"ES2022",
+
+			// `DOM` is the workaround for error:
+			//
+			// ```
+			// node_modules/@opentelemetry/otlp-exporter-base/build/src/platform/browser/util.d.ts(10,84): error TS2304: Cannot find name 'BlobPropertyBag'.
+			// error TS2304: Cannot find name 'BlobPropertyBag'.
+			// ```
+			//
+			// since `applicationinsights` lib version `3.0.1`.
+			//
+			// See: https://github.com/open-telemetry/opentelemetry-js/issues/3580
+			// Created: 2024-05-20
+			"DOM"
+		],
 
 		"outDir": "out",
 		"sourceMap": true,

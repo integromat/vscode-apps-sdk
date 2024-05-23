@@ -131,6 +131,16 @@ export async function deployComponentCode({
 
 	const codeDef = getCodeDef(appComponentType, codeType);
 
+	try {
+		await vscode.workspace.fs.stat(sourcePath);
+	} catch (e: any) {
+		if (e.code === 'FileNotFound') {
+			throw new Error('Skipped code deployment, because local file is missing.');
+		} else {
+			// Unknown error
+			throw e;
+		}
+	}
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
@@ -174,8 +184,12 @@ export async function pullComponentCodes(
 	sendTelemetry('pull_component_codes', { appComponentType, remoteComponentName });
 
 	// Download codes from API to local files
-	for (const [codeType, codeLocalRelativePath] of entries(componentMetadata.codeFiles)) {
-		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeLocalRelativePath);
+	for (const [codeType, codeFilePath] of entries(componentMetadata.codeFiles)) {
+		if (codeFilePath === null) {
+			// Skip the ignored component code
+			continue;
+		}
+		const codeLocalAbsolutePath = vscode.Uri.joinPath(localAppRootdir, codeFilePath);
 		await pullComponentCode({
 			appComponentType,
 			remoteComponentName,
