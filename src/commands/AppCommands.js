@@ -1401,7 +1401,7 @@ class AppCommands {
 
 			// Form Data
 
-			const defaultName = `${context.name}-clone`;
+			const defaultName = `${context.name.substring(0, 14)}-clone`;
 
 			let form
 			if (_admin === true) {
