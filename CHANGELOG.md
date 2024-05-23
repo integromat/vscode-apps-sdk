@@ -14,7 +14,7 @@ Change Log
 - Common data files are not being added to `.gitignore` anymore.
 - Improved deployment error messages.
 
-1.3.55 (pre-release) [2024-05-06]
+1.3.55 (pre-release) [2024-05-14]
 --------------------
 
 - Fix: Action modules have the `crud` as optional only now.
