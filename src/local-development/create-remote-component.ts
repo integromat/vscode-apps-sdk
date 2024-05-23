@@ -41,8 +41,8 @@ export async function createRemoteAppComponent(opt: {
 		const axiosConfig: AxiosRequestConfig = {
 			headers: {
 				Authorization: 'Token ' + opt.origin.apikey,
-				'imt-apps-sdk-version': ExtensionVersion,
 				'imt-vsce-localmode': 'true',
+				'imt-apps-sdk-version': ExtensionVersion,
 			},
 			url: componentCreationUrl,
 			method: 'POST',
