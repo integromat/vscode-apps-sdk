@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+1.3.56 (pre-release) [2024-05-23]
+--------------------
+
 - During the app clone a user chooses to exclude or include the app's common data. If common data are included, they are also committed to GIT.
 - Common data files are not being added to `.gitignore` anymore.
 - Improved deployment error messages.
