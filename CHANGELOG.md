@@ -4,7 +4,6 @@ Change Log
 1.3.xx (pre-release) [unreleased]
 --------------------
 
-- Refactored: VSC extension version verification
 - Added: 'imt-vsce-local-mode' header to selected requests
 
 1.3.56 (pre-release) [2024-05-23]
