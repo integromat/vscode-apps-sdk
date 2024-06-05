@@ -63,6 +63,27 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 		return;
 	}
 
+	// Universal module: Ask for mandatory subtype
+	/*
+	 * // Note: Not needed until modules are created empty (without defaulty template).
+	 * //       Code is prepared for feature, where local module will be created with code templates.
+	 *
+	 * // Note: Subtype defines only, which default template will used for universal module creation.
+	 *
+	 * type UniversalModuleSubtype = 'Universal' | 'UniversalGraphQL';
+	 *
+	 * let universalModuleSubtype: 'UniversalModuleSubtype' | undefined;
+	 * if (moduleTypePick.id === 'universal') {
+	 * 	const universalModuleSubtypePick = await vscode.window.showQuickPick(universalModuleSubtypes, {
+	 * 		placeHolder: 'Select the subtype of universal module (mandatory)',
+	 * 	});
+	 * 	if (!universalModuleSubtypePick) {
+	 * 		return;
+	 * 	}
+	 * 	universalModuleSubtype = universalModuleSubtypePick.description as UniversalModuleSubtype; // Note: Actually, the `description` field contains an ID.
+	 * }
+	 */
+
 	// Instant trigger: Ask for mandatory webhook
 	let instantTriggerWebhookLocalId: string | undefined = undefined;
 	if (moduleTypePick.id === 'instant_trigger') {
