@@ -46,7 +46,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 							err.request?.path +
 							', response: ' +
 							// Extract error messages from API response body
-							errorToString(err),
+							errorToString(err).message,
 						{ cause: err },
 					);
 				}

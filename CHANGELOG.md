@@ -1,6 +1,8 @@
 Change Log
 ==========
 
+- Fixed missing API error response message, where incorrect `response: [object Object]` was displayed instead of actual response.
+
 1.3.56 (pre-release) [2024-05-23]
 --------------------
 
