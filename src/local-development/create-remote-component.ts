@@ -63,6 +63,15 @@ export async function createRemoteAppComponent(opt: {
 						}", but missing. Check the ${MAKECOMAPP_FILENAME}.`,
 					);
 				}
+
+				// For Universal Module: Add the mandatory `subtype` property.
+				//   Note: Defines, which template will be used for a new module.
+				//         The default server side template will owerride the template by local code files immediately
+				//         after component creation, therefore logic will work regardless what value will be used.
+				//         But the property `subtype` is mandatory in API, therefore any value must be filled.
+				if (opt.componentMetadata.moduleType === 'universal') {
+					axiosConfig.data.subtype = 'Universal' as 'Universal' | 'UniversalGraphQL';
+				}
 				break;
 
 			case 'connection':
