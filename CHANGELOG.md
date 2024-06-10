@@ -1,6 +1,8 @@
 Change Log
 ==========
 
+1.3.57 (pre-release) [2024-06-10]
+
 - Fixed missing API error response message, where incorrect `response: [object Object]` was displayed instead of actual response.
 - Fixed creation of universal module.
 
