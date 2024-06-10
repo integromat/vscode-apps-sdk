@@ -164,7 +164,7 @@ export async function addEmptyOriginInMakecomappjson(anyProjectPath: vscode.Uri)
 		const makecomappJson = await getMakecomappJson(anyProjectPath);
 		const newOrigin: LocalAppOrigin = {
 			label: '-FILL-ME- - Example: Testing App ' + Math.floor(Math.random() * 1000),
-			appId: '-FILL-ME-',
+			appId: '-FILL-ME- - Place here the app ID of an existing app, or create a new app and copy the app ID here',
 			baseUrl: '-FILL-ME- - Example: https://eu1.make.com/api',
 			appVersion: 1,
 			apikeyFile:
