@@ -12,8 +12,8 @@ export const specialAnswers = {
 };
 
 /**
- * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
- * If origin is one one, nothing asked to user, but instantnly returns this origin.
+ * Displays the selection with list of app origins (for multiple origins defined).
+ * If origin is one, nothing asked to user, but instantnly returns this origin.
  *
  * Note: Gets the list of origins from project's makecomapp.json.
  */
@@ -23,7 +23,7 @@ export async function askForProjectOrigin(makeappRootdir: vscode.Uri, purposeLab
 }
 
 /**
- * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
+ * Displays the selection with list of app origins (for multiple origins defined).
  * If origin is one one, nothing asked to user, but instantnly returns this origin.
  * @param origins
  * @param makeappRootdir Directory, where makecomapp.json is placed.
