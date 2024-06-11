@@ -1,6 +1,8 @@
 Change Log
 ==========
 
+1.3.58 (pre-release) [2024-06-11]
+
 - Added dialogs for selecting/entering the missing origin's API token.
 
 1.3.57 (pre-release) [2024-06-10]
