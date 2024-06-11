@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { LocalAppOrigin } from './types/makecomapp.types';
+import { downloadComponentCode } from './code-pull-deploy';
 import { getConfiguration } from '../providers/configuration';
+import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 /**
  * User is asked for an API token (because secret file is missing in origin configuration).
@@ -19,11 +21,53 @@ export async function askAddMissingApiKey(origin: LocalAppOrigin, makeappRootdir
 		);
 	}
 
-	const selectedApiKey = await getSelectedApiKey(origin);
+	let selectedApiKey: string;
+	let isTokenValid: boolean;
+	do {
+		// Ask user for API token
+		selectedApiKey = await askApiKey(origin);
 
-	// Write new key to file
+		// Test the origin connection with newly entered API token
+		try {
+			isTokenValid = await withProgressDialog(
+				{ title: `Testing new API token with remote origin "${origin.label || origin.appId}"` },
+				async () => {
+					return testConnection(selectedApiKey, origin);
+				},
+			);
+		} catch (err: any) {
+			const answer = await vscode.window.showWarningMessage(
+				'',
+				{
+					modal: true,
+					detail: `${err.message}. Do you want to save and use your API token anyway?`,
+				},
+				{ title: 'Save & Use API token' },
+			);
+			if (answer?.title === 'Save & Use API token') {
+				isTokenValid = true;
+			} else {
+				throw new Error('Cancelled by user.');
+			}
+		}
+		if (!isTokenValid) {
+			await vscode.window.showErrorMessage('API token not valid', {
+				modal: true,
+				detail: `Entered API token is not valid. Testing connection to remote origin "${
+					origin.label || origin.appId
+				}" did not success. Try enter another API token.`,
+			});
+		}
+	} while (!isTokenValid);
+
+	// Write new API token to file
 	const apikeyFile = vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile);
 	await vscode.workspace.fs.writeFile(apikeyFile, new TextEncoder().encode(selectedApiKey));
+
+	await vscode.window.showInformationMessage('API token saved', {
+		modal: true,
+		detail: `API token saved into file "${vscode.workspace.asRelativePath(apikeyFile)}".`,
+	});
 
 	return selectedApiKey;
 }
@@ -32,8 +76,9 @@ export async function askAddMissingApiKey(origin: LocalAppOrigin, makeappRootdir
  * Selection dialog, where user can select one of tokens entered in the extension's environments,
  * or user can enter the API token manually.
  * @return API token
+ * @private Helper function for `askAddMissingApiKey()`
  */
-async function getSelectedApiKey(origin: LocalAppOrigin): Promise<string> {
+async function askApiKey(origin: LocalAppOrigin): Promise<string> {
 	const configuration = getConfiguration();
 
 	const specialAnswers = {
@@ -84,6 +129,7 @@ async function getSelectedApiKey(origin: LocalAppOrigin): Promise<string> {
 /**
  * Input dialog, where user enters the API token.
  * @return API token
+ * @private Helper function for `askApiKey()`
  */
 async function askCustomApiKey(origin: LocalAppOrigin): Promise<string> {
 	const apiKey = await vscode.window.showInputBox({
@@ -105,4 +151,31 @@ async function askCustomApiKey(origin: LocalAppOrigin): Promise<string> {
 		throw new Error('Cancelled by user.');
 	}
 	return apiKey;
+}
+
+/**
+ * Tries to download app's readme to resolve if API token is valid or not
+ * @return True if token is valid.
+ */
+async function testConnection(apiKey: string, origin: LocalAppOrigin): Promise<boolean> {
+	try {
+		// Validate the API token
+		await downloadComponentCode({
+			appComponentType: 'app',
+			codeType: 'readme',
+			origin: { ...origin, apikey: apiKey },
+			remoteComponentName: '',
+		});
+		return true;
+	} catch (err: any) {
+		if (err.message.includes('Access denied')) {
+			// Valid API response, but the API token is not valid.
+			return false;
+		} else {
+			// Unexpected API response or error
+			throw new Error(`Failed to test connection to origin ${origin.label || origin.appId}. ${err}`, {
+				cause: err,
+			});
+		}
+	}
 }
