@@ -6,7 +6,7 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 /**
  * User is asked for an API token (if secret file is missing in origin configuration).
- * After enter/select the API token, this token is written to file to `.secrets`.
+ * After entering/selecting the API token, this token is written to `.secrets` file.
  *
  * User can select the API token from existing extension's evironments or enter own one manually.
  *
