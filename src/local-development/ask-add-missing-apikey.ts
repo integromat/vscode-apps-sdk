@@ -53,9 +53,9 @@ export async function askAddMissingApiKey(origin: LocalAppOrigin, makeappRootdir
 		if (!isTokenValid) {
 			await vscode.window.showErrorMessage('API token not valid', {
 				modal: true,
-				detail: `Entered API token is not valid. Testing connection to remote origin "${
+				detail: `Entered API token is not valid. Connection to remote origin "${
 					origin.label || origin.appId
-				}" did not success. Try enter another API token.`,
+				}" failed. Try with another API token.`,
 			});
 		}
 	} while (!isTokenValid);
