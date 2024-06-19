@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isComponentLocalIdValid } from './validate-id';
+import { COMPONENT_ID_VALIDATION_RULES, isComponentLocalIdValid } from './validate-id';
 import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 
 /**
@@ -14,14 +14,16 @@ export async function askNewComponentLocalID(
 	do {
 		componentID = await vscode.window.showInputBox({
 			ignoreFocusOut: true,
-			placeHolder: 'Examples: get-something, list-something, update-something, ...',
+			placeHolder: `Examples: ${COMPONENT_ID_VALIDATION_RULES[componentType].examples}, ...`,
 			title:
 				(componentID !== undefined ? 'INVALID FORMAT, TRY AGAIN: ' : '') +
-				`What local ID should be used for new local ${componentType}?` +
+				(componentType === 'function'
+					? 'Enter a name for the new function:'
+					: `What local ID should be used for new ${componentType}?`) +
 				(mandatory ? '' : ' Answer is optional: Keep empty to autogenerate the ID.'),
 			prompt:
 				'Rules: ' +
-				'3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.' +
+				COMPONENT_ID_VALIDATION_RULES[componentType].hint +
 				// This requirements are not exactly the truth. The real limitations are less strict,
 				//   but the decision is to not confuse developer by exact limitation specifications.
 				//   See `isComponentLocalIdValid()` for exact rules.

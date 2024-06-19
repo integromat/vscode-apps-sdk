@@ -5,7 +5,7 @@ import { CodeType } from '../types/code-type.types';
  *
  * Note: This function is here only temporary, until full templates are implemented instead.
  */
-export function getEmptyCodeContent(codeType: CodeType): string {
+export function getEmptyCodeContent(codeType: CodeType, componentLocalId: string): string {
 	switch (codeType) {
 		case 'base':
 		case 'communication':
@@ -31,6 +31,7 @@ export function getEmptyCodeContent(codeType: CodeType): string {
 		case 'readme':
 			return 'README\n======\n';
 		case 'code':
+			return `function ${componentLocalId}() {\n` + '    // Write the JavaScript code here...\n' + '}';
 		case 'test':
 			return '// Write the JavaScript code here...\n';
 		default:

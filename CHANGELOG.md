@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+- Fixed the dialog for new Component ID, where rules and hint has been aligned with Make.
+- Fixed function creation, which was not able to upload, because function header was missing in code file.
+
 1.3.58 (pre-release) [2024-06-11]
 
 - Added dialogs for selecting/entering the missing origin's API token.
