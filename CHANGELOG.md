@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-- Fixed the dialog for new Component ID, where rules and hint has been aligned with Make.
-- Fixed function creation, which was not able to upload, because function header was missing in code file.
+- Fixed the dialog for the new Component ID, where rules and hints have been aligned with Make.
+- Fixed function creation, which was not able to upload, because the function header was missing in a code file.
 
 1.3.58 (pre-release) [2024-06-11]
 
