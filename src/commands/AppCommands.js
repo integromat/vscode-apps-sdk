@@ -1401,6 +1401,8 @@ class AppCommands {
 
 			// Form Data
 
+			const defaultName = `${context.name.substring(0, 14)}-clone`;
+
 			let form
 			if (_admin === true) {
 				form = await Felicia([
@@ -1409,7 +1411,7 @@ class AppCommands {
 						label: 'New name',
 						type: 'text',
 						required: true,
-						default: context.name,
+						default: defaultName,
 						validate: {
 							pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
 							min: 3
@@ -1432,7 +1434,7 @@ class AppCommands {
 						label: 'New name',
 						type: 'text',
 						required: true,
-						default: context.name,
+						default: defaultName,
 						validate: {
 							pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
 							min: 3

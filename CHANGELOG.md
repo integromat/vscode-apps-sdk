@@ -1,10 +1,16 @@
 Change Log
 ==========
 
-1.3.xx (pre-release) [unreleased]
---------------------
+- Added `imt-vsce-local-mode` HTTP header for selected requests
 
-- Added: 'imt-vsce-local-mode' header to selected requests
+1.3.58 (pre-release) [2024-06-11]
+
+- Added dialogs for selecting/entering the missing origin's API token.
+
+1.3.57 (pre-release) [2024-06-10]
+
+- Fixed missing API error response message, where incorrect `response: [object Object]` was displayed instead of actual response.
+- Fixed creation of universal module.
 
 1.3.56 (pre-release) [2024-05-23]
 --------------------

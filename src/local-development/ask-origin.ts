@@ -4,6 +4,7 @@ import { TextDecoder } from 'util';
 import { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { addEmptyOriginInMakecomappjson, getMakecomappJson } from './makecomappjson';
 import { MAKECOMAPP_FILENAME } from './consts';
+import { askAddMissingApiKey } from './ask-add-missing-apikey';
 import { getCurrentWorkspace } from '../services/workspace';
 
 export const specialAnswers = {
@@ -11,8 +12,8 @@ export const specialAnswers = {
 };
 
 /**
- * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
- * If origin is one one, nothing asked to user, but instantnly returns this origin.
+ * Displays the selection with list of app origins (for multiple origins defined).
+ * If origin is one, nothing asked to user, but instantnly returns this origin.
  *
  * Note: Gets the list of origins from project's makecomapp.json.
  */
@@ -22,7 +23,7 @@ export async function askForProjectOrigin(makeappRootdir: vscode.Uri, purposeLab
 }
 
 /**
- * Uses VS Code API to display the selection with list of app origins (for multiple origins defined).
+ * Displays the selection with list of app origins (for multiple origins defined).
  * If origin is one one, nothing asked to user, but instantnly returns this origin.
  * @param origins
  * @param makeappRootdir Directory, where makecomapp.json is placed.
@@ -157,17 +158,26 @@ async function includeApiKey(
 			apikey: apiKey,
 		};
 	} catch (e: any) {
-		const workspaceRoot = getCurrentWorkspace().uri;
-		const err = new Error(
-			`Cannot read API key file defined in "${MAKECOMAPP_FILENAME}" origin "${
-				origin.label ?? origin.appId ?? 'unnamed'
-			}". Check if the file with API key exists and if it is correctly named. It should be placed as text in the file "${path.posix.relative(
-				workspaceRoot.path,
-				vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile).path,
-			)}" of current workspace.`,
-			{ cause: e },
-		);
-		err.name = 'PopupError';
-		throw err;
+		if (e.code === 'FileNotFound') {
+			// Ask user to fill the missing API key
+			const apiKey = await askAddMissingApiKey(origin, makeappRootdir);
+			return {
+				...origin,
+				apikey: apiKey,
+			};
+		} else {
+			// Unknown/unexpected error
+			const workspaceRoot = getCurrentWorkspace().uri;
+			const err = new Error(
+				`Cannot read API key file defined in "${MAKECOMAPP_FILENAME}" origin "${
+					origin.label ?? origin.appId ?? 'unnamed'
+				}". File: "${path.posix.relative(
+					workspaceRoot.path,
+					vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile).path,
+				)}" of current workspace. ${e}`,
+			);
+			err.name = 'PopupError';
+			throw err;
+		}
 	}
 }

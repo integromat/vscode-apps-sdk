@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import { AxiosRequestConfig } from 'axios';
-import { TextDecoder, TextEncoder } from 'util';
+import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ApiCodeType, CodeType, ComponentCodeType, GeneralCodeType } from './types/code-type.types';
@@ -16,7 +16,7 @@ import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
 
 /**
- * Download the code from the API and save it to the local destination
+ * Download code from the Make API and save it to the local destination
  *
  * Note: If `appComponentType` === 'app' => remoteComponentName must be ''.
  *
@@ -43,10 +43,44 @@ export async function pullComponentCode({
 
 	progresDialogReport(`Pulling ${appComponentType} ${remoteComponentName} code ${codeType}`);
 
+	const codeContent = await downloadComponentCode({
+		appComponentType,
+		remoteComponentName,
+		codeType,
+		origin,
+	});
+
+	// Save the received code to the temp directory
+	const codeContentUint8 = new TextEncoder().encode(codeContent);
+	await vscode.workspace.fs.writeFile(destinationPath, codeContentUint8);
+
+	progresDialogReport('');
+}
+
+/**
+ * Download an code from the Make API.
+ *
+ * Note: If `appComponentType` === 'app' => remoteComponentName must be ''.
+ *
+ * @return component code content
+ * @param codeType
+ *   - 	For module: api, parameteres, expect, interface, samples, scope
+ */
+export async function downloadComponentCode({
+	appComponentType,
+	remoteComponentName,
+	codeType,
+	origin,
+}: {
+	appComponentType: AppComponentType | AppGeneralType;
+	remoteComponentName: string;
+	codeType: CodeType;
+	origin: LocalAppOriginWithSecret;
+}): Promise<string> {
 	const codeDef = getCodeDef(appComponentType, codeType);
 
 	// Get the code from the API
-	let codeContent = await requestMakeApi({
+	let codeContent = await requestMakeApi<string>({
 		url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
@@ -77,10 +111,7 @@ export async function pullComponentCode({
 			codeContent;
 	}
 
-	// Save the received code to the temp directory
-	const codeContentUint8 = new TextEncoder().encode(codeContent);
-	await vscode.workspace.fs.writeFile(destinationPath, codeContentUint8);
-	progresDialogReport('');
+	return codeContent;
 }
 
 /**
