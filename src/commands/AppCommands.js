@@ -355,7 +355,7 @@ class AppCommands {
 						url: uri,
 						headers: {
 							Authorization: _authorization,
-							'x-imt-apps-sdk-version': Meta.version
+							'imt-apps-sdk-version': Meta.version
 						},
 					});
 					appsProvider.refresh();
@@ -431,7 +431,7 @@ class AppCommands {
 						method: 'PUT',
 						headers: {
 							Authorization: _authorization,
-							'x-imt-apps-sdk-version': Meta.version,
+							'imt-apps-sdk-version': Meta.version,
 							'Content-Type': 'image/png',
 						}
 					};
@@ -906,7 +906,7 @@ class AppCommands {
 						await download.image({
 							headers: {
 								Authorization: _authorization,
-								'x-imt-apps-sdk-version': Meta.version
+								'imt-apps-sdk-version': Meta.version
 							},
 							url: `${urn}/icon/512`,
 							dest: path.join(archive, 'assets', 'icon.png')
@@ -1354,7 +1354,7 @@ class AppCommands {
 						url: uri,
 						headers: {
 							Authorization: _authorization,
-							'x-imt-apps-sdk-version': Meta.version,
+							'imt-apps-sdk-version': Meta.version,
 							'content-type': r.type
 						},
 						method: r.method,

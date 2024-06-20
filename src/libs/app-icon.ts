@@ -35,7 +35,7 @@ export async function downloadAndStoreAppIcon(
 				await download.image({
 					headers: {
 						Authorization: apiAuthorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						'imt-apps-sdk-version': Meta.version,
 					},
 					url: (() => {
 						switch (environment.version) {

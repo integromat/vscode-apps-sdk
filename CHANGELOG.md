@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+- Added `imt-vsce-local-mode` HTTP header for selected requests.
+- Changed header `x-imt-apps-sdk-version` to `imt-apps-sdk-version`.
+
 1.3.58 (pre-release) [2024-06-11]
 
 - Added dialogs for selecting/entering the missing origin's API token.
