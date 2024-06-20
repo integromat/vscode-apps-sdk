@@ -1,6 +1,8 @@
 Change Log
 ==========
 
+1.3.59 (pre-release) [2024-06-20]
+
 - Added `imt-vsce-local-mode` HTTP header for selected requests.
 - Changed header `x-imt-apps-sdk-version` to `imt-apps-sdk-version`.
 - Fixed the dialog for the new Component ID, where rules and hints have been aligned with Make.
