@@ -84,8 +84,8 @@ export async function downloadComponentCode({
 		url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
-			'x-imt-vsce-localmode': true,
-			'x-imt-apps-sdk-version': ExtensionVersion,
+			'imt-vsce-localmode': 'true',
+			'imt-apps-sdk-version': ExtensionVersion,
 		},
 		transformResponse: (res) => res, // Do not parse the response into JSON
 	});
@@ -182,8 +182,8 @@ export async function deployComponentCode({
 		headers: {
 			Authorization: 'Token ' + origin.apikey,
 			'Content-Type': codeDef.mimetype,
-			'x-imt-vsce-localmode': true,
-			'x-imt-apps-sdk-version': ExtensionVersion,
+			'imt-vsce-localmode': 'true',
+			'imt-apps-sdk-version': ExtensionVersion,
 		},
 		data: sourceContent,
 		transformRequest: (data) => data, // Do not expect the `data` to be JSON

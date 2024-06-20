@@ -86,7 +86,7 @@ class ChangesCommands {
 							url: uri,
 							headers: {
 								Authorization: _authorization,
-								'x-imt-apps-sdk-version': Meta.version
+								'imt-apps-sdk-version': Meta.version
 							},
 							data: {
 								notify: notify,
@@ -131,7 +131,7 @@ class ChangesCommands {
 							url: uri,
 							headers: {
 								Authorization: _authorization,
-								'x-imt-apps-sdk-version': Meta.version
+								'imt-apps-sdk-version': Meta.version
 							},
 						})
 						appsProvider.refresh()

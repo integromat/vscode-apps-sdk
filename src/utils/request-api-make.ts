@@ -27,7 +27,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 						...config,
 						headers: {
 							...(config.headers ?? {}),
-							'x-imt-apps-sdk-version': Meta.version,
+							'imt-apps-sdk-version': Meta.version,
 						},
 					})
 				).data;

@@ -92,7 +92,7 @@ export class CoreCommands {
 			headers: {
 				'Content-Type': 'application/jsonc',
 				Authorization: this._authorization,
-				'x-imt-apps-sdk-version': Meta.version,
+				'imt-apps-sdk-version': Meta.version,
 			},
 			transformRequest: (data: any) => data,
 		};
@@ -700,7 +700,7 @@ export class CoreCommands {
 					url: url,
 					headers: {
 						Authorization: _authorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						'imt-apps-sdk-version': Meta.version,
 					},
 					transformResponse: (res) => res, // Do not parse the response into JSON
 				});
@@ -803,7 +803,7 @@ export class CoreCommands {
 					url: url,
 					headers: {
 						Authorization: _authorization,
-						'x-imt-apps-sdk-version': Meta.version,
+						'imt-apps-sdk-version': Meta.version,
 					},
 					transformResponse: (res) => {
 						return res;
