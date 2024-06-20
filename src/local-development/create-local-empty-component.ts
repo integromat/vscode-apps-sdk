@@ -72,7 +72,10 @@ export async function createLocalEmptyComponent(
 	for (const [codeType, codeFilePath] of entries(componentMetadataWithCodeFiles.codeFiles)) {
 		if (codeFilePath) {
 			const codeFileUri = vscode.Uri.joinPath(makeappRootdir, codeFilePath);
-			await vscode.workspace.fs.writeFile(codeFileUri, new TextEncoder().encode(getEmptyCodeContent(codeType)));
+			await vscode.workspace.fs.writeFile(
+				codeFileUri,
+				new TextEncoder().encode(getEmptyCodeContent(codeType, newComponentLocalId)),
+			);
 		} // else skip ignored cide files (mostly common data files are being ignored).
 	}
 
