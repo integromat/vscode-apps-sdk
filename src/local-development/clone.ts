@@ -33,11 +33,11 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	// Introductory info dialog "Before use"
 	const confirmAnswer = await vscode.window.showInformationMessage(
-		'Before use the Apps Local Development',
+		'Before use the Local Development for Apps',
 		{
 			modal: true,
 			detail:
-				'ABOUT APPS LOCAL DEVELOPMENT:' +
+				'ABOUT LOCAL DEVELOPMENT FOR APPS:' +
 				'\n\n' +
 				'This feature enables you to clone your app from Make to the currently opened VS Code workspace (folder). ' +
 				'After cloning, your app will be placed in a local folder as local files, with the "makecomapp.json" file located in the project root. ' +

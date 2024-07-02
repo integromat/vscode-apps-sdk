@@ -1,12 +1,12 @@
-Apps local development (beta)
-=============================
+Local Development for Apps (beta)
+=================================
 
 ```text/plain
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!       BETA FEATURE - USE WITH CAUTION!        !!
 !!                                               !!
 !! Local file structure and all these features   !!
-!! for local development is under development    !!
+!! for local development is not finalized yet    !!
 !! and don't have to be stable yet.              !!
 !! There can be upcoming breaking changes        !!
 !! before the final production release.          !!
@@ -52,13 +52,13 @@ Implementation status
 Documentation / Manual
 ----------------------
 
-### How to use SDK app local development
+### How to use Local Development for Apps
 
 The idea is that a developer can `clone` a whole SDK app from Make to local files. Files are `pulled` to the workspace currently opened in VS Code. From this time all local files are "disconnected" from Make until a developer `deploys` them back to Make. Therefore a developer can work on changes as long as he needs without touching on the SDK app running in Make. When all necessary changes are made locally a developer can `deploy` changes back to Make. The whole SDK app can be `deployed` or any `component` can be deployed anytime separately. There is also a way to `pull` changes made in Make and update the local files in case somebody is touching to SDK app `codes` directly on Make UI or by VS Code Extension online editing.
 
 To be sure, what code is currently in Make, the developer can `Compare with Make` by right-clicking on any local code file. Then the diff window (remote vs. local) will be displayed in VS Code.
 
-### Terms used in apps local development feature
+### Terms used in Local Development for Apps feature
 
 - `component` - One section of an app. Each component is one of the following types:
                 module, connection, RPC, custom function, webhook.
