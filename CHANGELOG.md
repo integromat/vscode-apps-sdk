@@ -1,186 +1,29 @@
 Change Log
 ==========
 
-1.3.59 (pre-release) [2024-06-20]
+2.0.0 [2024-07-02]
+--------------------
+
+### New feature: Local Development for Apps
+
+The entire Make app can become a folder on your local computer, and you can version it with GIT like any common source code.
+Local Development for Apps is a game-changing feature that bridges the gap between your local development environment and apps hosted on Make.
+It empowers developers to work efficiently, iterate faster, and have a full control of changes, history and deployment of applications - all without disrupting the live apps running in production.
+
+### Other improvements, changes, fixes
 
 - Added `imt-vsce-local-mode` HTTP header for selected requests.
 - Changed header `x-imt-apps-sdk-version` to `imt-apps-sdk-version`.
-- Fixed the dialog for the new Component ID, where rules and hints have been aligned with Make.
-- Fixed function creation, which was not able to upload, because the function header was missing in a code file.
-
-1.3.58 (pre-release) [2024-06-11]
-
-- Added dialogs for selecting/entering the missing origin's API token.
-
-1.3.57 (pre-release) [2024-06-10]
-
-- Fixed missing API error response message, where incorrect `response: [object Object]` was displayed instead of actual response.
-- Fixed creation of universal module.
-
-1.3.56 (pre-release) [2024-05-23]
---------------------
-
-- During the app clone a user chooses to exclude or include the app's common data. If common data are included, they are also committed to GIT.
-- Common data files are not being added to `.gitignore` anymore.
-- Improved deployment error messages.
-
-1.3.55 (pre-release) [2024-05-14]
---------------------
-
-- Fix: Action modules have the `crud` as optional only now.
-- Added the feature for adding new origin (adds the un-filled template into `makecomapp.json`).
-
-### Known bugs
-
-- Common files are not committed to GIT. In consequences, if an app is cloned from GIT, then the local app is broken, because common files are expected, but do not exist. The extension cannot handle this issue and the Pull and Deploy actions are not working in this case.
-
-1.3.54 (pre-release) [2024-05-02]
---------------------
-
 - Implemented telemetry. Follows official VSC extension guidelines and respects user's VSCode global telemetry preference.
-
-1.3.53 (pre-release) [2024-04-25]
---------------------
-
-- Fixed: References `connection`, `altConnection`, `webhook` are correctly deployed to Make
-  during remote component creation and during "Deploy to Make".
-- Fixed: New Remote Instant Trigger Module creation works correctly now.
-- Improved the local Instant Trigger Module creation wizard.
-- Fixed: Action module CRUD is optional value now.
-- Improved: Module type and CRUD are updated by "Deploy to Make".
-- Improved error messages in case of API request fail.
-
-1.3.52 (pre-release) [2024-04-15]
---------------------
-
-- Fixed `Compare with Make` action missing on some file types.
-- Local Development for Apps: Fixed the remote components creation.
-- The extension is more compatible. Min compatible version downgraded to VS Code 1.82 - August 2023.
-
-### Known bugs
-
-- PRC's references `connection`, `altConnetion` are ignored during "Deploy to Make".
-- Modules's references `connection`, `altConnetion` and `webhook` are ignored during "Deploy to Make".
-  - Consequences: Cannot create Instant Trigger Module because `webhook` reference is mandatory during module creation.
-
-1.3.51 (pre-release) [2024-04-11]
---------------------
-
-### Changes
-
-- Local Development for Apps: Implemented the cloning/edit/deployment of module's `scope`.
-- Local Development for Apps: Project now stores also linked webhooks in Instant triggers.
-- Local Development for Apps: Implemented command "pull all components from Make".
-- Local Development for Apps: Implemented ability to have multiple app origins, then deploy the code to multiple apps (test, staging, production, etc).
-- Local Development for Apps: Implemented the new local components creation.
-- Local Development for Apps feature is beta (previously it was alpha version only).
-- Removed ability to create connection to legacy Integromat.
-
-1.3.50 (pre-release) [2024-01-04]
---------------------
-
-### Changes
-
-- Updated (iml)json language server to 9.0.1 (+ merged to development)
-- Published VSCode context flag `isPreReleaseVersion`.
-
-1.3.35 (pre-release) [2023-10-11]
---------------------
-
-### Fixed
-
-- JSON schemas was not applied for IMLJSON for the case `fileMatch` with multiple items.
-- Custom IML function unit testing was not able to test recursive functions
-
-1.3.34 (pre-release) [2023-10-04]
---------------------
-
-### Changes
-
-- Updated (iml)json language features to latest version from microsoft/vscode github repo
-
-### Fixed
-
-- Custom IML function was not correctly available under the namespace `iml.` in another function's body
-- JSON syntax error highlighting of IMLJSON was broken in editor
-
-1.3.33 (pre-release) [2023-09-27]
---------------------
-
-### Changes
-
-- Document indent autodetection during autoformat (spaces vs. tabs)
-
-### Fixed
-
-- Error dialog should be displayed in case of error
-
-1.3.32 (pre-release) [2023-09-26]
---------------------
-
-### New features
-
-- New local module -> automatic append to `groups.json`
-- Warning dialog when try to clone app into not empty directory
-
-### Fixed
-
-- "Clone to local" menu item misses on published apps
-- Ability to clone app into project root
-
-### Changes
-
+- Updated (iml)json language features to latest version from microsoft/vscode github repo (used json language server 9.0.1)
+- Added publication VSCode context flag `isPreReleaseVersion`.
+- Fix: Custom IML function unit testing was not able to test recursive functions
+- Enabled document indent autodetection during autoformat (spaces vs. tabs)
 - Migrate `vm2` to `node:vm`
-- "makecomapp.json not found" error message improvement
-- "Workspace" word change to "Folder"
-
-1.3.31 (pre-release) [2023-09-19]
---------------------
-
-### Changes
-
-- Error messages improvements
-- Bulk deployment continues to work even after the error occurred. Shows the error report on the end.
-
-1.3.30 (pre-release) [2023-09-12]
---------------------
-
-### New features
-
-- Ability to create local module
-- Ability to create remote module in Make
-- Local connection creation wizard
-- Ability to create all types of connections (Basic, OAuth)
-- `makecomapp.json` structure automatic migration/upgrade
-- Validate components IDs in `makecomapp.json`
-- Directory/files names sanitization for case of unexpected/unsupported symbols in component IDs
-
-### Changes
-
-- `makecomapp.json` module property `moduleSubtype` rename to `moduleType`
-- Context menu item texts rename
+- Renamed some context menu item texts
 - Library `@integromat/iml` update from v2 to v3
-
-### Fixed
-
 - More user friendly errors in case of invalid code's JSON structure
-
-1.3.29 (pre-release) [2023-09-06]
---------------------
-
-### New features
-
-- Local Development for Apps
-
-### Changes
-
 - Removed redundant extension "activationEvents" from package.json
-
-1.3.28 (pre-release) [2023-08-21]
---------------------
-
-### Fixed
-
 - Custom function testing fails, when using another custom function (#105)
 
 1.3.27 [2023-08-03]
