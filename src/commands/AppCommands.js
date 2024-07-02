@@ -1,4 +1,4 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable semi */
 const vscode = require('vscode');
 
 const Core = require('../Core');
@@ -6,21 +6,22 @@ const Validator = require('../Validator');
 const QuickPick = require('../QuickPick');
 const Enum = require('../Enum');
 const Meta = require('../Meta');
-const Felicia = require('../Felicia');
+const { Felicia } = require('../Felicia');
 
-const kebabCase = require('lodash.kebabcase');
-const pick = require('lodash.pick');
+const kebabCase = require('lodash/kebabCase');
+const pick = require('lodash/pick');
+const camelCase = require('lodash/camelCase');
 const download = require('image-downloader');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const axios = require('axios');
 const asyncfile = require('async-file');
 const tempy = require('tempy');
 const compressing = require('compressing');
 const AdmZip = require('adm-zip');
-const camelCase = require('lodash.camelcase');
 const { showError, catchError } = require('../error-handling');
 const { promisify2 } = require('../utils');
+const { getModuleDefFromId, getModuleDefFromType } = require('../services/module-types-naming');
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -353,8 +354,8 @@ class AppCommands {
 						method: 'DELETE',
 						url: uri,
 						headers: {
-							'Authorization': _authorization,
-							'x-imt-apps-sdk-version': Meta.version
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version
 						},
 					});
 					appsProvider.refresh();
@@ -429,8 +430,8 @@ class AppCommands {
 						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
 						method: 'PUT',
 						headers: {
-							'Authorization': _authorization,
-							'x-imt-apps-sdk-version': Meta.version,
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version,
 							'Content-Type': 'image/png',
 						}
 					};
@@ -627,7 +628,6 @@ class AppCommands {
 
 				let canceled = false;
 				progress.report({ increment: 0, message: `${app.label} - Preparing for export` });
-				const RATE_LIMIT_MS = Meta.turbo === true ? 10 : 600;
 				const DIR = tempy.directory();
 				token.onCancellationRequested(() => {
 					vscode.window.showWarningMessage(`Export of ${app.label} canceled.`);
@@ -653,7 +653,6 @@ class AppCommands {
 					let a = await Core.rpGet(`${urn}`, _authorization);
 					if (_environment.version === 2) { a = a.app }
 					await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(pick(a, ['name', 'label', 'version', 'theme', 'language', 'countries']), null, 4));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					/**
 					 * 2 - Get Base
@@ -663,7 +662,6 @@ class AppCommands {
 					}
 					progress.report({ increment: 2, message: `${app.label} - Exporting Base` });
 					await asyncfile.writeFile(path.join(archive, `base.imljson`), Core.jsonString(await Core.rpGet(`${urn}/base`, _authorization)));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					/**
 					 * 3 - Get Readme
@@ -673,7 +671,6 @@ class AppCommands {
 					}
 					progress.report({ increment: 2, message: `${app.label} - Exporting Readme` });
 					await asyncfile.writeFile(path.join(archive, `readme.md`), (await Core.rpGet(`${urn}/readme`, _authorization) || ''));
-					await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 					/**
 					 * 4 - Get Connections
@@ -703,7 +700,6 @@ class AppCommands {
 						let c = (await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}`, _authorization));
 						if (_environment.version === 2) { c = c.appConnection }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(c, ['name', 'label', 'type']), null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `scope`, `scopes`, `parameters`]) {
@@ -712,7 +708,6 @@ class AppCommands {
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization), key));
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
 
@@ -743,14 +738,12 @@ class AppCommands {
 						if (_environment.version === 2) { r = r.appRpc }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
 							JSON.stringify(pick(r, ['name', 'label', 'connection']), null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `parameters`]) {
 							progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` });
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization), key));
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
 
@@ -780,7 +773,6 @@ class AppCommands {
 						let w = await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}`, _authorization)
 						if (_environment.version === 2) { w = w.appWebhook }
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(w, ['name', 'label', 'connection', 'type']), null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources
 						for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])) {
@@ -789,7 +781,6 @@ class AppCommands {
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization), key));
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
 
@@ -820,29 +811,9 @@ class AppCommands {
 						let m = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}`, _authorization)
 						if (_environment.version === 2) { m = m.appModule; m.type_id = m.typeId; delete m.typeId }
 						const metadata = pick(m, ['name', 'label', 'description', 'type_id', 'connection', 'webhook']);
-						switch (metadata.type_id) {
-							case 1:
-								metadata.type = 'trigger';
-								break;
-							case 4:
-								metadata.type = 'action';
-								break;
-							case 9:
-								metadata.type = 'search';
-								break;
-							case 10:
-								metadata.type = 'instant_trigger';
-								break;
-							case 11:
-								metadata.type = 'responder';
-								break;
-							case 12:
-								metadata.type = 'universal';
-								break;
-						}
+						metadata.type = getModuleDefFromId(metadata.type_id).type;
 						delete metadata.type_id;
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(metadata, null, 4));
-						await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 
 						// Get Corresponding Sources Based On Type
 						switch (module.type_id) {
@@ -857,7 +828,6 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
 							// Trigger
@@ -868,7 +838,6 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
 							// Instant trigger
@@ -879,7 +848,6 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
 							// Responder
@@ -890,7 +858,6 @@ class AppCommands {
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
 										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
-									await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 								}
 								break;
 						}
@@ -924,7 +891,6 @@ class AppCommands {
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.js`),
 								(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'function')}/${fun.name}/${key}`, _authorization)) || '');
-							await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_MS));
 						}
 					}
 
@@ -939,13 +905,15 @@ class AppCommands {
 					try {
 						await download.image({
 							headers: {
-								'Authorization': _authorization,
-								'x-imt-apps-sdk-version': Meta.version
+								Authorization: _authorization,
+								'imt-apps-sdk-version': Meta.version
 							},
 							url: `${urn}/icon/512`,
 							dest: path.join(archive, 'assets', 'icon.png')
 						});
-					} catch (err) { }
+					} catch (err) {
+						/* TODO throw error message */
+					}
 
 					/**
 					 * 10 - Note the format
@@ -1072,6 +1040,9 @@ class AppCommands {
 				};
 			};
 
+			/**
+			 * Pick properties `keys` from the object and returns as new object.
+			 */
 			const extract = (obj, keys) => {
 				const out = {};
 				keys.forEach(key => {
@@ -1080,6 +1051,9 @@ class AppCommands {
 				return out;
 			};
 
+			/**
+			 * In URI it replaces variables (defined by `store`)
+			 */
 			const replaceSlugs = (store, uri) => {
 				Object.keys(store).forEach(key => {
 					if (uri.includes(key)) {
@@ -1145,17 +1119,24 @@ class AppCommands {
 				// validator.count should equal entries.length;
 			};
 
+			/**
+			 * Returns list of all API request configs, which will upload all codes&icon of new Custom App.
+			 * @returns ReturnType<typeof makeRequestProto>[]
+			 */
 			const buildRequestQueue = (app, remoteApp) => {
+				/** @type ReturnType<typeof makeRequestProto>[] */
 				const requests = [];
 
+				// Upload generic codes
 				requests.push(makeRequestProto(`Base`, `${remoteApp.name}/${remoteApp.version}/base`, 'PUT', 'application/jsonc', app.base));
 				requests.push(makeRequestProto(`Readme`, `${remoteApp.name}/${remoteApp.version}/readme`, 'PUT', 'text/markdown', app.readme));
-
+				// Upload icon
 				if (app.icon !== undefined) {
 					requests.push(makeRequestProto(`Icon`, `${remoteApp.name}/${remoteApp.version}/icon`, 'PUT', 'image/png', app.icon));
 				}
-
+				// Create and upload connections
 				app.connections.forEach((connection) => {
+					// Create connection component in Make
 					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'connection')}`, 'POST', 'application/json',
 						JSON.stringify(extract(connection.metadata, ['label', 'type'])),
 						[
@@ -1168,6 +1149,7 @@ class AppCommands {
 								slug: `connection-${connection.metadata.name}`
 							}
 						]));
+					// Upload connection's codes
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
@@ -1177,8 +1159,9 @@ class AppCommands {
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 				});
-
+				// Create and Upload RPCs
 				app.rpcs.forEach((rpc) => {
+					// Create new RPC in Make
 					requests.push(makeRequestProto(`RPC ${rpc.metadata.label}`,
 						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
 						[
@@ -1187,13 +1170,15 @@ class AppCommands {
 								slug: `connection-${rpc.metadata.connection}`
 							}
 						]));
+					// Upload RPC's codes
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`RPC ${rpc.metadata.label} - ${code}`,
 							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
 					});
 				});
-
+				// Create and Upload Webhooks to Make
 				app.webhooks.forEach((webhook) => {
+					// Create new webhook in Make
 					requests.push(makeRequestProto(`Webhook ${webhook.metadata.label}`,
 						`${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
 							['label', 'type', 'connection'])),
@@ -1213,34 +1198,17 @@ class AppCommands {
 								slug: `connection-${webhook.metadata.connection}`
 							}
 						]));
+					// Upload webhooks's codes
 					([`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])).forEach(code => {
 						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
 							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
 				});
-
+				// Create and Upload Modules
 				app.modules.forEach((appModule) => {
 					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook', 'subtype']);
-					switch (appModule.metadata.type) {
-						case 'trigger':
-							body.type_id = 1;
-							break;
-						case 'action':
-							body.type_id = 4;
-							break;
-						case 'search':
-							body.type_id = 9;
-							break;
-						case 'instant_trigger':
-							body.type_id = 10;
-							break;
-						case 'responder':
-							body.type_id = 11;
-							break;
-						case 'universal':
-							body.type_id = 12;
-							break;
-					}
+					body.type_id = getModuleDefFromType(appModule.metadata.type).type_id;
+					// Create module in Make
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
 						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
 						[
@@ -1253,6 +1221,7 @@ class AppCommands {
 								slug: `webhook-${appModule.metadata.webhook}`
 							}
 						]));
+					// Upload module's codes
 					let codes;
 					switch (body.type_id) {
 						case 4:
@@ -1276,7 +1245,7 @@ class AppCommands {
 							'PUT', 'application/jsonc', appModule[code]));
 					});
 				});
-
+				// Create & upload functions
 				app.functions.forEach(appFunction => {
 					const functionName = /(?:function )(.+)(?:\()/.exec(appFunction.code)[1];
 					requests.push(makeRequestProto(`Function ${functionName}`,
@@ -1294,6 +1263,7 @@ class AppCommands {
 				// requests.length should equal entries.lenght - 1 (because app create preflight is not in queue)
 			};
 
+			// Ask for ZIP file
 			const source = await vscode.window.showOpenDialog({
 				filters: { 'IMT App Archive': ['zip'] },
 				openLabel: 'Import',
@@ -1320,7 +1290,7 @@ class AppCommands {
 				}
 			}
 
-			// Name prompt
+			// App ID (Name) prompt
 			app.metadata.name = await vscode.window.showInputBox({
 				prompt: 'Enter name of the imported app',
 				value: app.metadata.name,
@@ -1330,6 +1300,7 @@ class AppCommands {
 				return;
 			}
 
+			// Create new app in Make cloud
 			let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
 			if (!remoteApp) {
 				return;
@@ -1354,7 +1325,9 @@ class AppCommands {
 					increment: 0
 				});
 
+				/** Key-value list of dynamic variables and it's values */
 				const store = {};
+				// Execute all planned API requests (one by one)
 				for (const r of requests) {
 					if (shouldStop) {
 						return;
@@ -1366,6 +1339,7 @@ class AppCommands {
 					});
 
 					let bodyProto = r.body;
+					// Fill all dynamic variables defined in request body by it's current values (stored in `store`)
 					if (r._replaceInBody !== undefined) {
 						bodyProto = JSON.parse(bodyProto);
 						r._replaceInBody.forEach(replacement => {
@@ -1379,8 +1353,8 @@ class AppCommands {
 					const requestConfig = {
 						url: uri,
 						headers: {
-							'Authorization': _authorization,
-							'x-imt-apps-sdk-version': Meta.version,
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version,
 							'content-type': r.type
 						},
 						method: r.method,
@@ -1399,6 +1373,8 @@ class AppCommands {
 					}
 
 					const axiosResponse = await axios(requestConfig);
+
+					// Store defined key-values from api response into `store`. It can be used in following requests.
 					if (r._store !== undefined) {
 						r._store.forEach(s => {
 							let parsed = JSON.parse(axiosResponse.data);
@@ -1411,7 +1387,6 @@ class AppCommands {
 							store[s.slug] = parsed[s.key];
 						});
 					}
-					await new Promise(resolve => setTimeout(resolve, Meta.turbo === true ? 10 : 700));
 				}
 			});
 			appsProvider.refresh();
@@ -1426,6 +1401,8 @@ class AppCommands {
 
 			// Form Data
 
+			const defaultName = `${context.name.substring(0, 14)}-clone`;
+
 			let form
 			if (_admin === true) {
 				form = await Felicia([
@@ -1434,7 +1411,7 @@ class AppCommands {
 						label: 'New name',
 						type: 'text',
 						required: true,
-						default: context.name,
+						default: defaultName,
 						validate: {
 							pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
 							min: 3
@@ -1457,7 +1434,7 @@ class AppCommands {
 						label: 'New name',
 						type: 'text',
 						required: true,
-						default: context.name,
+						default: defaultName,
 						validate: {
 							pattern: '^[a-z][0-9a-z-]+[0-9a-z]$',
 							min: 3

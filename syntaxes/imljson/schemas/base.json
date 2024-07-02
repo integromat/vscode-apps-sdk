@@ -101,25 +101,15 @@
 				}
 			},
 			"if": {
-				"required": [
-					"method"
-				],
+				"required": ["method"],
 				"properties": {
 					"method": {
-						"enum": [
-							"POST",
-							"PUT",
-							"PATCH",
-							"DELETE"
-						]
+						"enum": ["POST", "PUT", "PATCH", "DELETE"]
 					}
 				}
 			},
 			"then": {
-				"required": [
-					"url",
-					"body"
-				]
+				"required": ["url", "body"]
 			},
 			"additionalProperties": false
 		}

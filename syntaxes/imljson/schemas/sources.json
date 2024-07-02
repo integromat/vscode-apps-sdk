@@ -7,6 +7,11 @@
 			"maxLength": 512,
 			"minLength": 1
 		},
+		"stringWithIml": {
+			"$id": "#stringWithIml",
+			"type": "string",
+			"pattern": "^.*[{][{].*[}][}].*$"
+		},
 		"temp": {
 			"$id": "#temp",
 			"type": "object",
@@ -18,14 +23,7 @@
 			"type": "object",
 			"patternProperties": {
 				"^.+$": {
-					"type": [
-						"boolean",
-						"integer",
-						"null",
-						"number",
-						"string",
-						"array"
-					]
+					"type": ["boolean", "integer", "null", "number", "string", "array"]
 				}
 			},
 			"additionalProperties": false,
@@ -36,14 +34,7 @@
 			"type": "object",
 			"patternProperties": {
 				"^.+$": {
-					"type": [
-						"boolean",
-						"integer",
-						"null",
-						"number",
-						"string",
-						"array"
-					]
+					"type": ["boolean", "integer", "null", "number", "string", "array"]
 				}
 			},
 			"additionalProperties": false,
@@ -64,29 +55,22 @@
 			"description": "If you want to use this base URL in a request, you need to start the URL of an endpoint with `/` character."
 		},
 		"method": {
-			"$id": "#method",
-			"type": "string",
-			"default": "GET",
-			"enum": [
-				"GET",
-				"POST",
-				"PUT",
-				"PATCH",
-				"DELETE"
-			],
-			"description": "This directive specifies the HTTP method that will be used to issue the request."
+			"oneOf": [
+				{
+					"$id": "#method",
+					"type": "string",
+					"default": "GET",
+					"enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+					"description": "This directive specifies the HTTP method that will be used to issue the request."
+				},
+				{
+					"$ref": "sources.json#/definitions/stringWithIml"
+				}
+			]
 		},
 		"body": {
 			"$id": "#body",
-			"type": [
-				"object",
-				"array",
-				"boolean",
-				"integer",
-				"null",
-				"number",
-				"string"
-			],
+			"type": ["object", "array", "boolean", "integer", "null", "number", "string"],
 			"description": "This directive specifies the request body."
 		},
 		"oauth-1": {
@@ -126,31 +110,34 @@
 					"maxLength": 512
 				},
 				"signature_method": {
-					"description": "Specifies the desired method to use when calculating the signature.",
-					"type": "string",
-					"enum": [
-						"HMAC-SHA1",
-						"RSA-SHA1",
-						"PLAINTEXT"
-					],
-					"default": "HMAC-SHA1"
+					"oneOf": [
+						{
+							"description": "Specifies the desired method to use when calculating the signature.",
+							"type": "string",
+							"enum": ["HMAC-SHA1", "RSA-SHA1", "PLAINTEXT"],
+							"default": "HMAC-SHA1"
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
+					]
 				},
 				"transport_method": {
-					"description": "Specifies how OAuth parameters are sent: via query params, header or in a POST body.",
-					"type": "string",
-					"enum": [
-						"query",
-						"body",
-						"header"
-					],
-					"default": "header"
+					"oneOf": [
+						{
+							"description": "Specifies how OAuth parameters are sent: via query params, header or in a POST body.",
+							"type": "string",
+							"enum": ["query", "body", "header"],
+							"default": "header"
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
+					]
 				},
 				"body_hash": {
 					"description": "To use Request Body Hash, you can either manually generate it, or you can set this directive to true and the body hash will be generated automatically.",
-					"type": [
-						"string",
-						"boolean"
-					],
+					"type": ["string", "boolean"],
 					"default": true
 				}
 			}
@@ -173,37 +160,29 @@
 			"description": "This directive specifies whether to execute the request or not.",
 			"oneOf": [
 				{
-					"type": [
-						"boolean",
-						"string"
-					]
+					"type": ["boolean", "string"]
 				},
 				{
 					"type": "object",
 					"properties": {
 						"condition": {
 							"description": "Specifies if to execute the request or not.",
-							"type": [
-								"boolean",
-								"string"
-							]
+							"type": ["boolean", "string"]
 						},
 						"default": {
 							"description": "Specifies the module output when the condition is false.",
-							"type": [
-								"array",
-								"boolean",
-								"integer",
-								"null",
-								"number",
-								"object",
-								"string"
-							]
+							"type": ["array", "boolean", "integer", "null", "number", "object", "string"]
 						}
 					},
 					"additionalProperties": false
 				}
 			]
+		},
+		"gzip": {
+			"$id": "#gzip",
+			"type": "boolean",
+			"default": "false",
+			"description": "Add an Accept-Encoding header to request compressed content encodings from the server (if not already present) and decode supported content encodings in the response."
 		},
 		"aws": {
 			"$id": "#aws",
@@ -231,12 +210,16 @@
 					"maxLength": 512
 				},
 				"sign_version": {
-					"description": "AWS sign version",
-					"type": "string",
-					"default": "2",
-					"enum": [
-						"2",
-						"4"
+					"oneOf": [
+						{
+							"description": "AWS sign version",
+							"type": "string",
+							"default": "2",
+							"enum": ["2", "4"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				}
 			},
@@ -302,10 +285,26 @@
 				},
 				"condition": {
 					"description": "This directive specifies whether to execute the pagination request or not.",
-					"type": [
-						"boolean",
-						"string"
-					]
+					"type": ["boolean", "string"]
+				}
+			}
+		},
+		"repeat": {
+			"$id": "#repeat",
+			"description": "Repeats a request under a certain condition with a predefined delay in milliseconds. The maximum number of repeats can be bounded by the repeat.limit.",
+			"type": "object",
+			"properties": {
+				"condition": {
+					"description": "Specifies if to execute the request or not.",
+					"type": "string"
+				},
+				"delay": {
+					"description": "Specifies the delay in miliseconds.",
+					"type": "number"
+				},
+				"limit": {
+					"description": "Specifies the maximum number of iterations.",
+					"type": "number"
 				}
 			}
 		}

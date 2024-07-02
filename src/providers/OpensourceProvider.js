@@ -1,14 +1,14 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable semi */
 const vscode = require('vscode');
 const App = require('../tree/App');
 const Group = require('../tree/Group')
 const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
-const camelCase = require('lodash.camelcase');
+const camelCase = require('lodash/camelCase');
 const { downloadAndStoreAppIcon } = require('../libs/app-icon');
 
-class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
+class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR) {
 		this._onDidChangeTreeData = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -31,9 +31,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 
 	async getChildren(element) {
-        /*
-         * LEVEL 0 - APPS
-         */
+		/*
+		 * LEVEL 0 - APPS
+		 */
 		if (element === undefined) {
 			let response;
 			switch (this._environment.version) {
@@ -60,9 +60,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			apps.sort(Core.compareApps)
 			return apps
 		}
-        /*
-         * LEVEL 1 - GROUP
-         */
+		/*
+		 * LEVEL 1 - GROUP
+		 */
 		else if (element.level === 0) {
 			return [
 				new Group(`general`, "General", element),
@@ -74,9 +74,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				new Group(`docs`, "Docs", element)
 			]
 		}
-        /*
-         * LEVEL 2 - ITEM OR CODE
-         */
+		/*
+		 * LEVEL 2 - ITEM OR CODE
+		 */
 		else if (element.level === 1) {
 			// General
 			if (element.id.includes("general")) {
@@ -107,9 +107,9 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				}
 			}
 		}
-        /*
-         * LEVEL 3 - CODE
-         */
+		/*
+		 * LEVEL 3 - CODE
+		 */
 		else if (element.level === 2) {
 			switch (element.supertype) {
 				case "connection":
@@ -187,4 +187,4 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 }
 
-module.exports = AppsProvider
+module.exports.OpensourceProvider = OpensourceProvider;

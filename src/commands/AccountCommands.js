@@ -10,9 +10,9 @@ const { showError } = require('../error-handling');
 class AccountCommands {
 	static async register(_configuration) {
 
-        /**
-         * Login command
-         */
+		/**
+		 * Login command
+		 */
 		vscode.commands.registerCommand('apps-sdk.login', async () => {
 
 			// Load environment from configuration
@@ -31,8 +31,8 @@ class AccountCommands {
 					await axios({
 						url: uri,
 						headers: {
-							'Authorization': `Token ${apikey}`,
-							'x-imt-apps-sdk-version': Meta.version
+							Authorization: `Token ${apikey}`,
+							'imt-apps-sdk-version': Meta.version
 						}
 					})
 				} catch (err) {

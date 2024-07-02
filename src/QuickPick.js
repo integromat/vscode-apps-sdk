@@ -1,7 +1,6 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
-const vscode = require('vscode');
+/* eslint-disable semi */
 const Core = require('./Core');
-const camelCase = require('lodash.camelcase');
+const camelCase = require('lodash/camelCase');
 const { showError } = require('./error-handling');
 
 module.exports = {

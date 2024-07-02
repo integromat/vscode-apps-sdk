@@ -5,13 +5,13 @@
 
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: npm
+    directory: "/"
     schedule:
-      interval: 'weekly'
-    target-branch: 'development'
+      interval: monthly
+    target-branch: development
     commit-message:
-      prefix: 'build'
+      prefix: build
     ignore:
       # Reason: Depends on the minimal supported VS Code version specified in package.json
       - dependency-name: "@types/vscode"
@@ -19,4 +19,18 @@ updates:
       - dependency-name: "@types/node"
       # Reason: Tempy 2+ is written as ESM module, which is not directly supported by CommonJS
       - dependency-name: "tempy"
-        update-types: ["version-update:semver-major"]
+        update-types:
+          - "version-update:semver-major"
+    groups:
+      "devDeps minor update":
+        dependency-type: "development"
+        update-types:
+          - minor
+          - patch
+      "deps minor update":
+        dependency-type: "production"
+        update-types:
+          - minor
+          - patch
+      # Others:
+      # Major dependencies are not grouped, because they should be resolved one by one.

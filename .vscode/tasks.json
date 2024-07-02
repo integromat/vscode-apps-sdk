@@ -2,6 +2,35 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Watch for all Typescript problems",
+			"command": "tsc",
+			"type": "shell",
+			"args": ["-w", "-p", ".", "--noEmit"],
+			"presentation": {
+			  "revealProblems": "onProblem"
+			},
+			"options": {
+			  "cwd": "${workspaceRoot}",
+			},
+			"isBackground": true,
+			"problemMatcher": {
+			  "base": "$tsc-watch",
+			  "fileLocation": ["relative", "${workspaceRoot}"],
+			}
+		},
+		{
+			"label": "Check for all ESLint problems in *.ts",
+			"command": "eslint",
+			"type": "shell",
+			"args": ["-c", "./.eslintrc.json", "${workspaceRoot}/src/**/*.ts"],
+			"options": {
+			  "cwd": "${workspaceRoot}",
+			},
+			"problemMatcher": {
+			  "base": "$eslint-stylish",
+			}
+		},
+		{
 			"type": "npm",
 			"script": "watch",
 			"problemMatcher": "$tsc-watch",

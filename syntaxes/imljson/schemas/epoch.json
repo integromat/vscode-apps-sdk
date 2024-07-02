@@ -53,6 +53,9 @@
 				"pagination": {
 					"$ref": "sources.json#/definitions/pagination"
 				},
+				"repeat": {
+					"$ref": "sources.json#/definitions/repeat"
+				},
 				"response": {
 					"description": "This directive specifies how to parse the data received from the server.",
 					"type": "object",
@@ -83,30 +86,19 @@
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"output"
-					]
+					"required": ["output"]
 				}
 			},
 			"if": {
-				"required": [
-					"method"
-				],
+				"required": ["method"],
 				"properties": {
 					"method": {
-						"enum": [
-							"POST",
-							"PUT",
-							"PATCH",
-							"DELETE"
-						]
+						"enum": ["POST", "PUT", "PATCH", "DELETE"]
 					}
 				}
 			},
 			"then": {
-				"required": [
-					"body"
-				]
+				"required": ["body"]
 			},
 			"additionalProperties": false
 		}

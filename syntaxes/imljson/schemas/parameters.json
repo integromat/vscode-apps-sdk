@@ -17,10 +17,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": [
-					"label",
-					"options"
-				]
+				"required": ["label", "options"]
 			}
 		},
 		"options": {
@@ -35,15 +32,7 @@
 						"minLength": 1
 					},
 					"value": {
-						"type": [
-							"string",
-							"array",
-							"boolean",
-							"integer",
-							"null",
-							"number",
-							"object"
-						]
+						"type": ["string", "array", "boolean", "integer", "null", "number", "object"]
 					},
 					"nested": {
 						"$ref": "#/definitions/nested"
@@ -56,9 +45,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": [
-					"value"
-				]
+				"required": ["value"]
 			}
 		},
 		"nested": {
@@ -88,9 +75,7 @@
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"store"
-					]
+					"required": ["store"]
 				}
 			]
 		},
@@ -103,10 +88,7 @@
 		},
 		"parameter": {
 			"$id": "#parameter",
-			"type": [
-				"object",
-				"string"
-			],
+			"type": ["object", "string"],
 			"properties": {
 				"name": {
 					"type": "string",
@@ -126,39 +108,47 @@
 					"description": "Parameter description for the user which is displayed in GUI"
 				},
 				"type": {
-					"type": "string",
-					"maxLength": 32,
-					"minLength": 1,
-					"description": "A type of the parameter. Each type has its own documentation page.",
-					"enum": [
-						"any",
-						"array",
-						"boolean",
-						"buffer",
-						"cert",
-						"collection",
-						"color",
-						"date",
-						"email",
-						"filename",
-						"folder",
-						"file",
-						"filter",
-						"hidden",
-						"json",
-						"integer",
-						"uinteger",
-						"number",
-						"path",
-						"pkey",
-						"port",
-						"select",
-						"text",
-						"time",
-						"timestamp",
-						"timezone",
-						"url",
-						"uuid"
+					"oneOf": [
+						{
+							"type": "string",
+							"maxLength": 32,
+							"minLength": 1,
+							"description": "A type of the parameter. Each type has its own documentation page.",
+							"enum": [
+								"any",
+								"array",
+								"boolean",
+								"buffer",
+								"cert",
+								"collection",
+								"color",
+								"date",
+								"email",
+								"filename",
+								"folder",
+								"file",
+								"filter",
+								"hidden",
+								"json",
+								"integer",
+								"uinteger",
+								"number",
+								"password",
+								"path",
+								"pkey",
+								"port",
+								"select",
+								"text",
+								"time",
+								"timestamp",
+								"timezone",
+								"url",
+								"uuid"
+							]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"semantic": {
@@ -167,15 +157,7 @@
 					"description": "Specification of a semantic type"
 				},
 				"default": {
-					"type": [
-						"boolean",
-						"array",
-						"integer",
-						"null",
-						"number",
-						"object",
-						"string"
-					],
+					"type": ["boolean", "array", "integer", "null", "number", "object", "string"],
 					"description": "Specifies the default value of the parameter"
 				},
 				"advanced": {
@@ -209,12 +191,15 @@
 					"$ref": "http://json-schema.org/draft-07/schema#"
 				},
 				"tags": {
-					"type": "string",
-					"description": "Specifies how to treat HTML tags.",
-					"enum": [
-						"strip",
-						"stripall",
-						"escape"
+					"oneOf": [
+						{
+							"type": "string",
+							"description": "Specifies how to treat HTML tags.",
+							"enum": ["strip", "stripall", "escape"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"coder": {
@@ -264,18 +249,14 @@
 											}
 										},
 										"additionalProperties": false,
-										"required": [
-											"name"
-										]
+										"required": ["name"]
 									}
 								}
 							]
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"type"
-					]
+					"required": ["type"]
 				},
 				"editable": {
 					"description": "If set to true, the user can map the value.",
@@ -297,9 +278,7 @@
 								}
 							},
 							"additionalProperties": false,
-							"required": [
-								"enabled"
-							]
+							"required": ["enabled"]
 						}
 					]
 				},
@@ -320,9 +299,7 @@
 								}
 							},
 							"additionalProperties": false,
-							"required": [
-								"help"
-							]
+							"required": ["help"]
 						}
 					]
 				},
@@ -347,17 +324,18 @@
 						}
 					},
 					"additionalProperties": false,
-					"required": [
-						"url",
-						"label"
-					]
+					"required": ["url", "label"]
 				},
 				"mode": {
-					"type": "string",
-					"description": "Specifies the initial mode, when editable is true.",
-					"enum": [
-						"edit",
-						"choose"
+					"oneOf": [
+						{
+							"type": "string",
+							"description": "Specifies the initial mode, when editable is true.",
+							"enum": ["edit", "choose"]
+						},
+						{
+							"$ref": "sources.json#/definitions/stringWithIml"
+						}
 					]
 				},
 				"labels": {
@@ -522,9 +500,7 @@
 				"validate": {}
 			},
 			"additionalProperties": false,
-			"required": [
-				"type"
-			],
+			"required": ["type"],
 			"if": {
 				"properties": {
 					"type": {

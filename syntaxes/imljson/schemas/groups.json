@@ -16,9 +16,6 @@
 				}
 			}
 		},
-		"required": [
-			"label",
-			"modules"
-		]
+		"required": ["label", "modules"]
 	}
 }

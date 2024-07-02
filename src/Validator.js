@@ -14,9 +14,6 @@ module.exports = {
     appTheme: function(string) {
         return RegExp("^(#[0-9A-Fa-f]{6})$").test(string) ? undefined : "String is not valid color."
     },
-    urlFormat: function(string) {
-        return RegExp("(integromat)(.)((com|cloud|local|dev))").test(string) ? undefined : "URL is not valid Integromat API URL."
-    },
     commitMessage: function(string) {
         return (string.length <= 1000 && string.length > 0) ? undefined : "Commit message must have not be empty and must have at most 1000 characters."
     }

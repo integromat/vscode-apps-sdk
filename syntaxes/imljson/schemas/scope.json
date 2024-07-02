@@ -1,7 +1,7 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "array",
-    "items": {
-        "$ref": "sources.json#/definitions/plainString512"
-    }
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "array",
+	"items": {
+		"$ref": "sources.json#/definitions/plainString512"
+	}
 }

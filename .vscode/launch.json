@@ -17,7 +17,6 @@
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: compile",
-			"postDebugTask": "npm: cleanup"
 		},
 		{
 			"name": "Test Extension",
@@ -31,14 +30,13 @@
 				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
 			],
 			"sourceMaps": true,
-			"outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: compile",
-			"postDebugTask": "npm: cleanup"
 		},
 		{
 			"type": "node",
 			"request": "attach",
-			"name": "Language Server",
+			"name": "Attach Language Server",
 			"port": 6009
 		}
 	]

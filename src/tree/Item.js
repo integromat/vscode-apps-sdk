@@ -1,14 +1,11 @@
+/* eslint-disable semi,@typescript-eslint/no-var-requires */
 const EnhancedTreeItem = require('./EnhancedTreeItem');
-
-const Core = require('../Core');
+const { translateModuleTypeId } = require('../services/module-types-naming');
 
 class Item extends EnhancedTreeItem {
 	constructor(id, label, parent, supertype, type, isPublic, isApproved, changes, description, crud) {
 		let temp = label
 		label = temp + (changes !== undefined ? (changes.length !== 0 ? ` ${EnhancedTreeItem.changedSymbol}` : "") : "")
-		if (supertype === "module") {
-
-		}
 		if (supertype === "connection") {
 			label += ` (${type})`
 		}
@@ -32,7 +29,9 @@ class Item extends EnhancedTreeItem {
 
 	makeTooltip() {
 		if (this.supertype !== "module") { return undefined; }
-		let tooltip = `${this.bareLabel}\r\n-----------------------\r\nName: ${this.name}\r\nType: ${Core.translateModuleTypeId(this.type)}\r\n`
+		let tooltip = `${this.bareLabel}\r\n-----------------------\r\nName: ${this.name}\r\nType: ${
+			translateModuleTypeId(this.type)
+		}\r\n`;
 		if (this.type === 4) {
 			tooltip += `CRUD type: ${this.crud || "multipurpose"}\r\n`
 		}

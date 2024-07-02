@@ -1,4 +1,40 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "typescript.surveys.enabled": false
+    "typescript.surveys.enabled": false,
+    "editor.rulers": [120],
+    "typescript.preferences.quoteStyle": "single",
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+
+    "editor.codeActionsOnSave": [],
+    // "editor.codeActionsOnSave": ["source.organizeImports.sortImports"],
+    // Grouping rules for path patterns for imports. {} is the fall-back group.
+    // Wiki: https://github.com/daidodo/format-imports/wiki/Grouping-Rules
+    "tsImportSorter.configuration.groupRules": [
+        "^node:",
+        {},
+        "^\\./",
+        "^\\.\\./",
+        "^\\.\\./\\.\\./",
+    ],
+    // Disable formatting for files matching regular expressions.
+    "tsImportSorter.configuration.exclude": [
+        "imljson-language-features/"
+    ],
+    // Number of empty lines between groups (NOT sub-groups).
+    "tsImportSorter.configuration.emptyLinesBetweenGroups": 0,
+    // Line wrapping style. Valid values are 'prettier' or an object.
+    // Wiki: https://github.com/daidodo/format-imports/wiki/Line-Wrapping-Style
+    "tsImportSorter.configuration.wrappingStyle": "prettier",
+
+    // Global Sorting rules. Valid values are 'none' or an object.
+    // Wiki: https://github.com/daidodo/format-imports/wiki/Sorting-Rules
+    "tsImportSorter.configuration.sortRules": "none",
+
+    "markdownlint.config": {
+        "MD003": false,
+        "MD024": false
+    },
 }

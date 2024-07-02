@@ -1,7 +1,32 @@
 Change Log
 ==========
 
-1.3.27
+2.0.0 [2024-07-02]
+--------------------
+
+### New feature: Local Development for Apps
+
+The entire Make app can become a folder on your local computer, and you can version it with GIT like any common source code.
+Local Development for Apps is a game-changing feature that bridges the gap between your local development environment and apps hosted on Make.
+It empowers developers to work efficiently, iterate faster, and have a full control of changes, history and deployment of applications - all without disrupting the live apps running in production.
+
+### Other improvements, changes, fixes
+
+- Added `imt-vsce-local-mode` HTTP header for selected requests.
+- Changed header `x-imt-apps-sdk-version` to `imt-apps-sdk-version`.
+- Implemented telemetry. Follows official VSC extension guidelines and respects user's VSCode global telemetry preference.
+- Updated (iml)json language features to latest version from microsoft/vscode github repo (used json language server 9.0.1)
+- Fix: Custom IML function unit testing was not able to test recursive functions
+- Enabled document indent autodetection during autoformat (spaces vs. tabs)
+- Migrate `vm2` to `node:vm`
+- Renamed some context menu item texts
+- Library `@integromat/iml` update from v2 to v3
+- More user friendly errors in case of invalid code's JSON structure
+- Removed redundant extension "activationEvents" from package.json
+- Custom function testing fails, when using another custom function (#105)
+- Added publication VSCode context flag `isPreReleaseVersion` for being able to build production and pre-release versions from same codebase.
+
+1.3.27 [2023-08-03]
 ------
 
 ### Fixed
@@ -19,7 +44,7 @@ Change Log
 - First environment configuration process is more friendly (#87)
 - Opensource apps rename to "Examples" (#95)
 
-1.3.22
+1.3.22 [2023-07-18]
 ------
 
 ### Fixed
@@ -28,7 +53,7 @@ Change Log
 - Attempts to upload files not belonging to extension
 - Error in case of parameters defined as rpc://
 
-# Changes
+### Changes
 
 - Temporary directory is removed on the end of extension lifecycle
 - Prevent to remove empty JSON lines by autoformat
@@ -43,43 +68,43 @@ Change Log
 
 - Connection template "Digest auth"
 
-## 1.3.19
+## 1.3.19 [2023-04-18]
 
 ### Fixed
 
 - `vm2` library security patch
 
-## 1.3.18
+## 1.3.18 [2023-04-11]
 
 ### Fixed
 
 - `vm2` library security patch
 
-## 1.3.17
+## 1.3.17 [2023-04-11]
 
 ### Fixed
 
 - `vm2` library security patch
 
-## 1.3.16
+## 1.3.16 [2022-12-08]
 
 ### New Features
 
 - Implemented to creating a new universal module
 
-## 1.3.15
+## 1.3.15 [2022-11-28]
 
 ### Fixed
 
 - Hot Fix of Make domain URL configuation when adding a new environment "eu1.make.com" => "eu1.make.com/api"
 
-## 1.3.14
+## 1.3.14 [2022-11-22]
 
 ### Fixed
 
 - Fixed Show changes feature
 
-## 1.3.13
+## 1.3.13 [2022-10-26]
 
 ### Fixed
 
@@ -386,7 +411,7 @@ Change Log
 - Inbuilt (Static) IML functions provider
 - Showing docs abstract when adding an inbuild IML function
 
-### Fixed
+### Fixed
 
 - Request-Less Communication allowed in JSON validation
 

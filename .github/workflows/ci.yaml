@@ -1,14 +1,14 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - "development"
+      - "master"
   pull_request:
     branches:
       - "**"
   workflow_dispatch:
-
-#  push:
-#    branches:
-#      - "**"
 
 # Cancel the previously running job when new Git commit has been received.
 concurrency:
@@ -19,6 +19,7 @@ jobs:
   test:
     name: "Integration tests"
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # minutes
     permissions:
       checks: write
     steps:
@@ -27,7 +28,7 @@ jobs:
       # See https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages#publishing-packages-to-the-npm-registry
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install modules
@@ -36,6 +37,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Run tests
+        timeout-minutes: 5 # minutes
         run: |
           xvfb-run npm run testToJsonFile
 
