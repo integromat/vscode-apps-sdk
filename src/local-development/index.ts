@@ -9,7 +9,7 @@ import * as createLocalImlFunction from './create-local-imlfunction';
 import * as pullModule from './pull';
 
 /**
- * Registers all necessary VS Code Extension commands of feature "Local SDK Apps development".
+ * Registers all necessary VS Code Extension commands of feature "Local Development for Apps".
  */
 export function registerCommandForLocalDevelopment(): void {
 	compareFileModule.registerCommands();

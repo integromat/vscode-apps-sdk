@@ -11,7 +11,7 @@ import type { ConnectionType, WebhookType } from '../types/component-types.types
 import { version as ExtensionVersion } from '../Meta';
 
 /**
- * Creates new SDK App component in remote Make.
+ * Creates new Custom App component in remote Make.
  * Note: Content will stay filled by templated codes. No local codes are updates by this function.
  *
  * @param opt.componentName New component ID (for components, where it can be defined by user)

@@ -11,7 +11,7 @@ export interface MakecomappJson {
 }
 
 /**
- * Defines the remote Make origin of locally cloned SDK app. It is part of `makecomapp.json`.
+ * Defines the remote Make origin of locally cloned Custom App. It is part of `makecomapp.json`.
  */
 export interface LocalAppOrigin {
 	/** User friendly title */

@@ -7,7 +7,7 @@ import { log } from './output-channel';
 const TEMPDIR_PREFIX = 'apps-sdk';
 
 /**
- * The path to the local Extesion temporary directory where the source code + icons of SDK apps
+ * The path to the local Extesion temporary directory where the source code + icons of Custom Apps
  * are placed during editation.
  *
  * Note: Path is unique for each run of the extension.
@@ -15,7 +15,7 @@ const TEMPDIR_PREFIX = 'apps-sdk';
 export const sourceCodeLocalTempBasedir = join(tempy.directory(), TEMPDIR_PREFIX);
 
 /**
- * Temporary directory, where are icons of SDK apps placed (cached).
+ * Temporary directory, where are icons of Custom Apps placed (cached).
  */
 export const appsIconTempDir = join(sourceCodeLocalTempBasedir, 'icons');
 
@@ -44,9 +44,9 @@ export function rmCodeLocalTempBasedir() {
 	}
 
 	// Clean up the source code local temp basedir if nothing kept open
-	const someAppFileKeptOpen = vscode.workspace.textDocuments.some((textDocuments) => (
-		isFileBelongingToExtension(textDocuments.fileName)
-	));
+	const someAppFileKeptOpen = vscode.workspace.textDocuments.some((textDocuments) =>
+		isFileBelongingToExtension(textDocuments.fileName),
+	);
 	if (!someAppFileKeptOpen) {
 		// Full tempdir cleanup
 		log('info', 'Cleaning up the source code local temp basedir: ' + sourceCodeLocalTempBasedir);

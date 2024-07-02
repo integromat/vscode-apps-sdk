@@ -1120,7 +1120,7 @@ class AppCommands {
 			};
 
 			/**
-			 * Returns list of all API request configs, which will upload all codes&icon of new SDK app.
+			 * Returns list of all API request configs, which will upload all codes&icon of new Custom App.
 			 * @returns ReturnType<typeof makeRequestProto>[]
 			 */
 			const buildRequestQueue = (app, remoteApp) => {
