@@ -16,7 +16,6 @@ It empowers developers to work efficiently, iterate faster, and have a full cont
 - Changed header `x-imt-apps-sdk-version` to `imt-apps-sdk-version`.
 - Implemented telemetry. Follows official VSC extension guidelines and respects user's VSCode global telemetry preference.
 - Updated (iml)json language features to latest version from microsoft/vscode github repo (used json language server 9.0.1)
-- Added publication VSCode context flag `isPreReleaseVersion`.
 - Fix: Custom IML function unit testing was not able to test recursive functions
 - Enabled document indent autodetection during autoformat (spaces vs. tabs)
 - Migrate `vm2` to `node:vm`
@@ -25,6 +24,7 @@ It empowers developers to work efficiently, iterate faster, and have a full cont
 - More user friendly errors in case of invalid code's JSON structure
 - Removed redundant extension "activationEvents" from package.json
 - Custom function testing fails, when using another custom function (#105)
+- Added publication VSCode context flag `isPreReleaseVersion` for being able to build production and pre-release versions from same codebase.
 
 1.3.27 [2023-08-03]
 ------

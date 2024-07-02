@@ -777,49 +777,49 @@
 				{
 					"command": "apps-sdk.local-dev.clone-to-workspace",
 					"group": "z_commands",
-					"when": "isPreReleaseVersion && (viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
+					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
 				}
 			],
 			"explorer/context": [
 				{
 					"command": "apps-sdk.local-dev.pull-all-components",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json'"
+					"when": "resourceFilename == 'makecomapp.json'"
 				},
 				{
 					"command": "apps-sdk.local-dev.deploy",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename != undefined"
+					"when": "resourceFilename != undefined"
 				},
 				{
 					"command": "apps-sdk.local-dev.file-compare",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename =~ /^((README\\.md)|(base\\.iml\\.json)|(common\\.json)|(groups\\.json)|(.*\\.common\\.json)|(.*\\.(communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples)\\.iml.json))|(.*\\.(code|test)\\.js)$/"
+					"when": "resourceFilename =~ /^((README\\.md)|(base\\.iml\\.json)|(common\\.json)|(groups\\.json)|(.*\\.common\\.json)|(.*\\.(communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples)\\.iml.json))|(.*\\.(code|test)\\.js)$/"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-connection",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'connections'"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-webhook",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'webhooks'"
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'webhooks'"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-module",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'modules'"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-rpc",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'rpc'"
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'rpc'"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-imlfunction",
 					"group": "7_modification",
-					"when": "isPreReleaseVersion && resourceFilename == 'makecomapp.json' || resourceFilename == 'functions'"
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'functions'"
 				}
 			]
 		},
