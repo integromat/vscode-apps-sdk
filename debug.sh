@@ -6,4 +6,4 @@
 npm run compile
 
 # Run Visual Code with compiled extension (no installation needed)
-code --disable-extensions --extensionDevelopmentPath=$(pwd) --extensionDevelopmentPath=$(pwd)
+code --disable-extensions --extensionDevelopmentPath=$(pwd)
