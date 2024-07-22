@@ -1,13 +1,5 @@
-node_modules
-.vscode-test/
-*.vsix
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/vscode-apps-sdk.iml
-.idea/workspace.xml
-.idea/inspectionProfiles/Project_Default.xml
-.DS_Store
-local
+.secrets
+
+.idea
+/node_modules
 out
-src/__is-pre-release-build.ts
