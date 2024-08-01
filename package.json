@@ -892,7 +892,7 @@
 		"eslint-config-prettier": "^9.1.0",
 		"glob": "^10.4.1",
 		"mocha": "^10.7.0",
-		"typescript": "^5.5.3"
+		"typescript": "^5.5.4"
 	},
 	"dependencies": {
 		"@integromat/iml": "^3.0.0",
