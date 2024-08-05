@@ -212,7 +212,7 @@
 					]
 				}
 			},
-			"additionalProperties": false
+			"additionalProperties": true
 		},
 		"uid": {
 			"description": "This directive allows you to save the user’s remote service Id. This is required when using Shared Webhooks.",
