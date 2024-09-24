@@ -879,20 +879,24 @@
 		"vscePublishPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce publish --pre-release && npm run __deletePrereleaseFlag"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.11.1",
+		"@stylistic/eslint-plugin": "^2.8.0",
+		"@types/eslint__js": "^8.42.3",
+		"@types/eslint-config-prettier": "^6.11.3",
 		"@types/lodash": "^4.17.7",
 		"@types/mocha": "^10.0.7",
 		"@types/node": "~18.15.0",
 		"@types/uuid": "^10.0.0",
 		"@types/vscode": "^1.82.0",
-		"@typescript-eslint/eslint-plugin": "^7.16.1",
-		"@typescript-eslint/parser": "^7.16.1",
 		"@vscode/test-electron": "^2.4.1",
-		"eslint": "^8.57.0",
+		"eslint": "^9.11.1",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^9.1.0",
 		"glob": "^10.4.1",
+		"globals": "^15.9.0",
 		"mocha": "^10.7.0",
-		"typescript": "^5.5.3"
+		"typescript": "~5.5.2",
+		"typescript-eslint": "^8.7.0"
 	},
 	"dependencies": {
 		"@integromat/iml": "^3.0.0",
