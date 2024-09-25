@@ -6,14 +6,13 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
 	{
-		// includes: ['src/**'], TODO
-		ignores: ['src/imljson-language-features/**/*'],
+		files: ['src/**/*.{js,mjs,cjs,ts}'],
+		ignores: ['syntaxes/imljson-language-features/**'],
 	},
 	eslint.configs.recommended,
 	{
 		languageOptions: {
 			ecmaVersion: 'latest',
-			sourceType: 'commonjs',
 			globals: {
 				...globals.node,
 			}
@@ -23,7 +22,7 @@ export default [
 		},
 		rules: {
 			"@stylistic/semi": [2, "always"],
-			"no-unused-vars": ["error", {  "argsIgnorePattern": "^_" }],  // Add ignoring the `_paramName`
+			"no-unused-vars": ["error", {  "argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }],  // Add ignoring the `_paramName`
 		},
 	},
 	...tseslint.config({
@@ -34,6 +33,7 @@ export default [
 			...tseslint.configs.stylistic,
 		],
 		rules: {
+			"@typescript-eslint/no-unused-vars": ["error", {  "argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }],  // Add ignoring the `_paramName`
 			"@stylistic/max-len": ["warn", 120, { "ignoreStrings": true, "ignoreComments": true, "ignoreTemplateLiterals": true }],  // Line width 80 -> 120
 			"no-tabs": "off",  // This project uses tabs instead of spaces as default.
 			"quote-props": ["error", "as-needed"],
@@ -46,7 +46,7 @@ export default [
 			"padded-blocks": "off", // Allow to start and end block ith blank lines.
 			"no-multi-spaces": ["error", { "ignoreEOLComments": true }],  // Ignore multiple spaces before comments that occur at the end of lines
 			"operator-linebreak": ["error", "after", { "overrides": { "?": "before", ":": "before" } }], // Align with Prettier
-			// "no-explicit-any": "off",  // Test if it is doing anything
+			"@typescript-eslint/no-explicit-any": "off",  // Used on many places in vscode extension. :(
 			"camelcase": ["error", { "allow": ["^testsOnly_"] }],
 		},
 	}),

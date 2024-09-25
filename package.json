@@ -868,6 +868,7 @@
 		"vscode:prepublish": "npm ci && npm run compile && cat out/__is-pre-release-build.js>/dev/null",
 		"compile": "rm -rf ./out && tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"watch": "tsc -watch -p ./",
+		"eslint": "eslint -c eslint.config.mjs src",
 		"extension:debug": "./debug.sh",
 		"test": "npm run compile && node ./out/test/runTest.js",
 		"testToJsonFile": "npm run compile && MOCHA_OUTPUT_FILE=tests-report.json node ./out/test/runTest.js",
@@ -895,7 +896,7 @@
 		"glob": "^10.4.1",
 		"globals": "^15.9.0",
 		"mocha": "^10.7.0",
-		"typescript": "~5.5.2",
+		"typescript": "^5.6.2",
 		"typescript-eslint": "^8.7.0"
 	},
 	"dependencies": {
