@@ -554,6 +554,14 @@
 										"description": "Specifies minimum length.",
 										"type": "number"
 									},
+									"minItems": {
+										"type": "integer",
+										"description": "Specifies minimum length that an array parameter can have."
+									},
+									"maxItems": {
+										"type": "integer",
+										"description": "Specifies maximum length that an array parameter can have."
+									},
 									"pattern": {
 										"description": "Specifies a RegExp pattern that a text parameter should conform to.",
 										"type": "string"
