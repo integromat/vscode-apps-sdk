@@ -6,6 +6,7 @@ import { askFreeText } from './helpers/ask-free-text';
 import { Crud } from './types/crud.types';
 import { optionalAddModuleToDefaultGroup } from './groups-json';
 import { createLocalEmptyComponent } from './create-local-empty-component';
+import { askForLinkConnection } from './helpers/ask-connection';
 import { catchError } from '../error-handling';
 import { moduleTypes } from '../services/module-types-naming';
 import { ModuleType } from '../types/component-types.types';
@@ -84,6 +85,30 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	 * }
 	 */
 
+	// Ask for CRUD
+	let actionCrud: Crud | null = null;
+	if (moduleTypePick.id === 'action') {
+		const actionCrudPick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: Crud | null }>(
+			[...crudTypes.map((crud) => ({ label: crud!, id: crud })), { label: '- empty -', id: null }],
+			{ ignoreFocusOut: true, title: 'Select the type of action module to be created' },
+		);
+		if (!actionCrudPick) {
+			return; /* Cancelled by user */
+		}
+		actionCrud = actionCrudPick.id;
+	}
+
+	// Ask for linked connection
+	const linkedConnection = await askForLinkConnection(makeappRootDir, 'connection');
+	if (linkedConnection === undefined) {
+		return; /* Cancelled by user */
+	}
+
+	const linkedAltConnection = await askForLinkConnection(makeappRootDir, 'alternative Connection');
+	if (linkedAltConnection === undefined) {
+		return; /* Cancelled by user */
+	}
+
 	// Instant trigger: Ask for mandatory webhook
 	let instantTriggerWebhookLocalId: string | undefined = undefined;
 	if (moduleTypePick.id === 'instant_trigger') {
@@ -110,24 +135,13 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 		instantTriggerWebhookLocalId = webhookPick.id;
 	}
 
-	// Ask for CRUD
-	let actionCrud: Crud | null = null;
-	if (moduleTypePick.id === 'action') {
-		const actionCrudPick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: Crud | null }>(
-			[...crudTypes.map((crud) => ({ label: crud!, id: crud })), { label: '- empty -', id: null }],
-			{ ignoreFocusOut: true, title: 'Select the type of action module to be created' },
-		);
-		if (!actionCrudPick) {
-			return; /* Cancelled by user */
-		}
-		actionCrud = actionCrudPick.id;
-	}
-
 	const moduleMetadata: AppComponentMetadata = {
 		label: moduleLabel,
 		description: moduleDescription,
 		moduleType: moduleTypePick.id,
 		actionCrud: actionCrud,
+		connection: linkedConnection,
+		altConnection: linkedAltConnection,
 		webhook: instantTriggerWebhookLocalId,
 	};
 
