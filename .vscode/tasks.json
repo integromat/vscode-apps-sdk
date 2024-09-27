@@ -22,7 +22,7 @@
 			"label": "Check for all ESLint problems in *.ts",
 			"command": "eslint",
 			"type": "shell",
-			"args": ["-c", "./.eslintrc.json", "${workspaceRoot}/src/**/*.ts"],
+			"args": ["-c", "./eslint.config.mjs", "${workspaceRoot}/src/**/*.ts"],
 			"options": {
 			  "cwd": "${workspaceRoot}",
 			},
