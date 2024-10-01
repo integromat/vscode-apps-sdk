@@ -896,8 +896,8 @@
 		"glob": "^10.4.1",
 		"globals": "^15.9.0",
 		"mocha": "^10.7.0",
-		"typescript": "~5.5",
-		"typescript-eslint": "^8.7.0"
+		"typescript": "~5.6",
+		"typescript-eslint": "^8.8.0"
 	},
 	"dependencies": {
 		"@integromat/iml": "^3.0.0",
