@@ -14,6 +14,7 @@ import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
 import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
+import md5 from 'md5';
 
 /**
  * Download code from the Make API and save it to the local destination
@@ -145,12 +146,14 @@ export async function deployComponentCode({
 	codeType,
 	origin,
 	sourcePath,
+	originChecksum
 }: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
+	originChecksum?: string | undefined | null,
 }): Promise<void> {
 	progresDialogReport(
 		`Deploying file ${path.basename(sourcePath.fsPath)} to origin ${
@@ -175,25 +178,30 @@ export async function deployComponentCode({
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
-	// Get the code from the API
-	const axiosConfig: AxiosRequestConfig = {
-		url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
-		method: 'PUT',
-		headers: {
-			Authorization: 'Token ' + origin.apikey,
-			'Content-Type': codeDef.mimetype,
-			'imt-vsce-localmode': 'true',
-			'imt-apps-sdk-version': ExtensionVersion,
-		},
-		data: sourceContent,
-		transformRequest: (data) => data, // Do not expect the `data` to be JSON
-	};
-	await requestMakeApi(axiosConfig);
+	const localChecksum = md5(sourceContent);
+	if (originChecksum !== localChecksum){
+		// Get the code from the API
+		const axiosConfig: AxiosRequestConfig = {
+			url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
+			method: 'PUT',
+			headers: {
+				Authorization: 'Token ' + origin.apikey,
+				'Content-Type': codeDef.mimetype,
+				'imt-vsce-localmode': 'true',
+				'imt-apps-sdk-version': ExtensionVersion,
+			},
+			data: sourceContent,
+			transformRequest: (data) => data, // Do not expect the `data` to be JSON
+		};
+		await requestMakeApi(axiosConfig);
+	} else {
+		log('info', `Skipping deployment of component ${appComponentType} with name ‘${remoteComponentName}’: local is identical to origin.`);
+	}
 
 	progresDialogReport('');
 }
 
-function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
+export function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
 	return componentType === 'app'
 		? getGeneralCodeDefinition(codeType as GeneralCodeType)
 		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
