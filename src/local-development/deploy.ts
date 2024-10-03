@@ -15,9 +15,6 @@ import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
-import type { AxiosRequestConfig } from 'axios';
-import { requestMakeApi } from '../utils/request-api-make';
-import { Checksum } from './types/checksum.types';
 import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 
 export function registerCommands(): void {

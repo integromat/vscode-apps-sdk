@@ -23,7 +23,7 @@ export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret) 
 	return { modules: [], rpcs: [], functions: [], accounts: [], hooks: [] };
 }
 
-export function findOriginChecksum(checksums: Checksum | undefined | null, componentType: AppComponentType | AppGeneralType, remoteComponentName: string, codeType: CodeType): string | null {
+export function findOriginChecksum(checksums: Checksum | undefined | null, componentType: AppComponentType | AppGeneralType, remoteComponentName: string, codeType: CodeType): string[] | null {
 	if (!checksums) {
 		return null;
 	}
@@ -50,13 +50,14 @@ export function findOriginChecksum(checksums: Checksum | undefined | null, compo
 		return null;
 	}
 
+	const outChecksums: string[] = [];
 	if (checksum[`${codeDef.apiCodeType}_jsonc`]) {
-		return checksum[`${codeDef.apiCodeType}_jsonc`];
+		outChecksums.push(checksum[`${codeDef.apiCodeType}_jsonc`] || '');
 	}
 
 	if (checksum[codeDef.apiCodeType]) {
-		return checksum[codeDef.apiCodeType];
+		outChecksums.push(checksum[codeDef.apiCodeType]  || '');
 	}
 
-	return null;
+	return outChecksums;
 }

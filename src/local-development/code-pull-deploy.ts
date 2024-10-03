@@ -153,7 +153,7 @@ export async function deployComponentCode({
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
-	originChecksum?: string | undefined | null,
+	originChecksum?: string[] | undefined | null,
 }): Promise<void> {
 	progresDialogReport(
 		`Deploying file ${path.basename(sourcePath.fsPath)} to origin ${
@@ -179,7 +179,7 @@ export async function deployComponentCode({
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
 	const localChecksum = md5(sourceContent);
-	if (originChecksum !== localChecksum){
+	if (!originChecksum?.includes(localChecksum)){
 		// Get the code from the API
 		const axiosConfig: AxiosRequestConfig = {
 			url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
