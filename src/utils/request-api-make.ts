@@ -4,6 +4,7 @@ import throat from 'throat';
 import { progresDialogReport } from './vscode-progress-dialog';
 import * as Meta from '../Meta';
 import { errorToString } from '../error-handling';
+import { log } from '../output-channel';
 
 const limitConcurrently = throat(2);
 
@@ -21,6 +22,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T>;
 export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> {
 	try {
 		return await limitConcurrently(async () => {
+			log('debug', `Make API Call: [${config.method?.toUpperCase() || 'GET'}] ${config.url}.`);
 			try {
 				return (
 					await axios<T>({

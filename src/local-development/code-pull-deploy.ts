@@ -154,7 +154,7 @@ export async function deployComponentCode({
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
 	originChecksum?: string[] | undefined | null,
-}): Promise<void> {
+}): Promise<boolean> {
 	progresDialogReport(
 		`Deploying file ${path.basename(sourcePath.fsPath)} to origin ${
 			origin.label ?? origin.appId
@@ -178,7 +178,8 @@ export async function deployComponentCode({
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
-	const localChecksum = md5(sourceContent);
+	let deployed = false;
+	const localChecksum = md5(sourceContent.toString());
 	if (!originChecksum?.includes(localChecksum)){
 		// Get the code from the API
 		const axiosConfig: AxiosRequestConfig = {
@@ -194,11 +195,13 @@ export async function deployComponentCode({
 			transformRequest: (data) => data, // Do not expect the `data` to be JSON
 		};
 		await requestMakeApi(axiosConfig);
+		deployed = true;
 	} else {
 		log('info', `Skipping deployment of component ${appComponentType} with name ‘${remoteComponentName}’: local is identical to origin.`);
 	}
 
 	progresDialogReport('');
+	return deployed;
 }
 
 export function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {

@@ -15,7 +15,7 @@ import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
-import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
+import { compareChecksumDeep, downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -103,9 +103,10 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 
 				// Upload via API
+				let deployed = false;
 				try {
 					const originChecksum = findOriginChecksum(originChecksums, componentCode.componentType, remoteComponentName, componentCode.codeType);
-					await deployComponentCode({
+					deployed = await deployComponentCode({
 						appComponentType: componentCode.componentType,
 						remoteComponentName: remoteComponentName,
 						codeType: componentCode.codeType,
@@ -118,10 +119,12 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					errors.push({ errorMessage: e.message, ...componentCode });
 				}
 				// Log 'done' to console
-				log(
-					'debug',
-					`Deployed ${componentCode.componentType} ${componentCode.componentLocalId} ${componentCode.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
-				);
+				if (deployed) {
+					log(
+						'debug',
+						`Deployed ${componentCode.componentType} ${componentCode.componentLocalId} ${componentCode.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
+					);
+				}
 
 				// Handle the user "cancel" button press
 				if (canceled) {
@@ -169,6 +172,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 						componentLocalMetadata,
 						makecomappJson,
 						origin,
+						originChecksums
 					);
 				} catch (e: any) {
 					errors.push({

@@ -4,6 +4,7 @@ export interface Checksum {
 	functions: ComponentChecksum[];
 	accounts: ComponentChecksum[];
 	hooks: ComponentChecksum[];
+	app: ComponentChecksum[];
 };
 
 export interface ComponentChecksum {
