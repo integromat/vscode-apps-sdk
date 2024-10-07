@@ -106,6 +106,10 @@ export function findOriginChecksum(checksums: Checksum | undefined | null, compo
 		outChecksums.push(checksum[codeDef.apiCodeType] || '');
 	}
 
+	if (outChecksums.length === 0){
+		log('warn', `Some field was not found in checksum list componentType=${componentType} codeType=${codeType}, apiCodeType=${codeDef.apiCodeType}`);
+	}
+
 	return outChecksums;
 }
 
