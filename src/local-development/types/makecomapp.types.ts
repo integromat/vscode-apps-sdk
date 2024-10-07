@@ -41,7 +41,10 @@ interface ComponentIdMappingItem {
 	remote: string | null;
 }
 
-/** Component ID => Component metadata or null (null can be temporary in makecomapp.json file) */
+/**
+ * Component ID => Component metadata or null (null can be temporary in makecomapp.json file)
+ * @additionalProperties true
+ */
 type AppComponentsMetadata<T> = Record<string, T | null>; // Note: `null` is used only temporary if component name is reserved, but not implemeted yet.
 
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
