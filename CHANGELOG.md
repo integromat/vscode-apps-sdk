@@ -6,6 +6,7 @@ Unreleased (yet)
 
 - Fixed the IML spead operator`"{{...}}": "{{something}}"` highlighting.
 - Improved wizard of new module: Added questions for connection and alternative connection.
+- Added the in-editor validation of `makecomapp.json` project file.
 
 2.0.0 [2024-07-02]
 --------------------
