@@ -49,7 +49,6 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 		return;
 	}
 
-	const originChecksums = await downloadOriginChecksums(origin);
 	await withProgressDialog(
 		{ title: `Deploying ${codesToDeploy.length} code${codesToDeploy.length !== 1 ? 's' : ''}`, cancellable: true },
 		async (progress, cancellationToken) => {
@@ -59,6 +58,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			});
 
 			progresDialogReport('Initial analytics');
+
+			const originChecksums = await downloadOriginChecksums(origin);
 
 			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
 			await alignComponentsMapping(makeappRootdir, origin, originChecksums, 'askUser', 'ignore');
