@@ -871,7 +871,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm ci && npm run compile && cat out/__is-pre-release-build.js>/dev/null",
+		"vscode:prepublish": "npm run schema:makecomapp && npm ci && npm run compile && cat out/__is-pre-release-build.js>/dev/null",
 		"compile": "rm -rf ./out && tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"watch": "tsc -watch -p ./",
 		"eslint": "eslint -c eslint.config.mjs src",
