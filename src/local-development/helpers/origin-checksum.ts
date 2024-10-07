@@ -6,7 +6,7 @@ import type { AxiosRequestConfig } from 'axios';
 import { requestMakeApi } from '../../utils/request-api-make';
 import { log } from '../../output-channel';
 import { LocalAppOriginWithSecret } from '../types/makecomapp.types';
-import md5 from 'md5';
+import { md5 } from './md5';
 
 export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret): Promise<Checksum> {
 	try {

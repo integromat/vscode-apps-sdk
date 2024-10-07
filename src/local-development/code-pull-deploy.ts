@@ -14,7 +14,7 @@ import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
 import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
-import md5 from 'md5';
+import { md5 } from './helpers/md5';
 
 /**
  * Download code from the Make API and save it to the local destination
