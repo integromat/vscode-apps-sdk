@@ -917,7 +917,7 @@
 		"axios": "^1.7.7",
 		"compressing": "^1.10.1",
 		"image-downloader": "^4.3.0",
-		"jimp": "^0.22.12",
+		"jimp": "^1.6.0",
 		"jsonc-parser": "^3.3.1",
 		"lodash": "^4.17.21",
 		"request-light": "^0.8.0",
