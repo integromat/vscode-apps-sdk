@@ -904,7 +904,8 @@
 		"globals": "^15.9.0",
 		"mocha": "^10.7.0",
 		"typescript": "~5.5",
-		"typescript-eslint": "^8.7.0"
+ 		"typescript-eslint": "^8.7.0",
+		"typescript-json-schema": "^0.65.1"
 	},
 	"dependencies": {
 		"@integromat/iml": "^3.0.0",
