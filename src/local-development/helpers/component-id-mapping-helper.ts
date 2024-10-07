@@ -6,7 +6,8 @@ import { AppComponentType, AppGeneralType } from '../../types/app-component-type
  * Provides helping function to find remote component name from local ID and vice versa.
  */
 export class ComponentIdMappingHelper {
-	constructor(private makecomappJson: MakecomappJson, private origin: LocalAppOrigin) {}
+	constructor(private makecomappJson: MakecomappJson, private origin: LocalAppOrigin) {
+	}
 
 	getRemoteName(componentType: AppComponentType | AppGeneralType, localId: string): string | null | undefined {
 		if (componentType === 'app') {

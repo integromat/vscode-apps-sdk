@@ -54,7 +54,7 @@ export async function pullAllComponents(
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
-	originChecksums: Checksum
+	originChecksums: Checksum,
 ): Promise<void> {
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
 	await alignComponentsMapping(
@@ -89,10 +89,10 @@ export async function pullAllComponents(
 	// Note: All remote components already have local counterparts due to previously called `alignComponentsMapping()`.
 	for (const componentType of getAppComponentTypes()) {
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
-			const checksums = getComponentChecksumArray(originChecksums, componentType);
-			const originNames = checksums.map((checksum) => {
-				return checksum.name;
-			});
+		const checksums = getComponentChecksumArray(originChecksums, componentType);
+		const originNames = checksums.map((checksum) => {
+			return checksum.name;
+		});
 
 		for (const remoteComponentName of originNames) {
 			const componentLocalId = componentIdMapping.getExistingLocalId(componentType, remoteComponentName);

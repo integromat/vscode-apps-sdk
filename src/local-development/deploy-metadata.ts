@@ -19,7 +19,7 @@ export async function deployComponentMetadata(
 	componentMetadata: AppComponentMetadata,
 	makecomappJson: MakecomappJson,
 	origin: LocalAppOriginWithSecret,
-	originChecksum: Checksum
+	originChecksum: Checksum,
 ): Promise<void> {
 	log(
 		'debug',
@@ -60,7 +60,7 @@ export async function deployComponentMetadata(
 			data: metadataToUpdate,
 		};
 		await requestMakeApi(axiosConfig);
-	}else {
+	} else {
 		log('info', `Skipping metadata deployment of component '${componentType}' with name ‘${remoteComponentName}’: local is identical to origin.`);
 	}
 

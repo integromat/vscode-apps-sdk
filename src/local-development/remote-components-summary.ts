@@ -1,6 +1,7 @@
 import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import { getAppComponentDetails
+import {
+	getAppComponentDetails,
 } from '../services/get-app-components';
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { AppComponentType } from '../types/app-component-type.types';

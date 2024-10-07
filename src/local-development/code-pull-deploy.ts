@@ -26,12 +26,12 @@ import { md5 } from './helpers/md5';
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function pullComponentCode({
-	appComponentType,
-	remoteComponentName,
-	codeType,
-	origin,
-	destinationPath,
-}: {
+											appComponentType,
+											remoteComponentName,
+											codeType,
+											origin,
+											destinationPath,
+										}: {
 	appComponentType: AppComponentType | AppGeneralType;
 	remoteComponentName: string;
 	codeType: CodeType;
@@ -68,11 +68,11 @@ export async function pullComponentCode({
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function downloadComponentCode({
-	appComponentType,
-	remoteComponentName,
-	codeType,
-	origin,
-}: {
+												appComponentType,
+												remoteComponentName,
+												codeType,
+												origin,
+											}: {
 	appComponentType: AppComponentType | AppGeneralType;
 	remoteComponentName: string;
 	codeType: CodeType;
@@ -121,11 +121,11 @@ export async function downloadComponentCode({
  * @private
  */
 function getCodeApiUrl({
-	appComponentType,
-	remoteComponentName,
-	apiCodeType,
-	origin,
-}: {
+						   appComponentType,
+						   remoteComponentName,
+						   apiCodeType,
+						   origin,
+					   }: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	apiCodeType: ApiCodeType;
@@ -141,13 +141,13 @@ function getCodeApiUrl({
 }
 
 export async function deployComponentCode({
-	appComponentType,
-	remoteComponentName,
-	codeType,
-	origin,
-	sourcePath,
-	originChecksum
-}: {
+											  appComponentType,
+											  remoteComponentName,
+											  codeType,
+											  origin,
+											  sourcePath,
+											  originChecksum,
+										  }: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	codeType: CodeType;
@@ -179,7 +179,7 @@ export async function deployComponentCode({
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
 	const localChecksum = md5(sourceContent.toString());
-	if (!originChecksum?.includes(localChecksum)){
+	if (!originChecksum?.includes(localChecksum)) {
 		// Get the code from the API
 		const axiosConfig: AxiosRequestConfig = {
 			url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),

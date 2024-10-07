@@ -19,7 +19,7 @@ export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret):
 		};
 		return await requestMakeApi(axiosConfig);
 	} catch (err: any) {
-		throw new Error(`Could not load checksum for components with error ${err.message}`)
+		throw new Error(`Could not load checksum for components with error ${err.message}`);
 	}
 }
 
@@ -106,7 +106,7 @@ export function findOriginChecksum(checksums: Checksum | undefined | null, compo
 		outChecksums.push(checksum[codeDef.apiCodeType] || '');
 	}
 
-	if (outChecksums.length === 0){
+	if (outChecksums.length === 0) {
 		log('warn', `Some field was not found in checksum list componentType=${componentType} codeType=${codeType}, apiCodeType=${codeDef.apiCodeType}`);
 	}
 
