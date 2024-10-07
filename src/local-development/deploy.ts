@@ -181,7 +181,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				showErrorDialog(`Failed ${errors.length} of ${codesToDeploy.length} codes deployments`, {
 					modal: true,
 					detail:
-					// Display first X errors
+						// Display first X errors
 						errors
 							.filter((_value, index) => index < MAX_DISPLAYED_ERRORS)
 							.map((deploymentError) => deploymentErrorToString(deploymentError, true))
