@@ -99,10 +99,9 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 
 				// Upload via API
-				let deployed = false;
 				try {
 					const originChecksum = findOriginChecksum(originChecksums, componentCode.componentType, remoteComponentName, componentCode.codeType);
-					deployed = await deployComponentCode({
+					await deployComponentCode({
 						appComponentType: componentCode.componentType,
 						remoteComponentName: remoteComponentName,
 						codeType: componentCode.codeType,
@@ -113,13 +112,6 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				} catch (e: any) {
 					log('error', e.message);
 					errors.push({ errorMessage: e.message, ...componentCode });
-				}
-				// Log 'done' to console
-				if (deployed) {
-					log(
-						'debug',
-						`Deployed ${componentCode.componentType} ${componentCode.componentLocalId} ${componentCode.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
-					);
 				}
 
 				// Handle the user "cancel" button press
