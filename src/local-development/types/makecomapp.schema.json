@@ -2,27 +2,27 @@
     "$ref": "#/definitions/MakecomappJson.5cc24f7a",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.78d555ad": {
+        "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92": {
             "additionalProperties": false,
             "properties": {
                 "connection": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
                     "title": "connection"
                 },
                 "function": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
                     "title": "function"
                 },
                 "module": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
                     "title": "module"
                 },
                 "rpc": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
                     "title": "rpc"
                 },
                 "webhook": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
                     "title": "webhook"
                 }
             },
@@ -33,16 +33,16 @@
                 "rpc",
                 "webhook"
             ],
-            "title": "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+            "title": "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
             "type": "object"
         },
-        "AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad": {
+        "AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92": {
             "additionalProperties": true,
             "description": "Component ID => Component metadata or null (null can be temporary in makecomapp.json file)",
-            "title": "AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+            "title": "AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
             "type": "object"
         },
-        "ComponentIdMapping.78d555ad": {
+        "ComponentIdMapping.1862ee92": {
             "additionalProperties": false,
             "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).",
             "properties": {
@@ -89,7 +89,7 @@
                 "rpc",
                 "webhook"
             ],
-            "title": "ComponentIdMapping.78d555ad",
+            "title": "ComponentIdMapping.1862ee92",
             "type": "object"
         },
         "ComponentIdMappingItem.45dde692": {
@@ -119,7 +119,7 @@
             "title": "ComponentIdMappingItem.45dde692",
             "type": "object"
         },
-        "GeneralCodeFilesMetadata.78d555ad": {
+        "GeneralCodeFilesMetadata.1862ee92": {
             "additionalProperties": false,
             "description": "General Code Type => Code Local File Path.\n\n If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).\n The `null` used primarly for common data in case a developer decided to not include common data in local project.",
             "properties": {
@@ -158,7 +158,7 @@
                 "groups",
                 "readme"
             ],
-            "title": "GeneralCodeFilesMetadata.78d555ad",
+            "title": "GeneralCodeFilesMetadata.1862ee92",
             "type": "object"
         },
         "LocalAppOrigin.a969b7ca": {
@@ -182,7 +182,7 @@
                     "type": "string"
                 },
                 "idMapping": {
-                    "$ref": "#/definitions/ComponentIdMapping.78d555ad",
+                    "$ref": "#/definitions/ComponentIdMapping.1862ee92",
                     "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).",
                     "title": "idMapping"
                 },
@@ -205,7 +205,7 @@
             "additionalProperties": false,
             "properties": {
                 "components": {
-                    "$ref": "#/definitions/AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.78d555ad",
+                    "$ref": "#/definitions/AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
                     "title": "components"
                 },
                 "fileVersion": {
@@ -213,7 +213,7 @@
                     "type": "number"
                 },
                 "generalCodeFiles": {
-                    "$ref": "#/definitions/GeneralCodeFilesMetadata.78d555ad",
+                    "$ref": "#/definitions/GeneralCodeFilesMetadata.1862ee92",
                     "title": "generalCodeFiles"
                 },
                 "origins": {
