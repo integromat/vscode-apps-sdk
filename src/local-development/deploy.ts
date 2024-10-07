@@ -15,7 +15,7 @@ import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
-import { compareChecksumDeep, downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
+import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
