@@ -1,7 +1,6 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { deployComponentCode } from './code-pull-deploy';
-import { getRemoteComponentsSummary } from './remote-components-summary';
 import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { alignComponentsMapping } from './align-components-mapping';
@@ -15,7 +14,7 @@ import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
-import { compareChecksumDeep, downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
+import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -61,11 +60,8 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 			progresDialogReport('Initial analytics');
 
-			// Get all existing remote components
-			const remoteComponentsSummary = await getRemoteComponentsSummary(anyProjectPath, origin);
-
 			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
-			await alignComponentsMapping(makeappRootdir, origin, remoteComponentsSummary, 'askUser', 'ignore');
+			await alignComponentsMapping(makeappRootdir, origin, originChecksums, 'askUser', 'ignore');
 			// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
 			makecomappJson = await getMakecomappJson(anyProjectPath);
 

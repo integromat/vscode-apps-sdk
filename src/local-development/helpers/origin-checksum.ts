@@ -19,45 +19,67 @@ export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret):
 		};
 		return await requestMakeApi(axiosConfig);
 	} catch (err: any) {
-		log('warn', `Could not load checksum for components with error ${err.message}`);
+		throw new Error(`Could not load checksum for components with error ${err.message}`)
 	}
-	return { modules: [], rpcs: [], functions: [], accounts: [], hooks: [], app: [] };
 }
 
-function findOriginComponent(checksums: Checksum | undefined | null, componentType: AppComponentType | AppGeneralType, remoteComponentName: string) {
+export function getComponentChecksumArray(
+	checksums: Checksum,
+	componentType: AppComponentType | AppGeneralType,
+): ComponentChecksum[] {
+	switch (componentType) {
+		case 'connection':
+			return checksums.accounts;
+		case 'webhook':
+			return checksums.hooks;
+		case 'function':
+			return checksums.functions;
+		case 'module':
+			return checksums.modules;
+		case 'rpc':
+			return checksums.rpcs;
+		case 'app':
+			return checksums.app;
+		default:
+			return [];
+	}
+}
+
+function getChecksumForComponent(
+	componentChecksums: ComponentChecksum[],
+	componentType: AppComponentType | AppGeneralType,
+	remoteComponentName?: string,
+): Record<string, string | null> | null {
+	if (componentType === 'app') {
+		return componentChecksums[0]?.checksum || null;
+	}
+	const checksum = componentChecksums.find(
+		(checksum) => checksum.name === remoteComponentName,
+	)?.checksum;
+	return checksum || null;
+}
+
+export function findOriginComponent(
+	checksums: Checksum | undefined | null,
+	componentType: AppComponentType | AppGeneralType,
+	remoteComponentName?: string,
+): Record<string, string | null> | null {
 	if (!checksums) {
 		return null;
 	}
 
-	let componentChecksum: ComponentChecksum[] = [];
-	if (componentType === 'connection') {
-		componentChecksum = checksums.accounts;
-	} else if (componentType === 'webhook') {
-		componentChecksum = checksums.hooks;
-	} else if (componentType === 'function') {
-		componentChecksum = checksums.functions;
-	} else if (componentType === 'module') {
-		componentChecksum = checksums.modules;
-	} else if (componentType === 'rpc') {
-		componentChecksum = checksums.rpcs;
-	} else if (componentType === 'app') {
-		componentChecksum = checksums.app;
-	}
-
-	if (componentType === 'app') {
-		return componentChecksum[0].checksum;
-	}
-	const checksum = componentChecksum.find(checksum => checksum.name === remoteComponentName)?.checksum;
-	if (!checksum) {
-		return null;
-	}
-	return checksum;
+	const componentChecksums = getComponentChecksumArray(checksums, componentType);
+	return getChecksumForComponent(
+		componentChecksums,
+		componentType,
+		remoteComponentName,
+	);
 }
 
 export function findOriginChecksum(checksums: Checksum | undefined | null, componentType: AppComponentType | AppGeneralType, remoteComponentName: string, codeType: CodeType): string[] | null {
 	const checksum = findOriginComponent(checksums, componentType, remoteComponentName);
 	if (!checksum) {
-		log('debug' ,`Not found origin component ${componentType}.`);
+		log('debug', `Not found origin component ${componentType}.`);
 		return null;
 	}
 
@@ -105,7 +127,7 @@ export function compareChecksumDeep(originChecksums: Checksum, componentType: Ap
 
 	for (const key of Object.keys(data)) {
 		const originKey = map[key];
-		if (!originKey || typeof checksum[originKey] === 'undefined'){
+		if (!originKey || typeof checksum[originKey] === 'undefined') {
 			log('warn', `Not found mapping for '${componentType}.${key}'.`);
 			return false;
 		}

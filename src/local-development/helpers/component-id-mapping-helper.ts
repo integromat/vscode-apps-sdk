@@ -93,7 +93,7 @@ export class ComponentIdMappingHelper {
 		const localId = this.getLocalId(componentType, remoteName);
 
 		if (localId === undefined) {
-			throw new Error(`No mapping found for remote name "${remoteName}"`);
+			throw new Error(`No mapping found for remote ${componentType} name "${remoteName}"`);
 		}
 
 		return localId;

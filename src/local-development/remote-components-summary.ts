@@ -1,104 +1,80 @@
-import * as vscode from 'vscode';
 import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import { RemoteComponentsSummary } from './types/remote-components-summary.types';
-import { getAppComponentTypes } from '../services/component-code-def';
-import { getAppComponentDetails, getAppComponents } from '../services/get-app-components';
-import {
-	ComponentsApiResponseConnectionItem,
-	ComponentsApiResponseItem,
-	ComponentsApiResponseModuleItem,
-	ComponentsApiResponseWebhookItem,
-} from '../types/get-component-api-response.types';
+import { getAppComponentDetails
+} from '../services/get-app-components';
 import { getModuleDefFromId } from '../services/module-types-naming';
+import { AppComponentType } from '../types/app-component-type.types';
 
 /**
- * Gets list of all components in remote origin (in Make).
- * All component references are in their remote component names (not as Local IDs).
+ * Gets component in remote origin (in Make).
  */
-export async function getRemoteComponentsSummary(
-	anyProjectPath: vscode.Uri,
+export async function getRemoteComponent(
 	origin: LocalAppOriginWithSecret,
-): Promise<RemoteComponentsSummary> {
-	const components: Awaited<ReturnType<typeof getRemoteComponentsSummary>> = {
-		connection: {},
-		webhook: {},
-		module: {},
-		rpc: {},
-		function: {},
-	};
-
+	componentType: AppComponentType,
+	componentName: string,
+): Promise<AppComponentMetadata> {
 	// Process all app's compoments
-	for (const appComponentType of getAppComponentTypes()) {
-		const appComponentSummaryList = await getAppComponents<ComponentsApiResponseItem>(appComponentType, origin);
+	const componentDetail = await getAppComponentDetails(
+		componentType,
+		componentName,
+		origin,
+	) as any;
 
-		for (const appComponentSummary of appComponentSummaryList) {
-			// Create section in makecomapp.json
-			const componentMetadata: AppComponentMetadata = {
-				label: appComponentSummary.label,
-			};
-			switch (appComponentType) {
-				case 'connection':
-					componentMetadata.connectionType = (
-						appComponentSummary as ComponentsApiResponseConnectionItem
-					).type;
-					break;
-				case 'webhook':
-					componentMetadata.webhookType = (appComponentSummary as ComponentsApiResponseWebhookItem).type;
+	// Create section in makecomapp.json
+	const componentMetadata: AppComponentMetadata = {
+		label: componentDetail.label,
+	};
+	switch (componentType) {
+		case 'connection':
+			componentMetadata.connectionType = componentDetail.type;
+			break;
+		case 'webhook':
+			componentMetadata.webhookType = componentDetail.type;
 
-					break;
-				case 'module':
-					componentMetadata.description = appComponentSummary.description;
-					componentMetadata.moduleType = getModuleDefFromId(
-						(appComponentSummary as ComponentsApiResponseModuleItem).typeId,
-					).type;
-					if (componentMetadata.moduleType === 'action') {
-						componentMetadata.actionCrud = (appComponentSummary as ComponentsApiResponseModuleItem).crud;
-					}
-					break;
+			break;
+		case 'module':
+			componentMetadata.description = componentDetail.description;
+			componentMetadata.moduleType = getModuleDefFromId(
+				componentDetail.typeId,
+			).type;
+			if (componentMetadata.moduleType === 'action') {
+				componentMetadata.actionCrud = componentDetail.crud;
 			}
+			break;
+	}
 
-			// Load additional/specific properties
-			if (['module', 'webhook', 'rpc'].includes(appComponentType)) {
-				const componentDetails = await getAppComponentDetails(
-					appComponentType,
-					appComponentSummary.name,
-					origin,
+	// Load additional/specific properties
+	if (['module', 'webhook', 'rpc'].includes(componentType)) {
+		// Add `connection` and `altConnection`
+		if (componentDetail.connection === undefined) {
+			// This should not occur on production. It is here for input validation only.
+			throw new Error(
+				`Missing expected property 'connection' on remote ${componentType} ${componentDetail.name}.`,
+			);
+		}
+		if (componentDetail.altConnection === undefined) {
+			// This should not occur on production. It is here for input validation only.
+			throw new Error(
+				`Missing expected property 'altConnection' on remote ${componentType} ${componentDetail.name}.`,
+			);
+		}
+		componentMetadata.connection = componentDetail.connection;
+
+		componentMetadata.altConnection = componentDetail.altConnection;
+
+		// Add reference from Instant Trigger to Webhook
+		if (componentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
+			if (componentDetail.webhook === undefined) {
+				// This should not occur on production. It is here for input validation only.
+				throw new Error(
+					`Missing expected property 'webhook' on remote ${componentDetail.moduleType} ${componentType} ${componentDetail.name}.`,
 				);
-				// Add `connection` and `altConnection`
-				if (componentDetails.connection === undefined) {
-					// This should not occure on production. It is here for input validation only.
-					throw new Error(
-						`Missing expected property 'connection' on remote ${appComponentType} ${appComponentSummary.name}.`,
-					);
-				}
-				if (componentDetails.altConnection === undefined) {
-					// This should not occure on production. It is here for input validation only.
-					throw new Error(
-						`Missing expected property 'altConnection' on remote ${appComponentType} ${appComponentSummary.name}.`,
-					);
-				}
-				componentMetadata.connection = componentDetails.connection;
-
-				componentMetadata.altConnection = componentDetails.altConnection;
-
-				// Add reference from Instant Trigger to Webhook
-				if (appComponentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
-					if (componentDetails.webhook === undefined) {
-						// This should not occure on production. It is here for input validation only.
-						throw new Error(
-							`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${appComponentType} ${appComponentSummary.name}.`,
-						);
-					}
-					componentMetadata.webhook = componentDetails.webhook;
-				}
 			}
-
-			components[appComponentType][appComponentSummary.name] = componentMetadata;
+			componentMetadata.webhook = componentDetail.webhook;
 		}
 	}
 
-	return components;
+	return componentMetadata;
 }
 
 /**
