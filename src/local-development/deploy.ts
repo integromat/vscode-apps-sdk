@@ -175,6 +175,23 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 			}
 
+			// #region Temporary special handling of "Access denied" of */functions/* (because IML function deployment is temporarily disabled for external users)
+			const imlFunctionsDeploymentErrors = [];
+			for (let i = errors.length - 1; i >= 0; i--) {
+				const err = errors[i];
+				if (err.componentType === 'function' && err.errorMessage.includes('Access denied')) {
+					// Move the error from `errors` to `imlFunctionsDeploymentErrors`.
+					errors.splice(i, 1);
+					imlFunctionsDeploymentErrors.push(err);
+				}
+			}
+			if (imlFunctionsDeploymentErrors.length > 0 /* TODO and hideWarning !== true */) {
+				showErrorDialog(`Access denied to deploy IML functions`, {
+					modal: true,
+					detail: `Rejected deployment of ${imlFunctionsDeploymentErrors.length} IML functions or tests, because external developers have currently no permission to deploy these codes directly. We apologize for inconveniences.`,
+				});
+			}
+
 			// Display errors
 			if (errors.length > 0) {
 				// Log errors
