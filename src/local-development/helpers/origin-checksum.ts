@@ -79,9 +79,7 @@ function getChecksumForComponent(
 		return componentChecksums[0]?.checksum || undefined;
 	}
 	// Find the component checksum matching the remote component name
-	const checksum = componentChecksums.find(
-		(checksum) => checksum.name === remoteComponentName,
-	)?.checksum;
+	const checksum = componentChecksums.find((checksum) => checksum.name === remoteComponentName)?.checksum;
 	return checksum || undefined;
 }
 
@@ -105,11 +103,7 @@ export function findOriginComponent(
 	// Get the array of checksums for the specified component type
 	const componentChecksums = getComponentChecksumArray(checksums, componentType);
 	// Get the checksum for the specific component
-	return getChecksumForComponent(
-		componentChecksums,
-		componentType,
-		remoteComponentName,
-	);
+	return getChecksumForComponent(componentChecksums, componentType, remoteComponentName);
 }
 
 /**
@@ -162,7 +156,10 @@ export function findOriginChecksum(
 	}
 
 	if (outChecksums.length === 0) {
-		log('warn', `Some field was not found in checksum list componentType=${componentType} codeType=${codeType}, apiCodeType=${codeDef.apiCodeType}`);
+		log(
+			'warn',
+			`Some field was not found in checksum list componentType=${componentType} codeType=${codeType}, apiCodeType=${codeDef.apiCodeType}`,
+		);
 	}
 
 	return outChecksums;
@@ -191,13 +188,13 @@ export function compareChecksumDeep(
 
 	// Mapping of local componentMetadataToUpdate keys to checksum keys
 	const localDataKeyToRemoteKeyMap: Record<string, string> = {
-		'label': 'label',
-		'description': 'description',
-		'typeId': 'type_id',
-		'actionCrud': 'crud',
-		'crud': 'crud',
-		'connection': 'account_name',
-		'altConnection': 'alt_account_name',
+		label: 'label',
+		description: 'description',
+		typeId: 'type_id',
+		actionCrud: 'crud',
+		crud: 'crud',
+		connection: 'account_name',
+		altConnection: 'alt_account_name',
 	};
 
 	// Iterate over the keys in the local componentMetadataToUpdate
@@ -214,7 +211,10 @@ export function compareChecksumDeep(
 		}
 
 		// Compare the MD5 hash of the local componentMetadataToUpdate value with the checksum
-		if (componentMetadataToUpdate[originKey] !== null && md5(String(componentMetadataToUpdate[key])) === checksum[originKey]) {
+		if (
+			componentMetadataToUpdate[originKey] !== null &&
+			md5(String(componentMetadataToUpdate[key])) === checksum[originKey]
+		) {
 			continue;
 		}
 

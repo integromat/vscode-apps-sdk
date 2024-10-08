@@ -47,7 +47,12 @@ export async function deployComponentMetadata(
 		return;
 	}
 
-	const metadataChecksumMatches = compareChecksumDeep(originChecksum, componentType, remoteComponentName, metadataToUpdate);
+	const metadataChecksumMatches = compareChecksumDeep(
+		originChecksum,
+		componentType,
+		remoteComponentName,
+		metadataToUpdate,
+	);
 	if (!metadataChecksumMatches) {
 		const componentUrl = getComponentApiUrl({ componentType, remoteComponentName, origin });
 
@@ -61,9 +66,11 @@ export async function deployComponentMetadata(
 		};
 		await requestMakeApi(axiosConfig);
 	} else {
-		log('info', `Skipping metadata deployment of component '${componentType}' with name ‘${remoteComponentName}’: local is identical to origin.`);
+		log(
+			'info',
+			`Skipping metadata deployment of component '${componentType}' with name ‘${remoteComponentName}’: local is identical to origin.`,
+		);
 	}
-
 
 	progresDialogReport('');
 }

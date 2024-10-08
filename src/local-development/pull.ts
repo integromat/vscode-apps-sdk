@@ -6,10 +6,7 @@ import {
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
 import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
-import {
-	convertComponentMetadataRemoteNamesToLocalIds,
-	getRemoteComponent,
-} from './remote-components-summary';
+import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { askForProjectOrigin } from './ask-origin';
@@ -57,13 +54,7 @@ export async function pullAllComponents(
 	originChecksums: Checksum,
 ): Promise<void> {
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
-	await alignComponentsMapping(
-		localAppRootdir,
-		origin,
-		originChecksums,
-		'ignore',
-		newRemoteComponentResolution,
-	);
+	await alignComponentsMapping(localAppRootdir, origin, originChecksums, 'ignore', newRemoteComponentResolution);
 	// Load fresh `makecomapp.json` file (because `alignComponentMapping()` changed it)
 	const makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
 

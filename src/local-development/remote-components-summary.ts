@@ -1,8 +1,6 @@
 import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import {
-	getAppComponentDetails,
-} from '../services/get-app-components';
+import { getAppComponentDetails } from '../services/get-app-components';
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { AppComponentType } from '../types/app-component-type.types';
 
@@ -15,11 +13,7 @@ export async function getRemoteComponent(
 	componentName: string,
 ): Promise<AppComponentMetadata> {
 	// Process all app's compoments
-	const componentDetail = await getAppComponentDetails(
-		componentType,
-		componentName,
-		origin,
-	) as any;
+	const componentDetail = (await getAppComponentDetails(componentType, componentName, origin)) as any;
 
 	// Create section in makecomapp.json
 	const componentMetadata: AppComponentMetadata = {
@@ -35,9 +29,7 @@ export async function getRemoteComponent(
 			break;
 		case 'module':
 			componentMetadata.description = componentDetail.description;
-			componentMetadata.moduleType = getModuleDefFromId(
-				componentDetail.typeId,
-			).type;
+			componentMetadata.moduleType = getModuleDefFromId(componentDetail.typeId).type;
 			if (componentMetadata.moduleType === 'action') {
 				componentMetadata.actionCrud = componentDetail.crud;
 			}

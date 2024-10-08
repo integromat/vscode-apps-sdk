@@ -26,12 +26,12 @@ import { md5 } from './helpers/md5';
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function pullComponentCode({
-											appComponentType,
-											remoteComponentName,
-											codeType,
-											origin,
-											destinationPath,
-										}: {
+	appComponentType,
+	remoteComponentName,
+	codeType,
+	origin,
+	destinationPath,
+}: {
 	appComponentType: AppComponentType | AppGeneralType;
 	remoteComponentName: string;
 	codeType: CodeType;
@@ -68,11 +68,11 @@ export async function pullComponentCode({
  *   - 	For module: api, parameteres, expect, interface, samples, scope
  */
 export async function downloadComponentCode({
-												appComponentType,
-												remoteComponentName,
-												codeType,
-												origin,
-											}: {
+	appComponentType,
+	remoteComponentName,
+	codeType,
+	origin,
+}: {
 	appComponentType: AppComponentType | AppGeneralType;
 	remoteComponentName: string;
 	codeType: CodeType;
@@ -121,11 +121,11 @@ export async function downloadComponentCode({
  * @private
  */
 function getCodeApiUrl({
-						   appComponentType,
-						   remoteComponentName,
-						   apiCodeType,
-						   origin,
-					   }: {
+	appComponentType,
+	remoteComponentName,
+	apiCodeType,
+	origin,
+}: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	apiCodeType: ApiCodeType;
@@ -141,19 +141,19 @@ function getCodeApiUrl({
 }
 
 export async function deployComponentCode({
-											  appComponentType,
-											  remoteComponentName,
-											  codeType,
-											  origin,
-											  sourcePath,
-											  originChecksum,
-										  }: {
+	appComponentType,
+	remoteComponentName,
+	codeType,
+	origin,
+	sourcePath,
+	originChecksum,
+}: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
-	originChecksum?: string[] | undefined | null,
+	originChecksum?: string[] | undefined | null;
 }) {
 	progresDialogReport(
 		`Deploying file ${path.basename(sourcePath.fsPath)} to origin ${
@@ -199,7 +199,10 @@ export async function deployComponentCode({
 			`Deployed ${appComponentType} ${sourcePath} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
 		);
 	} else {
-		log('info', `Skipping deployment of component ${appComponentType} with name ‘${remoteComponentName}’: local is identical to origin.`);
+		log(
+			'info',
+			`Skipping deployment of component ${appComponentType} with name ‘${remoteComponentName}’: local is identical to origin.`,
+		);
 	}
 
 	progresDialogReport('');

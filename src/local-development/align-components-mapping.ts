@@ -55,7 +55,6 @@ export async function alignComponentsMapping(
 		componentMetadata: AppComponentMetadata;
 	}[] = [];
 
-
 	// Fill `remoteOnly`
 	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
 	for (const componentType of allComponentTypes) {

@@ -42,13 +42,13 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 					// TODO Do not put the APi URL as part of error message. Instead of it, implement the log the URL based on `cause` original error. Implement it in `error-handling.ts` -> `showAndLogError()`.
 					throw new Error(
 						'Rejected the Make request ' +
-						(err.request?.method || '').toUpperCase() +
-						' ' +
-						err.request?.host +
-						err.request?.path +
-						', response: ' +
-						// Extract error messages from API response body
-						errorToString(err).message,
+							(err.request?.method || '').toUpperCase() +
+							' ' +
+							err.request?.host +
+							err.request?.path +
+							', response: ' +
+							// Extract error messages from API response body
+							errorToString(err).message,
 						{ cause: err },
 					);
 				}

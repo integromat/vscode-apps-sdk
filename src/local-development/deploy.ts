@@ -101,7 +101,12 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 				// Upload via API
 				try {
-					const originChecksum = findOriginChecksum(originChecksums, componentCode.componentType, remoteComponentName, componentCode.codeType);
+					const originChecksum = findOriginChecksum(
+						originChecksums,
+						componentCode.componentType,
+						remoteComponentName,
+						componentCode.codeType,
+					);
 					await deployComponentCode({
 						appComponentType: componentCode.componentType,
 						remoteComponentName: remoteComponentName,
