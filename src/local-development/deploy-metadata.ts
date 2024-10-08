@@ -47,8 +47,8 @@ export async function deployComponentMetadata(
 		return;
 	}
 
-	const checksumMatches = compareChecksumDeep(originChecksum, componentType, remoteComponentName, metadataToUpdate);
-	if (!checksumMatches) {
+	const metadataChecksumMatches = compareChecksumDeep(originChecksum, componentType, remoteComponentName, metadataToUpdate);
+	if (!metadataChecksumMatches) {
 		const componentUrl = getComponentApiUrl({ componentType, remoteComponentName, origin });
 
 		const axiosConfig: AxiosRequestConfig = {

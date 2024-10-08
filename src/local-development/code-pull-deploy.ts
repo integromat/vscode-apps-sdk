@@ -178,7 +178,7 @@ export async function deployComponentCode({
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
-	const localChecksum = md5(sourceContent.toString());
+	const localChecksum = md5(sourceContent);
 	if (!originChecksum?.includes(localChecksum)) {
 		// Get the code from the API
 		const axiosConfig: AxiosRequestConfig = {

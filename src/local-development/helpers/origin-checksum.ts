@@ -73,16 +73,16 @@ function getChecksumForComponent(
 	componentChecksums: ComponentChecksum[],
 	componentType: AppComponentType | AppGeneralType,
 	remoteComponentName?: string,
-): Record<string, string | null> | null {
+): Record<string, string | null> | undefined {
 	if (componentType === 'app') {
 		// For 'app' type, return the checksum of the first element
-		return componentChecksums[0]?.checksum || null;
+		return componentChecksums[0]?.checksum || undefined;
 	}
 	// Find the component checksum matching the remote component name
 	const checksum = componentChecksums.find(
 		(checksum) => checksum.name === remoteComponentName,
 	)?.checksum;
-	return checksum || null;
+	return checksum || undefined;
 }
 
 /**
@@ -97,9 +97,9 @@ export function findOriginComponent(
 	checksums: Checksum | undefined | null,
 	componentType: AppComponentType | AppGeneralType,
 	remoteComponentName?: string,
-): Record<string, string | null> | null {
+): Record<string, string | null> | undefined {
 	if (!checksums) {
-		return null;
+		return undefined;
 	}
 
 	// Get the array of checksums for the specified component type
@@ -169,19 +169,19 @@ export function findOriginChecksum(
 }
 
 /**
- * Compares the local data with the origin checksums to determine if they match.
+ * Compares the local componentMetadataToUpdate with the origin checksums to determine if they match.
  *
- * @param originChecksums - The checksum data from the origin.
+ * @param originChecksums - The checksum componentMetadataToUpdate from the origin.
  * @param componentType - The type of the component.
  * @param componentRemoteName - The name of the remote component.
- * @param data - The local data to compare.
- * @returns True if the data matches the origin checksum, false otherwise.
+ * @param componentMetadataToUpdate - The local componentMetadataToUpdate to compare.
+ * @returns True if the componentMetadataToUpdate matches the origin checksum, false otherwise.
  */
 export function compareChecksumDeep(
 	originChecksums: Checksum,
 	componentType: AppComponentType,
 	componentRemoteName: string,
-	data: Record<string, any>,
+	componentMetadataToUpdate: Record<string, any>,
 ): boolean {
 	// Find the checksum record for the component
 	const checksum = findOriginComponent(originChecksums, componentType, componentRemoteName);
@@ -189,8 +189,8 @@ export function compareChecksumDeep(
 		return false;
 	}
 
-	// Mapping of local data keys to checksum keys
-	const map: Record<string, string> = {
+	// Mapping of local componentMetadataToUpdate keys to checksum keys
+	const localDataKeyToRemoteKeyMap: Record<string, string> = {
 		'label': 'label',
 		'description': 'description',
 		'typeId': 'type_id',
@@ -200,21 +200,21 @@ export function compareChecksumDeep(
 		'altConnection': 'alt_account_name',
 	};
 
-	// Iterate over the keys in the local data
-	for (const key of Object.keys(data)) {
-		const originKey = map[key];
+	// Iterate over the keys in the local componentMetadataToUpdate
+	for (const key of Object.keys(componentMetadataToUpdate)) {
+		const originKey = localDataKeyToRemoteKeyMap[key];
 		if (!originKey || typeof checksum[originKey] === 'undefined') {
 			log('warn', `Not found mapping for '${componentType}.${key}'.`);
 			return false;
 		}
 
 		// If both values are null, they match
-		if (checksum[originKey] === null && data[key] === null) {
+		if (checksum[originKey] === null && componentMetadataToUpdate[key] === null) {
 			continue;
 		}
 
-		// Compare the MD5 hash of the local data value with the checksum
-		if (data[originKey] !== null && md5(data[key].toString()) === checksum[originKey]) {
+		// Compare the MD5 hash of the local componentMetadataToUpdate value with the checksum
+		if (componentMetadataToUpdate[originKey] !== null && md5(String(componentMetadataToUpdate[key])) === checksum[originKey]) {
 			continue;
 		}
 
