@@ -15,6 +15,7 @@ import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
+import { userPreferences } from './helpers/user-preferences';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -175,7 +176,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 			}
 
-			// #region Temporary special handling of "Access denied" of */functions/* (because IML function deployment is temporarily disabled for external users)
+			// #region IML Function's "Access denied" error handling (because IML function deployment is temporarily disabled for external users)
 			const imlFunctionsDeploymentErrors = [];
 			for (let i = errors.length - 1; i >= 0; i--) {
 				const err = errors[i];
@@ -185,12 +186,24 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					imlFunctionsDeploymentErrors.push(err);
 				}
 			}
-			if (imlFunctionsDeploymentErrors.length > 0 /* TODO and hideWarning !== true */) {
-				showErrorDialog(`Access denied to deploy IML functions`, {
-					modal: true,
-					detail: `Rejected deployment of ${imlFunctionsDeploymentErrors.length} IML functions or tests, because external developers have currently no permission to deploy these codes directly. We apologize for inconveniences.`,
-				});
+			if (
+				imlFunctionsDeploymentErrors.length > 0 &&
+				userPreferences.get('ignoreImlFunctionAccesDeniedError') !== true
+			) {
+				const response = await vscode.window.showErrorMessage(
+					`Access denied to deploy IML functions`,
+					{
+						modal: true,
+						detail: `Rejected the deployment of ${imlFunctionsDeploymentErrors.length} IML function(s) because you have no permission to deploy these codes directly. We apologize for inconveniences, but standard write access has been temporary disabled. You need to submit form https://tally.so/r/3Ell6B for update your IML functions.`,
+					},
+					{ title: "Don't show again until VSCode restart" }, // Alternatives: "Hide" / "Ignore" / "Mute"
+					{ title: 'Close', isCloseAffordance: true },
+				);
+				if (response?.title === "Don't show again until VSCode restart") {
+					userPreferences.set('ignoreImlFunctionAccesDeniedError', true);
+				}
 			}
+			// #endregion IML Function's "Access denied" error handling
 
 			// Display errors
 			if (errors.length > 0) {
@@ -215,10 +228,18 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 							? `\n\n ... and ${errors.length - MAX_DISPLAYED_ERRORS} other errors.`
 							: ''),
 				});
-			} else if (codesToDeploy.length > 0) {
-				vscode.window.showInformationMessage(
-					`Successfully deployed ${codesToDeploy.length} ${codesToDeploy.length === 1 ? 'code' : 'codes'}.`,
-				);
+			} else {
+				// No errors. Show successful dialog.
+				const sucessfullyDeployedCount = codesToDeploy.length - imlFunctionsDeploymentErrors.length;
+				if (sucessfullyDeployedCount > 0) {
+					vscode.window.showInformationMessage(
+						`Successfully deployed ${sucessfullyDeployedCount} ${
+							sucessfullyDeployedCount === 1 ? 'code' : 'codes'
+						}.`,
+					);
+				} else {
+					vscode.window.showInformationMessage('Nothing deployed.');
+				}
 			}
 		},
 	);
