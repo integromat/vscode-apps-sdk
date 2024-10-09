@@ -1,7 +1,7 @@
 import { Checksum, ComponentChecksum } from '../types/checksum.types';
 import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 import { CodeType } from '../types/code-type.types';
-import { getCodeDef } from '../code-pull-deploy';
+import { getCodeDef } from '../../services/component-code-def';
 import type { AxiosRequestConfig } from 'axios';
 import { requestMakeApi } from '../../utils/request-api-make';
 import { log } from '../../output-channel';

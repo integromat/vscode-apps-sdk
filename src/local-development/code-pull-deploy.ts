@@ -3,10 +3,9 @@ import { AxiosRequestConfig } from 'axios';
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
-import { ApiCodeType, CodeType, ComponentCodeType, GeneralCodeType } from './types/code-type.types';
-import { CodeDef } from './types/code-def.types';
+import { ApiCodeType, CodeType } from './types/code-type.types';
 import { getComponentApiUrl } from './helpers/api-url';
-import { getAppComponentCodeDefinition, getGeneralCodeDefinition } from '../services/component-code-def';
+import { getCodeDef } from '../services/component-code-def';
 import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
@@ -206,12 +205,6 @@ export async function deployComponentCode({
 	}
 
 	progresDialogReport('');
-}
-
-export function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
-	return componentType === 'app'
-		? getGeneralCodeDefinition(codeType as GeneralCodeType)
-		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
 }
 
 /**
