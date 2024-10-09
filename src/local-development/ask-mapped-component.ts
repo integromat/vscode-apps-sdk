@@ -4,6 +4,8 @@ import { AppComponentType } from '../types/app-component-type.types';
 
 export const specialAnswers = {
 	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),
+	CREATE_NEW_COMPONENT__FOR_ALL: Symbol("Create new compoment in counterparty (apply for all, don't ask again)"),
+	MAP_WITH_NULL__FOR_ALL: Symbol("Ignore compoment in counterparty (apply for all, don't ask again)"),
 };
 
 /**
@@ -21,6 +23,7 @@ export async function askForSelectMappedComponent(
 	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
 ): Promise<string | null | symbol> {
 	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
+	const actionText = componentLocation === 'local' ? 'Deploy' : 'Pull';
 
 	// Try to autoanswer if the answer is obvious (local and remote components matched)
 	const matchedComponents = counterpartyComponents.filter(
@@ -47,15 +50,25 @@ export async function askForSelectMappedComponent(
 		})),
 		// and offer to create new one
 		{
-			label: `Create new ${counterpartyComponentsLocation} ${componentType}`,
+			label: `${actionText} as new ${counterpartyComponentsLocation} ${componentType}`,
 			name: specialAnswers.CREATE_NEW_COMPONENT,
 			similarityScore: -1,
 		},
+		{
+			label: `${actionText} all unmapped as new ${counterpartyComponentsLocation} components`,
+			name: specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL,
+			similarityScore: -2,
+		},
 		// and offer to create ignore
 		{
-			label: `Ignore permanently / do not map with ${counterpartyComponentsLocation}`,
+			label: `Ignore ${counterpartyComponentsLocation} component permanently`,
 			name: null,
-			similarityScore: -2,
+			similarityScore: -3,
+		},
+		{
+			label: `Ignore all unmaped ${counterpartyComponentsLocation} components permanently`,
+			name: specialAnswers.MAP_WITH_NULL__FOR_ALL,
+			similarityScore: -4,
 		},
 	];
 
