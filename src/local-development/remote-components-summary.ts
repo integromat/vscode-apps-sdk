@@ -3,6 +3,11 @@ import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper'
 import { getAppComponentDetails } from '../services/get-app-components';
 import { getModuleDefFromId } from '../services/module-types-naming';
 import { AppComponentType } from '../types/app-component-type.types';
+import {
+	ConnectionComponentDetailsApiResponseItem,
+	ModuleComponentDetailsApiResponseItem,
+	WebhookComponentDetailsApiResponseItem,
+} from '../types/get-component-api-response.types';
 
 /**
  * Gets component in remote origin (in Make).
@@ -13,7 +18,7 @@ export async function getRemoteComponent(
 	componentName: string,
 ): Promise<AppComponentMetadata> {
 	// Process all app's compoments
-	const componentDetail = (await getAppComponentDetails(componentType, componentName, origin)) as any;
+	const componentDetail = await getAppComponentDetails(componentType, componentName, origin);
 
 	// Create section in makecomapp.json
 	const componentMetadata: AppComponentMetadata = {
@@ -21,17 +26,37 @@ export async function getRemoteComponent(
 	};
 	switch (componentType) {
 		case 'connection':
-			componentMetadata.connectionType = componentDetail.type;
+			if (componentDetail.type === undefined) {
+				// This should not occur on production. It is here for input validation only.
+				throw new Error(`Missing expected property 'type' on remote ${componentType} ${componentDetail.name}.`);
+			}
+			componentMetadata.connectionType = (componentDetail as ConnectionComponentDetailsApiResponseItem).type;
 			break;
 		case 'webhook':
-			componentMetadata.webhookType = componentDetail.type;
+			if (componentDetail.type === undefined) {
+				// This should not occur on production. It is here for input validation only.
+				throw new Error(`Missing expected property 'type' on remote ${componentType} ${componentDetail.name}.`);
+			}
+			componentMetadata.webhookType = (componentDetail as WebhookComponentDetailsApiResponseItem).type;
 
 			break;
 		case 'module':
 			componentMetadata.description = componentDetail.description;
-			componentMetadata.moduleType = getModuleDefFromId(componentDetail.typeId).type;
+
+			if (componentDetail.typeId === undefined) {
+				// This should not occur on production. It is here for input validation only.
+				throw new Error(`Missing expected property 'typeId' on remote ${componentType} ${componentDetail.name}.`);
+			}
+			componentMetadata.moduleType = getModuleDefFromId(
+				(componentDetail as ModuleComponentDetailsApiResponseItem).typeId,
+			).type;
+
 			if (componentMetadata.moduleType === 'action') {
-				componentMetadata.actionCrud = componentDetail.crud;
+				if (componentDetail.crud === undefined) {
+					// This should not occur on production. It is here for input validation only.
+					throw new Error(`Missing expected property 'crud' on remote ${componentType} ${componentDetail.name}.`);
+				}
+				componentMetadata.actionCrud = (componentDetail as ModuleComponentDetailsApiResponseItem).crud;
 			}
 			break;
 	}
@@ -57,13 +82,13 @@ export async function getRemoteComponent(
 
 		// Add reference from Instant Trigger to Webhook
 		if (componentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
-			if (componentDetail.webhook === undefined) {
+			if ((componentDetail as ModuleComponentDetailsApiResponseItem).webhook === undefined) {
 				// This should not occur on production. It is here for input validation only.
 				throw new Error(
-					`Missing expected property 'webhook' on remote ${componentDetail.moduleType} ${componentType} ${componentDetail.name}.`,
+					`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${componentType} ${componentDetail.name}.`,
 				);
 			}
-			componentMetadata.webhook = componentDetail.webhook;
+			componentMetadata.webhook = (componentDetail as ModuleComponentDetailsApiResponseItem).webhook;
 		}
 	}
 

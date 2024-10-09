@@ -1,4 +1,3 @@
-
 import { ConnectionType, WebhookType } from './component-types.types';
 import { Crud } from '../local-development/types/crud.types';
 
@@ -14,6 +13,14 @@ export interface ComponentsApiResponseModuleItem {
 	name: string;
 	public: boolean;
 	typeId: number;
+}
+
+/**
+ * Item `appModule` of API response:
+ * /api/v2/sdk/apps/[appId]/[appVersion]/accounts/[moduleId]
+ */
+export interface ConnectionComponentDetailsApiResponseItem extends ComponentsApiResponseConnectionItem {
+	// Note: Some other properties can be present. But not used in app, therefore it is not described for 100%.
 }
 
 /**
@@ -96,7 +103,7 @@ export type ComponentsApiResponseItem = Partial<ComponentsApiResponseModuleItem>
 		name: string;
 	};
 
-
 export type ComponentDetailsApiResponseItem = Partial<ModuleComponentDetailsApiResponseItem> &
+	Partial<ConnectionComponentDetailsApiResponseItem> &
 	Partial<WebhookComponentDetailsApiResponseItem> &
 	Partial<RpcComponentDetailsApiResponseItem>;
