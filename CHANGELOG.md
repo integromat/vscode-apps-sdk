@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Unreleased (yet)
---------------------
+2.1.0 [2024-10-09]
+------------------
 
 - Fixed the IML spead operator`"{{...}}": "{{something}}"` highlighting.
 - Improved wizard of new module: Added questions for connection and alternative connection.
