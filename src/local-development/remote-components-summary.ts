@@ -82,7 +82,7 @@ export async function getRemoteComponent(
 
 		// Add reference from Instant Trigger to Webhook
 		if (componentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
-			if ((componentDetail as ModuleComponentDetailsApiResponseItem).webhook === undefined) {
+			if (componentDetail.webhook === undefined) {
 				// This should not occur on production. It is here for input validation only.
 				throw new Error(
 					`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${componentType} ${componentDetail.name}.`,
