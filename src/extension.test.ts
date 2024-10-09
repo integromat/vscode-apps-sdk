@@ -126,6 +126,18 @@ suite('App online file edit validations', () => {
 			problematicContent: '{"invalidProperty":"someValue"}',
 			expectedProblemMessage: 'Incorrect type. Expected "array".',
 		},
+		{
+			filename: 'makecomapp.json',
+			expectedLanguage: 'json',
+			problematicContent: '{"invalidProperty":"someValue"}',
+			expectedProblemMessages: [
+				'Missing property "components".',
+				'Missing property "fileVersion".',
+				'Missing property "generalCodeFiles".',
+				'Missing property "origins".',
+				'Property invalidProperty is not allowed.',
+			],
+		},
 	];
 	filenamesForOnlineEdit.forEach((def) => {
 		suite(`- file "${def.filename}"`, () => {
@@ -176,6 +188,27 @@ suite('App online file edit validations', () => {
 							problems.map((problem) => problem.message).join('; '),
 					);
 					assert.equal(problems?.[0]?.message, def.expectedProblemMessage);
+				});
+			}
+
+			if (def.problematicContent && def.expectedProblemMessages) {
+				test('Shlould validate against JSON schema', async () => {
+					await setEditorContentAndWaitForDiagnosticsChange(e, def.problematicContent);
+
+					const problemsMessages = vscode.languages
+						.getDiagnostics(documentUri)
+						.map((problem) => problem.message);
+					for (const expectedProblemMessage of def.expectedProblemMessages) {
+						assert.ok(
+							problemsMessages.includes(expectedProblemMessage),
+							`Missing the expected validation problem "${expectedProblemMessage}"`,
+						);
+					}
+					assert.equal(
+						problemsMessages.length,
+						def.expectedProblemMessages.length,
+						'Incorrect number of validation problems.',
+					);
 				});
 			}
 		});
