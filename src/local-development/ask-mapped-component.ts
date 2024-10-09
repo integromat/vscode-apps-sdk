@@ -49,28 +49,38 @@ export async function askForSelectMappedComponent(
 				{ label: component.componentMetadata.label, name: component.componentName },
 			),
 		})),
-		// and offer to create new one
+		// offer to create new one
 		{
 			label: `${actionText} as new ${counterpartyComponentsLocation} ${componentType}`,
 			name: specialAnswers.CREATE_NEW_COMPONENT,
 			similarityScore: -1,
 		},
-		{
-			label: `${actionText} all unmapped as new ${counterpartyComponentsLocation} components`,
-			name: specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL,
-			similarityScore: -2,
-		},
-		// and offer to create ignore
+		// offer to create new one (apply for all)
+		...(counterpartyComponents.length === 0
+			? [
+					{
+						label: `${actionText} as new ${counterpartyComponentsLocation} ${componentType} (and Apply for all unmapped)`,
+						name: specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL,
+						similarityScore: -2,
+					},
+			  ]
+			: []),
+		// offer to ignore
 		{
 			label: `Ignore ${counterpartyComponentsLocation} component permanently`,
 			name: specialAnswers.MAP_WITH_NULL,
 			similarityScore: -3,
 		},
-		{
-			label: `Ignore all unmaped ${counterpartyComponentsLocation} components permanently`,
-			name: specialAnswers.MAP_WITH_NULL__FOR_ALL,
-			similarityScore: -4,
-		},
+		// offer to ignore (apply for all)
+		...(counterpartyComponents.length === 0
+			? [
+					{
+						label: `Ignore ${counterpartyComponentsLocation} component permanently (and Apply for all unmapped)`,
+						name: specialAnswers.MAP_WITH_NULL__FOR_ALL,
+						similarityScore: -4,
+					},
+			  ]
+			: []),
 	];
 
 	// Most similar remote connection should be on the top (as the first choice)
