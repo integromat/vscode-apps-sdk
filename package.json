@@ -132,6 +132,12 @@
 					"groups.json"
 				],
 				"url": "./syntaxes/imljson/schemas/groups.json"
+			},
+			{
+				"fileMatch": [
+					"makecomapp.json"
+				],
+				"url": "./src/local-development/types/makecomapp.schema.json"
 			}
 		],
 		"languages": [
@@ -865,7 +871,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm ci && npm run compile && cat out/__is-pre-release-build.js>/dev/null",
+		"vscode:prepublish": "npm run schema:makecomapp && npm ci && npm run compile && cat out/__is-pre-release-build.js>/dev/null",
 		"compile": "rm -rf ./out && tsc -p ./  && tsc -p ./syntaxes/imljson-language-features/server",
 		"watch": "tsc -watch -p ./",
 		"eslint": "eslint -c eslint.config.mjs src",
@@ -877,7 +883,8 @@
 		"vsceBuild": "isPreReleaseBuild=false npm run __writePrereleaseFlag && vsce package && npm run __deletePrereleaseFlag",
 		"vscePublish": "isPreReleaseBuild=false npm run __writePrereleaseFlag && vsce publish && npm run __deletePrereleaseFlag",
 		"vsceBuildPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce package --pre-release && npm run __deletePrereleaseFlag",
-		"vscePublishPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce publish --pre-release && npm run __deletePrereleaseFlag"
+		"vscePublishPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce publish --pre-release && npm run __deletePrereleaseFlag",
+		"schema:makecomapp": "typescript-json-schema src/local-development/types/makecomapp.types.ts MakecomappJson --out src/local-development/types/makecomapp.schema.json --required --noExtraProps --strictNullChecks --includeEnum --uniqueNames --titles --refs --topRef --ignoreErrors"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.11.1",
@@ -897,7 +904,8 @@
 		"globals": "^15.9.0",
 		"mocha": "^10.7.0",
 		"typescript": "~5.5",
-		"typescript-eslint": "^8.7.0"
+ 		"typescript-eslint": "^8.7.0",
+		"typescript-json-schema": "^0.65.1"
 	},
 	"dependencies": {
 		"@integromat/iml": "^3.0.0",
