@@ -98,9 +98,9 @@ export async function alignComponentsMapping(
 	 */
 	const componentsProcessingOrder: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
 	/** Stores the user's preference for case of answer "apply for all". */
-	let newLocalComponentDefaultAnswer: symbol | undefined = undefined;
+	let userPreferedResolutionOfUnmappedLocal: symbol | undefined = undefined;
 	/** Stores the user's preference for case of answer "apply for all". */
-	let newRemoteComponentDefaultAnswer: symbol | undefined = undefined;
+	let userPreferedResolutionOfUnmappedRemote: symbol | undefined = undefined;
 
 	for (const componentType of componentsProcessingOrder) {
 		const localOnlyInSpecificComponentType = localOnly.filter(
@@ -135,15 +135,18 @@ export async function alignComponentsMapping(
 
 				if (newLocalComponentResolution === 'askUser') {
 					const userAnswer =
-						newLocalComponentDefaultAnswer ??
-						(await askForSelectMappedComponent(
-							'local',
-							localOnlyComponent.componentType,
-							localOnlyComponent.componentLocalId,
-							localOnlyComponent.componentMetadata.label,
-							unlinkedComponents,
-						));
-					if (typeof userAnswer === 'string' || userAnswer === null) {
+						(userPreferedResolutionOfUnmappedLocal && unlinkedComponents.length) === 0
+							? // Use prefered solution if no unlinked components left only
+							  userPreferedResolutionOfUnmappedLocal
+							: // Ask user for the his preferences in all other cases
+							  await askForSelectMappedComponent(
+									'local',
+									localOnlyComponent.componentType,
+									localOnlyComponent.componentLocalId,
+									localOnlyComponent.componentMetadata.label,
+									unlinkedComponents,
+							  );
+					if (typeof userAnswer === 'string') {
 						actionToProcess = { name: 'mapWith', conterpartyComponentID: userAnswer };
 					} else {
 						switch (userAnswer) {
@@ -151,11 +154,14 @@ export async function alignComponentsMapping(
 								actionToProcess = { name: 'deployAsNew' };
 								break;
 							case specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL:
-								newLocalComponentDefaultAnswer = specialAnswers.CREATE_NEW_COMPONENT;
+								userPreferedResolutionOfUnmappedLocal = specialAnswers.CREATE_NEW_COMPONENT;
 								actionToProcess = { name: 'deployAsNew' };
 								break;
+							case specialAnswers.MAP_WITH_NULL:
+								actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
+								break;
 							case specialAnswers.MAP_WITH_NULL__FOR_ALL:
-								newLocalComponentDefaultAnswer = specialAnswers.MAP_WITH_NULL__FOR_ALL;
+								userPreferedResolutionOfUnmappedLocal = specialAnswers.MAP_WITH_NULL;
 								actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
 								break;
 							default:
@@ -255,15 +261,18 @@ export async function alignComponentsMapping(
 				switch (newRemoteComponentResolution) {
 					case 'askUser': {
 						const userAnswer =
-							newRemoteComponentDefaultAnswer ??
-							(await askForSelectMappedComponent(
-								'remote',
-								remoteOnlyComponent.componentType,
-								remoteOnlyComponent.componentName,
-								remoteOnlyComponent.componentMetadata.label,
-								unlinkedComponents,
-							));
-						if (typeof userAnswer === 'string' || userAnswer === null) {
+							userPreferedResolutionOfUnmappedRemote && unlinkedComponents.length === 0
+								? // Use prefered solution if no unlinked components left only
+								  userPreferedResolutionOfUnmappedRemote
+								: // Ask user for the his preferences in all other cases
+								  await askForSelectMappedComponent(
+										'remote',
+										remoteOnlyComponent.componentType,
+										remoteOnlyComponent.componentName,
+										remoteOnlyComponent.componentMetadata.label,
+										unlinkedComponents,
+								  );
+						if (typeof userAnswer === 'string') {
 							actionToProcess = { name: 'mapWith', conterpartyComponentID: userAnswer };
 						} else {
 							switch (userAnswer) {
@@ -271,11 +280,14 @@ export async function alignComponentsMapping(
 									actionToProcess = { name: 'cloneAsNew' };
 									break;
 								case specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL:
-									newRemoteComponentDefaultAnswer = specialAnswers.CREATE_NEW_COMPONENT;
+									userPreferedResolutionOfUnmappedRemote = specialAnswers.CREATE_NEW_COMPONENT;
 									actionToProcess = { name: 'cloneAsNew' };
 									break;
+								case specialAnswers.MAP_WITH_NULL:
+									actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
+									break;
 								case specialAnswers.MAP_WITH_NULL__FOR_ALL:
-									newRemoteComponentDefaultAnswer = specialAnswers.MAP_WITH_NULL__FOR_ALL;
+									userPreferedResolutionOfUnmappedRemote = specialAnswers.MAP_WITH_NULL;
 									actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
 									break;
 								default:

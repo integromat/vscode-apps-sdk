@@ -5,6 +5,7 @@ import { AppComponentType } from '../types/app-component-type.types';
 export const specialAnswers = {
 	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),
 	CREATE_NEW_COMPONENT__FOR_ALL: Symbol("Create new compoment in counterparty (apply for all, don't ask again)"),
+	MAP_WITH_NULL: Symbol('Ignore compoment in counterparty'),
 	MAP_WITH_NULL__FOR_ALL: Symbol("Ignore compoment in counterparty (apply for all, don't ask again)"),
 };
 
@@ -21,7 +22,7 @@ export async function askForSelectMappedComponent(
 	componentIdOrName: string,
 	componentLabel: string | undefined,
 	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
-): Promise<string | null | symbol> {
+): Promise<string | symbol> {
 	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
 	const actionText = componentLocation === 'local' ? 'Deploy' : 'Pull';
 
@@ -38,7 +39,7 @@ export async function askForSelectMappedComponent(
 	}
 
 	// Prepare dialog options
-	const pickOptions: (vscode.QuickPickItem & { name: string | null | symbol; similarityScore: number })[] = [
+	const pickOptions: (vscode.QuickPickItem & { name: string | symbol; similarityScore: number })[] = [
 		// Offer all existing suitable counterparty components
 		...counterpartyComponents.map((component) => ({
 			label: `Existing ${counterpartyComponentsLocation} ${componentType} "${component.componentMetadata.label}" [${component.componentName}]`,
@@ -62,7 +63,7 @@ export async function askForSelectMappedComponent(
 		// and offer to create ignore
 		{
 			label: `Ignore ${counterpartyComponentsLocation} component permanently`,
-			name: null,
+			name: specialAnswers.MAP_WITH_NULL,
 			similarityScore: -3,
 		},
 		{
