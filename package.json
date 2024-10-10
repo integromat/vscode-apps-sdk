@@ -894,6 +894,7 @@
 		"@types/lodash": "^4.17.7",
 		"@types/mocha": "^10.0.7",
 		"@types/node": "~18.15.0",
+		"@types/pngjs": "^6.0.5",
 		"@types/uuid": "^10.0.0",
 		"@types/vscode": "^1.82.0",
 		"@vscode/test-electron": "^2.4.1",
@@ -904,7 +905,7 @@
 		"globals": "^15.9.0",
 		"mocha": "^10.7.0",
 		"typescript": "~5.5",
- 		"typescript-eslint": "^8.7.0",
+		"typescript-eslint": "^8.7.0",
 		"typescript-json-schema": "^0.65.1"
 	},
 	"dependencies": {
@@ -917,7 +918,7 @@
 		"axios": "^1.7.7",
 		"compressing": "^1.10.1",
 		"image-downloader": "^4.3.0",
-		"jimp": "^0.22.12",
+		"jimp": "^1.6.0",
 		"jsonc-parser": "^3.3.1",
 		"lodash": "^4.17.21",
 		"request-light": "^0.8.0",
