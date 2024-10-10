@@ -21,6 +21,10 @@ updates:
       - dependency-name: "tempy"
         update-types:
           - "version-update:semver-major"
+      # glob 11 does not support Node 18 (used in current VS Code.). We can remove this ignore after VS Code migration to Node 20
+      - dependency-name: "glob"
+        update-types:
+          - "version-update:semver-major"
     groups:
       "devDeps minor update":
         dependency-type: "development"
