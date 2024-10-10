@@ -1,12 +1,13 @@
 Change Log
 ==========
 
-Unreleased (yet)
---------------------
+2.1.0 [2024-10-09]
+------------------
 
 - Fixed the IML spead operator`"{{...}}": "{{something}}"` highlighting.
 - Improved wizard of new module: Added questions for connection and alternative connection.
 - Added the in-editor validation of `makecomapp.json` project file.
+- Fixed the issue `"options.maxOutputLength" is out of range` occured during ZIP import.
 - Rapidly improved deployment of local app files. Only the changed data are being deployed now.
 
 2.0.0 [2024-07-02]
