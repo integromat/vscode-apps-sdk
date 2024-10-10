@@ -22,7 +22,6 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T>;
 export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> {
 	try {
 		return await limitConcurrently(async () => {
-			log('debug', `Make API Call: [${config.method?.toUpperCase() || 'GET'}] ${config.url}.`);
 			try {
 				return (
 					await axios<T>({
@@ -34,7 +33,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 					})
 				).data;
 			} catch (err: any) {
-				if ((<AxiosError>err).response?.status === 429) {
+				if ((err as AxiosError).response?.status === 429) {
 					progresDialogReport('Too many requests into Make. Slowing down. Please wait.');
 					await setTimeout(5000); // Bloks also anothers requests (because of `limitConcurrently`)
 					throw err;
@@ -57,7 +56,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 	} catch (e: any) {
 		// Try again.
 		// Note, because the new try is called outside the `limitConcurrently()` block, the next try is enqueued to end of the queue.
-		if ((<AxiosError>e).response?.status === 429) {
+		if ((e as AxiosError).response?.status === 429) {
 			return requestMakeApi(config);
 		} else {
 			throw e;
