@@ -12,9 +12,6 @@ out/
 # Mac OS
 .DS_Store
 
-# Secrets
-.secrets/
-
 # Others
 .vscode-test/
 *.vsix
