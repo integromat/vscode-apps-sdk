@@ -26,6 +26,14 @@ updates:
         update-types:
           - "version-update:semver-major"
     groups:
+      eslint:
+        patterns:
+        - "eslint*"
+        - "typescript-eslint/*"
+        - "@eslint*"
+        - "@stylistic/eslint*"
+        - "@types/eslint*"
+
       "devDeps minor update":
         dependency-type: "development"
         update-types:
