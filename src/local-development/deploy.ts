@@ -178,12 +178,13 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 			// #region IML Function's "Access denied" error handling (because IML function deployment is temporarily disabled for external users)
 			const imlFunctionsDeploymentErrors = [];
-			for (let i = errors.length - 1; i >= 0; i--) {
-				const err = errors[i];
+			const otherErrors = [];
+			for (const err of errors) {
 				if (err.componentType === 'function' && err.errorMessage.includes('Access denied')) {
-					// Move the error from `errors` to `imlFunctionsDeploymentErrors`.
-					errors.splice(i, 1);
 					imlFunctionsDeploymentErrors.push(err);
+				} else {
+					// Store other errors, which will be handled and displayed to user by code below.
+					otherErrors.push(err);
 				}
 			}
 			if (
@@ -206,28 +207,33 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 			// #endregion IML Function's "Access denied" error handling
 
 			// Display errors
-			if (errors.length > 0) {
+			if (otherErrors.length > 0) {
 				// Log errors
-				log('error', `Deployment finished with ${errors.length} errors:`);
-				for (const err of errors) {
+				log('error', `Deployment finished with ${otherErrors.length} errors:`);
+				for (const err of otherErrors) {
 					log('error', ' - ' + deploymentErrorToString(err, false));
 				}
 
 				// Display the modal error dialog
 				const MAX_DISPLAYED_ERRORS = 4;
-				showErrorDialog(`Failed ${errors.length} of ${codesToDeploy.length} codes deployments`, {
-					modal: true,
-					detail:
-						// Display first X errors
-						errors
-							.filter((_value, index) => index < MAX_DISPLAYED_ERRORS)
-							.map((deploymentError) => deploymentErrorToString(deploymentError, true))
-							.join('\n\n') +
-						// + info "and Y other errors"
-						(errors.length > MAX_DISPLAYED_ERRORS
-							? `\n\n ... and ${errors.length - MAX_DISPLAYED_ERRORS} other errors.`
-							: ''),
-				});
+				showErrorDialog(
+					`Failed ${otherErrors.length} of ${
+						codesToDeploy.length - imlFunctionsDeploymentErrors.length
+					} codes deployments`,
+					{
+						modal: true,
+						detail:
+							// Display first X errors
+							otherErrors
+								.filter((_value, index) => index < MAX_DISPLAYED_ERRORS)
+								.map((deploymentError) => deploymentErrorToString(deploymentError, true))
+								.join('\n\n') +
+							// + info "and Y other errors"
+							(otherErrors.length > MAX_DISPLAYED_ERRORS
+								? `\n\n ... and ${otherErrors.length - MAX_DISPLAYED_ERRORS} other errors.`
+								: ''),
+					},
+				);
 			} else {
 				// No errors. Show successful dialog.
 				const sucessfullyDeployedCount = codesToDeploy.length - imlFunctionsDeploymentErrors.length;
