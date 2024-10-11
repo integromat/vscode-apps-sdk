@@ -226,7 +226,7 @@ export async function alignComponentsMapping(
 						}
 						break;
 					default:
-						throw new Error(`Unknown actionToProcess`);
+						throw new Error(`Unknown actionToProcess "${(actionToProcess as any)?.name}"`);
 				}
 			}
 		}
