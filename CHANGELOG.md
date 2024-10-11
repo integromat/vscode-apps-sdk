@@ -9,7 +9,7 @@ Change Log
 - Added the in-editor validation of `makecomapp.json` project file.
 - Fixed the issue `"options.maxOutputLength" is out of range` occured during ZIP import.
 - Added "Apply for all" into component mapping alignment process.
-- Added feature to "remember origin and do not ask again".
+- Added feature "remember origin and do not ask again".
 
 2.0.0 [2024-07-02]
 --------------------
