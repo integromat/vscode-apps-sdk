@@ -12,7 +12,10 @@ import { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
  * @return Fresh up-to-date version of `outdatedOrigin`.
  *
  */
-export function getOriginObject(makecomappJson: MakecomappJson, outdatedOrigin: LocalAppOrigin): LocalAppOrigin {
+export function getOriginObject(
+	makecomappJson: { origins: MakecomappJson['origins'] },
+	outdatedOrigin: LocalAppOrigin,
+): LocalAppOrigin {
 	const originInMakecomappJsons = makecomappJson.origins.filter((requestedOrigin) =>
 		compareOrigins(requestedOrigin, outdatedOrigin),
 	);
