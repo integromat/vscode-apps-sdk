@@ -4,6 +4,9 @@ import { AppComponentType } from '../types/app-component-type.types';
 
 export const specialAnswers = {
 	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),
+	CREATE_NEW_COMPONENT__FOR_ALL: Symbol("Create new compoment in counterparty (apply for all, don't ask again)"),
+	MAP_WITH_NULL: Symbol('Ignore compoment in counterparty'),
+	MAP_WITH_NULL__FOR_ALL: Symbol("Ignore compoment in counterparty (apply for all, don't ask again)"),
 };
 
 /**
@@ -19,8 +22,9 @@ export async function askForSelectMappedComponent(
 	componentIdOrName: string,
 	componentLabel: string | undefined,
 	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
-): Promise<string | null | symbol> {
+): Promise<string | symbol> {
 	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
+	const actionText = componentLocation === 'local' ? 'Deploy' : 'Pull';
 
 	// Try to autoanswer if the answer is obvious (local and remote components matched)
 	const matchedComponents = counterpartyComponents.filter(
@@ -35,7 +39,7 @@ export async function askForSelectMappedComponent(
 	}
 
 	// Prepare dialog options
-	const pickOptions: (vscode.QuickPickItem & { name: string | null | symbol; similarityScore: number })[] = [
+	const pickOptions: (vscode.QuickPickItem & { name: string | symbol; similarityScore: number })[] = [
 		// Offer all existing suitable counterparty components
 		...counterpartyComponents.map((component) => ({
 			label: `Existing ${counterpartyComponentsLocation} ${componentType} "${component.componentMetadata.label}" [${component.componentName}]`,
@@ -45,18 +49,38 @@ export async function askForSelectMappedComponent(
 				{ label: component.componentMetadata.label, name: component.componentName },
 			),
 		})),
-		// and offer to create new one
+		// offer to create new one
 		{
-			label: `Create new ${counterpartyComponentsLocation} ${componentType}`,
+			label: `${actionText} as new ${counterpartyComponentsLocation} ${componentType}`,
 			name: specialAnswers.CREATE_NEW_COMPONENT,
 			similarityScore: -1,
 		},
-		// and offer to create ignore
+		// offer to create new one (apply for all)
+		...(counterpartyComponents.length === 0
+			? [
+					{
+						label: `${actionText} as new ${counterpartyComponentsLocation} ${componentType} (and Apply for all unmapped)`,
+						name: specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL,
+						similarityScore: -2,
+					},
+			  ]
+			: []),
+		// offer to ignore
 		{
-			label: `Ignore permanently / do not map with ${counterpartyComponentsLocation}`,
-			name: null,
-			similarityScore: -2,
+			label: `Ignore ${counterpartyComponentsLocation} component permanently`,
+			name: specialAnswers.MAP_WITH_NULL,
+			similarityScore: -3,
 		},
+		// offer to ignore (apply for all)
+		...(counterpartyComponents.length === 0
+			? [
+					{
+						label: `Ignore ${counterpartyComponentsLocation} component permanently (and Apply for all unmapped)`,
+						name: specialAnswers.MAP_WITH_NULL__FOR_ALL,
+						similarityScore: -4,
+					},
+			  ]
+			: []),
 	];
 
 	// Most similar remote connection should be on the top (as the first choice)
