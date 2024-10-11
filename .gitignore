@@ -1,13 +1,19 @@
+# Node.js dependencies
 node_modules
+
+# Build artifacts
+out/
+
+# IDE
+.idea/
+.vscode/
+.fleet
+
+# Mac OS
+.DS_Store
+
+# Others
 .vscode-test/
 *.vsix
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/vscode-apps-sdk.iml
-.idea/workspace.xml
-.idea/inspectionProfiles/Project_Default.xml
-.DS_Store
 local
-out
 src/__is-pre-release-build.ts

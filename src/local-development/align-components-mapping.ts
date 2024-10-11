@@ -97,6 +97,11 @@ export async function alignComponentsMapping(
 	 *       and it means that referenced webhooks/connections must already exists in time of referencing component creation.
 	 */
 	const componentsProcessingOrder: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	/** Stores the user's preference for case of answer "apply for all". */
+	let userPreferedResolutionOfUnmappedLocal: symbol | undefined = undefined;
+	/** Stores the user's preference for case of answer "apply for all". */
+	let userPreferedResolutionOfUnmappedRemote: symbol | undefined = undefined;
+
 	for (const componentType of componentsProcessingOrder) {
 		const localOnlyInSpecificComponentType = localOnly.filter(
 			(component) => component.componentType === componentType,
@@ -105,7 +110,7 @@ export async function alignComponentsMapping(
 			(component) => component.componentType === componentType,
 		);
 
-		// Resolve 'localOnly'
+		// Resolve 'localOnly' found components
 		if (newLocalComponentResolution !== 'ignore') {
 			// Ask user to link `localOnly` component(s) with unlinked remote, or create new remote component
 			let localOnlyComponent: (typeof localOnlyInSpecificComponentType)[0];
@@ -114,49 +119,86 @@ export async function alignComponentsMapping(
 
 				progresDialogReport('Asking user for additional information (see dialog on the top)');
 
-				// Ask for "Select remote component, which should be linked with. Or new component will be created."
+				let actionToProcess:
+					| {
+							name: 'deployAsNew';
+					  }
+					| {
+							name: 'mapWith';
+							conterpartyComponentID: string | null;
+					  };
+
+				// Step 1: Ask for "Select remote component, which should be linked with. Or new component will be created."
 				const unlinkedComponents = remoteOnly.filter(
 					(remoteComponent) => remoteComponent.componentType === localOnlyComponent.componentType,
 				);
-				let selectedRemoteComponentName: string | symbol | null;
-				switch (newLocalComponentResolution) {
-					case 'askUser':
-						selectedRemoteComponentName = await askForSelectMappedComponent(
-							'local',
-							localOnlyComponent.componentType,
-							localOnlyComponent.componentLocalId,
-							localOnlyComponent.componentMetadata.label,
-							unlinkedComponents,
-						);
-						break;
-					// Note: `case 'ignore':` skipped by parent `if` condition
-					default:
-						throw new Error(
-							`Unknown function parameter newLocalComponentResolution = ${newLocalComponentResolution}`,
-						);
+
+				if (newLocalComponentResolution === 'askUser') {
+					const userAnswer =
+						(userPreferedResolutionOfUnmappedLocal && unlinkedComponents.length) === 0
+							? // Use prefered solution if no unlinked components left only
+							  userPreferedResolutionOfUnmappedLocal
+							: // Ask user for the his preferences in all other cases
+							  await askForSelectMappedComponent(
+									'local',
+									localOnlyComponent.componentType,
+									localOnlyComponent.componentLocalId,
+									localOnlyComponent.componentMetadata.label,
+									unlinkedComponents,
+							  );
+					if (typeof userAnswer === 'string') {
+						actionToProcess = { name: 'mapWith', conterpartyComponentID: userAnswer };
+					} else {
+						switch (userAnswer) {
+							case specialAnswers.CREATE_NEW_COMPONENT:
+								actionToProcess = { name: 'deployAsNew' };
+								break;
+							case specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL:
+								userPreferedResolutionOfUnmappedLocal = specialAnswers.CREATE_NEW_COMPONENT;
+								actionToProcess = { name: 'deployAsNew' };
+								break;
+							case specialAnswers.MAP_WITH_NULL:
+								actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
+								break;
+							case specialAnswers.MAP_WITH_NULL__FOR_ALL:
+								userPreferedResolutionOfUnmappedLocal = specialAnswers.MAP_WITH_NULL;
+								actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
+								break;
+							default:
+								throw new Error(`Unknown special answer "${userAnswer?.description}"`);
+						}
+					}
+				} else {
+					throw new Error(
+						`Unknown function parameter newLocalComponentResolution = ${newLocalComponentResolution}`,
+					);
 				}
 
-				if (typeof selectedRemoteComponentName === 'string' || selectedRemoteComponentName === null) {
-					// Link internal ID with already existing remote component.
-					await addComponentIdMapping(
-						localOnlyComponent.componentType,
-						localOnlyComponent.componentLocalId,
-						selectedRemoteComponentName,
-						makecomappRootDir,
-						origin,
-					);
+				// Step 2: Execute the action selected in step 1
+				progresDialogReport('Processing the component alignemnt');
+				switch (actionToProcess.name) {
+					case 'mapWith':
+						// Link internal ID with already existing remote component.
+						await addComponentIdMapping(
+							localOnlyComponent.componentType,
+							localOnlyComponent.componentLocalId,
+							actionToProcess.conterpartyComponentID,
+							makecomappRootDir,
+							origin,
+						);
 
-					// Remove newly linked component from `remoteOnly`.
-					remoteOnly = remoteOnly.filter(
-						(component) =>
-							component.componentType !== localOnlyComponent.componentType ||
-							component.componentName !== selectedRemoteComponentName,
-					);
+						// Remove newly linked component from `remoteOnly`.
+						remoteOnly = remoteOnly.filter(
+							(component) =>
+								component.componentType !== localOnlyComponent.componentType ||
+								component.componentName !== actionToProcess.conterpartyComponentID,
+						);
 
-					// Note: Now, the local component is fully linked with existing remote.
-				} else {
-					switch (selectedRemoteComponentName) {
-						case specialAnswers.CREATE_NEW_COMPONENT: {
+						// Note: Now, the local component is fully linked with existing remote.
+						break;
+
+					case 'deployAsNew':
+						{
 							// Create new remote compoments (becuse it not exist)
 							const newRemoteComponentName = await createRemoteAppComponent({
 								appName: origin.appId,
@@ -181,16 +223,15 @@ export async function alignComponentsMapping(
 								makecomappRootDir,
 								origin,
 							);
-							break;
 						}
-						default:
-							throw new Error(`Unknown special answer "${selectedRemoteComponentName?.description}"`);
-					}
+						break;
+					default:
+						throw new Error(`Unknown actionToProcess "${(actionToProcess as any)?.name}"`);
 				}
 			}
 		}
 
-		// Resolve 'remoteOnly'
+		// Resolve 'remoteOnly' found components
 		if (newRemoteComponentResolution !== 'ignore') {
 			// Ask user to link `remoteOnly` component(s) with unlinked local, or pull as new local compoment
 			let remoteOnlyComponent: (typeof remoteOnlyInSpecificComponentType)[0];
@@ -199,7 +240,16 @@ export async function alignComponentsMapping(
 
 				progresDialogReport('Asking user for additional information (see dialog on the top)');
 
-				// Ask for "Select remote component, which should be linked with. Or new component will be created."
+				let actionToProcess:
+					| {
+							name: 'cloneAsNew';
+					  }
+					| {
+							name: 'mapWith';
+							conterpartyComponentID: string | null;
+					  };
+
+				// Step 1: Ask for "Select remote component, which should be linked with. Or new component will be created."
 				const unlinkedComponents = localOnly
 					.filter((localComponent) => localComponent.componentType === remoteOnlyComponent.componentType)
 					.map((localComponent) => ({
@@ -209,17 +259,45 @@ export async function alignComponentsMapping(
 
 				let selectedLocalComponentId: string | symbol | null;
 				switch (newRemoteComponentResolution) {
-					case 'askUser':
-						selectedLocalComponentId = await askForSelectMappedComponent(
-							'remote',
-							remoteOnlyComponent.componentType,
-							remoteOnlyComponent.componentName,
-							remoteOnlyComponent.componentMetadata.label,
-							unlinkedComponents,
-						);
+					case 'askUser': {
+						const userAnswer =
+							userPreferedResolutionOfUnmappedRemote && unlinkedComponents.length === 0
+								? // Use prefered solution if no unlinked components left only
+								  userPreferedResolutionOfUnmappedRemote
+								: // Ask user for the his preferences in all other cases
+								  await askForSelectMappedComponent(
+										'remote',
+										remoteOnlyComponent.componentType,
+										remoteOnlyComponent.componentName,
+										remoteOnlyComponent.componentMetadata.label,
+										unlinkedComponents,
+								  );
+						if (typeof userAnswer === 'string') {
+							actionToProcess = { name: 'mapWith', conterpartyComponentID: userAnswer };
+						} else {
+							switch (userAnswer) {
+								case specialAnswers.CREATE_NEW_COMPONENT:
+									actionToProcess = { name: 'cloneAsNew' };
+									break;
+								case specialAnswers.CREATE_NEW_COMPONENT__FOR_ALL:
+									userPreferedResolutionOfUnmappedRemote = specialAnswers.CREATE_NEW_COMPONENT;
+									actionToProcess = { name: 'cloneAsNew' };
+									break;
+								case specialAnswers.MAP_WITH_NULL:
+									actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
+									break;
+								case specialAnswers.MAP_WITH_NULL__FOR_ALL:
+									userPreferedResolutionOfUnmappedRemote = specialAnswers.MAP_WITH_NULL;
+									actionToProcess = { name: 'mapWith', conterpartyComponentID: null };
+									break;
+								default:
+									throw new Error(`Unknown special answer "${userAnswer?.description}"`);
+							}
+						}
 						break;
+					}
 					case 'cloneAsNew':
-						selectedLocalComponentId = specialAnswers.CREATE_NEW_COMPONENT;
+						actionToProcess = { name: 'cloneAsNew' };
 						break;
 					// Note: `case 'ignore':` skipped by parent `if` condition
 					default:
@@ -228,27 +306,31 @@ export async function alignComponentsMapping(
 						);
 				}
 
-				if (typeof selectedLocalComponentId === 'string' || selectedLocalComponentId === null) {
-					// Link internal ID with already existing remote component.
-					await addComponentIdMapping(
-						remoteOnlyComponent.componentType,
-						selectedLocalComponentId,
-						remoteOnlyComponent.componentName,
-						makecomappRootDir,
-						origin,
-					);
+				// Step 2: Execute the action selected in step 1
+				progresDialogReport('Processing the component alignemnt');
+				switch (actionToProcess.name) {
+					case 'mapWith':
+						// Link internal ID with already existing remote component.
+						await addComponentIdMapping(
+							remoteOnlyComponent.componentType,
+							actionToProcess.conterpartyComponentID,
+							remoteOnlyComponent.componentName,
+							makecomappRootDir,
+							origin,
+						);
 
-					// Remove newly linked component from `localOnly`.
-					localOnly = localOnly.filter(
-						(component) =>
-							component.componentType !== remoteOnlyComponent.componentType ||
-							component.componentLocalId !== selectedLocalComponentId,
-					);
+						// Remove newly linked component from `localOnly`.
+						localOnly = localOnly.filter(
+							(component) =>
+								component.componentType !== remoteOnlyComponent.componentType ||
+								component.componentLocalId !== selectedLocalComponentId,
+						);
 
-					// Note: Now, the remote component is fully linked with existing local.
-				} else {
-					switch (selectedLocalComponentId) {
-						case specialAnswers.CREATE_NEW_COMPONENT: {
+						// Note: Now, the remote component is fully linked with existing local.
+						break;
+
+					case 'cloneAsNew':
+						{
 							// Create new empty local component
 							const newComponent = await createLocalEmptyComponent(
 								remoteOnlyComponent.componentType,
@@ -269,11 +351,10 @@ export async function alignComponentsMapping(
 								makecomappRootDir,
 								origin,
 							);
-							break;
 						}
-						default:
-							throw new Error(`Special answer "${selectedLocalComponentId?.description}" is unknown`);
-					}
+						break;
+					default:
+						throw new Error(`Unknown actionToProcess`);
 				}
 			}
 		}

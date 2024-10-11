@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import { existsSync } from 'node:fs';
 import * as download from 'image-downloader';
-import Jimp from 'jimp';
+import { Jimp } from 'jimp';
 import * as Meta from '../Meta';
 import { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
@@ -48,7 +48,7 @@ export async function downloadAndStoreAppIcon(
 					})(),
 					dest: iconLocalPath.dark,
 				});
-			} catch (err: any) {
+			} catch (_err: any) {
 				// App icon not saved in Make
 				return 0; // Version 0 = No icon
 			}
@@ -68,10 +68,15 @@ export async function downloadAndStoreAppIcon(
  *  - light-mode icon (inverted colors)
  *  - public icon (icon with green square in the bottom right corner)
  *  - public light-mode icon (inverted colors + green square in the bottom right corner)
+ *
+ * Note: Weird type `${string}.${string}` in `publicIconLocalPath` is defined here
+ *       because Jimp 1.x needs this weird type as input parameter.
+ *       Opened bug report for the fix: https://github.com/jimp-dev/jimp/issues/1349
+
  */
 export async function generateAlternativeIcons(
-	iconLocalPath: { dark: string; light: string },
-	publicIconLocalPath: { dark: string; light: string },
+	iconLocalPath: { dark: `${string}.${string}`; light: `${string}.${string}` },
+	publicIconLocalPath: { dark: `${string}.${string}`; light: `${string}.${string}` },
 ) {
 	if (!existsSync(iconLocalPath.dark)) {
 		throw new Error(`Icon file ${iconLocalPath.dark} alternatives cannot be generated. File does not exist.`);
@@ -94,10 +99,10 @@ export async function generateAlternativeIcons(
  *
  * Icon is loaded from the source, inverted, and saved to the to the destination.
  */
-async function invertPngAsync(sourceImgPath: string, destinationImgPath: string): Promise<void> {
-	const icon: Jimp = await Jimp.read(sourceImgPath);
+async function invertPngAsync(sourceImgPath: string, destinationImgPath: `${string}.${string}`): Promise<void> {
+	const icon = await Jimp.read(sourceImgPath);
 	icon.invert();
-	await icon.writeAsync(destinationImgPath);
+	await icon.write(destinationImgPath);
 }
 
 /**
@@ -108,17 +113,23 @@ async function invertPngAsync(sourceImgPath: string, destinationImgPath: string)
  * @param iconVersion Version of the icon.
  * @param publicIcon If true, returns path to icon with a public sign. Note: Default icon is the dark non-public one.
  * @returns Paths to icon files.
+ *
+ *          Note: Weird returning type `${string}.${string}` is defined here
+ *                because Jimp 1.x needs this weird type as input parameter.
  */
 export function getIconLocalPath(appName: string, appVersion: number, iconVersion: number, publicIcon?: boolean) {
 	return {
 		// Default icon. It is the icon for dark theme.
 		// Note: Dark is the default icon data source. All other icons are edited clone of this dark original.
-		dark: path.join(appsIconTempDir, `${appName}.${appVersion}.${iconVersion}${publicIcon ? '.public' : ''}.png`),
+		dark: path.join(
+			appsIconTempDir,
+			`${appName}.${appVersion}.${iconVersion}${publicIcon ? '.public' : ''}.png`,
+		) as `${string}.${string}`,
 		// Icon for light theme.
 		light: path.join(
 			appsIconTempDir,
 			`${appName}.${appVersion}.${iconVersion}.lightmode${publicIcon ? '.public' : ''}.png`,
-		),
+		) as `${string}.${string}`,
 	};
 }
 
@@ -126,14 +137,14 @@ export function getIconLocalPath(appName: string, appVersion: number, iconVersio
  * From existing locally stored icon file
  * it generates the same one with added small green square in the bottom right corner.
  */
-async function generatePublicIcon(sourceImgPath: string, destinationImgPath: string) {
+async function generatePublicIcon(sourceImgPath: string, destinationImgPath: `${string}.${string}`) {
 	// Load original icon
 	const icon = await Jimp.read(sourceImgPath);
 	// Load the green square
 	const mask = await Jimp.read(path.join(__dirname, '..', '..', 'resources', 'icons', 'masks', 'public.png'));
-	icon.blit(mask, 320, 320);
+	icon.blit({ src: mask, x: 320, y: 320 });
 	// Save the new file with `.public.png` suffix
-	await icon.writeAsync(destinationImgPath);
+	await icon.write(destinationImgPath);
 }
 
 /**
