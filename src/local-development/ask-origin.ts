@@ -6,6 +6,8 @@ import { addEmptyOriginInMakecomappjson, getMakecomappJson } from './makecomappj
 import { MAKECOMAPP_FILENAME } from './consts';
 import { askAddMissingApiKey } from './ask-add-missing-apikey';
 import { getCurrentWorkspace } from '../services/workspace';
+import { userPreferences } from './helpers/user-preferences';
+import { getOriginObject } from './helpers/get-origin-object';
 
 export const specialAnswers = {
 	ADD_ORIGIN: Symbol('Deploy into another app'),
@@ -48,6 +50,18 @@ async function askForOrigin2(
 	purposeLabel?: string,
 	enableFeatureAddNewOrigin: boolean = false,
 ): Promise<LocalAppOrigin | undefined> {
+	// Get & return the default origin (if it was selected as default in the past)
+	const userPreferencesOriginKey = `origin.${makeappRootdir.path}`; // Store preference for each project separately.
+	const savedPreviousOrigin = userPreferences.get(userPreferencesOriginKey);
+	if (savedPreviousOrigin) {
+		try {
+			const defaultOrigin = getOriginObject({ origins }, savedPreviousOrigin);
+			return defaultOrigin;
+		} catch (_err: any) {
+			// ignore
+		}
+	}
+
 	if (!Array.isArray(origins)) {
 		throw new Error('Origins should be the array.');
 	}
@@ -65,11 +79,29 @@ async function askForOrigin2(
 		return origins[0];
 	}
 
-	const quickPickOptions = origins.map((origin, index) => {
-		const label = origin.label || origin.appId + ' v' + origin.appVersion;
-		let originHost: string;
+	// Prepare list of dialog options (list of origins)
+	const quickPickOptions: ({ origin: LocalAppOrigin | symbol; setDefault?: boolean } & vscode.QuickPickItem)[] = [];
+	origins.forEach((origin, index) => {
+		// const label = origin.label || origin.appId + ' v' + origin.appVersion;
 		try {
-			originHost = new URL(origin.baseUrl).host;
+			const originHost = new URL(origin.baseUrl).host;
+			const label = `${origin.label} [${origin.appId} v${origin.appVersion} at ${originHost}]`;
+			quickPickOptions.push(
+				// Dialog option: Origin
+				{
+					label,
+					description: '',
+					picked: index === 0,
+					origin: origin,
+				},
+				// Dialog option: Origin + set as default
+				{
+					label,
+					description: '+ set as default until VS Code restart',
+					origin: origin,
+					setDefault: true,
+				},
+			);
 		} catch (err: any) {
 			err.message = `Invalid baseUrl "${origin.baseUrl}" in origin "${
 				origin.label || origin.appId
@@ -77,14 +109,8 @@ async function askForOrigin2(
 			// TODO: Open the file and put cursor to invalid URL.
 			throw err;
 		}
-		return <{ origin: LocalAppOrigin | symbol } & vscode.QuickPickItem>{
-			label,
-			description: '(' + (origin.label ? `${origin.appId} ` : '') + 'at ' + originHost + ')',
-			picked: index === 0,
-			origin: origin,
-		};
 	});
-
+	// Dialog option: "add new origin"
 	if (enableFeatureAddNewOrigin) {
 		quickPickOptions.push({
 			label: specialAnswers.ADD_ORIGIN.description!,
@@ -97,6 +123,12 @@ async function askForOrigin2(
 		ignoreFocusOut: true,
 		title: 'Select the app origin' + (purposeLabel ? ` for ${purposeLabel}` : '') + ':',
 	});
+
+	// Save the selected origin as default
+	if (selected?.setDefault) {
+		const userPreferencesOriginKey = `origin.${makeappRootdir.path}`;
+		userPreferences.set(userPreferencesOriginKey, selected.origin);
+	}
 
 	if (typeof selected?.origin === 'symbol') {
 		switch (selected.origin) {
