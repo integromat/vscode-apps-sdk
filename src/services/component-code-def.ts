@@ -1,7 +1,7 @@
 import { AppComponentType } from '../types/app-component-type.types';
 import { CodeDef } from '../local-development/types/code-def.types';
 import { componentTypesDeployOrder } from './component-types-order';
-import { ComponentCodeType, GeneralCodeType } from '../local-development/types/code-type.types';
+import { CodeType, ComponentCodeType, GeneralCodeType } from '../local-development/types/code-type.types';
 import { keys } from '../utils/typed-object';
 
 const imljsonc = {
@@ -146,6 +146,13 @@ export function getGeneralCodeDefinition(codeType: GeneralCodeType): CodeDef {
 
 	return componentDef;
 }
+
+export function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
+	return componentType === 'app'
+		? getGeneralCodeDefinition(codeType as GeneralCodeType)
+		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
+}
+
 
 /**
  * Returns list of component types ['function', 'module, 'rpc', ...]

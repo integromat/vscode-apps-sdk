@@ -1,7 +1,6 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { deployComponentCode } from './code-pull-deploy';
-import { getRemoteComponentsSummary } from './remote-components-summary';
 import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { alignComponentsMapping } from './align-components-mapping';
@@ -15,6 +14,7 @@ import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
+import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 import { userPreferences } from './helpers/user-preferences';
 
 export function registerCommands(): void {
@@ -60,11 +60,10 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 			progresDialogReport('Initial analytics');
 
-			// Get all existing remote components
-			const remoteComponentsSummary = await getRemoteComponentsSummary(anyProjectPath, origin);
+			const originChecksums = await downloadOriginChecksums(origin);
 
 			// Compare all local components with remote. If local is not paired, link it or create new component or ignore component.
-			await alignComponentsMapping(makeappRootdir, origin, remoteComponentsSummary, 'askUser', 'ignore');
+			await alignComponentsMapping(makeappRootdir, origin, originChecksums, 'askUser', 'ignore');
 			// Load fresh `makecomapp.json` file, because `alignComponentMapping()` changed it.
 			makecomappJson = await getMakecomappJson(anyProjectPath);
 
@@ -103,22 +102,24 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 
 				// Upload via API
 				try {
+					const originChecksum = findOriginChecksum(
+						originChecksums,
+						componentCode.componentType,
+						remoteComponentName,
+						componentCode.codeType,
+					);
 					await deployComponentCode({
 						appComponentType: componentCode.componentType,
 						remoteComponentName: remoteComponentName,
 						codeType: componentCode.codeType,
 						origin,
 						sourcePath: componentCode.localFile,
+						originChecksum,
 					});
 				} catch (e: any) {
 					log('error', e.message);
 					errors.push({ errorMessage: e.message, ...componentCode });
 				}
-				// Log 'done' to console
-				log(
-					'debug',
-					`Deployed ${componentCode.componentType} ${componentCode.componentLocalId} ${componentCode.codeType} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
-				);
 
 				// Handle the user "cancel" button press
 				if (canceled) {
@@ -155,10 +156,6 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 					continue;
 				}
 
-				// TODO Implement the optimalization: Update only if some change detected.
-				//   example: const componentRemoteMetadata = remoteComponentsSummary[componentType][componentRemoteName];
-				//   example: if (isComponentMetadataChanged(componentType, componentLocalMetadata, componentRemoteMetadata)) { deploy... }
-
 				try {
 					await deployComponentMetadata(
 						componentType,
@@ -166,6 +163,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 						componentLocalMetadata,
 						makecomappJson,
 						origin,
+						originChecksums,
 					);
 				} catch (e: any) {
 					errors.push({
