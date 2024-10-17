@@ -15,6 +15,7 @@ import { progresDialogReport, withProgressDialog } from '../utils/vscode-progres
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
 import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
+import { userPreferences } from './helpers/user-preferences';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
@@ -173,33 +174,76 @@ async function bulkDeploy(anyProjectPath: vscode.Uri) {
 				}
 			}
 
+			// #region IML Function's "Access denied" error handling (because IML function deployment is temporarily disabled for external users)
+			const imlFunctionsDeploymentErrors = [];
+			const otherErrors = [];
+			for (const err of errors) {
+				if (err.componentType === 'function' && err.errorMessage.includes('Access denied')) {
+					imlFunctionsDeploymentErrors.push(err);
+				} else {
+					// Store other errors, which will be handled and displayed to user by code below.
+					otherErrors.push(err);
+				}
+			}
+			if (
+				imlFunctionsDeploymentErrors.length > 0 &&
+				userPreferences.get('ignoreImlFunctionAccesDeniedError') !== true
+			) {
+				const response = await vscode.window.showErrorMessage(
+					`Access denied to deploy IML functions`,
+					{
+						modal: true,
+						detail: `Rejected the deployment of ${imlFunctionsDeploymentErrors.length} IML function(s) because you have no permission to deploy these codes directly. We apologize for inconveniences, but standard write access has been temporary disabled. You need to submit form https://tally.so/r/3Ell6B for update your IML functions.`,
+					},
+					{ title: "Don't show again until VSCode restart" }, // Alternatives: "Hide" / "Ignore" / "Mute"
+					{ title: 'Close', isCloseAffordance: true },
+				);
+				if (response?.title === "Don't show again until VSCode restart") {
+					userPreferences.set('ignoreImlFunctionAccesDeniedError', true);
+				}
+			}
+			// #endregion IML Function's "Access denied" error handling
+
 			// Display errors
-			if (errors.length > 0) {
+			if (otherErrors.length > 0) {
 				// Log errors
-				log('error', `Deployment finished with ${errors.length} errors:`);
-				for (const err of errors) {
+				log('error', `Deployment finished with ${otherErrors.length} errors:`);
+				for (const err of otherErrors) {
 					log('error', ' - ' + deploymentErrorToString(err, false));
 				}
 
 				// Display the modal error dialog
 				const MAX_DISPLAYED_ERRORS = 4;
-				showErrorDialog(`Failed ${errors.length} of ${codesToDeploy.length} codes deployments`, {
-					modal: true,
-					detail:
-						// Display first X errors
-						errors
-							.filter((_value, index) => index < MAX_DISPLAYED_ERRORS)
-							.map((deploymentError) => deploymentErrorToString(deploymentError, true))
-							.join('\n\n') +
-						// + info "and Y other errors"
-						(errors.length > MAX_DISPLAYED_ERRORS
-							? `\n\n ... and ${errors.length - MAX_DISPLAYED_ERRORS} other errors.`
-							: ''),
-				});
-			} else if (codesToDeploy.length > 0) {
-				vscode.window.showInformationMessage(
-					`Successfully deployed ${codesToDeploy.length} ${codesToDeploy.length === 1 ? 'code' : 'codes'}.`,
+				showErrorDialog(
+					`Failed ${otherErrors.length} of ${
+						codesToDeploy.length - imlFunctionsDeploymentErrors.length
+					} codes deployments`,
+					{
+						modal: true,
+						detail:
+							// Display first X errors
+							otherErrors
+								.filter((_value, index) => index < MAX_DISPLAYED_ERRORS)
+								.map((deploymentError) => deploymentErrorToString(deploymentError, true))
+								.join('\n\n') +
+							// + info "and Y other errors"
+							(otherErrors.length > MAX_DISPLAYED_ERRORS
+								? `\n\n ... and ${otherErrors.length - MAX_DISPLAYED_ERRORS} other errors.`
+								: ''),
+					},
 				);
+			} else {
+				// No errors. Show successful dialog.
+				const sucessfullyDeployedCount = codesToDeploy.length - imlFunctionsDeploymentErrors.length;
+				if (sucessfullyDeployedCount > 0) {
+					vscode.window.showInformationMessage(
+						`Successfully deployed ${sucessfullyDeployedCount} ${
+							sucessfullyDeployedCount === 1 ? 'code' : 'codes'
+						}.`,
+					);
+				} else {
+					vscode.window.showInformationMessage('Nothing deployed.');
+				}
 			}
 		},
 	);
