@@ -9,7 +9,7 @@ class ImljsonHoverProvider {
 			let key = document.getText(range).slice(1, -2)
 			let help = this.provideKeyHover(key)
 			if (['name', 'type', 'label', 'help', 'default', 'advanced', 'required'].includes(key)) {
-				help = help.concat(`\r\n- For more information see the [docs](https://docs.integromat.com/apps/other/parameters#${key}).`)
+				help = help.concat(`\r\n- For more information see the [docs](https://developers.make.com/custom-apps-documentation/app-components/parameters#${key}).`)
 			}
 			return help ? new vscode.Hover(new vscode.MarkdownString(`## ${key}\r\n___\r\n${help}`)) : undefined
 		}
@@ -23,7 +23,7 @@ class ImljsonHoverProvider {
 			let customLink
 			if (type === "integer" || type === "uinteger") { customLink = 'integer-uinteger' }
 			if (type === "folder" || type === "file") { customLink = 'folder-file' }
-			return help ? new vscode.Hover(new vscode.MarkdownString(`## ${type}\r\n___\r\n${help}\r\n- For more information see the [docs](https://docs.integromat.com/apps/other/parameters/${customLink || type}).`)) : undefined
+			return help ? new vscode.Hover(new vscode.MarkdownString(`## ${type}\r\n___\r\n${help}\r\n- For more information see the [docs](https://developers.make.com/custom-apps-documentation/app-components/parameters/${customLink || type}).`)) : undefined
 		}
 	}
 
