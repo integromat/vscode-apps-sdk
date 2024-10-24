@@ -143,7 +143,9 @@
 								"timestamp",
 								"timezone",
 								"url",
-								"uuid"
+								"uuid",
+								"banner",
+								"udt"
 							]
 						},
 						{
@@ -497,7 +499,23 @@
 						}
 					]
 				},
-				"validate": {}
+				"validate": {},
+				"title": {
+					"type": "string",
+					"description": "Banner title"
+				},
+				"text": {
+					"type": "string",
+					"description": "Banner text"
+				},
+				"closable": {
+					"type": "boolean",
+					"description": "Show close button on banner"
+				},
+				"badge": {
+					"type": "string",
+					"description": "Banner badge title"
+				}
 			},
 			"additionalProperties": false,
 			"required": ["type"],
