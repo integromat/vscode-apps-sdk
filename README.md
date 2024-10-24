@@ -66,4 +66,4 @@ _See more in [Local Development for Apps documentation](https://github.com/integ
 
 ## Documentation
 
-**Read more how to [create your custom Make app](https://docs.integromat.com/apps/).**
+**Read more how to [create your custom Make app](https://developers.make.com/custom-apps-documentation).**
