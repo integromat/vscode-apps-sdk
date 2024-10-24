@@ -40,7 +40,9 @@ export async function askForAppDirToClone(): Promise<vscode.Uri | undefined> {
 	// Warning if directory contains some data
 	const destinationDir = vscode.Uri.joinPath(workspace.uri, directory);
 	try {
-		const directoryContent = await vscode.workspace.fs.readDirectory(destinationDir);
+		const directoryContent =
+			(await vscode.workspace.fs.stat(destinationDir)) && // Note: `stat()` is here, because the `readDirectory()` of non-existing dir generates the weird error `[node.js fs] readdir with filetypes failed with error` in VSCode console, even if the exception is catched.
+			(await vscode.workspace.fs.readDirectory(destinationDir));
 		if (directoryContent.length > 0) {
 			const confirmAnswer = await vscode.window.showWarningMessage(
 				'Directory already exists',
