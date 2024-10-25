@@ -14,8 +14,6 @@ import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
 import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
-import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
-import { getMakecomappJson, updateMakecomappJson } from './makecomappjson';
 
 /**
  * Download code from the Make API and save it to the local destination

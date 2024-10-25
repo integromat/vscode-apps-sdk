@@ -835,7 +835,7 @@
 				{
 					"command": "apps-sdk.local-dev.delete-local-component",
 					"group": "7_modification",
-					"when": "resourcePath =~ /^.*\\/(modules|connections|rpcs|webhooks)\\/[^\\/]+$/ && resourceExtname == ''"
+					"when": "resourcePath =~ /^.*\\/(modules|connections|rpcs|webhooks|functions)\\/[^\\/]+$/ && resourceExtname == ''"
 				}
 			]
 		},
