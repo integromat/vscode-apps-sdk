@@ -216,12 +216,6 @@ export async function pullComponentCodes(
 
 	sendTelemetry('pull_component_codes', { appComponentType, remoteComponentName });
 
-	// Pulling when there are undeployed changes. Override them and align the state with the origin.
-	const makecomappJson = await getMakecomappJson(localAppRootdir);
-	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
-	componentIdMappingHelper.filterMappingItems(item => !item?.localDeleted);
-	await updateMakecomappJson(localAppRootdir, makecomappJson);
-
 	// Download codes from API to local files
 	for (const [codeType, codeFilePath] of entries(componentMetadata.codeFiles)) {
 		if (codeFilePath === null) {

@@ -149,9 +149,16 @@ export class ComponentIdMappingHelper {
 	removeByRemoteName(componentType: AppComponentType, originComponentName: string) {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
+		// Modify makecomapp object
 		if (originInMakecomappJson.idMapping?.[componentType]) {
 			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
 		}
+		// Modify origin object that
+		if (this.origin.idMapping?.[componentType]) {
+			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+		}
+
+		return originInMakecomappJson;
 	}
 
 
@@ -159,9 +166,16 @@ export class ComponentIdMappingHelper {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
 		for (const componentType of AppComponentTypes) {
+			// Modify makecomapp object
 			if (originInMakecomappJson.idMapping?.[componentType]) {
 				originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(filterCondition);
 			}
+			// Modify origin object that
+			if (this.origin.idMapping?.[componentType]) {
+				this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(filterCondition);
+			}
+
 		}
+		return originInMakecomappJson;
 	}
 }
