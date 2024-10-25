@@ -79,6 +79,7 @@ export async function alignComponentsMapping(
 
 			// Component was deleted locally. Still need to remove from origin.
 			if (isLocalComponentKnown && isLocalComponentKnown.localDeleted) {
+				const componentMetadata = await getRemoteComponent(origin, componentType, componentName);
 				deletedLocally.push({
 					componentType,
 					componentName,
