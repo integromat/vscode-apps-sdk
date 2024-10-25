@@ -14,6 +14,8 @@ import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
 import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
+import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
+import { getMakecomappJson, updateMakecomappJson } from './makecomappjson';
 
 /**
  * Download code from the Make API and save it to the local destination
@@ -119,7 +121,7 @@ export async function downloadComponentCode({
  * Note: `appComponentType` === `app` is the special name for the app-level code (like readme, base, common, ...)
  * @private
  */
-function getCodeApiUrl({
+export function getCodeApiUrl({
 	appComponentType,
 	remoteComponentName,
 	apiCodeType,
@@ -213,6 +215,12 @@ export async function pullComponentCodes(
 	log('debug', `Pull ${appComponentType} ${remoteComponentName}: all codes`);
 
 	sendTelemetry('pull_component_codes', { appComponentType, remoteComponentName });
+
+	// Pulling when there are undeployed changes. Override them and align the state with the origin.
+	const makecomappJson = await getMakecomappJson(localAppRootdir);
+	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
+	componentIdMappingHelper.filterMappingItems(item => !item?.localDeleted);
+	await updateMakecomappJson(localAppRootdir, makecomappJson);
 
 	// Download codes from API to local files
 	for (const [codeType, codeFilePath] of entries(componentMetadata.codeFiles)) {

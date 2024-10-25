@@ -446,6 +446,11 @@
 			{
 				"command": "apps-sdk.local-dev.pull-all-components",
 				"title": "Pull All Components From Make (beta)"
+			},
+			{
+				"command": "apps-sdk.local-dev.delete-local-component",
+				"title": "Delete Component (beta)",
+				"category": "Make Apps"
 			}
 		],
 		"viewsContainers": {
@@ -826,6 +831,11 @@
 					"command": "apps-sdk.local-dev.create-local-imlfunction",
 					"group": "7_modification",
 					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'functions'"
+				},
+				{
+					"command": "apps-sdk.local-dev.delete-local-component",
+					"group": "7_modification",
+					"when": "resourcePath =~ /^.*\\/(modules|connections|rpcs|webhooks)\\/[^\\/]+$/ && resourceExtname == ''"
 				}
 			]
 		},
