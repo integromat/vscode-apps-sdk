@@ -5,6 +5,7 @@ Unreleased
 ----------
 
 - Added interface type='banner' into JSON schema.
+- Added feature "delete component".
 
 2.1.0 [2024-10-09]
 ------------------
