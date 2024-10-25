@@ -4,7 +4,7 @@ import {
 	AppComponentMetadataWithCodeFiles,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { addComponentIdMapping, getMakecomappJson } from './makecomappjson';
+import { addComponentIdMapping, getMakecomappJson, updateMakecomappJson } from './makecomappjson';
 import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
@@ -12,6 +12,7 @@ import { createLocalEmptyComponent } from './create-local-empty-component';
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
+import { deleteOriginComponent } from './delete-origin-component';
 import { Checksum } from './types/checksum.types';
 import { getComponentChecksumArray } from './helpers/origin-checksum';
 import { getRemoteComponent } from './remote-components-summary';
@@ -54,6 +55,15 @@ export async function alignComponentsMapping(
 		componentName: string;
 		componentMetadata: AppComponentMetadata;
 	}[] = [];
+	/**
+	 * Deleted locally: Missing in `makecomappJson`, but existing in `remoteComponents` and 'mapping'.
+	 * Common meaning: Deleted locally, but still exists in the remote Make.
+	 */
+	const deletedLocally: {
+		componentType: AppComponentType;
+		componentName: string;
+		componentMetadata: AppComponentMetadata;
+	}[] = [];
 
 	// Fill `remoteOnly`
 	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
@@ -66,6 +76,16 @@ export async function alignComponentsMapping(
 			const isLocalComponentKnown = origin.idMapping?.[componentType]?.find(
 				(idMappingItem) => idMappingItem.remote === componentName,
 			);
+
+			// Component was deleted locally. Still need to remove from origin.
+			if (isLocalComponentKnown && isLocalComponentKnown.localDeleted) {
+				deletedLocally.push({
+					componentType,
+					componentName,
+					componentMetadata,
+				});
+			}
+
 			if (isLocalComponentKnown === undefined) {
 				const componentMetadata = await getRemoteComponent(origin, componentType, componentName);
 				remoteOnly.push({
@@ -117,6 +137,18 @@ export async function alignComponentsMapping(
 		const remoteOnlyInSpecificComponentType = remoteOnly.filter(
 			(component) => component.componentType === componentType,
 		);
+		const deletedLocallyInSpecificComponentType = deletedLocally.filter(
+			(component) => component.componentType === componentType,
+		);
+
+		// Resolve locally deleted components
+		let deletedLocallyComponent;
+		while ((deletedLocallyComponent = deletedLocallyInSpecificComponentType.shift()!)) {
+			await deleteOriginComponent(origin, componentType, deletedLocallyComponent.componentName);
+			const mappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
+			mappingHelper.removeByRemoteName(componentType, deletedLocallyComponent.componentName);
+			await updateMakecomappJson(makecomappRootDir, makecomappJson);
+		}
 
 		// Resolve 'localOnly' found components
 		if (newLocalComponentResolution !== 'ignore') {

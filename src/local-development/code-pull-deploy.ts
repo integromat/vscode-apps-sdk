@@ -119,7 +119,7 @@ export async function downloadComponentCode({
  * Note: `appComponentType` === `app` is the special name for the app-level code (like readme, base, common, ...)
  * @private
  */
-function getCodeApiUrl({
+export function getCodeApiUrl({
 	appComponentType,
 	remoteComponentName,
 	apiCodeType,
