@@ -5,7 +5,12 @@ import {
 	ComponentCodeFilesMetadata,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
+import {
+	getMakecomappJson,
+	getMakecomappRootDir,
+	updateMakecomappJson,
+	upsertComponentInMakecomappjson,
+} from './makecomappjson';
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponentsSummary } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
@@ -49,6 +54,13 @@ export async function pullAllComponents(
 	origin: LocalAppOriginWithSecret,
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 ): Promise<void> {
+
+	// Pulling when there are undeployed changes. Override them and align the state with the origin.
+	const makecomappJson = await getMakecomappJson(localAppRootdir);
+	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
+	componentIdMappingHelper.filterMappingItems(item => !item?.localDeleted);
+	await updateMakecomappJson(localAppRootdir, makecomappJson);
+
 	const remoteAppComponentsSummary = await getRemoteComponentsSummary(localAppRootdir, origin);
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
 	await alignComponentsMapping(
@@ -140,7 +152,7 @@ async function pullComponent(
 	const existingLocalCodeFiles: ComponentCodeFilesMetadata | undefined = (
 		updatedComponentMetadata as AppComponentMetadataWithCodeFiles
 	).codeFiles;
-	const componentMetadataWithCodefiles = <AppComponentMetadataWithCodeFiles>{
+	const componentMetadataWithCodefiles = {
 		...updatedComponentMetadata,
 		codeFiles:
 			existingLocalCodeFiles ??
@@ -151,7 +163,7 @@ async function pullComponent(
 				localAppRootdir,
 				includeCommonFiles,
 			)),
-	};
+	} as AppComponentMetadataWithCodeFiles;
 
 	// Download code files
 	await pullComponentCodes(
