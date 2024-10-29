@@ -162,6 +162,10 @@ export class ComponentIdMappingHelper {
 	}
 
 
+	/**
+	 * Updates the `idMapping` mapping in `this.makecomappJson`:
+	 * Keeps the the only items that matches with defined `filterCondition`, all other items are removed.
+	 */
 	filterMappingItems(filterCondition: (it: ComponentIdMappingItem) => boolean) {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
@@ -174,8 +178,6 @@ export class ComponentIdMappingHelper {
 			if (this.origin.idMapping?.[componentType]) {
 				this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(filterCondition);
 			}
-
 		}
-		return originInMakecomappJson;
 	}
 }

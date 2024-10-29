@@ -35,8 +35,6 @@ import { getMakecomappJson, getMakecomappRootDir } from './local-development/mak
 import { AppComponentType, AppComponentTypes } from './types/app-component-type.types';
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
-import { Uri } from 'vscode';
-import { removeRecursively } from './local-development/helpers/fs';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -242,10 +240,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.delete-local-component',
 		// Delete folder will trigger file watcher
-		catchError('Delete local component', removeRecursively),
+
+		// add await vscode.workspace.fs.delete(uri, { recursive: true }); instead removeRecursively
+		catchError('Delete local component', async (uri) => {
+			await vscode.workspace.fs.delete(uri, { recursive: true });
+		})
 	);
 
-	function parseComponentPath(path: string) {
+	function parseComponentPath(path: string): { componentType: AppComponentType; componentName: string } | null {
 		const regex = new RegExp(`.*?/(${AppComponentTypes.join('|')})s/([^/]+)$`);
 		const matchComponentPath = path.match(regex);
 
@@ -256,7 +258,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		return null;
 	}
 
-	async function onFileDeleted(uri: Uri) {
+	async function onFileDeleted(uri: vscode.Uri) {
 		const foundComponentInPath = parseComponentPath(uri.path);
 
 		// Path is not related to component.

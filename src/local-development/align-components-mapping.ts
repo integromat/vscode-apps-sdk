@@ -54,7 +54,7 @@ export async function alignComponentsMapping(
 		componentMetadata: AppComponentMetadata;
 	}[] = [];
 	/**
-	 * Deleted locally: Missing in `makecomappJson`, but existing in `remoteComponents` and 'mapping'.
+	 * Deleted locally: Missing in local filesystem, but existing in `remoteComponents` and existing in 'mapping' with 'localDeleted: true'.
 	 * Common meaning: Deleted locally, but still exists in the remote Make.
 	 */
 	const deletedLocally: {
