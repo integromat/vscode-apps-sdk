@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { Uri } from 'vscode';
 
 export async function exists(uri: vscode.Uri): Promise<boolean> {
 	try {
@@ -12,8 +11,4 @@ export async function exists(uri: vscode.Uri): Promise<boolean> {
 		// Handle other errors if necessary
 		throw error;
 	}
-}
-
-export async function removeRecursively(uri: Uri) {
-	await vscode.workspace.fs.delete(uri, { recursive: true });
 }

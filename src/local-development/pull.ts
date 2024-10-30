@@ -58,6 +58,7 @@ export async function pullAllComponents(
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 	originChecksums: Checksum,
 ): Promise<void> {
+
 	// Pulling when there are undeployed changes. Override them and align the state with the origin.
 	const makecomappJson = await getMakecomappJson(localAppRootdir);
 	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
