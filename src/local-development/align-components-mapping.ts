@@ -9,11 +9,13 @@ import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-compon
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { createLocalEmptyComponent } from './create-local-empty-component';
-import { RemoteComponentsSummary } from './types/remote-components-summary.types';
 import { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { deleteOriginComponent } from './delete-origin-component';
+import { Checksum } from './types/checksum.types';
+import { getComponentChecksumArray } from './helpers/origin-checksum';
+import { getRemoteComponent } from './remote-components-summary';
 
 /**
  * Compares list of components from two sources. If some component is missing on one side,
@@ -29,7 +31,7 @@ import { deleteOriginComponent } from './delete-origin-component';
 export async function alignComponentsMapping(
 	makecomappRootDir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
-	remoteComponentsSummary: RemoteComponentsSummary,
+	originChecksums: Checksum,
 	newLocalComponentResolution: 'askUser' | 'ignore',
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew' | 'ignore',
 ): Promise<void> {
@@ -64,14 +66,20 @@ export async function alignComponentsMapping(
 	}[] = [];
 
 	// Fill `remoteOnly`
-	for (const [componentType, components] of entries(remoteComponentsSummary)) {
-		for (const [componentName, componentMetadata] of entries(components)) {
+	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	for (const componentType of allComponentTypes) {
+		const checksums = getComponentChecksumArray(originChecksums, componentType);
+		const originNames = checksums.map((checksum) => {
+			return checksum.name;
+		});
+		for (const componentName of originNames) {
 			const isLocalComponentKnown = origin.idMapping?.[componentType]?.find(
 				(idMappingItem) => idMappingItem.remote === componentName,
 			);
 
 			// Component was deleted locally. Still need to remove from origin.
 			if (isLocalComponentKnown && isLocalComponentKnown.localDeleted) {
+				const componentMetadata = await getRemoteComponent(origin, componentType, componentName);
 				deletedLocally.push({
 					componentType,
 					componentName,
@@ -80,6 +88,7 @@ export async function alignComponentsMapping(
 			}
 
 			if (isLocalComponentKnown === undefined) {
+				const componentMetadata = await getRemoteComponent(origin, componentType, componentName);
 				remoteOnly.push({
 					componentType,
 					componentName,

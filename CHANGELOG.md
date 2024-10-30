@@ -14,6 +14,7 @@ Unreleased
 - Improved wizard of new module: Added questions for connection and alternative connection.
 - Added the in-editor validation of `makecomapp.json` project file.
 - Fixed the issue `"options.maxOutputLength" is out of range` occured during ZIP import.
+- Rapidly improved deployment of local app files. Only the changed data are being deployed now.
 - Added "Apply for all" into component mapping alignment process.
 - Added feature "remember origin and do not ask again".
 
