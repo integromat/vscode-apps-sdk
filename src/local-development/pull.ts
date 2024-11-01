@@ -5,8 +5,13 @@ import {
 	ComponentCodeFilesMetadata,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
-import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponentsSummary } from './remote-components-summary';
+import {
+	getMakecomappJson,
+	getMakecomappRootDir,
+	updateMakecomappJson,
+	upsertComponentInMakecomappjson,
+} from './makecomappjson';
+import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
 import { askForProjectOrigin } from './ask-origin';
@@ -18,6 +23,8 @@ import { AppComponentType } from '../types/app-component-type.types';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
+import { Checksum } from './types/checksum.types';
+import { downloadOriginChecksums, getComponentChecksumArray } from './helpers/origin-checksum';
 
 export function registerCommands(): void {
 	/**
@@ -32,7 +39,8 @@ export function registerCommands(): void {
 				return;
 			}
 			await withProgressDialog({ title: '' }, async (_progress, _cancellationToken) => {
-				await pullAllComponents(localAppRootdir, origin, 'askUser');
+				const originChecksums = await downloadOriginChecksums(origin);
+				await pullAllComponents(localAppRootdir, origin, 'askUser', originChecksums);
 			});
 			vscode.window.showInformationMessage('All local app component files has been updated.');
 		}),
@@ -48,16 +56,17 @@ export async function pullAllComponents(
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
+	originChecksums: Checksum,
 ): Promise<void> {
-	const remoteAppComponentsSummary = await getRemoteComponentsSummary(localAppRootdir, origin);
+
+	// Pulling when there are undeployed changes. Override them and align the state with the origin.
+	const makecomappJson = await getMakecomappJson(localAppRootdir);
+	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
+	componentIdMappingHelper.filterMappingItems(item => !item?.localDeleted);
+	await updateMakecomappJson(localAppRootdir, makecomappJson);
+
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
-	await alignComponentsMapping(
-		localAppRootdir,
-		origin,
-		remoteAppComponentsSummary,
-		'ignore',
-		newRemoteComponentResolution,
-	);
+	await alignComponentsMapping(localAppRootdir, origin, originChecksums, 'ignore', newRemoteComponentResolution);
 	// Load fresh `makecomapp.json` file (because `alignComponentMapping()` changed it)
 	const makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
 
@@ -83,9 +92,12 @@ export async function pullAllComponents(
 	// Note: All remote components already have local counterparts due to previously called `alignComponentsMapping()`.
 	for (const componentType of getAppComponentTypes()) {
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
-		for (const [remoteComponentName, remoteComponentMetadata] of Object.entries(
-			remoteAppComponentsSummary[componentType],
-		)) {
+		const checksums = getComponentChecksumArray(originChecksums, componentType);
+		const originNames = checksums.map((checksum) => {
+			return checksum.name;
+		});
+
+		for (const remoteComponentName of originNames) {
 			const componentLocalId = componentIdMapping.getExistingLocalId(componentType, remoteComponentName);
 			if (componentLocalId === null) {
 				continue;
@@ -100,13 +112,14 @@ export async function pullAllComponents(
 			}
 
 			// Prepate updated component metadata (merge with previous one)
+			const remoteComponentMetadata = await getRemoteComponent(origin, componentType, remoteComponentName);
 			const updatedComponentMedatada: AppComponentMetadataWithCodeFiles = {
 				...existingComponentMetadata, // Use previous `codeFiles`
 				// + Update all other properties by fresh one loaded from remote
 				...convertComponentMetadataRemoteNamesToLocalIds(remoteComponentMetadata, componentIdMapping),
 			};
 			// Pull/update already existing component + save updated component metadata
-			pullComponent(
+			await pullComponent(
 				componentType,
 				remoteComponentName,
 				componentLocalId,
@@ -140,7 +153,7 @@ async function pullComponent(
 	const existingLocalCodeFiles: ComponentCodeFilesMetadata | undefined = (
 		updatedComponentMetadata as AppComponentMetadataWithCodeFiles
 	).codeFiles;
-	const componentMetadataWithCodefiles = <AppComponentMetadataWithCodeFiles>{
+	const componentMetadataWithCodefiles = {
 		...updatedComponentMetadata,
 		codeFiles:
 			existingLocalCodeFiles ??
@@ -151,7 +164,7 @@ async function pullComponent(
 				localAppRootdir,
 				includeCommonFiles,
 			)),
-	};
+	} as AppComponentMetadataWithCodeFiles;
 
 	// Download code files
 	await pullComponentCodes(

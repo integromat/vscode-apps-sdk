@@ -27,7 +27,7 @@ export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
 		workspace.uri.path,
 		anyProjectPath.path,
 	)}" is not a part of a Make App.`;
-	// eslint-disable-next-line no-constant-condition
+
 	while (true) {
 		currentDirRelative = path.posix.relative(workspace.uri.path, currentProjectPath.path);
 		if (currentDirRelative.startsWith('..')) {
@@ -102,7 +102,7 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 /**
  * Writes new content into `makecomapp.json` file.
  */
-async function updateMakecomappJson(anyProjectPath: vscode.Uri, newMakecomappJson: MakecomappJson): Promise<void> {
+export async function updateMakecomappJson(anyProjectPath: vscode.Uri, newMakecomappJson: MakecomappJson): Promise<void> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
 	await vscode.workspace.fs.writeFile(
