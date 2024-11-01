@@ -919,7 +919,7 @@
 		"typescript-json-schema": "^0.65.1"
 	},
 	"dependencies": {
-		"@integromat/iml": "^3.0.0",
+		"@integromat/iml": "^3.4.0",
 		"@integromat/udt": "^1.2.1",
 		"@vscode/extension-telemetry": "^0.9.7",
 		"adm-zip": "^0.5.16",

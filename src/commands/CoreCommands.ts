@@ -28,7 +28,6 @@ export class CoreCommands {
 	currentDataProvider: vscode.Disposable | undefined;
 	currentGroupsProvider: vscode.Disposable | undefined;
 	staticImlProvider: StaticImlProvider;
-	sipInit: boolean;
 	tempListener: null; // TODO remove, not used
 
 	constructor(appsProvider: AppsProvider, _authorization: string, _environment: Environment) {
@@ -36,7 +35,6 @@ export class CoreCommands {
 		this._authorization = _authorization;
 		this._environment = _environment;
 		this.staticImlProvider = new StaticImlProvider();
-		this.sipInit = false;
 		this.tempListener = null;
 	}
 
@@ -311,7 +309,7 @@ export class CoreCommands {
 
 		/**
 		 * IML-LOADER
-		 * ImlLoader loads all IML functions available within the app
+		 * ImlLoader loads all app's custom IML functions available within the app
 		 * Following condition specifies where are IML functions allowed
 		 */
 		if (
@@ -337,7 +335,7 @@ export class CoreCommands {
 				'function',
 			)}`;
 
-			// Get list of IML functions
+			// Get list of existing app's custom IML functions
 			const response = await Core.rpGet(url, this._authorization);
 			const items: { name: string }[] = this._environment.version === 1 ? response : response.appFunctions;
 			const imls = items.map((iml) => {
@@ -400,12 +398,6 @@ export class CoreCommands {
 		 * STATIC-IML-LOADER
 		 * Static IML loader provides inbuilt IML functions and keywords.
 		 */
-
-		if (this.sipInit === false) {
-			await this.staticImlProvider.initialize();
-			this.sipInit = true;
-		}
-
 		if (
 			name === 'base' ||
 			name === 'api' ||
