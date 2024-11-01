@@ -6,6 +6,7 @@ Unreleased
 
 - Added interface type='banner' into JSON schema.
 - Added feature "delete component".
+- Updated URLs to Custom Apps documentation.
 - Removed dependency on `static.integromat.com` web.
 - Updated list of autocompleted/suggested IML functions.
 
