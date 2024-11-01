@@ -4,6 +4,7 @@ import throat from 'throat';
 import { progresDialogReport } from './vscode-progress-dialog';
 import * as Meta from '../Meta';
 import { errorToString } from '../error-handling';
+import { log } from '../output-channel';
 
 const limitConcurrently = throat(2);
 
@@ -32,7 +33,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 					})
 				).data;
 			} catch (err: any) {
-				if ((<AxiosError>err).response?.status === 429) {
+				if ((err as AxiosError).response?.status === 429) {
 					progresDialogReport('Too many requests into Make. Slowing down. Please wait.');
 					await setTimeout(5000); // Bloks also anothers requests (because of `limitConcurrently`)
 					throw err;
@@ -55,7 +56,7 @@ export async function requestMakeApi<T>(config: AxiosRequestConfig): Promise<T> 
 	} catch (e: any) {
 		// Try again.
 		// Note, because the new try is called outside the `limitConcurrently()` block, the next try is enqueued to end of the queue.
-		if ((<AxiosError>e).response?.status === 429) {
+		if ((e as AxiosError).response?.status === 429) {
 			return requestMakeApi(config);
 		} else {
 			throw e;

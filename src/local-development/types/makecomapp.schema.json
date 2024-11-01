@@ -103,6 +103,11 @@
                         "string"
                     ]
                 },
+                "localDeleted": {
+                    "description": "Note: True indicates that the component was deleted and must be aligned with the origin. Otherwise, the component is still relevant.",
+                    "title": "localDeleted",
+                    "type": "boolean"
+                },
                 "remote": {
                     "description": "Note: `null` means that the local component is not paired to remote. In consequences these local components will be ignored during pull or deploy.",
                     "title": "remote",

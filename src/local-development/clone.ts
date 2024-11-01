@@ -16,6 +16,7 @@ import { generalCodesDefinition } from '../services/component-code-def';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
+import { downloadOriginChecksums } from './helpers/origin-checksum';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(
@@ -169,7 +170,8 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		);
 
 		// Pull all app's components
-		await pullAllComponents(localAppRootdir, origin, 'cloneAsNew');
+		const originChecksums = await downloadOriginChecksums(origin);
+		await pullAllComponents(localAppRootdir, origin, 'cloneAsNew', originChecksums);
 
 		// VSCode show readme.md and open explorer
 		const readmeUri = vscode.Uri.joinPath(

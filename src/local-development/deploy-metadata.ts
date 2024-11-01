@@ -7,6 +7,8 @@ import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
+import { Checksum } from './types/checksum.types';
+import { compareChecksumDeep } from './helpers/origin-checksum';
 
 /**
  * Sets the local component metadata into remote `origin`.
@@ -17,6 +19,7 @@ export async function deployComponentMetadata(
 	componentMetadata: AppComponentMetadata,
 	makecomappJson: MakecomappJson,
 	origin: LocalAppOriginWithSecret,
+	originChecksum: Checksum,
 ): Promise<void> {
 	log(
 		'debug',
@@ -44,17 +47,30 @@ export async function deployComponentMetadata(
 		return;
 	}
 
-	const componentUrl = getComponentApiUrl({ componentType, remoteComponentName, origin });
+	const metadataChecksumMatches = compareChecksumDeep(
+		originChecksum,
+		componentType,
+		remoteComponentName,
+		metadataToUpdate,
+	);
+	if (!metadataChecksumMatches) {
+		const componentUrl = getComponentApiUrl({ componentType, remoteComponentName, origin });
 
-	const axiosConfig: AxiosRequestConfig = {
-		headers: {
-			Authorization: 'Token ' + origin.apikey,
-		},
-		url: componentUrl,
-		method: 'PATCH',
-		data: metadataToUpdate,
-	};
-	await requestMakeApi(axiosConfig);
+		const axiosConfig: AxiosRequestConfig = {
+			headers: {
+				Authorization: 'Token ' + origin.apikey,
+			},
+			url: componentUrl,
+			method: 'PATCH',
+			data: metadataToUpdate,
+		};
+		await requestMakeApi(axiosConfig);
+	} else {
+		log(
+			'info',
+			`Skipping metadata deployment of component '${componentType}' with name ‘${remoteComponentName}’: local is identical to origin.`,
+		);
+	}
 
 	progresDialogReport('');
 }

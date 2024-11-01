@@ -31,6 +31,10 @@ import AccountCommands = require('./commands/AccountCommands');
 import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
 import { telemetryReporter, sendTelemetry, startAppInsights } from './utils/telemetry';
+import { getMakecomappJson, getMakecomappRootDir } from './local-development/makecomappjson';
+import { AppComponentType, AppComponentTypes } from './types/app-component-type.types';
+import { deleteLocalComponent } from './local-development/delete-local-component';
+import { catchError } from './error-handling';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -231,6 +235,56 @@ export async function activate(context: vscode.ExtensionContext) {
 			},
 		},
 	);
+
+	// Component deletion context menu.
+	vscode.commands.registerCommand(
+		'apps-sdk.local-dev.delete-local-component',
+		// Delete folder will trigger file watcher
+
+		// add await vscode.workspace.fs.delete(uri, { recursive: true }); instead removeRecursively
+		catchError('Delete local component', async (uri) => {
+			await vscode.workspace.fs.delete(uri, { recursive: true });
+		})
+	);
+
+	function parseComponentPath(path: string): { componentType: AppComponentType; componentName: string } | null {
+		const regex = new RegExp(`.*?/(${AppComponentTypes.join('|')})s/([^/]+)$`);
+		const matchComponentPath = path.match(regex);
+
+		if (matchComponentPath) {
+			const [, componentType, componentName] = matchComponentPath;
+			return { componentType: componentType as AppComponentType, componentName };
+		}
+		return null;
+	}
+
+	async function onFileDeleted(uri: vscode.Uri) {
+		const foundComponentInPath = parseComponentPath(uri.path);
+
+		// Path is not related to component.
+		if (!foundComponentInPath) {
+			return;
+		}
+
+		const makecomappJson = await getMakecomappJson(uri);
+		// The path is a valid component but is not listed in the manifest, so no action will be executed.
+		if (!makecomappJson.components[foundComponentInPath.componentType][foundComponentInPath.componentName]) {
+			return;
+		}
+
+		// The path is valid existing component, proceed with its deletion.
+		const rootDir = getMakecomappRootDir(uri);
+		await deleteLocalComponent(
+			rootDir,
+			foundComponentInPath.componentType as AppComponentType,
+			foundComponentInPath.componentName,
+		);
+	}
+
+	// Observe file/folder deletion even from external file explorer.
+	const watcher = vscode.workspace.createFileSystemWatcher('**/*');
+	watcher.onDidDelete(onFileDeleted);
+	context.subscriptions.push(watcher);
 
 	/**
 	 * TELEMETRY & APP INSIGHTS START

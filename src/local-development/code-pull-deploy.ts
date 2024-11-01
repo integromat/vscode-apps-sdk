@@ -3,10 +3,9 @@ import { AxiosRequestConfig } from 'axios';
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
 import { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
-import { ApiCodeType, CodeType, ComponentCodeType, GeneralCodeType } from './types/code-type.types';
-import { CodeDef } from './types/code-def.types';
+import { ApiCodeType, CodeType } from './types/code-type.types';
 import { getComponentApiUrl } from './helpers/api-url';
-import { getAppComponentCodeDefinition, getGeneralCodeDefinition } from '../services/component-code-def';
+import { getCodeDef } from '../services/component-code-def';
 import { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
@@ -14,6 +13,7 @@ import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';
 import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
+import { md5 } from './helpers/md5';
 
 /**
  * Download code from the Make API and save it to the local destination
@@ -119,7 +119,7 @@ export async function downloadComponentCode({
  * Note: `appComponentType` === `app` is the special name for the app-level code (like readme, base, common, ...)
  * @private
  */
-function getCodeApiUrl({
+export function getCodeApiUrl({
 	appComponentType,
 	remoteComponentName,
 	apiCodeType,
@@ -145,13 +145,15 @@ export async function deployComponentCode({
 	codeType,
 	origin,
 	sourcePath,
+	originChecksum,
 }: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
-}): Promise<void> {
+	originChecksum?: string[] | undefined | null;
+}) {
 	progresDialogReport(
 		`Deploying file ${path.basename(sourcePath.fsPath)} to origin ${
 			origin.label ?? origin.appId
@@ -175,28 +177,34 @@ export async function deployComponentCode({
 	const sourceContentUint8 = await vscode.workspace.fs.readFile(sourcePath);
 	const sourceContent = new TextDecoder().decode(sourceContentUint8);
 
-	// Get the code from the API
-	const axiosConfig: AxiosRequestConfig = {
-		url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
-		method: 'PUT',
-		headers: {
-			Authorization: 'Token ' + origin.apikey,
-			'Content-Type': codeDef.mimetype,
-			'imt-vsce-localmode': 'true',
-			'imt-apps-sdk-version': ExtensionVersion,
-		},
-		data: sourceContent,
-		transformRequest: (data) => data, // Do not expect the `data` to be JSON
-	};
-	await requestMakeApi(axiosConfig);
+	const localChecksum = md5(sourceContent);
+	if (!originChecksum?.includes(localChecksum)) {
+		// Get the code from the API
+		const axiosConfig: AxiosRequestConfig = {
+			url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),
+			method: 'PUT',
+			headers: {
+				Authorization: 'Token ' + origin.apikey,
+				'Content-Type': codeDef.mimetype,
+				'imt-vsce-localmode': 'true',
+				'imt-apps-sdk-version': ExtensionVersion,
+			},
+			data: sourceContent,
+			transformRequest: (data) => data, // Do not expect the `data` to be JSON
+		};
+		await requestMakeApi(axiosConfig);
+		log(
+			'debug',
+			`Deployed ${appComponentType} ${sourcePath} to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
+		);
+	} else {
+		log(
+			'info',
+			`Skipping deployment of component ${appComponentType} with name ‘${remoteComponentName}’: local is identical to origin.`,
+		);
+	}
 
 	progresDialogReport('');
-}
-
-function getCodeDef(componentType: AppComponentType | 'app', codeType: CodeType): CodeDef {
-	return componentType === 'app'
-		? getGeneralCodeDefinition(codeType as GeneralCodeType)
-		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
 }
 
 /**
