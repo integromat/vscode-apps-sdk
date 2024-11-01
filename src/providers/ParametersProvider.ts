@@ -148,9 +148,8 @@ export class ParametersProvider {
 	}
 }
 
-
 /**
- * @docs https://docs.integromat.com/apps/app-components/parameters
+ * @docs https://developers.make.com/custom-apps-documentation/app-components/parameters
  */
 interface ParameterDefinition {
 	name: string;
@@ -171,7 +170,7 @@ interface ParameterDefinition {
 	/**
 	 * definition for type === "select"
 	 * If string, it must start with "rpc://".
-	 * @docs https://docs.integromat.com/apps/app-components/parameters/select
+	 * @docs https://developers.make.com/custom-apps-documentation/app-components/parameters/select
 	 */
 	options?: {
 		label: string;
