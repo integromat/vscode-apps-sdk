@@ -104,7 +104,7 @@
                     ]
                 },
                 "localDeleted": {
-                    "description": "Note: True indicates that the component was deleted and must be aligned with the origin. Otherwise, the component is still relevant.",
+                    "description": "Note: True indicates that the component was deleted locally and must be aligned with the origin.",
                     "title": "localDeleted",
                     "type": "boolean"
                 },
