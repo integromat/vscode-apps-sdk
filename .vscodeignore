@@ -2,7 +2,6 @@
 .vscode-test/**
 .github/**
 out/test/**
-out/types/**
 local
 .gitignore
 jsconfig.json

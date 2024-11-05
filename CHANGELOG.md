@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+2.2.1 [2024-11-05] (pre-release)
+------------------
+
+- Fixed broken extension 2.2.0 initialization.
+
 2.2.0 [2024-11-04] (pre-release)
 ------------------
 
