@@ -1,7 +1,7 @@
 import { AxiosResponse } from 'axios';
 import * as jsoncParser from 'jsonc-parser';
 import * as vscode from 'vscode';
-import { Environment } from '../types/environment.types';
+import type { Environment } from '../types/environment.types';
 import * as Core from '../Core';
 import { showAndLogError } from '../error-handling';
 import { requestMakeApi } from '../utils/request-api-make';

@@ -3,14 +3,14 @@ import * as path from 'node:path';
 import { TextDecoder, TextEncoder } from 'node:util';
 import throat from 'throat';
 import * as vscode from 'vscode';
-import { AppComponentMetadataWithCodeFiles, LocalAppOrigin, MakecomappJson } from './types/makecomapp.types';
+import type { AppComponentMetadataWithCodeFiles, LocalAppOrigin, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
 import { isComponentLocalIdValid } from './helpers/validate-id';
 import { getOriginObject } from './helpers/get-origin-object';
 import { entries } from '../utils/typed-object';
 import { getCurrentWorkspace } from '../services/workspace';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 
 const limitConcurrency = throat(1);
 

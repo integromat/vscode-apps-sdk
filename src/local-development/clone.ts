@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { TextEncoder } from 'node:util';
 import pick from 'lodash/pick';
 import * as vscode from 'vscode';
-import { LocalAppOrigin, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
+import type { LocalAppOrigin, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
 import { generateDefaultLocalFilename } from './local-file-paths';

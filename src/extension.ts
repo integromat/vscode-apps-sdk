@@ -7,7 +7,7 @@ import { log } from './output-channel';
 import { FunctionCommands } from './commands/FunctionCommands';
 import { CommonCommands } from './commands/CommonCommands';
 import { CoreCommands } from './commands/CoreCommands';
-import { Environment } from './types/environment.types';
+import type { Environment } from './types/environment.types';
 import { rmCodeLocalTempBasedir, sourceCodeLocalTempBasedir } from './temp-dir';
 import { isPreReleaseVersion, version } from './Meta';
 import {
@@ -32,7 +32,7 @@ import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
 import { telemetryReporter, sendTelemetry, startAppInsights } from './utils/telemetry';
 import { getMakecomappJson, getMakecomappRootDir } from './local-development/makecomappjson';
-import { AppComponentType, AppComponentTypes } from './types/app-component-type.types';
+import { type AppComponentType, AppComponentTypes } from './types/app-component-type.types';
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
 
@@ -244,7 +244,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		// add await vscode.workspace.fs.delete(uri, { recursive: true }); instead removeRecursively
 		catchError('Delete local component', async (uri) => {
 			await vscode.workspace.fs.delete(uri, { recursive: true });
-		})
+		}),
 	);
 
 	function parseComponentPath(path: string): { componentType: AppComponentType; componentName: string } | null {

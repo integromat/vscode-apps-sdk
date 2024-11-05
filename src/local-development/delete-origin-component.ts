@@ -1,9 +1,9 @@
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { requestMakeApi } from '../utils/request-api-make';
 import { AxiosRequestConfig } from 'axios';
 import { version as ExtensionVersion } from '../Meta';
-import { LocalAppOriginWithSecret } from './types/makecomapp.types';
+import type { LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { getComponentApiUrl } from './helpers/api-url';
 
 export async function deleteOriginComponent(origin: LocalAppOriginWithSecret, componentType: AppComponentType, remoteComponentName: string) {

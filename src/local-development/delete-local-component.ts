@@ -1,4 +1,4 @@
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { removeModuleFromGroups } from './groups-json';
 import * as vscode from 'vscode';

@@ -1,6 +1,6 @@
-import { LocalAppOriginWithSecret } from '../types/makecomapp.types';
+import type { LocalAppOriginWithSecret } from '../types/makecomapp.types';
 import * as Core from '../../Core';
-import { AppComponentType } from '../../types/app-component-type.types';
+import type { AppComponentType } from '../../types/app-component-type.types';
 
 const apiV2SdkAppsBasePath = 'v2/sdk/apps';
 

@@ -1,13 +1,12 @@
 import { getOriginObject } from './get-origin-object';
-import { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
-import { AppComponentType, AppComponentTypes, AppGeneralType } from '../../types/app-component-type.types';
+import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
+import { type AppComponentType, AppComponentTypes, type AppGeneralType } from '../../types/app-component-type.types';
 
 /**
  * Provides helping function to find remote component name from local ID and vice versa.
  */
 export class ComponentIdMappingHelper {
-	constructor(private makecomappJson: MakecomappJson, private origin: LocalAppOrigin) {
-	}
+	constructor(private readonly makecomappJson: MakecomappJson, private readonly origin: LocalAppOrigin) {}
 
 	getMappingByLocalName(componentType: AppComponentType | AppGeneralType, localId: string) {
 		if (componentType === 'app') {

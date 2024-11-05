@@ -28,6 +28,6 @@
 		"allowJs": true,
 		"esModuleInterop": true
 	},
-	"include": ["src"],
+	"include": ["src"], // Need to include whole directory `src` for including also integrations tests. Test files are required during `npm run test`.
 	"exclude": ["node_modules", ".vscode-test"]
 }

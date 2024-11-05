@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata } from './types/makecomapp.types';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentMetadata } from './types/makecomapp.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 
 export const specialAnswers = {
 	CREATE_NEW_COMPONENT: Symbol('Create new compoment in counterparty'),

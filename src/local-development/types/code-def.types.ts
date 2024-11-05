@@ -1,6 +1,6 @@
-import { AppComponentType } from '../../types/app-component-type.types';
-import { ApiCodeType } from './code-type.types';
-import { AppComponentMetadata } from './makecomapp.types';
+import type { AppComponentType } from '../../types/app-component-type.types';
+import type { ApiCodeType } from './code-type.types';
+import type { AppComponentMetadata } from './makecomapp.types';
 
 export interface CodeDef {
 	/**

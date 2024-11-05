@@ -19,11 +19,11 @@ import { alignComponentsMapping } from './align-components-mapping';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 import { generalCodesDefinition, getAppComponentTypes } from '../services/component-code-def';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
-import { Checksum } from './types/checksum.types';
+import type { Checksum } from './types/checksum.types';
 import { downloadOriginChecksums, getComponentChecksumArray } from './helpers/origin-checksum';
 
 export function registerCommands(): void {

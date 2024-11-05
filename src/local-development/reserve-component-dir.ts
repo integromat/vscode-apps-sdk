@@ -1,7 +1,7 @@
 import sanitize from 'sanitize-filename';
 import throat from 'throat';
 import * as vscode from 'vscode';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { getFirstNonExistingPath } from '../utils/non-existing-path';
 
