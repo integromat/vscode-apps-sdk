@@ -1,8 +1,8 @@
-import { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import type { AppComponentMetadata, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { getAppComponentDetails } from '../services/get-app-components';
 import { getModuleDefFromId } from '../services/module-types-naming';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import {
 	ConnectionComponentDetailsApiResponseItem,
 	ModuleComponentDetailsApiResponseItem,
@@ -45,7 +45,9 @@ export async function getRemoteComponent(
 
 			if (componentDetail.typeId === undefined) {
 				// This should not occur on production. It is here for input validation only.
-				throw new Error(`Missing expected property 'typeId' on remote ${componentType} ${componentDetail.name}.`);
+				throw new Error(
+					`Missing expected property 'typeId' on remote ${componentType} ${componentDetail.name}.`,
+				);
 			}
 			componentMetadata.moduleType = getModuleDefFromId(
 				(componentDetail as ModuleComponentDetailsApiResponseItem).typeId,
@@ -54,7 +56,9 @@ export async function getRemoteComponent(
 			if (componentMetadata.moduleType === 'action') {
 				if (componentDetail.crud === undefined) {
 					// This should not occur on production. It is here for input validation only.
-					throw new Error(`Missing expected property 'crud' on remote ${componentType} ${componentDetail.name}.`);
+					throw new Error(
+						`Missing expected property 'crud' on remote ${componentType} ${componentDetail.name}.`,
+					);
 				}
 				componentMetadata.actionCrud = (componentDetail as ModuleComponentDetailsApiResponseItem).crud;
 			}

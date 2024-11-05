@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import { suite, test } from 'mocha';
 import { isComponentLocalIdValid } from './validate-id';
-import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
+import type { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 import { entries } from '../../utils/typed-object';
 
 suite('isComponentLocalIdValid()', () => {

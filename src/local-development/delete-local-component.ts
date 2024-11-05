@@ -1,11 +1,15 @@
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { removeModuleFromGroups } from './groups-json';
 import * as vscode from 'vscode';
 import { getMakecomappJson, updateMakecomappJson } from './makecomappjson';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 
-export async function deleteLocalComponent(anyProjectPath: vscode.Uri, componentType: AppComponentType, localComponentName: string) {
+export async function deleteLocalComponent(
+	anyProjectPath: vscode.Uri,
+	componentType: AppComponentType,
+	localComponentName: string,
+) {
 	log('info', `Deleting local ${componentType} '${localComponentName}'`);
 
 	// Remove module groups

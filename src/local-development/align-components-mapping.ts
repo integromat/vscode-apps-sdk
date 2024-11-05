@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {
+import type {
 	AppComponentMetadata,
 	AppComponentMetadataWithCodeFiles,
 	LocalAppOriginWithSecret,
@@ -9,11 +9,11 @@ import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-compon
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { createLocalEmptyComponent } from './create-local-empty-component';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { deleteOriginComponent } from './delete-origin-component';
-import { Checksum } from './types/checksum.types';
+import type { Checksum } from './types/checksum.types';
 import { getComponentChecksumArray } from './helpers/origin-checksum';
 import { getRemoteComponent } from './remote-components-summary';
 

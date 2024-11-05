@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LocalAppOrigin } from './types/makecomapp.types';
+import type { LocalAppOrigin } from './types/makecomapp.types';
 import { downloadComponentCode } from './code-pull-deploy';
 import { getConfiguration } from '../providers/configuration';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';

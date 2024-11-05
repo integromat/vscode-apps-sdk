@@ -3,7 +3,7 @@ import * as Core from '../Core';
 import * as Enum from '../Enum';
 import { showAndLogError } from '../error-handling';
 import { AppsProvider } from '../providers/AppsProvider';
-import { Environment } from '../types/environment.types';
+import type { Environment } from '../types/environment.types';
 import { requestMakeApi } from '../utils/request-api-make';
 
 export class CommonCommands {

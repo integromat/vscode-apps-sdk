@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata } from './types/makecomapp.types';
+import type { AppComponentMetadata } from './types/makecomapp.types';
 import { getMakecomappJson, getMakecomappRootDir } from './makecomappjson';
 import { askNewComponentLocalID } from './helpers/ask-component-id';
 import { askFreeText } from './helpers/ask-free-text';
-import { Crud } from './types/crud.types';
+import type { Crud } from './types/crud.types';
 import { optionalAddModuleToDefaultGroup } from './groups-json';
 import { createLocalEmptyComponent } from './create-local-empty-component';
 import { askForLinkConnection } from './helpers/ask-connection';
 import { catchError } from '../error-handling';
 import { moduleTypes } from '../services/module-types-naming';
-import { ModuleType } from '../types/component-types.types';
+import type { ModuleType } from '../types/component-types.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(

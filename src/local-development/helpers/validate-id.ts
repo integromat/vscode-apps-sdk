@@ -1,4 +1,4 @@
-import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
+import type { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 
 const ruleRpcModule = {
 	// Local ID must match the format requirements at Make.

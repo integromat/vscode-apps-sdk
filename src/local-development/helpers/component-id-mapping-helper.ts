@@ -1,13 +1,12 @@
 import { getOriginObject } from './get-origin-object';
-import { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
-import { AppComponentType, AppComponentTypes, AppGeneralType } from '../../types/app-component-type.types';
+import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
+import { type AppComponentType, AppComponentTypes, type AppGeneralType } from '../../types/app-component-type.types';
 
 /**
  * Provides helping function to find remote component name from local ID and vice versa.
  */
 export class ComponentIdMappingHelper {
-	constructor(private makecomappJson: MakecomappJson, private origin: LocalAppOrigin) {
-	}
+	constructor(private readonly makecomappJson: MakecomappJson, private readonly origin: LocalAppOrigin) {}
 
 	getMappingByLocalName(componentType: AppComponentType | AppGeneralType, localId: string) {
 		if (componentType === 'app') {
@@ -151,16 +150,19 @@ export class ComponentIdMappingHelper {
 
 		// Modify makecomapp object
 		if (originInMakecomappJson.idMapping?.[componentType]) {
-			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(
+				(mapping) => mapping.remote !== originComponentName,
+			);
 		}
 		// Modify origin object that
 		if (this.origin.idMapping?.[componentType]) {
-			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(
+				(mapping) => mapping.remote !== originComponentName,
+			);
 		}
 
 		return originInMakecomappJson;
 	}
-
 
 	/**
 	 * Updates the `idMapping` mapping in `this.makecomappJson`:
@@ -172,7 +174,8 @@ export class ComponentIdMappingHelper {
 		for (const componentType of AppComponentTypes) {
 			// Modify makecomapp object
 			if (originInMakecomappJson.idMapping?.[componentType]) {
-				originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(filterCondition);
+				originInMakecomappJson.idMapping[componentType] =
+					originInMakecomappJson.idMapping[componentType].filter(filterCondition);
 			}
 			// Modify origin object that
 			if (this.origin.idMapping?.[componentType]) {

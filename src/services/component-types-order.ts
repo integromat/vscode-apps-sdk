@@ -1,4 +1,4 @@
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 
 /**
  * The order is defined to avoid break any dependencies (like references to connection from other components)

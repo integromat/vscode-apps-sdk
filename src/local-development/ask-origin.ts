@@ -1,7 +1,7 @@
 import path from 'path';
 import * as vscode from 'vscode';
 import { TextDecoder } from 'util';
-import { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
+import type { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { addEmptyOriginInMakecomappjson, getMakecomappJson } from './makecomappjson';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { askAddMissingApiKey } from './ask-add-missing-apikey';

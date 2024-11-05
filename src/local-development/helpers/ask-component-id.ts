@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { COMPONENT_ID_VALIDATION_RULES, isComponentLocalIdValid } from './validate-id';
-import { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
+import type { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 
 /**
  * Displays the VS Code input box to ask user to enter the component local ID.

@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import * as download from 'image-downloader';
 import { Jimp } from 'jimp';
 import * as Meta from '../Meta';
-import { Environment } from '../types/environment.types';
+import type { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
 import { appsIconTempDir } from '../temp-dir';
 

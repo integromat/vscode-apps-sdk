@@ -14,7 +14,7 @@ import { GroupsProvider } from '../providers/GroupsProvider';
 import { catchError, showAndLogError } from '../error-handling';
 import { log } from '../output-channel';
 import { AppsProvider } from '../providers/AppsProvider';
-import { Environment } from '../types/environment.types';
+import type { Environment } from '../types/environment.types';
 
 export class CoreCommands {
 	appsProvider: AppsProvider;

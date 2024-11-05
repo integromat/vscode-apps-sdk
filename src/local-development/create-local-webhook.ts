@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata } from './types/makecomapp.types';
+import type { AppComponentMetadata } from './types/makecomapp.types';
 import { getMakecomappRootDir } from './makecomappjson';
 import { askFreeText } from './helpers/ask-free-text';
 import { createLocalEmptyComponent } from './create-local-empty-component';
 import { askNewComponentLocalID } from './helpers/ask-component-id';
 import { catchError } from '../error-handling';
-import { WebhookType } from '../types/component-types.types';
+import type { WebhookType } from '../types/component-types.types';
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand(

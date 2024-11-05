@@ -2,11 +2,11 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import * as vscode from 'vscode';
 import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
-import { CodeDef } from './types/code-def.types';
-import { CodeType } from './types/code-type.types';
-import { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makecomapp.types';
+import type { CodeDef } from './types/code-def.types';
+import type { CodeType } from './types/code-type.types';
+import type { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makecomapp.types';
 import { getAppComponentCodesDefinition } from '../services/component-code-def';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { entries } from '../utils/typed-object';
 

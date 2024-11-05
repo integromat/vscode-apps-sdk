@@ -1,4 +1,4 @@
-import { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
+import type { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 
 /**
  * Finds and returns the fresh/up-to-date reference to makecomapp.json's origin object.

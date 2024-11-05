@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
+import type { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateAndReserveComponentLocalId, upsertComponentInMakecomappjson } from './makecomappjson';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 import { entries } from '../utils/typed-object';
-import { AppComponentType } from '../types/app-component-type.types';
+import type { AppComponentType } from '../types/app-component-type.types';
 
 /**
  * Handles the VS Code right click and select "Create local component: IML Function".
