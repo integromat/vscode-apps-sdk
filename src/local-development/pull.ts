@@ -58,10 +58,11 @@ export async function pullAllComponents(
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 	originChecksums: Checksum,
 ): Promise<void> {
+
 	// Pulling when there are undeployed changes. Override them and align the state with the origin.
 	const makecomappJson = await getMakecomappJson(localAppRootdir);
 	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
-	componentIdMappingHelper.filterMappingItems((item) => !item?.localDeleted);
+	componentIdMappingHelper.filterMappingItems(item => !item?.localDeleted);
 	await updateMakecomappJson(localAppRootdir, makecomappJson);
 
 	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
