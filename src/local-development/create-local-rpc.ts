@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AppComponentMetadata } from './types/makecomapp.types';
+import type { AppComponentMetadata } from './types/makecomapp.types';
 import { getMakecomappRootDir } from './makecomappjson';
 import { askFreeText } from './helpers/ask-free-text';
 import { createLocalEmptyComponent } from './create-local-empty-component';

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { Environment } from './types/environment.types';
+import type { Environment } from './types/environment.types';
 import { showAndLogError } from './error-handling';
 import { requestMakeApi } from './utils/request-api-make';
 

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { getMakecomappJson } from '../makecomappjson';
-import { MakecomappJson } from '../types/makecomapp.types';
+import type { MakecomappJson } from '../types/makecomapp.types';
 
 /**
  * Represents the content of `makecomapp.json` and methods, which are possible to execute over this content.

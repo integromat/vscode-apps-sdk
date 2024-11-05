@@ -1,4 +1,4 @@
-import { ModuleType } from '../types/component-types.types';
+import type { ModuleType } from '../types/component-types.types';
 
 /* eslint-disable camelcase */
 

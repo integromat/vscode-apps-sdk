@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash/cloneDeep';
-import { MakecomappJson } from './types/makecomapp.types';
+import type { MakecomappJson } from './types/makecomapp.types';
 
 /**
  * Covers all situations, when the `makecomapp.json` file structure has been changed during PoC/alpha phase of development process.

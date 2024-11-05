@@ -1,4 +1,4 @@
-import { CodeType } from '../types/code-type.types';
+import type { CodeType } from '../types/code-type.types';
 
 /**
  * Retuns the default empty content for each code type.

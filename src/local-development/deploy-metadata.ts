@@ -7,7 +7,7 @@ import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
-import { Checksum } from './types/checksum.types';
+import type { Checksum } from './types/checksum.types';
 import { compareChecksumDeep } from './helpers/origin-checksum';
 
 /**

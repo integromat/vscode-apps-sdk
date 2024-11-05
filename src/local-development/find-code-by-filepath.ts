@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { CodePath } from './types/code-path.types';
-import { AppComponentType } from '../types/app-component-type.types';
-import { ComponentCodeFilesMetadata, MakecomappJson } from '../local-development/types/makecomapp.types';
+import type { CodePath } from './types/code-path.types';
+import type { AppComponentType } from '../types/app-component-type.types';
+import type { ComponentCodeFilesMetadata, MakecomappJson } from '../local-development/types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { entries, keys } from '../utils/typed-object';
 

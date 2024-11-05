@@ -1,7 +1,10 @@
 import camelCase from 'lodash/camelCase';
-import { AppComponentType } from '../types/app-component-type.types';
-import { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
-import { ComponentDetailsApiResponseItem, ComponentsApiResponseItem } from '../types/get-component-api-response.types';
+import type { AppComponentType } from '../types/app-component-type.types';
+import type { LocalAppOriginWithSecret } from '../local-development/types/makecomapp.types';
+import type {
+	ComponentDetailsApiResponseItem,
+	ComponentsApiResponseItem,
+} from '../types/get-component-api-response.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { getComponentApiUrl } from '../local-development/helpers/api-url';
