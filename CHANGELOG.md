@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Unreleased
+-----------
+
+- Added support for the theme property of the banner directive in the App Interface.
+
 2.2.1 [2024-11-05] (pre-release)
 ------------------
 
