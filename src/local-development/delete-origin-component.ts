@@ -6,11 +6,7 @@ import { version as ExtensionVersion } from '../Meta';
 import type { LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { getComponentApiUrl } from './helpers/api-url';
 
-export async function deleteOriginComponent(
-	origin: LocalAppOriginWithSecret,
-	componentType: AppComponentType,
-	remoteComponentName: string,
-) {
+export async function deleteOriginComponent(origin: LocalAppOriginWithSecret, componentType: AppComponentType, remoteComponentName: string) {
 	log('info', `Deleting origin ${componentType} '${remoteComponentName}'`);
 
 	const axiosConfig: AxiosRequestConfig = {

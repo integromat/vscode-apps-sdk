@@ -45,9 +45,7 @@ export async function getRemoteComponent(
 
 			if (componentDetail.typeId === undefined) {
 				// This should not occur on production. It is here for input validation only.
-				throw new Error(
-					`Missing expected property 'typeId' on remote ${componentType} ${componentDetail.name}.`,
-				);
+				throw new Error(`Missing expected property 'typeId' on remote ${componentType} ${componentDetail.name}.`);
 			}
 			componentMetadata.moduleType = getModuleDefFromId(
 				(componentDetail as ModuleComponentDetailsApiResponseItem).typeId,
@@ -56,9 +54,7 @@ export async function getRemoteComponent(
 			if (componentMetadata.moduleType === 'action') {
 				if (componentDetail.crud === undefined) {
 					// This should not occur on production. It is here for input validation only.
-					throw new Error(
-						`Missing expected property 'crud' on remote ${componentType} ${componentDetail.name}.`,
-					);
+					throw new Error(`Missing expected property 'crud' on remote ${componentType} ${componentDetail.name}.`);
 				}
 				componentMetadata.actionCrud = (componentDetail as ModuleComponentDetailsApiResponseItem).crud;
 			}

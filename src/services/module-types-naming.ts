@@ -36,7 +36,7 @@ export const moduleTypes: ModuleTypeNaming[] = [
 ];
 
 export function getModuleDefFromId(typeId: number): ModuleTypeNaming {
-	const moduleTypeNaming = moduleTypes.find((m) => m.type_id === typeId);
+	const moduleTypeNaming = moduleTypes.find((m) => (m.type_id === typeId));
 	if (!moduleTypeNaming) {
 		throw new Error(`Unkwnown module type ID ${typeId}.`);
 	}
@@ -44,7 +44,7 @@ export function getModuleDefFromId(typeId: number): ModuleTypeNaming {
 }
 
 export function getModuleDefFromType(type: string): ModuleTypeNaming {
-	const moduleTypeNaming = moduleTypes.find((m) => m.type === type);
+	const moduleTypeNaming = moduleTypes.find((m) => (m.type === type));
 	if (!moduleTypeNaming) {
 		throw new Error(`Unkwnown module type ${type}.`);
 	}

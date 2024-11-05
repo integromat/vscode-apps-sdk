@@ -102,10 +102,7 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 /**
  * Writes new content into `makecomapp.json` file.
  */
-export async function updateMakecomappJson(
-	anyProjectPath: vscode.Uri,
-	newMakecomappJson: MakecomappJson,
-): Promise<void> {
+export async function updateMakecomappJson(anyProjectPath: vscode.Uri, newMakecomappJson: MakecomappJson): Promise<void> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
 	await vscode.workspace.fs.writeFile(
