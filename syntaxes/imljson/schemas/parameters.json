@@ -512,6 +512,10 @@
 					"type": "boolean",
 					"description": "Show close button on banner"
 				},
+				"theme": {
+					"type": "string",
+					"description": "Banner badge theme ['light' OR 'dark']"
+				},
 				"badge": {
 					"type": "string",
 					"description": "Banner badge title"
