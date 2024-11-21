@@ -5,6 +5,7 @@ Unreleased
 -----------
 
 - Added support for the theme property of the banner directive in the App Interface.
+- Fixed an issue where deleting components with camelCase names was not functioning correctly.
 
 2.2.1 [2024-11-05] (pre-release)
 ------------------
