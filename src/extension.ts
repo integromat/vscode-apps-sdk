@@ -35,6 +35,7 @@ import { getMakecomappJson, getMakecomappRootDir } from './local-development/mak
 import { type AppComponentType, AppComponentTypes } from './types/app-component-type.types';
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
+import { camelToKebab } from './utils/camel-to-kebab';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -247,14 +248,30 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 	);
 
-	function parseComponentPath(path: string): { componentType: AppComponentType; componentName: string } | null {
-		const regex = new RegExp(`.*?/(${AppComponentTypes.join('|')})s/([^/]+)$`);
-		const matchComponentPath = path.match(regex);
+	function parseComponentPath(componentPath: string): { componentType: AppComponentType; componentName: string } | null {
+		// Parse path
+		const pathParts = componentPath.split(path.sep);
 
-		if (matchComponentPath) {
-			const [, componentType, componentName] = matchComponentPath;
+		// Should contain componentType and componentName
+		if (pathParts.length < 2) {
+			return null;
+		}
+
+		// Get last two parts of path
+		const [componentTypePlural, componentName] = pathParts.slice(-2);
+
+		// Remove plural 's' character
+		const componentType = componentTypePlural.slice(0, -1) as AppComponentType;
+
+		// Test kebab-case pattern
+		const isValidComponentName = /^[a-z]+(-[a-z]+)*$/.test(componentName); // folder is component kebab-case-name
+		const isValidComponentType = AppComponentTypes.includes(componentType);
+
+		if (isValidComponentName && isValidComponentType) {
 			return { componentType: componentType as AppComponentType, componentName };
 		}
+
+		// Folder is not related to any component
 		return null;
 	}
 
@@ -268,7 +285,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		const makecomappJson = await getMakecomappJson(uri);
 		// The path is a valid component but is not listed in the manifest, so no action will be executed.
-		if (!makecomappJson.components[foundComponentInPath.componentType][foundComponentInPath.componentName]) {
+		const componentNames = Object.keys(makecomappJson.components[foundComponentInPath.componentType]);
+
+		// Component folders are derived as kebab-case of component name so some 'find' is here.
+		const foundComponent = componentNames.find(componentName => {
+			return camelToKebab(componentName) === foundComponentInPath.componentName;
+		});
+		if (!foundComponent) {
 			return;
 		}
 
@@ -277,7 +300,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		await deleteLocalComponent(
 			rootDir,
 			foundComponentInPath.componentType as AppComponentType,
-			foundComponentInPath.componentName,
+			foundComponent,
 		);
 	}
 
