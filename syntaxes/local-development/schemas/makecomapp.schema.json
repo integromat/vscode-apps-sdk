@@ -1,5 +1,5 @@
 {
-    "$ref": "#/definitions/MakecomappJson.5cc24f7a",
+    "$ref": "#/definitions/MakecomappJson.b3f1ee2a",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92": {
@@ -48,35 +48,35 @@
             "properties": {
                 "connection": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.45dde692"
+                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
                     },
                     "title": "connection",
                     "type": "array"
                 },
                 "function": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.45dde692"
+                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
                     },
                     "title": "function",
                     "type": "array"
                 },
                 "module": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.45dde692"
+                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
                     },
                     "title": "module",
                     "type": "array"
                 },
                 "rpc": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.45dde692"
+                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
                     },
                     "title": "rpc",
                     "type": "array"
                 },
                 "webhook": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.45dde692"
+                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
                     },
                     "title": "webhook",
                     "type": "array"
@@ -92,7 +92,7 @@
             "title": "ComponentIdMapping.1862ee92",
             "type": "object"
         },
-        "ComponentIdMappingItem.45dde692": {
+        "ComponentIdMappingItem.c4aaa835": {
             "additionalProperties": false,
             "properties": {
                 "local": {
@@ -121,7 +121,7 @@
                 "local",
                 "remote"
             ],
-            "title": "ComponentIdMappingItem.45dde692",
+            "title": "ComponentIdMappingItem.c4aaa835",
             "type": "object"
         },
         "GeneralCodeFilesMetadata.1862ee92": {
@@ -166,7 +166,7 @@
             "title": "GeneralCodeFilesMetadata.1862ee92",
             "type": "object"
         },
-        "LocalAppOrigin.a969b7ca": {
+        "LocalAppOrigin.aa9e1ca1": {
             "additionalProperties": false,
             "description": "Defines the remote Make origin of locally cloned Custom App. It is part of `makecomapp.json`.",
             "properties": {
@@ -203,10 +203,10 @@
                 "appVersion",
                 "baseUrl"
             ],
-            "title": "LocalAppOrigin.a969b7ca",
+            "title": "LocalAppOrigin.aa9e1ca1",
             "type": "object"
         },
-        "MakecomappJson.5cc24f7a": {
+        "MakecomappJson.b3f1ee2a": {
             "additionalProperties": false,
             "properties": {
                 "components": {
@@ -223,7 +223,7 @@
                 },
                 "origins": {
                     "items": {
-                        "$ref": "#/definitions/LocalAppOrigin.a969b7ca"
+                        "$ref": "#/definitions/LocalAppOrigin.aa9e1ca1"
                     },
                     "title": "origins",
                     "type": "array"
@@ -235,7 +235,7 @@
                 "generalCodeFiles",
                 "origins"
             ],
-            "title": "MakecomappJson.5cc24f7a",
+            "title": "MakecomappJson.b3f1ee2a",
             "type": "object"
         }
     }
