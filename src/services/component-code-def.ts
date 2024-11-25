@@ -5,7 +5,7 @@ import type { CodeType, ComponentCodeType, GeneralCodeType } from '../local-deve
 import { keys } from '../utils/typed-object';
 
 const imljsonc = {
-	fileext: 'iml.json',
+	fileext: 'iml.jsonc',
 	mimetype: 'application/jsonc',
 };
 
