@@ -10,7 +10,7 @@ type ObjectEntriesType = <T, K extends string>(obj: { [k in K]?: T }) => Array<[
  *
  * Note: Official Object.keys losts the enum type and degradates is into `string` only.
  */
-export const keys = Object.keys as <T>(obj: T) => Array<keyof T>;
+export const keys = Object.keys as <T>(obj: T) => (keyof T)[];
 
 /**
  * Same as `Object.entries`.

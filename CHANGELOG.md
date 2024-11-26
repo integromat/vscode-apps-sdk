@@ -6,6 +6,7 @@ Unreleased
 
 - Added support for the theme property of the banner directive in the App Interface.
 - Fixed an issue where deleting components with camelCase names was not functioning correctly.
+- Fixed the in-editor validation of `makecomapp.json` file.
 
 2.2.1 [2024-11-05] (pre-release)
 ------------------

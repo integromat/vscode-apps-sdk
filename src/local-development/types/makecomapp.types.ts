@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
+
 import type { Crud } from './crud.types';
 import type { ComponentCodeType, GeneralCodeType } from './code-type.types';
 import type { AppComponentType } from '../../types/app-component-type.types';
@@ -6,7 +8,7 @@ import type { ConnectionType, ModuleType, WebhookType } from '../../types/compon
 export interface MakecomappJson {
 	fileVersion: number;
 	generalCodeFiles: GeneralCodeFilesMetadata;
-	components: AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>;
+	components: AppComponentTypesMetadata;
 	origins: LocalAppOrigin[];
 }
 
@@ -14,12 +16,36 @@ export interface MakecomappJson {
  * Defines the remote Make origin of locally cloned Custom App. It is part of `makecomapp.json`.
  */
 export interface LocalAppOrigin {
-	/** User friendly title */
+	/**
+	 * User friendly title of remote origin.
+	 * Useful if multiple origins are defined in a project.
+	 * @pattern ^(?!-FILL-ME-)
+	 */
 	label?: string;
+	/**
+	 * Home Make.com instance of Custom apps.
+	 * Example: `https://eu1.make.com/api`.
+	 * Note: Need to select the correct instance `eu1, `eu2`, `us1`, `us2`, etc.
+	 * @format uri
+	 * @pattern ^https://(.*)/api$
+	 */
 	baseUrl: string;
+	/**
+	 * App ID od custom app in Make.com instance.
+	 * @pattern ^[a-z][0-9a-z-]+[0-9a-z]$
+	 */
 	appId: string;
 	idMapping?: ComponentIdMapping;
+	/**
+	 * Major version of the app.
+	 * Note: App version is 1 in most cases.
+	 */
 	appVersion: number;
+	/**
+	 * Path to file with API Token.
+	 * Path can be written as relative to this makecomapp.json file, or as absolute.
+	 * @pattern ^(?!.* - OR FILL)
+	 */
 	apikeyFile: string;
 }
 
@@ -27,7 +53,7 @@ export interface LocalAppOriginWithSecret extends LocalAppOrigin {
 	apikey: string;
 }
 
-export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
+export type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMetadata>;
 
 /**
  * List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).
@@ -45,9 +71,14 @@ export interface ComponentIdMappingItem {
 
 /**
  * Component ID => Component metadata or null (null can be temporary in makecomapp.json file)
- * @additionalProperties true
+ *
+ * Note: `null` is used only temporary if component name is reserved, but not implemeted yet.
  */
-type AppComponentsMetadata<T> = Record<string, T | null>; // Note: `null` is used only temporary if component name is reserved, but not implemeted yet.
+interface AppComponentsMetadata {
+	[key: string]: AppComponentMetadataWithCodeFiles | null;
+}
+// IMPORTANT: Do not use format `type AppComponentsMetadata = Record<string, AppComponentMetadataWithCodeFiles | null>;
+//            because not supported by lib `typescript-json-schema` used in `npm run schema:makecomapp`.
 
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
 	codeFiles: ComponentCodeFilesMetadata;
@@ -82,10 +113,9 @@ export interface AppComponentMetadata {
 	 * Relevant for webhooks only.
 	 */
 	webhookType?: WebhookType;
-	/**
-	 * Note: In early alpha versions of the `makecomapp.json` the previous property name `moduleSubtype` has been used.
-	 *       See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.
-	 */
+	//
+	// Note: In early alpha versions of the `makecomapp.json` the previous property name `moduleSubtype` has been used.
+	//       See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.
 	moduleType?: ModuleType;
 	actionCrud?: Crud;
 	/** Relevant for modules, webhooks, RPCs only. */
