@@ -1,29 +1,109 @@
 {
-    "$ref": "#/definitions/MakecomappJson.b3f1ee2a",
+    "$ref": "#/definitions/MakecomappJson.8af2ba09",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92": {
+        "AppComponentMetadataWithCodeFiles.6403913c": {
+            "additionalProperties": false,
+            "properties": {
+                "actionCrud": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "create",
+                                "delete",
+                                "read",
+                                "update"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "altConnection": {
+                    "description": "Relevant for modules, webhooks, RPCs only.",
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "codeFiles": {
+                    "$ref": "#/definitions/Partial<Record<ComponentCodeType,string|null>>.c4962aad"
+                },
+                "connection": {
+                    "description": "Relevant for modules, webhooks, RPCs only.",
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "connectionType": {
+                    "description": "Relevant for connections only. It describes a type of component itself.\nNote: This does NOT describing the type of a connection referenced in `connection` or `altConnection` property.",
+                    "enum": [
+                        "basic",
+                        "oauth"
+                    ],
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Relevance:\n - connection: no\n - webhook: no\n - module: yes\n - RPC: no\n - IML function: no",
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Relevance:\n - connection: yes\n - webhook: yes\n - module: yes\n - RPC: yes\n - IML function: no",
+                    "type": "string"
+                },
+                "moduleType": {
+                    "description": "Note: In early alpha versions of the `makecomapp.json` the previous property name `moduleSubtype` has been used.\n      See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.",
+                    "enum": [
+                        "action",
+                        "instant_trigger",
+                        "responder",
+                        "search",
+                        "trigger",
+                        "universal"
+                    ],
+                    "type": "string"
+                },
+                "webhook": {
+                    "description": "Relevant for module subtype \"instant_trigger\" only, mandatory there.",
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "webhookType": {
+                    "description": "Relevant for webhooks only.",
+                    "enum": [
+                        "web",
+                        "web-shared"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "codeFiles"
+            ],
+            "type": "object"
+        },
+        "AppComponentTypesMetadata.1862ee92": {
             "additionalProperties": false,
             "properties": {
                 "connection": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
-                    "title": "connection"
+                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
                 },
                 "function": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
-                    "title": "function"
+                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
                 },
                 "module": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
-                    "title": "module"
+                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
                 },
                 "rpc": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
-                    "title": "rpc"
+                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
                 },
                 "webhook": {
-                    "$ref": "#/definitions/AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
-                    "title": "webhook"
+                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
                 }
             },
             "required": [
@@ -33,13 +113,20 @@
                 "rpc",
                 "webhook"
             ],
-            "title": "AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
             "type": "object"
         },
-        "AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92": {
-            "additionalProperties": true,
-            "description": "Component ID => Component metadata or null (null can be temporary in makecomapp.json file)",
-            "title": "AppComponentsMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
+        "AppComponentsMetadata.a5483121": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "$ref": "#/definitions/AppComponentMetadataWithCodeFiles.6403913c"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
+            },
+            "description": "Component ID => Component metadata or null (null can be temporary in makecomapp.json file)\n\nNote: `null` is used only temporary if component name is reserved, but not implemeted yet.",
             "type": "object"
         },
         "ComponentIdMapping.1862ee92": {
@@ -48,37 +135,32 @@
             "properties": {
                 "connection": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
+                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
                     },
-                    "title": "connection",
                     "type": "array"
                 },
                 "function": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
+                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
                     },
-                    "title": "function",
                     "type": "array"
                 },
                 "module": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
+                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
                     },
-                    "title": "module",
                     "type": "array"
                 },
                 "rpc": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
+                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
                     },
-                    "title": "rpc",
                     "type": "array"
                 },
                 "webhook": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.c4aaa835"
+                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
                     },
-                    "title": "webhook",
                     "type": "array"
                 }
             },
@@ -89,15 +171,13 @@
                 "rpc",
                 "webhook"
             ],
-            "title": "ComponentIdMapping.1862ee92",
             "type": "object"
         },
-        "ComponentIdMappingItem.c4aaa835": {
+        "ComponentIdMappingItem.204d2ec8": {
             "additionalProperties": false,
             "properties": {
                 "local": {
                     "description": "Note: `null` means that the remote component is not paired to local. In consequences these remote components will be ignored during pull or deploy.",
-                    "title": "local",
                     "type": [
                         "null",
                         "string"
@@ -105,12 +185,10 @@
                 },
                 "localDeleted": {
                     "description": "Note: True indicates that the component was deleted locally and must be aligned with the origin.",
-                    "title": "localDeleted",
                     "type": "boolean"
                 },
                 "remote": {
                     "description": "Note: `null` means that the local component is not paired to remote. In consequences these local components will be ignored during pull or deploy.",
-                    "title": "remote",
                     "type": [
                         "null",
                         "string"
@@ -121,7 +199,6 @@
                 "local",
                 "remote"
             ],
-            "title": "ComponentIdMappingItem.c4aaa835",
             "type": "object"
         },
         "GeneralCodeFilesMetadata.1862ee92": {
@@ -129,28 +206,24 @@
             "description": "General Code Type => Code Local File Path.\n\n If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).\n The `null` used primarly for common data in case a developer decided to not include common data in local project.",
             "properties": {
                 "base": {
-                    "title": "base",
                     "type": [
                         "null",
                         "string"
                     ]
                 },
                 "common": {
-                    "title": "common",
                     "type": [
                         "null",
                         "string"
                     ]
                 },
                 "groups": {
-                    "title": "groups",
                     "type": [
                         "null",
                         "string"
                     ]
                 },
                 "readme": {
-                    "title": "readme",
                     "type": [
                         "null",
                         "string"
@@ -163,37 +236,30 @@
                 "groups",
                 "readme"
             ],
-            "title": "GeneralCodeFilesMetadata.1862ee92",
             "type": "object"
         },
-        "LocalAppOrigin.aa9e1ca1": {
+        "LocalAppOrigin.bf1f40b4": {
             "additionalProperties": false,
             "description": "Defines the remote Make origin of locally cloned Custom App. It is part of `makecomapp.json`.",
             "properties": {
                 "apikeyFile": {
-                    "title": "apikeyFile",
                     "type": "string"
                 },
                 "appId": {
-                    "title": "appId",
                     "type": "string"
                 },
                 "appVersion": {
-                    "title": "appVersion",
                     "type": "number"
                 },
                 "baseUrl": {
-                    "title": "baseUrl",
                     "type": "string"
                 },
                 "idMapping": {
                     "$ref": "#/definitions/ComponentIdMapping.1862ee92",
-                    "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).",
-                    "title": "idMapping"
+                    "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...)."
                 },
                 "label": {
                     "description": "User friendly title",
-                    "title": "label",
                     "type": "string"
                 }
             },
@@ -203,29 +269,24 @@
                 "appVersion",
                 "baseUrl"
             ],
-            "title": "LocalAppOrigin.aa9e1ca1",
             "type": "object"
         },
-        "MakecomappJson.b3f1ee2a": {
+        "MakecomappJson.8af2ba09": {
             "additionalProperties": false,
             "properties": {
                 "components": {
-                    "$ref": "#/definitions/AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>.1862ee92",
-                    "title": "components"
+                    "$ref": "#/definitions/AppComponentTypesMetadata.1862ee92"
                 },
                 "fileVersion": {
-                    "title": "fileVersion",
                     "type": "number"
                 },
                 "generalCodeFiles": {
-                    "$ref": "#/definitions/GeneralCodeFilesMetadata.1862ee92",
-                    "title": "generalCodeFiles"
+                    "$ref": "#/definitions/GeneralCodeFilesMetadata.1862ee92"
                 },
                 "origins": {
                     "items": {
-                        "$ref": "#/definitions/LocalAppOrigin.aa9e1ca1"
+                        "$ref": "#/definitions/LocalAppOrigin.bf1f40b4"
                     },
-                    "title": "origins",
                     "type": "array"
                 }
             },
@@ -235,7 +296,127 @@
                 "generalCodeFiles",
                 "origins"
             ],
-            "title": "MakecomappJson.b3f1ee2a",
+            "type": "object"
+        },
+        "Partial<Record<ComponentCodeType,string|null>>.c4962aad": {
+            "additionalProperties": false,
+            "description": "Component's Code Type => Code Local File Path\n\n If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).\n The `null` used primarly for common data in case a developer decided to not include common data in local project.",
+            "properties": {
+                "attach": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "common": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "communication": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "defaultScope": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "detach": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "epoch": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "installDirectives": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "installSpec": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "interface": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "mappableParams": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "params": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "requiredScope": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "samples": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "scope": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "scopeList": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "staticParams": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "test": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "update": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
             "type": "object"
         }
     }

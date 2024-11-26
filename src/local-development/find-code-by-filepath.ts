@@ -3,7 +3,7 @@ import type { CodePath } from './types/code-path.types';
 import type { AppComponentType } from '../types/app-component-type.types';
 import type { ComponentCodeFilesMetadata, MakecomappJson } from '../local-development/types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from '../local-development/consts';
-import { entries, keys } from '../utils/typed-object';
+import { entries } from '../utils/typed-object';
 
 /**
  * Gets app's and component's code, which matches with the local file path.
@@ -64,7 +64,7 @@ export function findCodesByFilePath(
 	// Try to find in compoments
 	const appComponentsMetadata = makecomappJson.components;
 	for (const [componentType, appComponents] of entries(appComponentsMetadata)) {
-		for (const componentLocalId of keys(appComponents)) {
+		for (const componentLocalId of Object.keys(appComponents)) {
 			const codeFilesMetadata: ComponentCodeFilesMetadata = appComponents[componentLocalId]?.codeFiles ?? {};
 			for (const [codeType, codeFilePath] of entries(codeFilesMetadata)) {
 				if (codeFilePath === null) {

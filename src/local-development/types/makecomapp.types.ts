@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
+
 import type { Crud } from './crud.types';
 import type { ComponentCodeType, GeneralCodeType } from './code-type.types';
 import type { AppComponentType } from '../../types/app-component-type.types';
@@ -6,7 +8,7 @@ import type { ConnectionType, ModuleType, WebhookType } from '../../types/compon
 export interface MakecomappJson {
 	fileVersion: number;
 	generalCodeFiles: GeneralCodeFilesMetadata;
-	components: AppComponentTypesMetadata<AppComponentMetadataWithCodeFiles>;
+	components: AppComponentTypesMetadata;
 	origins: LocalAppOrigin[];
 }
 
@@ -27,7 +29,7 @@ export interface LocalAppOriginWithSecret extends LocalAppOrigin {
 	apikey: string;
 }
 
-export type AppComponentTypesMetadata<T> = Record<AppComponentType, AppComponentsMetadata<T>>;
+export type AppComponentTypesMetadata = Record<AppComponentType, AppComponentsMetadata>;
 
 /**
  * List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).
@@ -45,9 +47,14 @@ export interface ComponentIdMappingItem {
 
 /**
  * Component ID => Component metadata or null (null can be temporary in makecomapp.json file)
- * @additionalProperties true
+ *
+ * Note: `null` is used only temporary if component name is reserved, but not implemeted yet.
  */
-type AppComponentsMetadata<T> = Record<string, T | null>; // Note: `null` is used only temporary if component name is reserved, but not implemeted yet.
+interface AppComponentsMetadata {
+	[key: string]: AppComponentMetadataWithCodeFiles | null;
+}
+// IMPORTANT: Do not use format `type AppComponentsMetadata = Record<string, AppComponentMetadataWithCodeFiles | null>;
+//            because not supported by lib `typescript-json-schema` used in `npm run schema:makecomapp`.
 
 export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata {
 	codeFiles: ComponentCodeFilesMetadata;
