@@ -2,7 +2,7 @@
     "$ref": "#/definitions/MakecomappJson.8af2ba09",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "AppComponentMetadataWithCodeFiles.6403913c": {
+        "AppComponentMetadataWithCodeFiles.30fcbaae": {
             "additionalProperties": false,
             "properties": {
                 "actionCrud": {
@@ -55,7 +55,6 @@
                     "type": "string"
                 },
                 "moduleType": {
-                    "description": "Note: In early alpha versions of the `makecomapp.json` the previous property name `moduleSubtype` has been used.\n      See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.",
                     "enum": [
                         "action",
                         "instant_trigger",
@@ -91,19 +90,19 @@
             "additionalProperties": false,
             "properties": {
                 "connection": {
-                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
+                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
                 },
                 "function": {
-                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
+                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
                 },
                 "module": {
-                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
+                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
                 },
                 "rpc": {
-                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
+                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
                 },
                 "webhook": {
-                    "$ref": "#/definitions/AppComponentsMetadata.a5483121"
+                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
                 }
             },
             "required": [
@@ -115,11 +114,11 @@
             ],
             "type": "object"
         },
-        "AppComponentsMetadata.a5483121": {
+        "AppComponentsMetadata.94705640": {
             "additionalProperties": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/AppComponentMetadataWithCodeFiles.6403913c"
+                        "$ref": "#/definitions/AppComponentMetadataWithCodeFiles.30fcbaae"
                     },
                     {
                         "type": "null"
@@ -135,31 +134,31 @@
             "properties": {
                 "connection": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
+                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
                     },
                     "type": "array"
                 },
                 "function": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
+                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
                     },
                     "type": "array"
                 },
                 "module": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
+                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
                     },
                     "type": "array"
                 },
                 "rpc": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
+                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
                     },
                     "type": "array"
                 },
                 "webhook": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.204d2ec8"
+                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
                     },
                     "type": "array"
                 }
@@ -173,7 +172,7 @@
             ],
             "type": "object"
         },
-        "ComponentIdMappingItem.204d2ec8": {
+        "ComponentIdMappingItem.3c5b0608": {
             "additionalProperties": false,
             "properties": {
                 "local": {
@@ -243,15 +242,23 @@
             "description": "Defines the remote Make origin of locally cloned Custom App. It is part of `makecomapp.json`.",
             "properties": {
                 "apikeyFile": {
+                    "description": "Path to file with API Token.\nPath can be written as relative to this makecomapp.json file, or as absolute.",
+                    "pattern": "^(?!.* - OR FILL)",
                     "type": "string"
                 },
                 "appId": {
+                    "description": "App ID od custom app in Make.com instance.",
+                    "pattern": "^[a-z][0-9a-z-]+[0-9a-z]$",
                     "type": "string"
                 },
                 "appVersion": {
+                    "description": "Major version of the app.\nNote: App version is 1 in most cases.",
                     "type": "number"
                 },
                 "baseUrl": {
+                    "description": "Home Make.com instance of Custom apps.\nExample: `https://eu1.make.com/api`.\nNote: Need to select the correct instance `eu1, `eu2`, `us1`, `us2`, etc.",
+                    "format": "uri",
+                    "pattern": "^https://(.*)/api$",
                     "type": "string"
                 },
                 "idMapping": {
@@ -259,7 +266,8 @@
                     "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...)."
                 },
                 "label": {
-                    "description": "User friendly title",
+                    "description": "User friendly title of remote origin.\nUseful if multiple origins are defined in a project.",
+                    "pattern": "^(?!-FILL-ME-)",
                     "type": "string"
                 }
             },

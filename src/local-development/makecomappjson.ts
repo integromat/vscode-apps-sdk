@@ -102,7 +102,10 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 /**
  * Writes new content into `makecomapp.json` file.
  */
-export async function updateMakecomappJson(anyProjectPath: vscode.Uri, newMakecomappJson: MakecomappJson): Promise<void> {
+export async function updateMakecomappJson(
+	anyProjectPath: vscode.Uri,
+	newMakecomappJson: MakecomappJson,
+): Promise<void> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
 	await vscode.workspace.fs.writeFile(
@@ -165,7 +168,8 @@ export async function addEmptyOriginInMakecomappjson(anyProjectPath: vscode.Uri)
 		const newOrigin: LocalAppOrigin = {
 			label: '-FILL-ME- - Example: Testing App ' + Math.floor(Math.random() * 1000),
 			appId: '-FILL-ME- - Place here the app ID of an existing app, or create a new app and copy the app ID here',
-			baseUrl: '-FILL-ME- - Example: https://eu1.make.com/api',
+			baseUrl:
+				'-FILL-ME- - Example: https://eu1.make.com/api - Note: need to select the correct zone eu1, eu2, us1, us2, etc.',
 			appVersion: 1,
 			apikeyFile:
 				(makecomappJson.origins[0]?.apikeyFile ?? '../secrets/apikey') +
