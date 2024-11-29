@@ -27,7 +27,21 @@ export function registerCommands(): void {
  * TODO fix order of creation
  *  - `groups` after modules
  */
-async function bulkDeploy(anyProjectPath: vscode.Uri) {
+async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
+	// Probably executed by keybindings, needs to find opened file.
+	if (anyProjectPath === undefined) {
+		const activeEditor = vscode.window.activeTextEditor;
+		if (!activeEditor) {
+			vscode.window.showErrorMessage('No file is open in the editor, so local changes couldn’t be deployed to origin.');
+			return;
+		}
+		anyProjectPath = activeEditor.document.uri;
+	}
+
+	if (anyProjectPath === undefined) {
+		vscode.window.showErrorMessage('No file is open in the editor, so local changes couldn’t be deployed to origin.');
+	}
+
 	let makecomappJson = await getMakecomappJson(anyProjectPath);
 	const makeappRootdir = getMakecomappRootDir(anyProjectPath);
 	const stat = await vscode.workspace.fs.stat(anyProjectPath);
