@@ -40,6 +40,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
 
 	if (anyProjectPath === undefined) {
 		vscode.window.showErrorMessage('No file is open in the editor, so local changes couldn’t be deployed to origin.');
+		return;
 	}
 
 	let makecomappJson = await getMakecomappJson(anyProjectPath);
