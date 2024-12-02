@@ -846,6 +846,12 @@
 				"key": "f6",
 				"mac": "f6",
 				"when": "editorTextFocus"
+			},
+			{
+				"command": "apps-sdk.local-dev.deploy",
+				"key": "ctrl+alt+u",
+				"mac": "cmd+alt+u",
+				"when": "editorTextFocus"
 			}
 		],
 		"configuration": {
