@@ -920,7 +920,7 @@
 		"eslint-config-prettier": "^9.1.0",
 		"glob": "^11.0.0",
 		"globals": "^15.11.0",
-		"mocha": "^10.8.2",
+		"mocha": "^11.0.1",
 		"typescript": "~5.5.4",
 		"typescript-eslint": "^8.12.2",
 		"typescript-json-schema": "^0.65.1"
