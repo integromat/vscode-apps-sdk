@@ -928,11 +928,11 @@
 	"dependencies": {
 		"@integromat/iml": "^3.4.0",
 		"@integromat/udt": "^1.2.1",
-		"@vscode/extension-telemetry": "^0.9.7",
+		"@vscode/extension-telemetry": "^0.9.8",
 		"adm-zip": "^0.5.16",
 		"applicationinsights": "^3.4.0",
 		"async-file": "^2.0.2",
-		"axios": "^1.7.7",
+		"axios": "^1.7.9",
 		"compressing": "^1.10.1",
 		"image-downloader": "^4.3.0",
 		"jimp": "^1.6.0",
@@ -943,7 +943,7 @@
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
 		"uuid": "^10.0.0",
-		"vscode-json-languageservice": "^5.4.1",
+		"vscode-json-languageservice": "^5.4.2",
 		"vscode-languageclient": "^9.0.1",
 		"vscode-languageserver": "^9.0.1"
 	},
