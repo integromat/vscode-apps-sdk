@@ -9,7 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-    target-branch: development
+    target-branch: master
     commit-message:
       prefix: build
     ignore:
