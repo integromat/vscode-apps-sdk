@@ -1,13 +1,16 @@
 Change Log
 ==========
 
+2.2.3 [unreleased]
+- Added keyboard shortcut for deployment
+- Fixed issue with deleting local components when their name includes a number
+
 2.2.2 [2024-11-28] (pre-release)
 ------------------
 
 - Added support for the theme property of the banner directive in the App Interface.
 - Fixed an issue where deleting components with camelCase names was not functioning correctly.
 - Fixed the in-editor validation of `makecomapp.json` file.
-- Added keyboard shortcut for deployment
 
 Why "pre-release": This build is "Release candidate". If internal tests pass without objection, it will be published. We don't have any other blockers.
 
