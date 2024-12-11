@@ -264,7 +264,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		const componentType = componentTypePlural.slice(0, -1) as AppComponentType;
 
 		// Test kebab-case pattern (min 3 chars)
-		const isValidComponentName = /^[a-z][0-9a-z-]+[0-9a-z-]$/.test(componentName); // folder is component kebab-case-name
+		const isValidComponentName = /^[a-z][0-9a-z-]+[0-9a-z]$/.test(componentName); // folder is component kebab-case-name
 		const isValidComponentType = AppComponentTypes.includes(componentType);
 
 		if (isValidComponentName && isValidComponentType) {
