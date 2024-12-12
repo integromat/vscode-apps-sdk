@@ -1,7 +1,9 @@
 Change Log
 ==========
 
-2.2.3 [unreleased]
+2.2.3 [2024-12-12] (pre-release)
+------------------
+
 - Added keyboard shortcut for deployment
 - Fixed issue with deleting local components when their name includes a number
 
