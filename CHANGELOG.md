@@ -108,6 +108,67 @@ It empowers developers to work efficiently, iterate faster, and have a full cont
 
 - Connection template "Digest auth"
 
+## [2.2.0](https://github.com/integromat/vscode-apps-sdk/compare/v2.1.0...2.2.0) (2024-12-12)
+
+
+### Features
+
+* "remember origin and do not ask again" ([#216](https://github.com/integromat/vscode-apps-sdk/issues/216)) ([81dac95](https://github.com/integromat/vscode-apps-sdk/commit/81dac953510ce326e2edc4aa3813cde4d2578cac))
+* add "Apply for all" in component mapping alignment process ([#210](https://github.com/integromat/vscode-apps-sdk/issues/210)) ([03a114f](https://github.com/integromat/vscode-apps-sdk/commit/03a114fbe368bd8bf45559a40d4e5ee5134ce579))
+* add action to remove component dependencies on deletion ([#221](https://github.com/integromat/vscode-apps-sdk/issues/221)) ([a113f51](https://github.com/integromat/vscode-apps-sdk/commit/a113f51b41a777104f835fee8fbd601685e864c1))
+* add keyboard shortcut for deployment ([#236](https://github.com/integromat/vscode-apps-sdk/issues/236)) ([bcd2344](https://github.com/integromat/vscode-apps-sdk/commit/bcd23441cda332e5f3638ab790f0e836c13c2d3f))
+* add support for banner theme into parameters.json ([#232](https://github.com/integromat/vscode-apps-sdk/issues/232)) ([2b1f07c](https://github.com/integromat/vscode-apps-sdk/commit/2b1f07ce17c7be825e0cd7f6a5f941dfb3df4179))
+* handle IML function "access denied" errors ([#209](https://github.com/integromat/vscode-apps-sdk/issues/209)) ([c656aa6](https://github.com/integromat/vscode-apps-sdk/commit/c656aa62464059978f96404fafbb04733b79b49c))
+* **parameters.json:** extend json schema by type banner ([#218](https://github.com/integromat/vscode-apps-sdk/issues/218)) ([ca315d7](https://github.com/integromat/vscode-apps-sdk/commit/ca315d741190f9c8be4a145b6d160d2b376ec3c3))
+* speed up deployment of single files/components ([#206](https://github.com/integromat/vscode-apps-sdk/issues/206)) ([22feca5](https://github.com/integromat/vscode-apps-sdk/commit/22feca55908b88189c16d398aa29cbe429ce5878))
+
+
+### Bug Fixes
+
+* avoid console error during readDirectory() ([#219](https://github.com/integromat/vscode-apps-sdk/issues/219)) ([29892a8](https://github.com/integromat/vscode-apps-sdk/commit/29892a893640d2f932b2162c39d4f33ebec7ce85))
+* **build:** fix build 2.2.0 missing file ([#230](https://github.com/integromat/vscode-apps-sdk/issues/230)) ([eee2fb9](https://github.com/integromat/vscode-apps-sdk/commit/eee2fb9e2b9664f3a43444304b93045f8f966a13))
+* fix issue with deleting local components when their name includes a number ([#246](https://github.com/integromat/vscode-apps-sdk/issues/246)) ([f6f81ed](https://github.com/integromat/vscode-apps-sdk/commit/f6f81ed833fe9d073d61e19bff4f779a9009424d))
+* fix issue with deleting local components when their name includes a number ([#247](https://github.com/integromat/vscode-apps-sdk/issues/247)) ([5109974](https://github.com/integromat/vscode-apps-sdk/commit/510997446a232711cd2ba11584e2f41f49995d13))
+* in-editor `makecomapp.json` validation ([#234](https://github.com/integromat/vscode-apps-sdk/issues/234)) ([bce3e1c](https://github.com/integromat/vscode-apps-sdk/commit/bce3e1caebdd4be8e9aa01aa6e270147f7a34440))
+* update URLs to Custom Apps documentation ([#220](https://github.com/integromat/vscode-apps-sdk/issues/220)) ([1286145](https://github.com/integromat/vscode-apps-sdk/commit/1286145ff2b1f8cd171d25c53f57ba2309baf398))
+
+
+### Miscellaneous Chores
+
+* app version bump to 2.2.3 ([#252](https://github.com/integromat/vscode-apps-sdk/issues/252)) ([6aa2a49](https://github.com/integromat/vscode-apps-sdk/commit/6aa2a4931d646b58575ebb68d8e27ad02916db84))
+* changelog for v 2.2.2 ([#240](https://github.com/integromat/vscode-apps-sdk/issues/240)) ([103aa28](https://github.com/integromat/vscode-apps-sdk/commit/103aa2840f85d4d6cc194cd070d3e0d175e75db3))
+* gitignore improvement ([#212](https://github.com/integromat/vscode-apps-sdk/issues/212)) ([92f91fd](https://github.com/integromat/vscode-apps-sdk/commit/92f91fdbaec8ee7915e6e6f73bdcbab2bb72c710))
+* improve localDeleted description ([#227](https://github.com/integromat/vscode-apps-sdk/issues/227)) ([5abaaa1](https://github.com/integromat/vscode-apps-sdk/commit/5abaaa16e617813b6ddda6bf1adf3797f3eacafc))
+* update dependabot branch to master ([823a430](https://github.com/integromat/vscode-apps-sdk/commit/823a4309a781d7a82e4ed07661ff40dccb20e78e))
+
+
+### Documentation
+
+* add one line comment to tsconfig-&gt;include section ([#231](https://github.com/integromat/vscode-apps-sdk/issues/231)) ([bc5bdca](https://github.com/integromat/vscode-apps-sdk/commit/bc5bdca70a906038893fdda6becb27cba9d11b18))
+
+
+### Code Refactoring
+
+* import -&gt; import type ([#229](https://github.com/integromat/vscode-apps-sdk/issues/229)) ([40f7517](https://github.com/integromat/vscode-apps-sdk/commit/40f7517692896aad9b5e622da8c025dde1531a53))
+* load IML documentation from lib, not via http ([#222](https://github.com/integromat/vscode-apps-sdk/issues/222)) ([648b608](https://github.com/integromat/vscode-apps-sdk/commit/648b60874dc89e460cae0938470caf8995028db2))
+
+
+### Build System
+
+* app version bump to 2.2.0 ([#228](https://github.com/integromat/vscode-apps-sdk/issues/228)) ([9b86560](https://github.com/integromat/vscode-apps-sdk/commit/9b865603a68ea8fdc083000393428754a605324a))
+* bump jimp from 0.22.12 to 1.6.0 ([#204](https://github.com/integromat/vscode-apps-sdk/issues/204)) ([32443a0](https://github.com/integromat/vscode-apps-sdk/commit/32443a0266bc773121a17651200d7f715fcb1f56))
+* bump mocha from 10.8.2 to 11.0.1 ([#243](https://github.com/integromat/vscode-apps-sdk/issues/243)) ([6e71382](https://github.com/integromat/vscode-apps-sdk/commit/6e71382908643f7a31f358631368c4fec988503c))
+* bump the deps-minor-update group with 3 updates ([#250](https://github.com/integromat/vscode-apps-sdk/issues/250)) ([345589e](https://github.com/integromat/vscode-apps-sdk/commit/345589ec510b79645ba2d763d468108889d9ac61))
+* bump the devdeps-minor-update group across 1 directory with 3 updates ([#224](https://github.com/integromat/vscode-apps-sdk/issues/224)) ([8982f56](https://github.com/integromat/vscode-apps-sdk/commit/8982f5669f30f8d253dfdc0627e12f18850548ee))
+* bump the eslint group with 3 updates ([#248](https://github.com/integromat/vscode-apps-sdk/issues/248)) ([ddad49e](https://github.com/integromat/vscode-apps-sdk/commit/ddad49ecd22cc390fbf5248eea283c25ca56b5d2))
+* **dependabot:** group eslint ([96e7901](https://github.com/integromat/vscode-apps-sdk/commit/96e7901da14efc4f16e87fd98d34afb0175353df))
+* **dependabot:** ignore glob 11 ([7920e20](https://github.com/integromat/vscode-apps-sdk/commit/7920e20099f25bcf72e9653a5612780f0ebbb29b))
+
+
+### Continuous Integration
+
+* update release-please.yml ([235e964](https://github.com/integromat/vscode-apps-sdk/commit/235e96412f8d09cd42ac85d4cc1d638daf0f84fd))
+
 ## 1.3.19 [2023-04-18]
 
 ### Fixed
