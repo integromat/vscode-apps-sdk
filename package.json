@@ -909,7 +909,7 @@
 		"@types/eslint__js": "^8.42.3",
 		"@types/eslint-config-prettier": "^6.11.3",
 		"@types/lodash": "^4.17.13",
-		"@types/mocha": "^10.0.9",
+		"@types/mocha": "^10.0.10",
 		"@types/node": "^20.17.5",
 		"@types/pngjs": "^6.0.5",
 		"@types/uuid": "^10.0.0",
@@ -919,10 +919,10 @@
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^9.1.0",
 		"glob": "^11.0.0",
-		"globals": "^15.11.0",
+		"globals": "^15.13.0",
 		"mocha": "^11.0.1",
-		"typescript": "~5.5.4",
-		"typescript-eslint": "^8.12.2",
+		"typescript": "~5.7.2",
+		"typescript-eslint": "^8.18.0",
 		"typescript-json-schema": "^0.65.1"
 	},
 	"dependencies": {
