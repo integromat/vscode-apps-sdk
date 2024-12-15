@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+2.2.4 [2024-12-15] (pre-release)
+------------------
+
+- fix: key binding for local delete action not working on windows (#254)
+- fix: key binding for deploy to work in directory tree panel (#255)
+
 2.2.3 [2024-12-12] (pre-release)
 ------------------
 
