@@ -250,7 +250,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	function parseComponentPath(componentPath: string): { componentType: AppComponentType; componentName: string } | null {
 		// Parse path
-		const pathParts = componentPath.split(path.sep);
+		const pathParts = componentPath.split('/');
 
 		// Should contain componentType and componentName
 		if (pathParts.length < 2) {
