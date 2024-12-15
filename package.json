@@ -851,7 +851,7 @@
 				"command": "apps-sdk.local-dev.deploy",
 				"key": "ctrl+alt+u",
 				"mac": "cmd+alt+u",
-				"when": "editorTextFocus"
+				"when": "editorTextFocus || explorerViewletFocus"
 			}
 		],
 		"configuration": {
