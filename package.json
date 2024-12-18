@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Make Apps Editor",
 	"description": "Helps to create, develop, download and deploy apps of the Make no-code visual integration and automation platform.",
-	"version": "2.2.4",
+	"version": "2.2.5",
 	"icon": "resources/make.png",
 	"repository": {
 		"type": "git",
@@ -409,48 +409,48 @@
 			},
 			{
 				"command": "apps-sdk.local-dev.deploy",
-				"title": "Deploy to Make (beta)"
+				"title": "Deploy to Make"
 			},
 			{
 				"command": "apps-sdk.local-dev.file-compare",
-				"title": "Compare with Make (beta)"
+				"title": "Compare with Make"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-connection",
-				"title": "New Local Component: Connection (beta)",
+				"title": "New Local Component: Connection",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-webhook",
-				"title": "New Local Component: Webhook (beta)",
+				"title": "New Local Component: Webhook",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-module",
-				"title": "New Local Component: Module (beta)",
+				"title": "New Local Component: Module",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-rpc",
-				"title": "New Local Component: Remote Procedure (beta)",
+				"title": "New Local Component: Remote Procedure",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.create-local-imlfunction",
-				"title": "New Local Component: Custom IML Function (beta)",
+				"title": "New Local Component: Custom IML Function",
 				"category": "Make Apps"
 			},
 			{
 				"command": "apps-sdk.local-dev.clone-to-workspace",
-				"title": "Clone to Local Folder (beta)"
+				"title": "Clone to Local Folder"
 			},
 			{
 				"command": "apps-sdk.local-dev.pull-all-components",
-				"title": "Pull All Components From Make (beta)"
+				"title": "Pull All Components From Make"
 			},
 			{
 				"command": "apps-sdk.local-dev.delete-local-component",
-				"title": "Delete Component (beta)",
+				"title": "Delete Component",
 				"category": "Make Apps"
 			}
 		],

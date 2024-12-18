@@ -48,12 +48,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				'\n\n' +
 				'RECOMMENDATION AFTER CLONNING:' +
 				'\n\n' +
-				'We recommend initializing a GIT repository and committing the entire local project there.' +
-				'\n\n' +
-				'THIS FEATURE IS BETA:' +
-				'\n\n' +
-				'It means that some features may be missing or not yet finalized. ' +
-				'If any errors occur, consider removing local files and cloning again, or reverting to a previous GIT commit.',
+				'We recommend initializing a GIT repository and committing the entire local project there.',
 		},
 		{ title: 'Continue' },
 	);

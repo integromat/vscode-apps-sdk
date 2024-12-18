@@ -1,17 +1,5 @@
-Local Development for Apps (beta)
+Local Development for Apps
 =================================
-
-```text/plain
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!       BETA FEATURE - USE WITH CAUTION!        !!
-!!                                               !!
-!! Local file structure and all these features   !!
-!! for local development is not finalized yet    !!
-!! and don't have to be stable yet.              !!
-!! There can be upcoming breaking changes        !!
-!! before the final production release.          !!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-```
 
 Documentation / Manual
 ----------------------

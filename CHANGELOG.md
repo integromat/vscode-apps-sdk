@@ -1,40 +1,17 @@
 Change Log
 ==========
 
-2.2.4 [2024-12-15] (pre-release)
+2.2.5 [2024-12-18]
 ------------------
 
-- fix: key binding for local delete action not working on windows (#254)
-- fix: key binding for deploy to work in directory tree panel (#255)
-
-2.2.3 [2024-12-12] (pre-release)
-------------------
-
-- Added keyboard shortcut for deployment
-- Fixed issue with deleting local components when their name includes a number
-
-2.2.2 [2024-11-28] (pre-release)
-------------------
-
+- Added keyboard shortcut for deployment.
 - Added support for the theme property of the banner directive in the App Interface.
-- Fixed an issue where deleting components with camelCase names was not functioning correctly.
 - Fixed the in-editor validation of `makecomapp.json` file.
-
-Why "pre-release": This build is "Release candidate". If internal tests pass without objection, it will be published. We don't have any other blockers.
-
-2.2.1 [2024-11-05] (pre-release)
-------------------
-
-- Fixed broken extension 2.2.0 initialization.
-
-2.2.0 [2024-11-04] (pre-release)
-------------------
-
 - Added feature "delete component" into Local Development for Apps.
-- Added interface type='banner' into JSON schema.
+- Added interface `type='banner'` into JSON schema.
 - Rapidly improved deployment of local app files. Only the changed data are being deployed now.
 - Added "Apply for all" into component mapping alignment process.
-- Added feature "remember origin and do not ask again".
+- Added feature "Remember origin and do not ask again".
 - Updated URLs to Custom Apps documentation.
 - Removed dependency on `static.integromat.com` web.
 - Updated list of autocompleted/suggested IML functions.
