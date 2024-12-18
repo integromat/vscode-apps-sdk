@@ -4,7 +4,7 @@ Make Apps Editor for VS Code
 The Visual Studio Code Extension for helping to develop and manage your applications in the [make.com](make.com) visual automation platform
 Faster and more comfortable than the web interface.
 
-## July 2024: Introducing the Local Development for Apps (beta)
+## July 2024: Introducing the Local Development for Apps
 
 ### What is Local Development for Apps?
 
