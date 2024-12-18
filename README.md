@@ -10,7 +10,7 @@ Faster and more comfortable than the web interface.
 
 Local Development for Apps is a game-changing feature that bridges the gap between your local development environment and apps hosted on Make. It empowers developers to work efficiently, iterate faster, and have a full control of changes, history and deployment of applications - all without disrupting the live apps running in production.
 
-<img src="https://github.com/integromat/vscode-apps-sdk/blob/development/resources/readme/localdev/banner-developers.jpg?raw=true" style="max-width: 100%; display: block; margin: 1em 0;" alt="illustrative picture" />
+<img src="https://github.com/integromat/vscode-apps-sdk/blob/master/resources/readme/localdev/banner-developers.jpg?raw=true" style="max-width: 100%; display: block; margin: 1em 0;" alt="illustrative picture" />
 
 ### How Does It Work?
 
@@ -53,7 +53,7 @@ Collaboration Made Easy: Work alongside teammates while keeping the change histo
 Peace of Mind: Know exactly what’s in Make by comparing local and remote code.
 Unlock the power of Local Development for Apps today and elevate your development experience. Say goodbye to uncontrolled instant deployment to production and hello to safe innovation! 🚀
 
-_See more in [Local Development for Apps documentation](https://github.com/integromat/vscode-apps-sdk/blob/development/README-local-development-for-apps.md)._
+_See more in [Local Development for Apps documentation](https://github.com/integromat/vscode-apps-sdk/blob/master/README-local-development-for-apps.md)._
 
 ## Features of extension
 
