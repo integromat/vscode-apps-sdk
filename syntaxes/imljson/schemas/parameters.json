@@ -600,7 +600,7 @@
 			}
 		}
 	},
-	"type": "array",
+	"type": ["array", "string"],
 	"items": {
 		"$ref": "#/definitions/parameter"
 	}
