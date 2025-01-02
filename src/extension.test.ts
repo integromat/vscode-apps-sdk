@@ -40,19 +40,19 @@ suite('App online file edit validations', () => {
 			filename: 'parameters.imljson',
 			expectedLanguage: 'imljson',
 			problematicContent: '{"invalidProperty":"someValue"}',
-			expectedProblemMessage: 'Incorrect type. Expected "array".',
+			expectedProblemMessage: 'Incorrect type. Expected one of array, string.',
 		},
 		{
 			filename: 'expect.imljson',
 			expectedLanguage: 'imljson',
 			problematicContent: '{"invalidProperty":"someValue"}',
-			expectedProblemMessage: 'Incorrect type. Expected "array".',
+			expectedProblemMessage: 'Incorrect type. Expected one of array, string.',
 		},
 		{
 			filename: 'interface.imljson',
 			expectedLanguage: 'imljson',
 			problematicContent: '{"invalidProperty":"someValue"}',
-			expectedProblemMessage: 'Incorrect type. Expected "array".',
+			expectedProblemMessage: 'Incorrect type. Expected one of array, string.',
 		},
 		{
 			filename: 'common.imljson',
