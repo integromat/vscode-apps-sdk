@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Unreleased
+------------------
+- Fixed mappable and static parameters json schema validation for plain rpc string
+
 2.2.5 [2024-12-18]
 ------------------
 
