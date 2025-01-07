@@ -942,7 +942,7 @@
 		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
-		"uuid": "^10.0.0",
+		"uuid": "^11.0.3",
 		"vscode-json-languageservice": "^5.4.2",
 		"vscode-languageclient": "^9.0.1",
 		"vscode-languageserver": "^9.0.1"
