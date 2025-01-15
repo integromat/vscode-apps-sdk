@@ -10,7 +10,7 @@ import { userPreferences } from './helpers/user-preferences';
 import { getOriginObject } from './helpers/get-origin-object';
 
 export const specialAnswers = {
-	ADD_ORIGIN: Symbol('Deploy into another app'),
+	ADD_ORIGIN: Symbol('> Deploy into another app'),
 };
 
 /**
@@ -82,10 +82,10 @@ async function askForOrigin2(
 	// Prepare list of dialog options (list of origins)
 	const quickPickOptions: ({ origin: LocalAppOrigin | symbol; setDefault?: boolean } & vscode.QuickPickItem)[] = [];
 	origins.forEach((origin, index) => {
-		// const label = origin.label || origin.appId + ' v' + origin.appVersion;
 		try {
 			const originHost = new URL(origin.baseUrl).host;
-			const label = `${origin.label} [${origin.appId} v${origin.appVersion} at ${originHost}]`;
+			const label =
+				`${index + 1}. ` + (origin.label || `[${origin.appId} v${origin.appVersion} at ${originHost}]`);
 			quickPickOptions.push(
 				// Dialog option: Origin
 				{
