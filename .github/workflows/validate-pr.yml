@@ -47,4 +47,4 @@ jobs:
 
       - name: Validate PR
         if: github.event_name != 'merge_group'
-        run: npx @integromat/actions-toolkit validate-pr 
+        run: npx @integromat/actions-toolkit validate-pr --skipPrDescriptionLengthValidation
