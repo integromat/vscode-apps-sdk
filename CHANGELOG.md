@@ -1,12 +1,7 @@
 Change Log
 ==========
 
-Unreleased
-------------------
-- Fixed mappable and static parameters json schema validation for plain rpc string
-
-2.2.5 [2024-12-18]
-------------------
+## [2.2.5](https://github.com/integromat/vscode-apps-sdk/compare/v2.1.0...v2.2.5) (2024-12-18)
 
 - Added keyboard shortcut for deployment.
 - Added support for the theme property of the banner directive in the App Interface.
@@ -20,16 +15,14 @@ Unreleased
 - Removed dependency on `static.integromat.com` web.
 - Updated list of autocompleted/suggested IML functions.
 
-2.1.0 [2024-10-09]
-------------------
+## [2.1.0](https://github.com/integromat/vscode-apps-sdk/compare/v2.0.0...v2.1.0) (2024-10-09)
 
 - Fixed the IML spead operator`"{{...}}": "{{something}}"` highlighting.
 - Improved wizard of new module: Added questions for connection and alternative connection.
 - Added the in-editor validation of `makecomapp.json` project file.
 - Fixed the issue `"options.maxOutputLength" is out of range` occured during ZIP import.
 
-2.0.0 [2024-07-02]
---------------------
+## [2.0.0](https://github.com/integromat/vscode-apps-sdk/compare/v1.3.27...v2.0.0) (2024-07-02)
 
 ### New feature: Local Development for Apps
 
@@ -53,8 +46,7 @@ It empowers developers to work efficiently, iterate faster, and have a full cont
 - Custom function testing fails, when using another custom function (#105)
 - Added publication VSCode context flag `isPreReleaseVersion` for being able to build production and pre-release versions from same codebase.
 
-1.3.27 [2023-08-03]
-------
+## [1.3.27](https://github.com/integromat/vscode-apps-sdk/compare/1.3.22...v1.3.27) (2023-08-03)
 
 ### Fixed
 
@@ -71,8 +63,7 @@ It empowers developers to work efficiently, iterate faster, and have a full cont
 - First environment configuration process is more friendly (#87)
 - Opensource apps rename to "Examples" (#95)
 
-1.3.22 [2023-07-18]
-------
+## [1.3.22](https://github.com/integromat/vscode-apps-sdk/compare/v1.3.19...v1.3.22) (22023-07-18)
 
 ### Fixed
 
