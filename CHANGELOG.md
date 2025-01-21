@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+## [2.2.6](https://github.com/integromat/vscode-apps-sdk/compare/v2.2.5...2.2.6) (2025-01-21)
+
+
+### Bug Fixes
+
+* mappable and static parameters json schema validation issue for plain rpc string ([#260](https://github.com/integromat/vscode-apps-sdk/issues/260)) ([cbdae4b](https://github.com/integromat/vscode-apps-sdk/commit/cbdae4b9d0e87737a5bc22c4b9c66ffaac035fbe))
+* tune text of origin selection dialog ([#263](https://github.com/integromat/vscode-apps-sdk/issues/263)) ([234be2d](https://github.com/integromat/vscode-apps-sdk/commit/234be2d274af3b62c23840e44bf0c7b67525efe3))
+
+
+### Documentation
+
+* update readme and Local Development doc ([#262](https://github.com/integromat/vscode-apps-sdk/issues/262)) ([828378a](https://github.com/integromat/vscode-apps-sdk/commit/828378a732e3ad5b0d89836728cec53ee5b20449))
+
+
+### Build System
+
+* bump the devdeps-minor-update group across 1 directory with 6 updates ([#261](https://github.com/integromat/vscode-apps-sdk/issues/261)) ([917649e](https://github.com/integromat/vscode-apps-sdk/commit/917649ea36a573dfe9209fc51339750203c6e28e))
+* bump uuid from 10.0.0 to 11.0.3 ([#238](https://github.com/integromat/vscode-apps-sdk/issues/238)) ([bf4b5fd](https://github.com/integromat/vscode-apps-sdk/commit/bf4b5fd71d28c2b1976c6438588b887f41d6e945))
+
+
+### Continuous Integration
+
+* update validate-pr.yml ([df54a15](https://github.com/integromat/vscode-apps-sdk/commit/df54a158f2f483be28b5fc41da6a1f7bb6a3955c))
+
 ## [2.2.5](https://github.com/integromat/vscode-apps-sdk/compare/v2.1.0...v2.2.5) (2024-12-18)
 
 - Added keyboard shortcut for deployment.
