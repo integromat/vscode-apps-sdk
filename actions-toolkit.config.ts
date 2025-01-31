@@ -4,11 +4,11 @@
 const config = {
 	releasePlease: {
 		/*
-		 * Reset the Release Please to default configuration, to be in alignment with definition in
+		 * Change Release Please commits types, which triggers the release PR and which are visible in changelog.
+		 * List of all commit types:
 		 * https://github.com/conventional-changelog/conventional-changelog/blob/master/packages/conventional-changelog-conventionalcommits/src/constants.js
-		 * + except keeping visible `refactor` and `build` for being able tracking these changes for case of issue troubleshooting.
 		 */
-		hiddenChangeTypesInPublicRepo: ['docs', 'style', 'chore', 'test', 'ci'],
+		hiddenChangeTypesInPublicRepo: ['docs', 'style', 'test'],
 	},
 };
 
