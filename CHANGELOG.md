@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+## [2.2.7](https://github.com/integromat/vscode-apps-sdk/compare/2.2.6...2.2.7) (2025-01-31)
+
+
+### Miscellaneous Chores
+
+* add action-toolkit.ts configuration ([#265](https://github.com/integromat/vscode-apps-sdk/issues/265)) ([58ca38c](https://github.com/integromat/vscode-apps-sdk/commit/58ca38cfd73b8b62b57e390c2e2825244b636223))
+
+
+### Continuous Integration
+
+* fix actions-toolkit config file name (mistake from [#265](https://github.com/integromat/vscode-apps-sdk/issues/265)) ([#267](https://github.com/integromat/vscode-apps-sdk/issues/267)) ([dd80324](https://github.com/integromat/vscode-apps-sdk/commit/dd80324ddded18f0a29f813dd5276b88c88385ef))
+
 ## [2.2.6](https://github.com/integromat/vscode-apps-sdk/compare/v2.2.5...2.2.6) (2025-01-21)
 
 ### Bug Fixes
