@@ -932,7 +932,7 @@
 		"adm-zip": "^0.5.16",
 		"applicationinsights": "^3.5.0",
 		"async-file": "^2.0.2",
-		"axios": "^1.7.9",
+		"axios": "^1.8.1",
 		"compressing": "^1.10.1",
 		"image-downloader": "^4.3.0",
 		"jimp": "^1.6.0",
@@ -942,7 +942,7 @@
 		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
-		"uuid": "^11.0.5",
+		"uuid": "^11.1.0",
 		"vscode-json-languageservice": "^5.4.3",
 		"vscode-languageclient": "^9.0.1",
 		"vscode-languageserver": "^9.0.1"
