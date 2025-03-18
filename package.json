@@ -930,7 +930,7 @@
 		"@integromat/udt": "^1.2.2",
 		"@vscode/extension-telemetry": "^0.9.8",
 		"adm-zip": "^0.5.16",
-		"applicationinsights": "^3.5.0",
+		"applicationinsights": "^3.6.0",
 		"async-file": "^2.0.2",
 		"axios": "^1.7.9",
 		"compressing": "^1.10.1",
@@ -942,7 +942,7 @@
 		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
-		"uuid": "^11.0.5",
+		"uuid": "^11.1.0",
 		"vscode-json-languageservice": "^5.4.3",
 		"vscode-languageclient": "^9.0.1",
 		"vscode-languageserver": "^9.0.1"
