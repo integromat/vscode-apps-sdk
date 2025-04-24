@@ -34,6 +34,9 @@
 					"value": {
 						"type": ["string", "array", "boolean", "integer", "null", "number", "object"]
 					},
+					"description": {
+						"type": "string"
+					},
 					"nested": {
 						"$ref": "#/definitions/nested"
 					},
