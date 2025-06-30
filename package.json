@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Make Apps Editor",
 	"description": "Helps to create, develop, download and deploy apps of the Make no-code visual integration and automation platform.",
-	"version": "2.2.6",
+	"version": "2.3.0",
 	"icon": "resources/make.png",
 	"repository": {
 		"type": "git",
