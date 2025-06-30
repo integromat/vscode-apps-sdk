@@ -111,6 +111,7 @@ class ModuleCommands {
             if (_environment.version === 2) {
                 body.typeId = parseInt(body.type_id);
                 delete body.type_id;
+				body.moduleInitMode = 'example';
             }
 
             // Action type selector
