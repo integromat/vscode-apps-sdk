@@ -40,59 +40,8 @@ export class MakecomappJsonFile {
 		return Boolean(this.content.generalCodeFiles.common);
 	}
 
-	/**
-	 * Adds/edit component ID-mapping in the memory representation of `makecomapp.json`.
-	 */
-	addComponentIdMapping(
-		componentType: AppComponentType,
-		componentLocalId: string | null,
-		remoteComponentName: string | null,
-		anyProjectPath: vscode.Uri,
-		origin: LocalAppOrigin,
-	) {
-		const originInMakecomappJson = getOriginObject(this.content, origin);
-
-		// Check existing ID-mapping for consistency with the request to map `componentLocalId`<=>`remoteComponentName`
-		const existingIdMappingItems =
-			originInMakecomappJson.idMapping?.[componentType].filter(
-				(idMappingItem) =>
-					(idMappingItem.local !== null && idMappingItem.local === componentLocalId) ||
-					(idMappingItem.remote !== null && idMappingItem.remote === remoteComponentName),
-			) ?? [];
-		switch (existingIdMappingItems.length) {
-			case 0:
-				// Create new ID mapping, because does not exist yet.
-				if (!originInMakecomappJson.idMapping) {
-					originInMakecomappJson.idMapping = {
-						connection: [],
-						module: [],
-						function: [],
-						rpc: [],
-						webhook: [],
-					};
-				}
-				// Update `this.content.origins[someOrigin]` in memory
-				originInMakecomappJson.idMapping[componentType].push({
-					local: componentLocalId,
-					remote: remoteComponentName,
-				});
-				break;
-			case 1:
-				// Mapping already exists. Check if it is the same one.
-				if (
-					existingIdMappingItems[0].local !== componentLocalId ||
-					existingIdMappingItems[0].remote !== remoteComponentName
-				) {
-					throw new Error(
-						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
-					);
-				} // else // already exists the same mapping. Nothing to do.
-				break;
-			default: // length >= 2
-				// Multiple mapping already exists.
-				throw new Error(
-					`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where multiple records found for (local=${componentLocalId} or remote=${remoteComponentName}).`,
-				);
-		}
+	public getComponentIdMappingHelper(origin: LocalAppOrigin): ComponentIdMappingHelper {
+		return new ComponentIdMappingHelper(this.content, origin);
 	}
+
 }

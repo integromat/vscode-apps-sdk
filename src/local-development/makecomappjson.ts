@@ -193,13 +193,9 @@ export async function upsertComponentInMakecomappjson(
 
 		// Add origin->idMapping to { local: internalComponentId: remote: remoteComponentName }
 		if (origin && remoteComponentName) {
-			makecomappJson.addComponentIdMapping(
-				componentType,
-				componentLocalId,
-				remoteComponentName,
-				anyProjectPath,
-				origin,
-			);
+			makecomappJson
+				.getComponentIdMappingHelper(origin)
+				.addComponentIdMapping(componentType, componentLocalId, remoteComponentName);
 		}
 
 		await makecomappJson.saveChanges();
@@ -237,13 +233,9 @@ export async function addComponentIdMapping(
 ) {
 	return await limitConcurrency(async () => {
 		const makecomappJson = await MakecomappJsonFile.fromLocalProject(anyProjectPath);
-		makecomappJson.addComponentIdMapping(
-			componentType,
-			internalComponentId,
-			remoteComponentName,
-			anyProjectPath,
-			origin,
-		);
+		makecomappJson
+			.getComponentIdMappingHelper(origin)
+			.addComponentIdMapping(componentType, internalComponentId, remoteComponentName);
 		await makecomappJson.saveChanges();
 	});
 }
