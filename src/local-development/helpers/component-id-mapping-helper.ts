@@ -106,13 +106,10 @@ export class ComponentIdMappingHelper {
 	 * @param {string} remoteName - The name of the remote component to find the local ID for.
 	 * @returns {string | null | undefined} - The local ID if found, otherwise `null` or `undefined` if no mapping exists.
 	 */
-	private getLocalId(
-		componentType: AppComponentType | AppGeneralType,
-		remoteName: string,
-	): string | null | undefined {
+	public getLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null | undefined {
 		const mapping = this.getMappingByRemoteName(componentType, remoteName);
 		if (!mapping) {
-			return mapping;
+			return mapping; // returns string "" and undefined
 		}
 		return mapping.local;
 	}
