@@ -158,7 +158,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		}
 		// #endregion Process all app's general codes
 
-		// Write makecomapp.json app metadata file
+		// Write makecomapp.json app metadata file (empty without any components yet)
 		await vscode.workspace.fs.writeFile(
 			makeappJsonPath,
 			new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),

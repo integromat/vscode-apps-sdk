@@ -24,6 +24,13 @@ export class MakecomappJsonFile {
 	}
 
 	/**
+	 * Save changes to the `makecomapp.json` file in the local project.
+	 */
+	public async saveChanges(): Promise<void> {
+		return updateMakecomappJson(this.anyProjectPath, this.content);
+	}
+
+	/**
 	 * Gets whether the project contains the common data or ignores it.
 	 * The decision is based on including or excluding app common data file.
 	 */

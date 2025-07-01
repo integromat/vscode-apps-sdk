@@ -117,6 +117,11 @@ export class ComponentIdMappingHelper {
 		return mapping.local;
 	}
 
+	/**
+	 * Decides the local ID (in makecomapp.json) for the remote component name.
+	 * @return `null` if the remote component should not be paired to local one
+	 *         (it means the remote component should be ignored).
+	 */
 	getExistingLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null {
 		const localId = this.getLocalId(componentType, remoteName);
 
@@ -150,16 +155,19 @@ export class ComponentIdMappingHelper {
 
 		// Modify makecomapp object
 		if (originInMakecomappJson.idMapping?.[componentType]) {
-			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(
+				(mapping) => mapping.remote !== originComponentName,
+			);
 		}
 		// Modify origin object that
 		if (this.origin.idMapping?.[componentType]) {
-			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(
+				(mapping) => mapping.remote !== originComponentName,
+			);
 		}
 
 		return originInMakecomappJson;
 	}
-
 
 	/**
 	 * Updates the `idMapping` mapping in `this.makecomappJson`:
@@ -171,7 +179,8 @@ export class ComponentIdMappingHelper {
 		for (const componentType of AppComponentTypes) {
 			// Modify makecomapp object
 			if (originInMakecomappJson.idMapping?.[componentType]) {
-				originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(filterCondition);
+				originInMakecomappJson.idMapping[componentType] =
+					originInMakecomappJson.idMapping[componentType].filter(filterCondition);
 			}
 			// Modify origin object that
 			if (this.origin.idMapping?.[componentType]) {
