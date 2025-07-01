@@ -159,7 +159,7 @@ export async function upsertComponentInMakecomappjson(
 			await _addComponentIdMapping(componentType, componentLocalId, remoteComponentName, anyProjectPath, origin);
 		}
 
-		await makecomappJson.saveChanges()
+		await makecomappJson.saveChanges();
 	});
 }
 
