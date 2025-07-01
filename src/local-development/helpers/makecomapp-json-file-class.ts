@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getMakecomappJson } from '../makecomappjson';
+import { getMakecomappJson, updateMakecomappJson } from '../makecomappjson';
 import type { MakecomappJson } from '../types/makecomapp.types';
 
 /**
