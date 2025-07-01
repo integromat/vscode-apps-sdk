@@ -150,15 +150,16 @@ export async function upsertComponentInMakecomappjson(
 	}
 
 	await limitConcurrency(async () => {
-		const makecomappJson = await getMakecomappJson(anyProjectPath);
-		makecomappJson.components[componentType][componentLocalId] = componentMetadata;
+		const makecomappJson = await MakecomappJsonFile.fromLocalProject(anyProjectPath);
+
+		makecomappJson.content.components[componentType][componentLocalId] = componentMetadata;
 
 		// Add origin->idMapping to { local: internalComponentId: remote: remoteComponentName }
 		if (origin && remoteComponentName) {
 			await _addComponentIdMapping(componentType, componentLocalId, remoteComponentName, anyProjectPath, origin);
 		}
 
-		await updateMakecomappJson(anyProjectPath, makecomappJson);
+		await makecomappJson.saveChanges()
 	});
 }
 
