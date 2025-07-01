@@ -11,6 +11,7 @@ import { getOriginObject } from './helpers/get-origin-object';
 import { entries } from '../utils/typed-object';
 import { getCurrentWorkspace } from '../services/workspace';
 import type { AppComponentType } from '../types/app-component-type.types';
+import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 
 const limitConcurrency = throat(1);
 
@@ -151,6 +152,42 @@ export async function upsertComponentInMakecomappjson(
 
 	await limitConcurrency(async () => {
 		const makecomappJson = await MakecomappJsonFile.fromLocalProject(anyProjectPath);
+
+		// Validate `connection` and `altConnection` reference in component metadata is defined in local ID in "idMapping"
+		if (['connection', 'rpc', 'module'].includes(componentType)) {
+			if (componentMetadata.connection) {
+				// Validate `connection` reference for being available in id mapping.
+				if (
+					// !makecomappJson.content.origins.some((origin) =>
+					!origin?.idMapping?.connection.some(
+						(idMappingItem) => idMappingItem.local === componentMetadata.connection,
+					)
+					// )
+				) {
+					throw new Error(
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "connection" referecence "${
+							componentMetadata.connection
+						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
+					);
+				}
+			}
+			if (componentMetadata.altConnection) {
+				// Validate `connection` reference for being available in id mapping.
+				if (
+					// !makecomappJson.content.origins.some((origin) =>
+					!origin?.idMapping?.connection.some(
+						(idMappingItem) => idMappingItem.local === componentMetadata.altConnection,
+					)
+					// )
+				) {
+					throw new Error(
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "altConnection" referecence "${
+							componentMetadata.altConnection
+						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
+					);
+				}
+			}
+		}
 
 		makecomappJson.content.components[componentType][componentLocalId] = componentMetadata;
 
