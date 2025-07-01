@@ -3,8 +3,9 @@ import type { AppComponentType, AppGeneralType } from '../../types/app-component
 const ruleRpcModule = {
 	// Local ID must match the format requirements at Make.
 	//   Reason: If remote component not exists yet, the "Deploy to Make" action tries to create it with same component name as local ID.
-	hint: '3-48 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.',
-	regexp: /^[a-zA-Z][0-9a-zA-Z]{2,47}$/,
+	hint: '3-48 (max 64) letters and numbers (a-z, A-Z, 0-9). Must start with a letter.',
+	regexp: /^[a-zA-Z][0-9a-zA-Z]{2,63}$/,
+	// Explanation: Current max length is 48 characters. But unfortunately, by historical consequences, there are existing apps, where the name is longer than this current limit.
 	examples: 'getSomething, listSomething, updateSomething',
 };
 const ruleWebhookConnection = {
