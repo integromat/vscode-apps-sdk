@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+## [2.3.0](https://github.com/integromat/vscode-apps-sdk/compare/2.2.6...2.3.0) (2025-07-01)
+
+
+### Features
+
+* custom apps allow to add description to options ([#281](https://github.com/integromat/vscode-apps-sdk/issues/281)) ([a1f750c](https://github.com/integromat/vscode-apps-sdk/commit/a1f750cef9cfd7976d9588e5c7f14a7278d9deed))
+
+
+### Bug Fixes
+
+* error when creating a new module through the vs code ([#284](https://github.com/integromat/vscode-apps-sdk/issues/284)) ([a90ead3](https://github.com/integromat/vscode-apps-sdk/commit/a90ead326ecb343896dd57c051a91b1e9daee848))
+* extend RPC name maxlength to 64 chars ([#286](https://github.com/integromat/vscode-apps-sdk/issues/286)) ([e5f86fd](https://github.com/integromat/vscode-apps-sdk/commit/e5f86fd3287bd4624984e8262c01e958987a24a4))
+
 ## [2.2.6](https://github.com/integromat/vscode-apps-sdk/compare/v2.2.5...2.2.6) (2025-01-21)
 
 ### Bug Fixes
