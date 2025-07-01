@@ -1,6 +1,42 @@
 Change Log
 ==========
 
+## [2.3.0](https://github.com/integromat/vscode-apps-sdk/compare/2.2.6...2.3.0) (2025-07-01)
+
+
+### Features
+
+* custom apps allow to add description to options ([#281](https://github.com/integromat/vscode-apps-sdk/issues/281)) ([a1f750c](https://github.com/integromat/vscode-apps-sdk/commit/a1f750cef9cfd7976d9588e5c7f14a7278d9deed))
+
+
+### Bug Fixes
+
+* **dependencies:** package.json and package-lock.json updated ([#278](https://github.com/integromat/vscode-apps-sdk/issues/278)) ([f48485e](https://github.com/integromat/vscode-apps-sdk/commit/f48485e74d46f9de0ec3e6cebffdc5264b487cc6))
+* error when creating a new module through the vs code ([#284](https://github.com/integromat/vscode-apps-sdk/issues/284)) ([a90ead3](https://github.com/integromat/vscode-apps-sdk/commit/a90ead326ecb343896dd57c051a91b1e9daee848))
+* extend RPC name maxlength to 64 chars ([#286](https://github.com/integromat/vscode-apps-sdk/issues/286)) ([e5f86fd](https://github.com/integromat/vscode-apps-sdk/commit/e5f86fd3287bd4624984e8262c01e958987a24a4))
+
+
+### Miscellaneous Chores
+
+* add action-toolkit.ts configuration ([#265](https://github.com/integromat/vscode-apps-sdk/issues/265)) ([58ca38c](https://github.com/integromat/vscode-apps-sdk/commit/58ca38cfd73b8b62b57e390c2e2825244b636223))
+* **release-please:** update hiddenChangeTypesInPublicRepo ([#269](https://github.com/integromat/vscode-apps-sdk/issues/269)) ([50da58d](https://github.com/integromat/vscode-apps-sdk/commit/50da58d1f6569aef3be46ca6fd0fc5dd8d39244c))
+
+
+### Build System
+
+* bump globals from 15.14.0 to 16.0.0 ([#277](https://github.com/integromat/vscode-apps-sdk/issues/277)) ([a2cb411](https://github.com/integromat/vscode-apps-sdk/commit/a2cb411a28a62b45cd732abba8bb26962ad77b8a))
+* bump the deps-minor-update group across 1 directory with 5 updates ([#285](https://github.com/integromat/vscode-apps-sdk/issues/285)) ([5ff364e](https://github.com/integromat/vscode-apps-sdk/commit/5ff364e1fcff35bd7e012e21fd89b0c330649eb5))
+* bump the deps-minor-update group with 3 updates ([#273](https://github.com/integromat/vscode-apps-sdk/issues/273)) ([5ee3539](https://github.com/integromat/vscode-apps-sdk/commit/5ee3539ce6d5bbe2aecea56823535e5f8b72f567))
+* bump the devdeps-minor-update group across 1 directory with 6 updates ([#283](https://github.com/integromat/vscode-apps-sdk/issues/283)) ([6c90444](https://github.com/integromat/vscode-apps-sdk/commit/6c90444e88050140983becb800be1f5a2fe24cdf))
+* bump the devdeps-minor-update group with 3 updates ([#272](https://github.com/integromat/vscode-apps-sdk/issues/272)) ([7913b82](https://github.com/integromat/vscode-apps-sdk/commit/7913b82bc70563a9914e60ce338a5aafbd79d225))
+* bump the eslint group across 1 directory with 4 updates ([#282](https://github.com/integromat/vscode-apps-sdk/issues/282)) ([c92b567](https://github.com/integromat/vscode-apps-sdk/commit/c92b567117f02b2801eac8d8cfa2f6609e33bcb1))
+* bump the eslint group with 4 updates ([#271](https://github.com/integromat/vscode-apps-sdk/issues/271)) ([5e46560](https://github.com/integromat/vscode-apps-sdk/commit/5e46560c8213204c1e961e45880d78b1940b8e7d))
+
+
+### Continuous Integration
+
+* fix actions-toolkit config file name (mistake from [#265](https://github.com/integromat/vscode-apps-sdk/issues/265)) ([#267](https://github.com/integromat/vscode-apps-sdk/issues/267)) ([dd80324](https://github.com/integromat/vscode-apps-sdk/commit/dd80324ddded18f0a29f813dd5276b88c88385ef))
+
 ## [2.2.6](https://github.com/integromat/vscode-apps-sdk/compare/v2.2.5...2.2.6) (2025-01-21)
 
 ### Bug Fixes
