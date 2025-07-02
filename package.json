@@ -908,7 +908,7 @@
 		"@stylistic/eslint-plugin": "^5.0.0",
 		"@types/eslint__js": "^8.42.3",
 		"@types/eslint-config-prettier": "^6.11.3",
-		"@types/lodash": "^4.17.16",
+		"@types/lodash": "^4.17.19",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^20.17.5",
 		"@types/pngjs": "^6.0.5",
@@ -919,10 +919,10 @@
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^10.1.5",
 		"glob": "^11.0.0",
-		"globals": "^16.0.0",
-		"mocha": "^11.1.0",
+		"globals": "^16.3.0",
+		"mocha": "^11.7.1",
 		"typescript": "~5.5.4",
-		"typescript-eslint": "^8.31.1",
+		"typescript-eslint": "^8.35.1",
 		"typescript-json-schema": "^0.65.1"
 	},
 	"dependencies": {
