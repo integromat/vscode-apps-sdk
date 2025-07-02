@@ -3,6 +3,7 @@ import { getMakecomappJson, updateMakecomappJson } from '../makecomappjson';
 import type { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import type { AppComponentType } from '../../types/app-component-type.types';
 import { getOriginObject } from './get-origin-object';
+import { ComponentIdMappingHelper } from './component-id-mapping-helper';
 
 /**
  * Represents the content of `makecomapp.json` and methods, which are possible to execute over this content.
