@@ -144,6 +144,7 @@ export async function alignComponentsMapping(
 
 		// Resolve locally deleted components
 		let deletedLocallyComponent;
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		while ((deletedLocallyComponent = deletedLocallyInSpecificComponentType.shift()!)) {
 			await deleteOriginComponent(origin, componentType, deletedLocallyComponent.componentName);
 			const mappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
@@ -155,6 +156,7 @@ export async function alignComponentsMapping(
 		if (newLocalComponentResolution !== 'ignore') {
 			// Ask user to link `localOnly` component(s) with unlinked remote, or create new remote component
 			let localOnlyComponent: (typeof localOnlyInSpecificComponentType)[0];
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			while ((localOnlyComponent = localOnlyInSpecificComponentType.shift()!)) {
 				// Local component is not linked to remote
 
@@ -276,6 +278,7 @@ export async function alignComponentsMapping(
 		if (newRemoteComponentResolution !== 'ignore') {
 			// Ask user to link `remoteOnly` component(s) with unlinked local, or pull as new local compoment
 			let remoteOnlyComponent: (typeof remoteOnlyInSpecificComponentType)[0];
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			while ((remoteOnlyComponent = remoteOnlyInSpecificComponentType.shift()!)) {
 				// Remote component is not linked to local
 

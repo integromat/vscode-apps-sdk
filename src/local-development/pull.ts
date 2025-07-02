@@ -58,17 +58,20 @@ export async function pullAllComponents(
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 	originChecksums: Checksum,
 ): Promise<void> {
-
 	// Pulling when there are undeployed changes. Override them and align the state with the origin.
-	const makecomappJson = await getMakecomappJson(localAppRootdir);
-	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
-	componentIdMappingHelper.filterMappingItems(item => !item?.localDeleted);
-	await updateMakecomappJson(localAppRootdir, makecomappJson);
+	let makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
+	const componentIdMappingHelper = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
+	componentIdMappingHelper.filterMappingItems((item) => !item?.localDeleted);
+	await makecomappJsonFile.saveChanges();
 
-	// Compare all local components with remote. If something is not paired, link it or create new component or ignore component.
+	// Compare all local components with remote. If something is not paired:
+	//  - link it to existing local component,
+	//  - or create new local component with empty code files (will be pulled later in this function),
+	//  - or mark for ignoring the remote component.
 	await alignComponentsMapping(localAppRootdir, origin, originChecksums, 'ignore', newRemoteComponentResolution);
 	// Load fresh `makecomapp.json` file (because `alignComponentMapping()` changed it)
-	const makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
+	makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
+
 
 	// Pull app general codes
 	for (const [codeType] of entries(generalCodesDefinition)) {
@@ -88,8 +91,7 @@ export async function pullAllComponents(
 		});
 	}
 
-	// Pull app components from remote
-	// Note: All remote components already have local counterparts due to previously called `alignComponentsMapping()`.
+	// Pull app component's code files from remote
 	for (const componentType of getAppComponentTypes()) {
 		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
 		const checksums = getComponentChecksumArray(originChecksums, componentType);
@@ -101,7 +103,7 @@ export async function pullAllComponents(
 			const componentLocalId = componentIdMapping.getExistingLocalId(componentType, remoteComponentName);
 			if (componentLocalId === null) {
 				continue;
-				// Because the mapping defines this remote component as "ignore".
+				// Skip this component, because the mapping defines this remote component as "ignore".
 			}
 			const existingComponentMetadata = makecomappJsonFile.content.components[componentType][componentLocalId];
 			if (!existingComponentMetadata) {

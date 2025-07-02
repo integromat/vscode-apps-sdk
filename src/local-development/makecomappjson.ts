@@ -11,6 +11,7 @@ import { getOriginObject } from './helpers/get-origin-object';
 import { entries } from '../utils/typed-object';
 import { getCurrentWorkspace } from '../services/workspace';
 import type { AppComponentType } from '../types/app-component-type.types';
+import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 
 const limitConcurrency = throat(1);
 
@@ -150,15 +151,54 @@ export async function upsertComponentInMakecomappjson(
 	}
 
 	await limitConcurrency(async () => {
-		const makecomappJson = await getMakecomappJson(anyProjectPath);
-		makecomappJson.components[componentType][componentLocalId] = componentMetadata;
+		const makecomappJson = await MakecomappJsonFile.fromLocalProject(anyProjectPath);
+
+		// Validate `connection` and `altConnection` reference in component metadata is defined in local ID in "idMapping"
+		if (['connection', 'rpc', 'module'].includes(componentType)) {
+			if (componentMetadata.connection) {
+				// Validate `connection` reference for being available in id mapping.
+				if (
+					// !makecomappJson.content.origins.some((origin) =>
+					!origin?.idMapping?.connection.some(
+						(idMappingItem) => idMappingItem.local === componentMetadata.connection,
+					)
+					// )
+				) {
+					throw new Error(
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "connection" referecence "${
+							componentMetadata.connection
+						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
+					);
+				}
+			}
+			if (componentMetadata.altConnection) {
+				// Validate `connection` reference for being available in id mapping.
+				if (
+					// !makecomappJson.content.origins.some((origin) =>
+					!origin?.idMapping?.connection.some(
+						(idMappingItem) => idMappingItem.local === componentMetadata.altConnection,
+					)
+					// )
+				) {
+					throw new Error(
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "altConnection" referecence "${
+							componentMetadata.altConnection
+						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
+					);
+				}
+			}
+		}
+
+		makecomappJson.content.components[componentType][componentLocalId] = componentMetadata;
 
 		// Add origin->idMapping to { local: internalComponentId: remote: remoteComponentName }
 		if (origin && remoteComponentName) {
-			await _addComponentIdMapping(componentType, componentLocalId, remoteComponentName, anyProjectPath, origin);
+			makecomappJson
+				.getComponentIdMappingHelper(origin)
+				.addComponentIdMapping(componentType, componentLocalId, remoteComponentName);
 		}
 
-		await updateMakecomappJson(anyProjectPath, makecomappJson);
+		await makecomappJson.saveChanges();
 	});
 }
 
@@ -192,68 +232,12 @@ export async function addComponentIdMapping(
 	origin: LocalAppOrigin,
 ) {
 	return await limitConcurrency(async () => {
-		return _addComponentIdMapping(componentType, internalComponentId, remoteComponentName, anyProjectPath, origin);
+		const makecomappJson = await MakecomappJsonFile.fromLocalProject(anyProjectPath);
+		makecomappJson
+			.getComponentIdMappingHelper(origin)
+			.addComponentIdMapping(componentType, internalComponentId, remoteComponentName);
+		await makecomappJson.saveChanges();
 	});
-}
-
-/**
- * Adds/edit component ID-mapping.
- * @private For internal module usage only. Do not use directly, because it needs to be wrapped by `limitConcurrency()` in parent method.
- */
-async function _addComponentIdMapping(
-	componentType: AppComponentType,
-	componentLocalId: string | null,
-	remoteComponentName: string | null,
-	anyProjectPath: vscode.Uri,
-	origin: LocalAppOrigin,
-) {
-	const makecomappJson = await getMakecomappJson(anyProjectPath);
-	const originInMakecomappJson = getOriginObject(makecomappJson, origin);
-
-	// Check existing ID-mapping for consistency with the request to map `componentLocalId`<=>`remoteComponentName`
-	const existingIdMappingItems =
-		originInMakecomappJson.idMapping?.[componentType].filter(
-			(idMappingItem) =>
-				(idMappingItem.local !== null && idMappingItem.local === componentLocalId) ||
-				(idMappingItem.remote !== null && idMappingItem.remote === remoteComponentName),
-		) ?? [];
-	switch (existingIdMappingItems.length) {
-		case 0:
-			// Create new ID mapping, because does not exist yet.
-			if (!originInMakecomappJson.idMapping) {
-				originInMakecomappJson.idMapping = {
-					connection: [],
-					module: [],
-					function: [],
-					rpc: [],
-					webhook: [],
-				};
-			}
-			originInMakecomappJson.idMapping[componentType].push({
-				local: componentLocalId,
-				remote: remoteComponentName,
-			});
-			break;
-		case 1:
-			// Mapping already exists. Check if it is the same one.
-			if (
-				existingIdMappingItems[0].local !== componentLocalId ||
-				existingIdMappingItems[0].remote !== remoteComponentName
-			) {
-				throw new Error(
-					`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
-				);
-			} // else // already exists the same mapping. Nothing to do.
-			break;
-		default: // length >= 2
-			// Multiple mapping already exists.
-			throw new Error(
-				`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where multiple records found for (local=${componentLocalId} or remote=${remoteComponentName}).`,
-			);
-	}
-
-	// Save updated makecomapp.json file
-	await updateMakecomappJson(anyProjectPath, makecomappJson);
 }
 
 /**

@@ -106,17 +106,19 @@ export class ComponentIdMappingHelper {
 	 * @param {string} remoteName - The name of the remote component to find the local ID for.
 	 * @returns {string | null | undefined} - The local ID if found, otherwise `null` or `undefined` if no mapping exists.
 	 */
-	private getLocalId(
-		componentType: AppComponentType | AppGeneralType,
-		remoteName: string,
-	): string | null | undefined {
+	public getLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null | undefined {
 		const mapping = this.getMappingByRemoteName(componentType, remoteName);
 		if (!mapping) {
-			return mapping;
+			return mapping; // returns string "" and undefined
 		}
 		return mapping.local;
 	}
 
+	/**
+	 * Decides the local ID (in makecomapp.json) for the remote component name.
+	 * @return `null` if the remote component should not be paired to local one
+	 *         (it means the remote component should be ignored).
+	 */
 	getExistingLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null {
 		const localId = this.getLocalId(componentType, remoteName);
 
@@ -150,16 +152,19 @@ export class ComponentIdMappingHelper {
 
 		// Modify makecomapp object
 		if (originInMakecomappJson.idMapping?.[componentType]) {
-			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+			originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(
+				(mapping) => mapping.remote !== originComponentName,
+			);
 		}
 		// Modify origin object that
 		if (this.origin.idMapping?.[componentType]) {
-			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(mapping => mapping.remote !== originComponentName);
+			this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(
+				(mapping) => mapping.remote !== originComponentName,
+			);
 		}
 
 		return originInMakecomappJson;
 	}
-
 
 	/**
 	 * Updates the `idMapping` mapping in `this.makecomappJson`:
@@ -171,12 +176,67 @@ export class ComponentIdMappingHelper {
 		for (const componentType of AppComponentTypes) {
 			// Modify makecomapp object
 			if (originInMakecomappJson.idMapping?.[componentType]) {
-				originInMakecomappJson.idMapping[componentType] = originInMakecomappJson.idMapping[componentType].filter(filterCondition);
+				originInMakecomappJson.idMapping[componentType] =
+					originInMakecomappJson.idMapping[componentType].filter(filterCondition);
 			}
 			// Modify origin object that
 			if (this.origin.idMapping?.[componentType]) {
 				this.origin.idMapping[componentType] = this.origin.idMapping[componentType].filter(filterCondition);
 			}
+		}
+	}
+
+	/**
+	 * Adds/edit component ID-mapping in the memory representation of `makecomapp.json`.
+	 */
+	addComponentIdMapping(
+		componentType: AppComponentType,
+		componentLocalId: string | null,
+		remoteComponentName: string | null,
+	) {
+		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
+
+		// Check existing ID-mapping for consistency with the request to map `componentLocalId`<=>`remoteComponentName`
+		const existingIdMappingItems =
+			originInMakecomappJson.idMapping?.[componentType].filter(
+				(idMappingItem) =>
+					(idMappingItem.local !== null && idMappingItem.local === componentLocalId) ||
+					(idMappingItem.remote !== null && idMappingItem.remote === remoteComponentName),
+			) ?? [];
+		switch (existingIdMappingItems.length) {
+			case 0:
+				// Create new ID mapping, because does not exist yet.
+				if (!originInMakecomappJson.idMapping) {
+					originInMakecomappJson.idMapping = {
+						connection: [],
+						module: [],
+						function: [],
+						rpc: [],
+						webhook: [],
+					};
+				}
+				// Update `this.content.origins[someOrigin]` in memory
+				originInMakecomappJson.idMapping[componentType].push({
+					local: componentLocalId,
+					remote: remoteComponentName,
+				});
+				break;
+			case 1:
+				// Mapping already exists. Check if it is the same one.
+				if (
+					existingIdMappingItems[0].local !== componentLocalId ||
+					existingIdMappingItems[0].remote !== remoteComponentName
+				) {
+					throw new Error(
+						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
+					);
+				} // else // already exists the same mapping. Nothing to do.
+				break;
+			default: // length >= 2
+				// Multiple mapping already exists.
+				throw new Error(
+					`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where multiple records found for (local=${componentLocalId} or remote=${remoteComponentName}).`,
+				);
 		}
 	}
 }
