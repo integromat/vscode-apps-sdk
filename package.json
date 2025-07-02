@@ -904,8 +904,8 @@
 		"schema:makecomapp": "typescript-json-schema src/local-development/types/makecomapp.types.ts MakecomappJson --out syntaxes/local-development/schemas/makecomapp.schema.json --required --noExtraProps --strictNullChecks --includeEnum --uniqueNames --refs --topRef --ignoreErrors"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.29.0",
-		"@stylistic/eslint-plugin": "^5.0.0",
+		"@eslint/js": "^9.30.0",
+		"@stylistic/eslint-plugin": "^5.1.0",
 		"@types/eslint__js": "^8.42.3",
 		"@types/eslint-config-prettier": "^6.11.3",
 		"@types/lodash": "^4.17.19",
@@ -915,7 +915,7 @@
 		"@types/uuid": "^10.0.0",
 		"@types/vscode": "^1.95.0",
 		"@vscode/test-electron": "^2.5.2",
-		"eslint": "^9.29.0",
+		"eslint": "^9.30.0",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^10.1.5",
 		"glob": "^11.0.0",
