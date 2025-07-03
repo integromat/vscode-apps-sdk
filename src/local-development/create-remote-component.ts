@@ -72,6 +72,9 @@ export async function createRemoteAppComponent(opt: {
 				if (opt.componentMetadata.moduleType === 'universal') {
 					axiosConfig.data.subtype = 'Universal' as 'Universal' | 'UniversalGraphQL';
 				}
+
+				axiosConfig.data.moduleInitMode = 'blank';
+
 				break;
 
 			case 'connection':
