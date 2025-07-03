@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+## [2.3.1](https://github.com/integromat/vscode-apps-sdk/compare/2.3.0...2.3.1) (2025-07-03)
+
+
+### Bug Fixes
+
+* error in a module deployment and an app import ([#294](https://github.com/integromat/vscode-apps-sdk/issues/294)) ([54d15bc](https://github.com/integromat/vscode-apps-sdk/commit/54d15bc4c7ad6cf1651ead28ad39cb82d4f813b0))
+
+
+### Miscellaneous Chores
+
+* code&doc quality minor improvement ([#287](https://github.com/integromat/vscode-apps-sdk/issues/287)) ([f71bd21](https://github.com/integromat/vscode-apps-sdk/commit/f71bd210494918f1f2bb9416868d6574d1ee8839))
+
+
+### Build System
+
+* bump the devdeps-minor-update group with 4 updates ([#289](https://github.com/integromat/vscode-apps-sdk/issues/289)) ([34f780f](https://github.com/integromat/vscode-apps-sdk/commit/34f780f6a8fabd97ffed0528ac0272fc989b247c))
+* bump the eslint group with 3 updates ([#288](https://github.com/integromat/vscode-apps-sdk/issues/288)) ([3e01d39](https://github.com/integromat/vscode-apps-sdk/commit/3e01d39660aa71f33dfd4e286f8ce44fa9eb3a0a))
+* bump vscode-json-languageservice from 5.6.0 to 5.6.1 in the deps-minor-update group ([#290](https://github.com/integromat/vscode-apps-sdk/issues/290)) ([38a6cca](https://github.com/integromat/vscode-apps-sdk/commit/38a6cca0f94dd366e6ed1b8ce0ad7fc5e66dcf17))
+
 ## [2.3.0](https://github.com/integromat/vscode-apps-sdk/compare/2.2.6...2.3.0) (2025-07-01)
 
 
