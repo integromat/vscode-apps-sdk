@@ -84,7 +84,10 @@ export interface AppComponentMetadataWithCodeFiles extends AppComponentMetadata 
 	codeFiles: ComponentCodeFilesMetadata;
 }
 
-export interface AppComponentMetadata {
+/**
+ * Base interface for all child intrfaces of `AppComponentMetadata` and `AppComponentMetadataRemoteIDs`.
+ */
+export interface AppComponentMetadataBase {
 	/**
 	 * Relevance:
 	 *  - connection: yes
@@ -118,6 +121,12 @@ export interface AppComponentMetadata {
 	//       See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.
 	moduleType?: ModuleType;
 	actionCrud?: Crud;
+}
+
+/**
+ * Base interace for final type `AppComponentMetadata`
+ */
+interface AppComponentMetadataInternal extends AppComponentMetadataBase {
 	/** Relevant for modules, webhooks, RPCs only. */
 	connection?: string | null;
 	/** Relevant for modules, webhooks, RPCs only. */
@@ -125,6 +134,24 @@ export interface AppComponentMetadata {
 	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
 	webhook?: string | null;
 }
+
+/**
+ * Base interace for final type `AppComponentMetadataRemoteIDs`
+ */
+interface AppComponentMetadataRemoteIDsInternal extends AppComponentMetadataBase {
+	/** Relevant for modules, webhooks, RPCs only. */
+	connectionRemoteId?: string | null;
+	/** Relevant for modules, webhooks, RPCs only. */
+	altConnectionRemoteId?: string | null;
+	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
+	webhookRemoteId?: string | null;
+}
+
+// Prevent the two interfaces from being used interchangeably
+// Required, because these two interfaces has differences in optional properties only.
+type Tagged<T, Tag> = T & { __tag?: Tag };
+export type AppComponentMetadata = Tagged<AppComponentMetadataInternal, 'LocalIDs'>;
+export type AppComponentMetadataRemoteIDs = Tagged<AppComponentMetadataRemoteIDsInternal, 'RemoteIDs'>;
 
 /**
  * General Code Type => Code Local File Path.

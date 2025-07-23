@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import type {
-	AppComponentMetadata,
+	AppComponentMetadataRemoteIDs,
 	AppComponentMetadataWithCodeFiles,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
@@ -15,7 +15,7 @@ import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { deleteOriginComponent } from './delete-origin-component';
 import type { Checksum } from './types/checksum.types';
 import { getComponentChecksumArray } from './helpers/origin-checksum';
-import { getRemoteComponent } from './remote-components-summary';
+import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
 
 /**
  * Compares list of components from two sources. If some component is missing on one side,
@@ -53,7 +53,7 @@ export async function alignComponentsMapping(
 	let remoteOnly: {
 		componentType: AppComponentType;
 		componentName: string;
-		componentMetadata: AppComponentMetadata;
+		componentMetadata: AppComponentMetadataRemoteIDs;
 	}[] = [];
 	/**
 	 * Deleted locally: Missing in local filesystem, but existing in `remoteComponents` and existing in 'mapping' with 'localDeleted: true'.
@@ -62,7 +62,7 @@ export async function alignComponentsMapping(
 	const deletedLocally: {
 		componentType: AppComponentType;
 		componentName: string;
-		componentMetadata: AppComponentMetadata;
+		componentMetadata: AppComponentMetadataRemoteIDs;
 	}[] = [];
 
 	// Fill `remoteOnly`
@@ -379,7 +379,10 @@ export async function alignComponentsMapping(
 							const newComponent = await createLocalEmptyComponent(
 								remoteOnlyComponent.componentType,
 								remoteOnlyComponent.componentName,
-								remoteOnlyComponent.componentMetadata,
+								convertComponentMetadataRemoteNamesToLocalIds(
+									remoteOnlyComponent.componentMetadata,
+									TODO_idmapping,
+								), // TODO HERE
 								makecomappRootDir,
 							);
 

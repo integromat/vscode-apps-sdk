@@ -45,4 +45,31 @@ export class MakecomappJsonFile {
 		return new ComponentIdMappingHelper(this.content, origin);
 	}
 
+
+	getLocalIdOrCreateNew(componentType: AppComponentType | AppGeneralType, remoteName: string): string | null {
+		const localId = this.getLocalId(componentType, remoteName);
+		if (localId !== undefined) {
+			// undefined meant 'not exists' in idMapping
+			return localId;
+		}
+
+		// Create new local ID
+		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
+		if (!originInMakecomappJson.idMapping) {
+			originInMakecomappJson.idMapping = {};
+		}
+		if (!originInMakecomappJson.idMapping[componentType]) {
+			originInMakecomappJson.idMapping[componentType] = [];
+		}
+
+		const newLocalId = `new-${remoteName}`;
+		const newMapping: ComponentIdMappingItem = {
+			local: newLocalId,
+			remote: remoteName,
+			localDeleted: false,
+		};
+		originInMakecomappJson.idMapping[componentType].push(newMapping);
+
+		return newLocalId;
+	}
 }

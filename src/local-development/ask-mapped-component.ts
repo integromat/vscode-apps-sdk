@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { AppComponentMetadata } from './types/makecomapp.types';
+import type { AppComponentMetadata, AppComponentMetadataRemoteIDs } from './types/makecomapp.types';
 import type { AppComponentType } from '../types/app-component-type.types';
 
 export const specialAnswers = {
@@ -21,7 +21,7 @@ export async function askForSelectMappedComponent(
 	componentType: AppComponentType,
 	componentIdOrName: string,
 	componentLabel: string | undefined,
-	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata }[],
+	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata | AppComponentMetadataRemoteIDs }[],
 ): Promise<string | symbol> {
 	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
 	const actionText = componentLocation === 'local' ? 'Deploy' : 'Pull';
