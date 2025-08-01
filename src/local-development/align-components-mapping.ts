@@ -4,7 +4,7 @@ import type {
 	AppComponentMetadataWithCodeFiles,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { addComponentIdMapping, getMakecomappJson, updateMakecomappJson } from './makecomappjson';
+import { addComponentIdMapping } from './makecomappjson';
 import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
@@ -16,6 +16,7 @@ import { deleteOriginComponent } from './delete-origin-component';
 import type { Checksum } from './types/checksum.types';
 import { getComponentChecksumArray } from './helpers/origin-checksum';
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
+import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 
 /**
  * Compares list of components from two sources. If some component is missing on one side,
@@ -35,7 +36,7 @@ export async function alignComponentsMapping(
 	newLocalComponentResolution: 'askUser' | 'ignore',
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew' | 'ignore',
 ): Promise<void> {
-	let makecomappJson = await getMakecomappJson(makecomappRootDir);
+	let makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(makecomappRootDir);
 
 	/**
 	 * Existing in `makecomappJson`, missing in `remoteComponents`
@@ -99,8 +100,8 @@ export async function alignComponentsMapping(
 	}
 
 	// Fill `localOnly`
-	for (const [componentType, components] of entries(makecomappJson.components)) {
-		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+	for (const [componentType, components] of entries(makecomappJsonFile.content.components)) {
+		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
 
 		for (const [componentLocalId, componentMetadata] of entries(components)) {
 			if (componentMetadata === null) {
@@ -147,9 +148,9 @@ export async function alignComponentsMapping(
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		while ((deletedLocallyComponent = deletedLocallyInSpecificComponentType.shift()!)) {
 			await deleteOriginComponent(origin, componentType, deletedLocallyComponent.componentName);
-			const mappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
+			const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
 			mappingHelper.removeByRemoteName(componentType, deletedLocallyComponent.componentName);
-			await updateMakecomappJson(makecomappRootDir, makecomappJson);
+			await makecomappJsonFile.saveChanges();
 		}
 
 		// Resolve 'localOnly' found components
@@ -249,7 +250,7 @@ export async function alignComponentsMapping(
 								componentType: localOnlyComponent.componentType,
 								componentMetadata: localOnlyComponent.componentMetadata,
 								componentName: localOnlyComponent.componentLocalId,
-								makecomappJson,
+								makecomappJson: makecomappJsonFile.content,
 								origin,
 							});
 
@@ -378,11 +379,13 @@ export async function alignComponentsMapping(
 							// Create new empty local component
 							const newComponent = await createLocalEmptyComponent(
 								remoteOnlyComponent.componentType,
-								remoteOnlyComponent.componentName,
-								convertComponentMetadataRemoteNamesToLocalIds(
+								'',
+								await convertComponentMetadataRemoteNamesToLocalIds(
 									remoteOnlyComponent.componentMetadata,
-									TODO_idmapping,
-								), // TODO HERE
+									makecomappJsonFile.getComponentIdMappingHelper(origin),
+									makecomappJsonFile,
+									origin,
+								),
 								makecomappRootDir,
 							);
 
@@ -406,8 +409,10 @@ export async function alignComponentsMapping(
 			}
 		}
 		// Because the ID mapping was probably updated by `addComponentIdMapping()` execution above,
-		//   it is needed to refresh the `makecomappJson` variable by fresh data.
-		makecomappJson = await getMakecomappJson(makecomappRootDir);
+		// it is needed to refresh the `makecomappJsonFile` variable with the fresh data.
+		// Pls note there are used two ways of persisting changes inside of methods
+		// (via class MakecomappJsonFile and method `updateMakecomappJson`).
+		makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(makecomappRootDir);
 	}
 	progresDialogReport('');
 }

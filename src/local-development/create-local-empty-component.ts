@@ -60,7 +60,8 @@ export async function createLocalEmptyComponent(
 	const componentMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
 		...componentMetadata,
 		// Generate Local file paths (Relative to app rootdir) + store metadata
-		codeFiles: await generateComponentDefaultCodeFilesPaths(
+		// when the connection is not owned by the app, dont create code files
+		codeFiles: componentMetadata.isOwnedByAnotherApp ? {} : await generateComponentDefaultCodeFilesPaths(
 			componentType,
 			newComponentLocalId,
 			componentMetadata,

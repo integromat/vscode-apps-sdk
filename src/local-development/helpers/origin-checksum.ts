@@ -24,8 +24,32 @@ export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret):
 			url: `${origin.baseUrl}/v2/sdk/apps/${origin.appId}/${origin.appVersion}/checksum`,
 			method: 'GET',
 		};
+		const result = await requestMakeApi(axiosConfig);
+
+		// prepare result of all connections bound to the app (with the foreign ones), regardless of the app version
+		const axiosConfigConns: AxiosRequestConfig = {
+			headers: {
+				Authorization: 'Token ' + origin.apikey,
+			},
+			url: `${origin.baseUrl}/v2/sdk/apps/${origin.appId}/connections`,
+			method: 'GET',
+		};
+		const resultConns = await requestMakeApi(axiosConfigConns);
+
+		// Bypass orginal checksum API to retrieve external connections, which are ignored by default
+		// and inject them into the result.
+		if (resultConns && resultConns.appConnections?.length > 0) {
+			result.accounts = resultConns.appConnections.map((conn: { name: string; label: string }) => ({
+				name: conn.name,
+				// for connections from another app (version), is not relevant check any properties changes
+				checksum: {
+					label: md5(conn.label),
+				},
+			}));
+		}
+
 		// Make the API request to download checksums
-		return await requestMakeApi(axiosConfig);
+		return result;
 	} catch (err: any) {
 		// Throw an error if the checksum cannot be loaded
 		throw new Error(`Could not load checksum for components with error ${err.message}`);

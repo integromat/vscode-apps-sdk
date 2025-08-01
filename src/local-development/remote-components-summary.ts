@@ -37,6 +37,8 @@ export async function getRemoteComponent(
 				throw new Error(`Missing expected property 'type' on remote ${componentType} ${componentDetail.name}.`);
 			}
 			componentMetadata.connectionType = (componentDetail as ConnectionComponentDetailsApiResponseItem).type;
+			// set 'isOwnedByAnotherApp' only if necessary
+			componentMetadata.isOwnedByAnotherApp = origin.appVersion !== componentDetail.appVersion || undefined;
 			break;
 		case 'webhook':
 			if (componentDetail.type === undefined) {
@@ -86,9 +88,9 @@ export async function getRemoteComponent(
 				`Missing expected property 'altConnection' on remote ${componentType} ${componentDetail.name}.`,
 			);
 		}
-		componentMetadata.connectionRemoteId = componentDetail.connection;
+		componentMetadata.connection = componentDetail.connection;
 
-		componentMetadata.altConnectionRemoteId = componentDetail.altConnection;
+		componentMetadata.altConnection = componentDetail.altConnection;
 
 		// Add reference from Instant Trigger to Webhook
 		if (componentType === 'module' && componentMetadata.moduleType === 'instant_trigger') {
@@ -113,21 +115,24 @@ export async function getRemoteComponent(
  *
  * NOTE: Updates `makecomappJsonFile`. Changes must be saved after this function call.
  */
-export function convertComponentMetadataRemoteNamesToLocalIds(
-	componentMetadata: AppComponentMetadataRemoteIDs,
+export async function convertComponentMetadataRemoteNamesToLocalIds(
+	componentMetadata: AppComponentMetadataRemoteIDs, // from API
 	componentIdMapping: ComponentIdMappingHelper,
 	makecomappJsonFile: MakecomappJsonFile,
 	origin: LocalAppOrigin,
-): AppComponentMetadata {
+): Promise<AppComponentMetadata> {
 	const updatedComponentMedatada: AppComponentMetadata = {
 		...(componentMetadata as unknown as AppComponentMetadata), // Conversion to Local IDs below
 	};
-	if (updatedComponentMedatada.connection) {
-		updatedComponentMedatada.connection = componentIdMapping.getLocalId(
+	if (componentMetadata.connection) {
+		// If remote connection name is defined
+		updatedComponentMedatada.connection = await makecomappJsonFile.getLocalIdOrCreateNew(
 			'connection',
-			updatedComponentMedatada.connection,
+			origin,
+			componentMetadata.connection,
 		);
-		if (updatedComponentMedatada.connection === null) {
+
+		/*if (updatedComponentMedatada.connection === null) {
 			delete updatedComponentMedatada.connection;
 			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
 			//   For this case, do not store (and manage) this reference.
@@ -135,22 +140,22 @@ export function convertComponentMetadataRemoteNamesToLocalIds(
 			// Missing the idMapping, so create new one.
 			makecomappJsonFile.getComponentIdMappingHelper(origin).addComponentIdMapping(
 				'connection',
-				newLocalID, // TODO implement
-				updatedComponentMedatada.connection,
+				componentMetadata.connectionRemoteId, // TODO implement
+				null, // null means 'ignore this component'
 			);
-		}
-
+		}*/
 	}
-	if (updatedComponentMedatada.altConnection) {
-		updatedComponentMedatada.altConnection = componentIdMapping.getExistingLocalId(
+	if (componentMetadata.altConnection) {
+		updatedComponentMedatada.altConnection = await makecomappJsonFile.getLocalIdOrCreateNew(
 			'connection',
-			updatedComponentMedatada.altConnection,
+			origin,
+			componentMetadata.altConnection,
 		);
-		if (updatedComponentMedatada.altConnection === null) {
+		/*if (updatedComponentMedatada.altConnection === null) {
 			delete updatedComponentMedatada.altConnection;
 			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
 			//   For this case, do not store (and manage) this reference.
-		}
+		}*/
 	}
 	if (updatedComponentMedatada.webhook) {
 		updatedComponentMedatada.webhook = componentIdMapping.getExistingLocalId(

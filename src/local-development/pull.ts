@@ -110,12 +110,15 @@ export async function pullAllComponents(
 			// Prepate updated component metadata (merge with previous one)
 			const remoteComponentMetadata = await getRemoteComponent(origin, componentType, remoteComponentName);
 
-			const compomentMetadataLocalIds = convertComponentMetadataRemoteNamesToLocalIds(
+			const compomentMetadataLocalIds = await convertComponentMetadataRemoteNamesToLocalIds(
 				remoteComponentMetadata,
 				componentIdMapping,
 				makecomappJsonFile,
 				origin,
 			);
+			// convertComponentMetadataRemoteNamesToLocalIds() changes the `makecomappJsonFile` content,
+			// so it is needed to save/reload the changes to `makecomapp.json`
+
 			const updatedComponentMedatada: AppComponentMetadataWithCodeFiles = {
 				...existingComponentMetadata, // Use previous `codeFiles`
 				// + Update all other properties by fresh one loaded from remote

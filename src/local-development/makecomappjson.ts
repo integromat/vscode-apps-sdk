@@ -157,15 +157,15 @@ export async function upsertComponentInMakecomappjson(
 		if (['connection', 'rpc', 'module'].includes(componentType)) {
 			if (componentMetadata.connection) {
 				// Validate `connection` reference for being available in id mapping.
-				if (
-					// !makecomappJson.content.origins.some((origin) =>
-					!origin?.idMapping?.connection.some(
+				const connectionExists = makecomappJson.content.origins.some((origin) =>
+					origin?.idMapping?.connection.some(
 						(idMappingItem) => idMappingItem.local === componentMetadata.connection,
-					)
-					// )
-				) {
+					),
+				);
+				// todo: implement check for the new commponent existing in components
+				if (origin && !connectionExists) {
 					throw new Error(
-						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "connection" referecence "${
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.json", because the "connection" reference "${
 							componentMetadata.connection
 						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
 					);
@@ -174,14 +174,14 @@ export async function upsertComponentInMakecomappjson(
 			if (componentMetadata.altConnection) {
 				// Validate `connection` reference for being available in id mapping.
 				if (
-					// !makecomappJson.content.origins.some((origin) =>
-					!origin?.idMapping?.connection.some(
-						(idMappingItem) => idMappingItem.local === componentMetadata.altConnection,
+					!makecomappJson.content.origins.some((origin) =>
+						origin?.idMapping?.connection.some(
+							(idMappingItem) => idMappingItem.local === componentMetadata.altConnection,
+						),
 					)
-					// )
 				) {
 					throw new Error(
-						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "altConnection" referecence "${
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.json", because the "altConnection" reference "${
 							componentMetadata.altConnection
 						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
 					);

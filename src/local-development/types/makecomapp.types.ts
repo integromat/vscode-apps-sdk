@@ -113,6 +113,10 @@ export interface AppComponentMetadataBase {
 	 */
 	connectionType?: ConnectionType;
 	/**
+	 * Relevant for connections only.
+	 */
+	isOwnedByAnotherApp?: boolean;
+	/**
 	 * Relevant for webhooks only.
 	 */
 	webhookType?: WebhookType;
@@ -140,9 +144,9 @@ interface AppComponentMetadataInternal extends AppComponentMetadataBase {
  */
 interface AppComponentMetadataRemoteIDsInternal extends AppComponentMetadataBase {
 	/** Relevant for modules, webhooks, RPCs only. */
-	connectionRemoteId?: string | null;
+	connection?: string | null;
 	/** Relevant for modules, webhooks, RPCs only. */
-	altConnectionRemoteId?: string | null;
+	altConnection?: string | null;
 	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
 	webhookRemoteId?: string | null;
 }
