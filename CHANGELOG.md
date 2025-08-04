@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## [2.3.2](https://github.com/integromat/vscode-apps-sdk/compare/2.3.1...2.3.2) (2025-08-04)
+
+
+### Build System
+
+* bump the deps-minor-update group with 2 updates ([#297](https://github.com/integromat/vscode-apps-sdk/issues/297)) ([16329b4](https://github.com/integromat/vscode-apps-sdk/commit/16329b4f8fb391ef518a83d1681f4f1e70540245))
+* bump the devdeps-minor-update group with 2 updates ([#296](https://github.com/integromat/vscode-apps-sdk/issues/296)) ([2396979](https://github.com/integromat/vscode-apps-sdk/commit/2396979d5ea40907ce3785d07d32840bf7b8aa39))
+
 ## [2.3.1](https://github.com/integromat/vscode-apps-sdk/compare/2.3.0...2.3.1) (2025-07-03)
 
 
