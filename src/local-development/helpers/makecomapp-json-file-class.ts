@@ -45,45 +45,6 @@ export class MakecomappJsonFile {
 		return new ComponentIdMappingHelper(this.content, origin);
 	}
 
-	/*private getMappingByRemoteName(componentType: AppComponentType | AppGeneralType, remoteName: string) {
-		if (componentType === 'app') {
-			// This is special case, where "Common", "Readme" (etc.) are considered as members of virtual "app" compoment type, which has single component with ID ``.
-			return '';
-		}
-
-		const originInMakecomappJson = getOriginObject(this.content, remoteName);
-
-		const matchedMappings =
-			originInMakecomappJson.idMapping?.[componentType].filter((mapping) => mapping.remote === remoteName) ?? [];
-
-		if (matchedMappings.length === 0) {
-			return undefined;
-		}
-
-		if (matchedMappings.length >= 2) {
-			throw new Error(`Not unique mapping found for remote name "${remoteName}"`);
-		}
-
-		return matchedMappings[0];
-	}
-
-	getLocalId(componentType: AppComponentType | AppGeneralType, remoteName: string): string | undefined {
-		this.content.origins.forEach((origin) => {
-			
-			if (!origin.idMapping) {
-				return;
-			}
-			if (!origin.idMapping[componentType]) {
-				return;
-			}
-		
-		const mapping = this.getMappingByRemoteName(componentType, remoteName);
-		if (!mapping) {
-			return mapping; // returns string "" and undefined
-		}
-		return mapping.local;
-	}*/
-		
 	/**
 	 * Returns the local ID for the given component, or creates a new one if it does not exist.
 	 * Returns `null` if the component type is 'app' or if the mapping already exists.
