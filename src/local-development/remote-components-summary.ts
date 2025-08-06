@@ -130,18 +130,6 @@ export async function convertComponentMetadataRemoteNamesToLocalIds(
 			componentMetadata.connection,
 		);
 
-		/*if (updatedComponentMedatada.connection === null) {
-			delete updatedComponentMedatada.connection;
-			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
-			//   For this case, do not store (and manage) this reference.
-		} else if (updatedComponentMedatada.connection === undefined) {
-			// Missing the idMapping, so create new one.
-			makecomappJsonFile.getComponentIdMappingHelper(origin).addComponentIdMapping(
-				'connection',
-				componentMetadata.connectionRemoteId, // TODO implement
-				null, // null means 'ignore this component'
-			);
-		}*/
 	}
 	if (componentMetadata.altConnection) {
 		updatedComponentMedatada.altConnection = await makecomappJsonFile.getLocalIdOrCreateNew(
@@ -149,11 +137,6 @@ export async function convertComponentMetadataRemoteNamesToLocalIds(
 			origin,
 			componentMetadata.altConnection,
 		);
-		/*if (updatedComponentMedatada.altConnection === null) {
-			delete updatedComponentMedatada.altConnection;
-			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
-			//   For this case, do not store (and manage) this reference.
-		}*/
 	}
 	if (updatedComponentMedatada.webhook) {
 		updatedComponentMedatada.webhook = componentIdMapping.getExistingLocalId(
