@@ -8,6 +8,59 @@ import { log } from '../../output-channel';
 import type { LocalAppOriginWithSecret } from '../types/makecomapp.types';
 import { md5 } from './md5';
 
+
+/*
+ * Creates an Axios request configuration for the Make API.
+ *
+ * @param origin - The origin server configuration including API key and base URL.
+ * @param endpoint - The specific API endpoint to call.
+ * @returns An AxiosRequestConfig object configured for the request.
+ */
+function createAxiosConfig(origin: LocalAppOriginWithSecret, endpoint: string): AxiosRequestConfig {
+    return {
+        headers: {
+            Authorization: 'Token ' + origin.apikey,
+        },
+        url: `${origin.baseUrl}${endpoint}`,
+        method: 'GET',
+    };
+}
+
+/*
+ * Merges external items into the result array.
+ * External items are those that are present in the externalItems array but not in the result array.
+ * Each external item is represented by its name and label, and is marked as external.
+ * For ex. for connections, it will add external(non-owned) connections that are not already in the result.
+ *
+ * @param result - The array to which external items will be added.
+ * @param externalItems - The array of external items to merge into the result.
+ */
+function mergeExternalItems<T extends { name: string; label: string }>(
+    result: any[],
+    externalItems: T[],
+): void {
+    if (!externalItems || !Array.isArray(externalItems) || !Array.isArray(result)) {
+        return;
+    }
+
+    // Build a set of names from the original result
+    const originalNames = new Set(result.map((item: { name: string }) => item.name));
+
+    // Find external items: present in externalItems but not in result
+    const external = externalItems
+        .filter((item: T) => !originalNames.has(item.name))
+        .map((item: T) => ({
+            name: item.name,
+            checksum: {
+                label: md5(item.label),
+            },
+            external: true, // Flag to indicate this item is external
+        }));
+
+    // Add external items to the result array
+    result.push(...external);
+}
+
 /**
  * Downloads the checksums for all components from the origin server.
  *
@@ -15,85 +68,22 @@ import { md5 } from './md5';
  * @returns A Promise that resolves to the checksum data.
  */
 export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret): Promise<Checksum> {
-	try {
-		// Prepare the Axios request configuration with authorization header
-		const axiosConfig: AxiosRequestConfig = {
-			headers: {
-				Authorization: 'Token ' + origin.apikey,
-			},
-			url: `${origin.baseUrl}/v2/sdk/apps/${origin.appId}/${origin.appVersion}/checksum`,
-			method: 'GET',
-		};
-		const result = await requestMakeApi(axiosConfig);
+    try {
+        // Make all API requests in parallel
+        const [result, resultConns, resultHooks] = await Promise.all([
+            requestMakeApi(createAxiosConfig(origin, `/v2/sdk/apps/${origin.appId}/${origin.appVersion}/checksum`)),
+            requestMakeApi(createAxiosConfig(origin, `/v2/sdk/apps/${origin.appId}/connections`)),
+            requestMakeApi(createAxiosConfig(origin, `/v2/sdk/apps/${origin.appId}/webhooks`))
+        ]);
 
-		// prepare result of all connections bound to the app (with the foreign ones), regardless of the app version
-		const axiosConfigConns: AxiosRequestConfig = {
-			headers: {
-				Authorization: 'Token ' + origin.apikey,
-			},
-			url: `${origin.baseUrl}/v2/sdk/apps/${origin.appId}/connections`,
-			method: 'GET',
-		};
-		const resultConns = await requestMakeApi(axiosConfigConns);
+        // Merge external connections and webhooks
+        mergeExternalItems(result.accounts, resultConns?.appConnections);
+        mergeExternalItems(result.hooks, resultHooks?.appWebhooks);
 
-		// prepare result of all connections bound to the app (with the foreign ones), regardless of the app version
-		const axiosConfigHooks: AxiosRequestConfig = {
-			headers: {
-				Authorization: 'Token ' + origin.apikey,
-			},
-			url: `${origin.baseUrl}/v2/sdk/apps/${origin.appId}/webhooks`,
-			method: 'GET',
-		};
-		const resultHooks = await requestMakeApi(axiosConfigHooks);
-
-		// Bypass orginal checksum API to retrieve external connections, which are ignored by default
-		// and inject them into the result.
-		if (resultConns && Array.isArray(resultConns.appConnections) && Array.isArray(result.accounts)) {
-			// Build a set of account names from the original result.accounts
-			const originalAccountNames = new Set(result.accounts.map((acc: { name: string }) => acc.name));
-
-			// Find external accounts: present in resultConns.appConnections but not in result.accounts
-			const externalAccounts = resultConns.appConnections
-				.filter((conn: { name: string }) => !originalAccountNames.has(conn.name))
-				.map((conn: { name: string; label: string }) => ({
-					name: conn.name,
-					checksum: {
-						label: md5(conn.label),
-					},
-					external: true, // Flag to indicate this account is external
-				}));
-
-			// Add external accounts to the result.accounts array
-			result.accounts = [...result.accounts, ...externalAccounts];
-		}
-
-		// Bypass orginal checksum API to retrieve external connections, which are ignored by default
-		// and inject them into the result.
-		if (resultHooks && Array.isArray(resultHooks.appWebhooks) && Array.isArray(result.hooks)) {
-			// Build a set of account names from the original result.hooks
-			const originalAccountNames = new Set(result.hooks.map((acc: { name: string }) => acc.name));
-
-			// Find external accounts: present in resultConns.appConnections but not in result.accounts
-			const externalHooks = resultHooks.appWebhooks
-				.filter((hook: { name: string }) => !originalAccountNames.has(hook.name))
-				.map((hook: { name: string; label: string }) => ({
-					name: hook.name,
-					checksum: {
-						label: md5(hook.label),
-					},
-					external: true, // Flag to indicate this account is external
-				}));
-
-			// Add external accounts to the result.accounts array
-			result.hooks = [...result.hooks, ...externalHooks];
-		}
-
-		// Make the API request to download checksums
-		return result;
-	} catch (err: any) {
-		// Throw an error if the checksum cannot be loaded
-		throw new Error(`Could not load checksum for components with error ${err.message}`);
-	}
+        return result;
+    } catch (err: any) {
+        throw new Error(`Could not load checksum for components with error ${err.message}`);
+    }
 }
 
 /**
