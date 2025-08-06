@@ -14,6 +14,8 @@ import { entries } from '../utils/typed-object';
 import { version as ExtensionVersion } from '../Meta';
 import { sendTelemetry } from '../utils/telemetry';
 import { md5 } from './helpers/md5';
+import { isNotOwnedByApp } from './align-components-mapping';
+import { Checksum } from './types/checksum.types';
 
 /**
  * Download code from the Make API and save it to the local destination
@@ -146,12 +148,14 @@ export async function deployComponentCode({
 	origin,
 	sourcePath,
 	originChecksum,
+	originChecksums,
 }: {
 	appComponentType: AppComponentType | 'app';
 	remoteComponentName: string;
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
 	sourcePath: vscode.Uri;
+	originChecksums: Checksum;
 	originChecksum?: string[] | undefined | null;
 }) {
 	progresDialogReport(
@@ -161,6 +165,25 @@ export async function deployComponentCode({
 	);
 
 	sendTelemetry('deploy_component_code', { appComponentType, remoteComponentName });
+
+	// if remote component is not owned by the app, do not deploy metadata for now
+	if (
+		originChecksum &&
+		isNotOwnedByApp(
+			remoteComponentName,
+			appComponentType,
+			originChecksums, // this is used to check if the component is owned by the app (if it has a checksum in the originChecksums.accounts --- IGNORE ---
+		)
+	) {
+		log(
+			'info',
+			`Skipping metadata deployment of component '${appComponentType}' with name ‘${remoteComponentName}’: component is not owned by the app.`,
+		);
+		progresDialogReport(
+			`Skipping metadata deployment of component '${appComponentType}' with name ‘${remoteComponentName}’`,
+		);
+		return;
+	}
 
 	const codeDef = getCodeDef(appComponentType, codeType);
 

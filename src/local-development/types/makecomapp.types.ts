@@ -67,6 +67,8 @@ export interface ComponentIdMappingItem {
 	remote: string | null;
 	/** Note: True indicates that the component was deleted locally and must be aligned with the origin.  */
 	localDeleted?: boolean;
+	/** Note: True indicates the component is not owned by the app. In that case local files are ignored when pushing.  */
+	nonOwnedByApp?: boolean;
 }
 
 /**
@@ -113,10 +115,6 @@ export interface AppComponentMetadataBase {
 	 */
 	connectionType?: ConnectionType;
 	/**
-	 * Relevant for connections only.
-	 */
-	isOwnedByAnotherApp?: boolean;
-	/**
 	 * Relevant for webhooks only.
 	 */
 	webhookType?: WebhookType;
@@ -148,7 +146,7 @@ interface AppComponentMetadataRemoteIDsInternal extends AppComponentMetadataBase
 	/** Relevant for modules, webhooks, RPCs only. */
 	altConnection?: string | null;
 	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
-	webhookRemoteId?: string | null;
+	webhook?: string | null;
 }
 
 // Prevent the two interfaces from being used interchangeably

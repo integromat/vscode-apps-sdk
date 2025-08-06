@@ -46,10 +46,6 @@
                     ],
                     "type": "string"
                 },
-                "isOwnedByAnotherApp": {
-                    "description": "True if the connection is owned by another app, false otherwise. You can't directly change connection properties on non-owned connections.",
-                    "type": "boolean"
-                },
                 "description": {
                     "description": "Relevance:\n - connection: no\n - webhook: no\n - module: yes\n - RPC: no\n - IML function: no",
                     "type": "string"
@@ -196,6 +192,10 @@
                         "null",
                         "string"
                     ]
+                },
+                "nonOwnedByApp": {
+                    "description": "True if the connection is owned by another version or app, false otherwise. You can't directly change connection properties on non-owned connections.",
+                    "type": "boolean"
                 }
             },
             "required": [

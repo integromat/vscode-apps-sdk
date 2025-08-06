@@ -37,8 +37,6 @@ export async function getRemoteComponent(
 				throw new Error(`Missing expected property 'type' on remote ${componentType} ${componentDetail.name}.`);
 			}
 			componentMetadata.connectionType = (componentDetail as ConnectionComponentDetailsApiResponseItem).type;
-			// set 'isOwnedByAnotherApp' only if necessary
-			componentMetadata.isOwnedByAnotherApp = origin.appVersion !== componentDetail.appVersion || undefined;
 			break;
 		case 'webhook':
 			if (componentDetail.type === undefined) {
@@ -100,7 +98,7 @@ export async function getRemoteComponent(
 					`Missing expected property 'webhook' on remote ${componentMetadata.moduleType} ${componentType} ${componentDetail.name}.`,
 				);
 			}
-			componentMetadata.webhookRemoteId = (componentDetail as ModuleComponentDetailsApiResponseItem).webhook;
+			componentMetadata.webhook = (componentDetail as ModuleComponentDetailsApiResponseItem).webhook;
 		}
 	}
 

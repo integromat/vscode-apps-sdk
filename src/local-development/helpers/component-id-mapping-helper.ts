@@ -129,7 +129,6 @@ export class ComponentIdMappingHelper {
 		return localId;
 	}
 
-
 	addLocalDeleted(componentType: AppComponentType | AppGeneralType, localId: string) {
 		const mapping = this.getMappingByLocalName(componentType, localId);
 		if (!mapping) {
@@ -194,6 +193,7 @@ export class ComponentIdMappingHelper {
 		componentType: AppComponentType,
 		componentLocalId: string | null,
 		remoteComponentName: string | null,
+		nonOwnedByApp = false,
 	) {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
@@ -220,6 +220,7 @@ export class ComponentIdMappingHelper {
 				originInMakecomappJson.idMapping[componentType].push({
 					local: componentLocalId,
 					remote: remoteComponentName,
+					nonOwnedByApp: nonOwnedByApp || undefined, // Note: `nonOwnedByApp` is optional, but we set it to false by default.
 				});
 				break;
 			case 1:
@@ -231,7 +232,11 @@ export class ComponentIdMappingHelper {
 					throw new Error(
 						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
 					);
-				} // else // already exists the same mapping. Nothing to do.
+				} // else // already exists the	 same mapping. Nothing to do.
+				else {
+				// Update `this.content.origins[someOrigin]` in memory
+					console.log(`Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
+				}
 				break;
 			default: // length >= 2
 				// Multiple mapping already exists.

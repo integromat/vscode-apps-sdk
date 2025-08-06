@@ -36,16 +36,56 @@ export async function downloadOriginChecksums(origin: LocalAppOriginWithSecret):
 		};
 		const resultConns = await requestMakeApi(axiosConfigConns);
 
+		// prepare result of all connections bound to the app (with the foreign ones), regardless of the app version
+		const axiosConfigHooks: AxiosRequestConfig = {
+			headers: {
+				Authorization: 'Token ' + origin.apikey,
+			},
+			url: `${origin.baseUrl}/v2/sdk/apps/${origin.appId}/webhooks`,
+			method: 'GET',
+		};
+		const resultHooks = await requestMakeApi(axiosConfigHooks);
+
 		// Bypass orginal checksum API to retrieve external connections, which are ignored by default
 		// and inject them into the result.
-		if (resultConns && resultConns.appConnections?.length > 0) {
-			result.accounts = resultConns.appConnections.map((conn: { name: string; label: string }) => ({
-				name: conn.name,
-				// for connections from another app (version), is not relevant check any properties changes
-				checksum: {
-					label: md5(conn.label),
-				},
-			}));
+		if (resultConns && Array.isArray(resultConns.appConnections) && Array.isArray(result.accounts)) {
+			// Build a set of account names from the original result.accounts
+			const originalAccountNames = new Set(result.accounts.map((acc: { name: string }) => acc.name));
+
+			// Find external accounts: present in resultConns.appConnections but not in result.accounts
+			const externalAccounts = resultConns.appConnections
+				.filter((conn: { name: string }) => !originalAccountNames.has(conn.name))
+				.map((conn: { name: string; label: string }) => ({
+					name: conn.name,
+					checksum: {
+						label: md5(conn.label),
+					},
+					external: true, // Flag to indicate this account is external
+				}));
+
+			// Add external accounts to the result.accounts array
+			result.accounts = [...result.accounts, ...externalAccounts];
+		}
+
+		// Bypass orginal checksum API to retrieve external connections, which are ignored by default
+		// and inject them into the result.
+		if (resultHooks && Array.isArray(resultHooks.appWebhooks) && Array.isArray(result.hooks)) {
+			// Build a set of account names from the original result.hooks
+			const originalAccountNames = new Set(result.hooks.map((acc: { name: string }) => acc.name));
+
+			// Find external accounts: present in resultConns.appConnections but not in result.accounts
+			const externalHooks = resultHooks.appWebhooks
+				.filter((hook: { name: string }) => !originalAccountNames.has(hook.name))
+				.map((hook: { name: string; label: string }) => ({
+					name: hook.name,
+					checksum: {
+						label: md5(hook.label),
+					},
+					external: true, // Flag to indicate this account is external
+				}));
+
+			// Add external accounts to the result.accounts array
+			result.hooks = [...result.hooks, ...externalHooks];
 		}
 
 		// Make the API request to download checksums
