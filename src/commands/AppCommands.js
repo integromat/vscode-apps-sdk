@@ -1208,6 +1208,8 @@ class AppCommands {
 				app.modules.forEach((appModule) => {
 					const body = extract(appModule.metadata, ['label', 'connection', 'name', 'description', 'webhook', 'subtype']);
 					body.type_id = getModuleDefFromType(appModule.metadata.type).type_id;
+					body.moduleInitMode = 'blank';
+
 					// Create module in Make
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
 						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
