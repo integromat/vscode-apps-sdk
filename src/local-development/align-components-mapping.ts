@@ -338,7 +338,6 @@ export async function alignComponentsMapping(
 						componentMetadata: localComponent.componentMetadata,
 					}));
 
-				let selectedLocalComponentId: string | symbol | null;
 				switch (newRemoteComponentResolution) {
 					case 'askUser': {
 						const userAnswer =
@@ -405,7 +404,7 @@ export async function alignComponentsMapping(
 						localOnly = localOnly.filter(
 							(component) =>
 								component.componentType !== remoteOnlyComponent.componentType ||
-								component.componentLocalId !== selectedLocalComponentId,
+								component.componentLocalId !== undefined,
 						);
 
 						// Note: Now, the remote component is fully linked with existing local.
