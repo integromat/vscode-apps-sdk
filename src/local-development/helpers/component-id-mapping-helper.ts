@@ -1,6 +1,7 @@
 import { getOriginObject } from './get-origin-object';
 import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import { type AppComponentType, AppComponentTypes, type AppGeneralType } from '../../types/app-component-type.types';
+import { log } from '../../output-channel';
 
 /**
  * Provides helping function to find remote component name from local ID and vice versa.
@@ -232,10 +233,9 @@ export class ComponentIdMappingHelper {
 					throw new Error(
 						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
 					);
-				} // else // already exists the	 same mapping. Nothing to do.
-				else {
-				// Update `this.content.origins[someOrigin]` in memory
-					log(`Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
+				}
+				else { // already exists the same mapping. Nothing to do.
+					log('debug', `Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
 				}
 				break;
 			default: // length >= 2
