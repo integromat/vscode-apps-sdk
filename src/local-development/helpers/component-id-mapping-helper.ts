@@ -235,7 +235,7 @@ export class ComponentIdMappingHelper {
 				} // else // already exists the	 same mapping. Nothing to do.
 				else {
 				// Update `this.content.origins[someOrigin]` in memory
-					console.log(`Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
+					log(`Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
 				}
 				break;
 			default: // length >= 2
