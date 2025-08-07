@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { getMakecomappJson, updateMakecomappJson } from '../makecomappjson';
-import type { LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
-import type { AppComponentType } from '../../types/app-component-type.types';
+import { generateAndReserveComponentLocalId, getMakecomappJson, updateMakecomappJson } from '../makecomappjson';
+import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
+import type { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 import { getOriginObject } from './get-origin-object';
 import { ComponentIdMappingHelper } from './component-id-mapping-helper';
 
@@ -45,4 +45,49 @@ export class MakecomappJsonFile {
 		return new ComponentIdMappingHelper(this.content, origin);
 	}
 
+	/**
+	 * Returns the local ID for the given component, or creates a new one if it does not exist.
+	 * Returns `null` if the component type is 'app' or if the mapping already exists.
+	 */
+	async getLocalIdOrCreateNew(
+		componentType: AppComponentType | AppGeneralType,
+		origin: LocalAppOrigin,
+		remoteName: string,
+	): Promise<string | null> {
+		const localId = this.getComponentIdMappingHelper(origin).getLocalId(componentType, remoteName);
+		if (localId !== undefined) {
+			// undefined meant 'not exists' in idMapping
+			return localId;
+		}
+
+		// Create new local ID
+		const originInMakecomappJson = getOriginObject(this.content, origin);
+		if (!originInMakecomappJson.idMapping) {
+			originInMakecomappJson.idMapping = {
+				function: [],
+				connection: [],
+				webhook: [],
+				module: [],
+				rpc: [],
+			};
+		}
+		if (componentType !== 'app' && !originInMakecomappJson.idMapping[componentType]) {
+			originInMakecomappJson.idMapping[componentType] = [];
+
+			// we have to create new local ID, because it does not exist yet.
+			const newLocalId = await generateAndReserveComponentLocalId(componentType, '', this.anyProjectPath);
+			const newMapping: ComponentIdMappingItem = {
+				local: newLocalId,
+				remote: remoteName,
+				localDeleted: false,
+			};
+
+			originInMakecomappJson.idMapping[componentType].push(newMapping);
+
+			await this.saveChanges(); // Save changes to makecomapp.json
+			return newLocalId;
+		}
+
+		return null;
+	}
 }

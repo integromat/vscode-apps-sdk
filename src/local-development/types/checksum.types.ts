@@ -13,6 +13,8 @@ export interface Checksum {
 export interface ComponentChecksum {
 	/** Component Name */
 	name: string;
+	/** Component externality, valid only for some components */
+	external?: boolean;
 	/** Record of all component columns, where each column is represented by its name and MD5 hash.
 	 * @example: {label: 'd41d8cd98f00b204e9800998ecf8427e', type: '9e107d9d372bb6826bd81d3542a419d6'}
 	 */

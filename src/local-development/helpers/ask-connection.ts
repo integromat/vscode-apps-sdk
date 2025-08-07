@@ -23,7 +23,7 @@ export async function askForLinkConnection(
 		...Object.entries(makecomappJson.components.connection)
 			.filter(([_connectionLocalID, connectionMetadata]) => connectionMetadata !== null)
 			.map(([connectionLocalID, connectionMetadata]) => ({
-				label: `Existing local connection "${connectionMetadata!.label}" [${connectionLocalID}]`,
+				label: `Existing local connection "${connectionMetadata?.label}" [${connectionLocalID}]`,
 				localID: connectionLocalID,
 			})),
 	];

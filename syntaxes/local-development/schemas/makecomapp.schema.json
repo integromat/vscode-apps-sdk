@@ -192,6 +192,10 @@
                         "null",
                         "string"
                     ]
+                },
+                "nonOwnedByApp": {
+                    "description": "True if the connection is owned by another version or app, false otherwise. You can't directly change connection properties on non-owned connections.",
+                    "type": "boolean"
                 }
             },
             "required": [

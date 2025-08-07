@@ -129,6 +129,7 @@ async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
 						codeType: componentCode.codeType,
 						origin,
 						sourcePath: componentCode.localFile,
+						originChecksums,
 						originChecksum,
 					});
 				} catch (e: any) {

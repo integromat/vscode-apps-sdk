@@ -97,7 +97,7 @@ async function askApiKey(origin: LocalAppOrigin): Promise<string> {
 		})),
 		// and offer to enter API token manually
 		{
-			label: specialAnswers.ENTER_OWN_APIKEY.description!,
+			label: specialAnswers.ENTER_OWN_APIKEY.description || '',
 			apikey: specialAnswers.ENTER_OWN_APIKEY,
 			order: 2,
 		},

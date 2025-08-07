@@ -65,6 +65,7 @@ export interface ComponentsApiResponseConnectionItem {
 	name: string;
 	label: string;
 	type: ConnectionType;
+	appVersion:	number;
 }
 
 /**

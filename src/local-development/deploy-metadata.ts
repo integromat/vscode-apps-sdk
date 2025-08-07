@@ -9,6 +9,7 @@ import { requestMakeApi } from '../utils/request-api-make';
 import { getModuleDefFromType } from '../services/module-types-naming';
 import type { Checksum } from './types/checksum.types';
 import { compareChecksumDeep } from './helpers/origin-checksum';
+import { isNotOwnedByApp } from './align-components-mapping';
 
 /**
  * Sets the local component metadata into remote `origin`.
@@ -34,6 +35,24 @@ export async function deployComponentMetadata(
 	if (remoteComponentName === null) {
 		// Nothing to do
 		return undefined;
+	}
+
+	// if remote component is not owned by the app, do not deploy metadata for now
+	if (
+		isNotOwnedByApp(
+			remoteComponentName,
+			componentType,
+			originChecksum, // this is used to check if the component is owned by the app (if it has a checksum in the originChecksums.accounts --- IGNORE ---
+		)
+	) {
+		log(
+			'info',
+			`Skipping metadata deployment of component '${componentType}' with name ‘${remoteComponentName}’: component is not owned by the app.`,
+		);
+		progresDialogReport(
+			`Skipping metadata deployment of component '${componentType}' with name ‘${remoteComponentName}’`,
+		);
+		return;
 	}
 
 	const metadataToUpdate = getApiBodyForComponentMetadataDeploy(

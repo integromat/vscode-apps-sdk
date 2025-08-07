@@ -20,9 +20,9 @@ export function migrateMakecomappJsonFile(origMakecomappJson: MakecomappJson): {
 	if (makecomappJson.components?.module instanceof Object) {
 		// Convert `moduleSubtype` => `moduleType`
 		Object.values(makecomappJson.components.module).forEach((moduleMetadata) => {
-			if (moduleMetadata && (<any>moduleMetadata)?.moduleSubtype) {
-				moduleMetadata.moduleType = (<any>moduleMetadata).moduleSubtype;
-				delete (<any>moduleMetadata).moduleSubtype;
+			if (moduleMetadata && (moduleMetadata as any)?.moduleSubtype) {
+				moduleMetadata.moduleType = (moduleMetadata as any).moduleSubtype;
+				delete (moduleMetadata as any).moduleSubtype;
 				migrationApplied = true;
 			}
 		});
