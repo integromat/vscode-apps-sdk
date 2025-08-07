@@ -39,7 +39,7 @@ export function isNotOwnedByApp(
 		case 'connection':
 			return originChecksums.accounts.some((connection) => connection.name === componentName && connection.external);
 		case 'webhook':
-			return originChecksums.hooks.some((webhook) => webhook.name === componentName && webhook.external)
+			return originChecksums.hooks.some((webhook) => webhook.name === componentName && webhook.external);
 		default:
 			return false; // Other components are always owned by app.
 	}
