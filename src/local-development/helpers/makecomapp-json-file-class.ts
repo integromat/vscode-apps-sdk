@@ -71,23 +71,34 @@ export class MakecomappJsonFile {
 				rpc: [],
 			};
 		}
-		if (componentType !== 'app' && !originInMakecomappJson.idMapping[componentType]) {
-			originInMakecomappJson.idMapping[componentType] = [];
-
-			// we have to create new local ID, because it does not exist yet.
-			const newLocalId = await generateAndReserveComponentLocalId(componentType, '', this.anyProjectPath);
-			const newMapping: ComponentIdMappingItem = {
-				local: newLocalId,
-				remote: remoteName,
-				localDeleted: false,
-			};
-
-			originInMakecomappJson.idMapping[componentType].push(newMapping);
-
-			await this.saveChanges(); // Save changes to makecomapp.json
-			return newLocalId;
+		if (componentType === 'app') {
+			return null;
 		}
 
-		return null;
+		// Ensure the mapping array exists
+		if (!originInMakecomappJson.idMapping[componentType]) {
+			originInMakecomappJson.idMapping[componentType] = [];
+		}
+
+		// Check if a mapping for this remoteName already exists (should not, but double-check)
+		const existingMapping = originInMakecomappJson.idMapping[componentType].find(
+			(item: ComponentIdMappingItem) => item.remote === remoteName
+		);
+		if (existingMapping) {
+			return existingMapping.local;
+		}
+
+		// Create new local ID and mapping
+		const newLocalId = await generateAndReserveComponentLocalId(componentType, '', this.anyProjectPath);
+		const newMapping: ComponentIdMappingItem = {
+			local: newLocalId,
+			remote: remoteName,
+			localDeleted: false,
+		};
+
+		originInMakecomappJson.idMapping[componentType].push(newMapping);
+
+		await this.saveChanges(); // Save changes to makecomapp.json
+		return newLocalId;
 	}
 }
