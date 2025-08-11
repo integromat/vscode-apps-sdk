@@ -54,6 +54,10 @@ export class MakecomappJsonFile {
 		origin: LocalAppOrigin,
 		remoteName: string,
 	): Promise<string | null> {
+		if (componentType === 'app') {
+			return null;
+		}
+
 		const localId = this.getComponentIdMappingHelper(origin).getLocalId(componentType, remoteName);
 		if (localId !== undefined) {
 			// undefined meant 'not exists' in idMapping
@@ -70,9 +74,6 @@ export class MakecomappJsonFile {
 				module: [],
 				rpc: [],
 			};
-		}
-		if (componentType === 'app') {
-			return null;
 		}
 
 		// Ensure the mapping array exists

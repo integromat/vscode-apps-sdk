@@ -18,7 +18,7 @@ import { getComponentChecksumArray } from './helpers/origin-checksum';
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 
-// Components that can be non owned by app.
+// Components that can be non owned by app. For example connections and webhooks can be owned by another app version.
 export const COMPONENTS_CAN_BE_NON_OWNED = ['connection', 'webhook'];
 
 /**
