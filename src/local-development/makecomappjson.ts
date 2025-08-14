@@ -12,7 +12,7 @@ import { entries } from '../utils/typed-object';
 import { getCurrentWorkspace } from '../services/workspace';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
-import { COMPONENTS_CAN_BE_NON_OWNED, isNotOwnedByApp } from './align-components-mapping';
+import { isNotOwnedByApp } from './align-components-mapping';
 import { Checksum } from './types/checksum.types';
 
 const limitConcurrency = throat(1);
