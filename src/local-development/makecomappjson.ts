@@ -312,7 +312,7 @@ async function _generateComponentLocalId(
 	 *
 	 * It is here for better readibility of `makecomapp.json`'s components.
 	 */
-	if (COMPONENTS_CAN_BE_NON_OWNED.includes(componentType) && componentLocalIdPrefix !== componentType) {
+	if (['connection', 'webhook'].includes(componentType) && componentLocalIdPrefix !== componentType) {
 		// Detect the `appId` usage in `requestedComponentLocalId`.
 		const probableOrigins = makecomappJson.origins.filter(
 			(origin) => origin?.appId && preferedComponentLocalId.startsWith(origin.appId),
