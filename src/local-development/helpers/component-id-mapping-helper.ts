@@ -235,7 +235,14 @@ export class ComponentIdMappingHelper {
 					);
 				}
 				else { // already exists the same mapping. Nothing to do.
-					log('debug', `Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
+					// If the `nonOwnedByApp` flag is different, update it.
+					if (Boolean(existingIdMappingItems[0].nonOwnedByApp) !== Boolean(nonOwnedByApp)) {
+						// Update the `nonOwnedByApp` flag if it is different
+						existingIdMappingItems[0].nonOwnedByApp = nonOwnedByApp || undefined; // don't set it as `false`, because it is optional
+						log('debug', `Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName} but the owning has changed. Updating...`);
+					} else {
+						log('debug', `Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
+					}
 				}
 				break;
 			default: // length >= 2

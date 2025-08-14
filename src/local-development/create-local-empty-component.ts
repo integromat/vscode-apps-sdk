@@ -89,6 +89,7 @@ export async function createLocalEmptyComponent(
 		componentMetadataWithCodeFiles,
 		makeappRootdir,
 		null,
+		null
 	);
 
 	return {

@@ -25,7 +25,7 @@ export const COMPONENTS_CAN_BE_NON_OWNED = ['connection', 'webhook'];
  * Checks if the component is not owned by the app.
  * This is used to determine if the component can be created as non-owned.
  * 
- * @param componentName - The name of the component.
+ * @param componentName - The remote name of the component.
  * @param componentType - The type of the component.
  * @param originChecksums - The checksums of the origin.
  * @return {boolean} - Returns true if the component is not owned by the app, false otherwise.

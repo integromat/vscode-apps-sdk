@@ -133,6 +133,7 @@ export async function pullAllComponents(
 				localAppRootdir,
 				origin,
 				makecomappJsonFile.isCommonDataIncluded,
+				originChecksums,
 			);
 		}
 	}
@@ -153,6 +154,7 @@ async function pullComponent(
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	includeCommonFiles: boolean,
+	originChecksums: Checksum // need to distinguish non-owned components
 ) {
 	// Generate code files paths if local component does not exist yet.
 	//   (In this case the `updatedComponentMetadata` param value is being provided without `codeFiles`.)
@@ -189,6 +191,7 @@ async function pullComponent(
 		componentMetadataWithCodefiles,
 		localAppRootdir,
 		origin,
+		originChecksums,
 	);
 
 	return [remoteComponentName, componentMetadataWithCodefiles];
