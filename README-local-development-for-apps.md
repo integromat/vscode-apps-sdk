@@ -114,7 +114,9 @@ You can add the origin by selecting the last option in the origin selection dial
 
 #### Mapping subcomponents in different application versions
 
-In certain cases, managing multiple versions of the same application is required, which is feasible, but one must consider that some subcomponents may be owned by a different application version. In such cases, component content can only be modified from the home/owning application version.
+In certain cases, managing multiple major versions of the same application is required, which is feasible, but one must consider that some components may be owned by a different application version. In such cases, component content can only be modified from the home/owning application version.
+
+The most common case is that a connection is created and owned under Custom App version 1. But newer app major versions (2, 3, ...) are using this connection in own modules, etc.
 
 ### Git usage
 
