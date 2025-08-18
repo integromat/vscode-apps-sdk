@@ -1,8 +1,8 @@
 {
-    "$ref": "#/definitions/MakecomappJson.8af2ba09",
+    "$ref": "#/definitions/MakecomappJson.3eff5699",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "AppComponentMetadataWithCodeFiles.30fcbaae": {
+        "AppComponentMetadataWithCodeFiles.2498011d": {
             "additionalProperties": false,
             "properties": {
                 "actionCrud": {
@@ -90,19 +90,19 @@
             "additionalProperties": false,
             "properties": {
                 "connection": {
-                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
+                    "$ref": "#/definitions/AppComponentsMetadata.dddcdd49"
                 },
                 "function": {
-                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
+                    "$ref": "#/definitions/AppComponentsMetadata.dddcdd49"
                 },
                 "module": {
-                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
+                    "$ref": "#/definitions/AppComponentsMetadata.dddcdd49"
                 },
                 "rpc": {
-                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
+                    "$ref": "#/definitions/AppComponentsMetadata.dddcdd49"
                 },
                 "webhook": {
-                    "$ref": "#/definitions/AppComponentsMetadata.94705640"
+                    "$ref": "#/definitions/AppComponentsMetadata.dddcdd49"
                 }
             },
             "required": [
@@ -114,11 +114,11 @@
             ],
             "type": "object"
         },
-        "AppComponentsMetadata.94705640": {
+        "AppComponentsMetadata.dddcdd49": {
             "additionalProperties": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/AppComponentMetadataWithCodeFiles.30fcbaae"
+                        "$ref": "#/definitions/AppComponentMetadataWithCodeFiles.2498011d"
                     },
                     {
                         "type": "null"
@@ -134,31 +134,31 @@
             "properties": {
                 "connection": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
+                        "$ref": "#/definitions/ComponentIdMappingItem.46ed7148"
                     },
                     "type": "array"
                 },
                 "function": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
+                        "$ref": "#/definitions/ComponentIdMappingItem.46ed7148"
                     },
                     "type": "array"
                 },
                 "module": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
+                        "$ref": "#/definitions/ComponentIdMappingItem.46ed7148"
                     },
                     "type": "array"
                 },
                 "rpc": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
+                        "$ref": "#/definitions/ComponentIdMappingItem.46ed7148"
                     },
                     "type": "array"
                 },
                 "webhook": {
                     "items": {
-                        "$ref": "#/definitions/ComponentIdMappingItem.3c5b0608"
+                        "$ref": "#/definitions/ComponentIdMappingItem.46ed7148"
                     },
                     "type": "array"
                 }
@@ -172,7 +172,7 @@
             ],
             "type": "object"
         },
-        "ComponentIdMappingItem.3c5b0608": {
+        "ComponentIdMappingItem.46ed7148": {
             "additionalProperties": false,
             "properties": {
                 "local": {
@@ -186,16 +186,16 @@
                     "description": "Note: True indicates that the component was deleted locally and must be aligned with the origin.",
                     "type": "boolean"
                 },
+                "nonOwnedByApp": {
+                    "description": "Note: True indicates the component is not owned by the app. In that case local files are ignored when pushing.",
+                    "type": "boolean"
+                },
                 "remote": {
                     "description": "Note: `null` means that the local component is not paired to remote. In consequences these local components will be ignored during pull or deploy.",
                     "type": [
                         "null",
                         "string"
                     ]
-                },
-                "nonOwnedByApp": {
-                    "description": "True if the connection is owned by another version or app, false otherwise. You can't directly change connection properties on non-owned connections.",
-                    "type": "boolean"
                 }
             },
             "required": [
@@ -241,7 +241,7 @@
             ],
             "type": "object"
         },
-        "LocalAppOrigin.bf1f40b4": {
+        "LocalAppOrigin.17c374ad": {
             "additionalProperties": false,
             "description": "Defines the remote Make origin of locally cloned Custom App. It is part of `makecomapp.json`.",
             "properties": {
@@ -283,7 +283,7 @@
             ],
             "type": "object"
         },
-        "MakecomappJson.8af2ba09": {
+        "MakecomappJson.3eff5699": {
             "additionalProperties": false,
             "properties": {
                 "components": {
@@ -297,7 +297,7 @@
                 },
                 "origins": {
                     "items": {
-                        "$ref": "#/definitions/LocalAppOrigin.bf1f40b4"
+                        "$ref": "#/definitions/LocalAppOrigin.17c374ad"
                     },
                     "type": "array"
                 }
