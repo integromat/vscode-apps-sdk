@@ -12,6 +12,8 @@ import { entries } from '../utils/typed-object';
 import { getCurrentWorkspace } from '../services/workspace';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
+import { isNotOwnedByApp } from './align-components-mapping';
+import { Checksum } from './types/checksum.types';
 
 const limitConcurrency = throat(1);
 
@@ -126,6 +128,7 @@ export async function upsertComponentInMakecomappjson(
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOrigin,
+	originChecksums: Checksum | null,
 ): Promise<void>;
 export async function upsertComponentInMakecomappjson(
 	componentType: AppComponentType,
@@ -134,6 +137,7 @@ export async function upsertComponentInMakecomappjson(
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 	anyProjectPath: vscode.Uri,
 	origin: null,
+	originChecksums: Checksum | null,
 ): Promise<void>;
 export async function upsertComponentInMakecomappjson(
 	componentType: AppComponentType,
@@ -142,6 +146,7 @@ export async function upsertComponentInMakecomappjson(
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOrigin | null,
+	originChecksums: Checksum | null,
 ): Promise<void> {
 	// Input parameters check.
 	if ((remoteComponentName !== null && origin === null) || (remoteComponentName === null && origin !== null)) {
@@ -157,15 +162,14 @@ export async function upsertComponentInMakecomappjson(
 		if (['connection', 'rpc', 'module'].includes(componentType)) {
 			if (componentMetadata.connection) {
 				// Validate `connection` reference for being available in id mapping.
-				if (
-					// !makecomappJson.content.origins.some((origin) =>
-					!origin?.idMapping?.connection.some(
+				const connectionExists = makecomappJson.content.origins.some((origin) =>
+					origin?.idMapping?.connection.some(
 						(idMappingItem) => idMappingItem.local === componentMetadata.connection,
-					)
-					// )
-				) {
+					),
+				);
+				if (origin && !connectionExists) {
 					throw new Error(
-						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "connection" referecence "${
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.json", because the "connection" reference "${
 							componentMetadata.connection
 						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
 					);
@@ -173,15 +177,14 @@ export async function upsertComponentInMakecomappjson(
 			}
 			if (componentMetadata.altConnection) {
 				// Validate `connection` reference for being available in id mapping.
-				if (
-					// !makecomappJson.content.origins.some((origin) =>
-					!origin?.idMapping?.connection.some(
+				const connectionExists = makecomappJson.content.origins.some((origin) =>
+					origin?.idMapping?.connection.some(
 						(idMappingItem) => idMappingItem.local === componentMetadata.altConnection,
-					)
-					// )
-				) {
+					),
+				);
+				if (origin && !connectionExists) {
 					throw new Error(
-						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.sjon", because the "altConnection" referecence "${
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.json", because the "altConnection" reference "${
 							componentMetadata.altConnection
 						}" is not defined in "idMapping" in origin "${origin?.label ?? origin?.appId}".`,
 					);
@@ -193,9 +196,12 @@ export async function upsertComponentInMakecomappjson(
 
 		// Add origin->idMapping to { local: internalComponentId: remote: remoteComponentName }
 		if (origin && remoteComponentName) {
-			makecomappJson
-				.getComponentIdMappingHelper(origin)
-				.addComponentIdMapping(componentType, componentLocalId, remoteComponentName);
+			makecomappJson.getComponentIdMappingHelper(origin).addComponentIdMapping(
+				componentType,
+				componentLocalId,
+				remoteComponentName,
+				originChecksums ? isNotOwnedByApp(remoteComponentName, componentType, originChecksums) : false, // while new component is being created, it is not owned by the app
+			);
 		}
 
 		await makecomappJson.saveChanges();
@@ -228,6 +234,7 @@ export async function addComponentIdMapping(
 	componentType: AppComponentType,
 	internalComponentId: string | null,
 	remoteComponentName: string | null,
+	nonOwnedByApp: boolean,
 	anyProjectPath: vscode.Uri,
 	origin: LocalAppOrigin,
 ) {
@@ -235,7 +242,7 @@ export async function addComponentIdMapping(
 		const makecomappJson = await MakecomappJsonFile.fromLocalProject(anyProjectPath);
 		makecomappJson
 			.getComponentIdMappingHelper(origin)
-			.addComponentIdMapping(componentType, internalComponentId, remoteComponentName);
+			.addComponentIdMapping(componentType, internalComponentId, remoteComponentName, nonOwnedByApp);
 		await makecomappJson.saveChanges();
 	});
 }
@@ -305,7 +312,7 @@ async function _generateComponentLocalId(
 	 *
 	 * It is here for better readibility of `makecomapp.json`'s components.
 	 */
-	if (['connection', 'rpc', 'webhook'].includes(componentType) && componentLocalIdPrefix !== componentType) {
+	if (['connection', 'webhook'].includes(componentType) && componentLocalIdPrefix !== componentType) {
 		// Detect the `appId` usage in `requestedComponentLocalId`.
 		const probableOrigins = makecomappJson.origins.filter(
 			(origin) => origin?.appId && preferedComponentLocalId.startsWith(origin.appId),

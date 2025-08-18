@@ -17,6 +17,7 @@ export async function createLocalEmptyComponent(
 	preferedComponentLocalId: string,
 	componentMetadata: AppComponentMetadata,
 	makeappRootdir: vscode.Uri,
+	nonOwnedByApp = false,
 ): Promise<{ componentMetadata: AppComponentMetadataWithCodeFiles; componentLocalId: string }> {
 	// Validate `componentMetadata` for mandatory additional data
 	switch (componentType) {
@@ -60,7 +61,8 @@ export async function createLocalEmptyComponent(
 	const componentMetadataWithCodeFiles: AppComponentMetadataWithCodeFiles = {
 		...componentMetadata,
 		// Generate Local file paths (Relative to app rootdir) + store metadata
-		codeFiles: await generateComponentDefaultCodeFilesPaths(
+		// when the connection is not owned by the app, dont create code files
+		codeFiles: nonOwnedByApp ? {} : await generateComponentDefaultCodeFilesPaths(
 			componentType,
 			newComponentLocalId,
 			componentMetadata,
@@ -87,6 +89,7 @@ export async function createLocalEmptyComponent(
 		componentMetadataWithCodeFiles,
 		makeappRootdir,
 		null,
+		null
 	);
 
 	return {

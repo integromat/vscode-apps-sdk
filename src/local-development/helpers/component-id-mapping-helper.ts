@@ -1,6 +1,7 @@
 import { getOriginObject } from './get-origin-object';
 import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import { type AppComponentType, AppComponentTypes, type AppGeneralType } from '../../types/app-component-type.types';
+import { log } from '../../output-channel';
 
 /**
  * Provides helping function to find remote component name from local ID and vice versa.
@@ -193,6 +194,7 @@ export class ComponentIdMappingHelper {
 		componentType: AppComponentType,
 		componentLocalId: string | null,
 		remoteComponentName: string | null,
+		nonOwnedByApp = false,
 	) {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
@@ -219,6 +221,7 @@ export class ComponentIdMappingHelper {
 				originInMakecomappJson.idMapping[componentType].push({
 					local: componentLocalId,
 					remote: remoteComponentName,
+					nonOwnedByApp: nonOwnedByApp || undefined, // Note: `nonOwnedByApp` is optional, but we set it to false by default.
 				});
 				break;
 			case 1:
@@ -230,7 +233,17 @@ export class ComponentIdMappingHelper {
 					throw new Error(
 						`Error in "makecomapp.json" file. Check the "origin"->"idMapping", where found local=${componentLocalId} or remote=${remoteComponentName}, but it is mapped with another unexpected component.`,
 					);
-				} // else // already exists the same mapping. Nothing to do.
+				}
+				else { // already exists the same mapping. Nothing to do.
+					// If the `nonOwnedByApp` flag is different, update it.
+					if (Boolean(existingIdMappingItems[0].nonOwnedByApp) !== Boolean(nonOwnedByApp)) {
+						// Update the `nonOwnedByApp` flag if it is different
+						existingIdMappingItems[0].nonOwnedByApp = nonOwnedByApp || undefined; // don't set it as `false`, because it is optional
+						log('debug', `Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName} but the owning has changed. Updating...`);
+					} else {
+						log('debug', `Component ID mapping already exists for local=${componentLocalId} and remote=${remoteComponentName}. No changes made.`);
+					}
+				}
 				break;
 			default: // length >= 2
 				// Multiple mapping already exists.

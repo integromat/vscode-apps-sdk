@@ -5,12 +5,7 @@ import {
 	ComponentCodeFilesMetadata,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import {
-	getMakecomappJson,
-	getMakecomappRootDir,
-	updateMakecomappJson,
-	upsertComponentInMakecomappjson,
-} from './makecomappjson';
+import { getMakecomappRootDir, upsertComponentInMakecomappjson } from './makecomappjson';
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { pullComponentCode, pullComponentCodes } from './code-pull-deploy';
@@ -72,7 +67,6 @@ export async function pullAllComponents(
 	// Load fresh `makecomapp.json` file (because `alignComponentMapping()` changed it)
 	makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(localAppRootdir);
 
-
 	// Pull app general codes
 	for (const [codeType] of entries(generalCodesDefinition)) {
 		const codeLocalRelativePath = makecomappJsonFile.content.generalCodeFiles[codeType];
@@ -115,10 +109,20 @@ export async function pullAllComponents(
 
 			// Prepate updated component metadata (merge with previous one)
 			const remoteComponentMetadata = await getRemoteComponent(origin, componentType, remoteComponentName);
+
+			const compomentMetadataLocalIds = await convertComponentMetadataRemoteNamesToLocalIds(
+				remoteComponentMetadata,
+				componentIdMapping,
+				makecomappJsonFile,
+				origin,
+			);
+			// convertComponentMetadataRemoteNamesToLocalIds() changes the `makecomappJsonFile` content,
+			// so it is needed to save/reload the changes to `makecomapp.json`
+
 			const updatedComponentMedatada: AppComponentMetadataWithCodeFiles = {
 				...existingComponentMetadata, // Use previous `codeFiles`
 				// + Update all other properties by fresh one loaded from remote
-				...convertComponentMetadataRemoteNamesToLocalIds(remoteComponentMetadata, componentIdMapping),
+				...compomentMetadataLocalIds,
 			};
 			// Pull/update already existing component + save updated component metadata
 			await pullComponent(
@@ -129,6 +133,7 @@ export async function pullAllComponents(
 				localAppRootdir,
 				origin,
 				makecomappJsonFile.isCommonDataIncluded,
+				originChecksums,
 			);
 		}
 	}
@@ -149,6 +154,7 @@ async function pullComponent(
 	localAppRootdir: vscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	includeCommonFiles: boolean,
+	originChecksums: Checksum // need to distinguish non-owned components
 ) {
 	// Generate code files paths if local component does not exist yet.
 	//   (In this case the `updatedComponentMetadata` param value is being provided without `codeFiles`.)
@@ -185,6 +191,7 @@ async function pullComponent(
 		componentMetadataWithCodefiles,
 		localAppRootdir,
 		origin,
+		originChecksums,
 	);
 
 	return [remoteComponentName, componentMetadataWithCodefiles];

@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import type {
-	AppComponentMetadata,
+	AppComponentMetadataRemoteIDs,
 	AppComponentMetadataWithCodeFiles,
 	LocalAppOriginWithSecret,
 } from './types/makecomapp.types';
-import { addComponentIdMapping, getMakecomappJson, updateMakecomappJson } from './makecomappjson';
+import { addComponentIdMapping } from './makecomappjson';
 import { askForSelectMappedComponent, specialAnswers } from './ask-mapped-component';
 import { createRemoteAppComponent } from './create-remote-component';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
@@ -15,7 +15,36 @@ import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { deleteOriginComponent } from './delete-origin-component';
 import type { Checksum } from './types/checksum.types';
 import { getComponentChecksumArray } from './helpers/origin-checksum';
-import { getRemoteComponent } from './remote-components-summary';
+import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
+import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
+
+// Components that can be non owned by app. For example connections and webhooks can be owned by another app version.
+export const COMPONENTS_CAN_BE_NON_OWNED = ['connection', 'webhook'];
+
+/**
+ * Checks if the component is not owned by the app.
+ * This is used to determine if the component can be created as non-owned.
+ * 
+ * @param componentName - The remote name of the component.
+ * @param componentType - The type of the component.
+ * @param originChecksums - The checksums of the origin.
+ * @return {boolean} - Returns true if the component is not owned by the app, false otherwise.
+ */
+export function isNotOwnedByApp(
+	componentName: string | null,
+	componentType: AppComponentType | 'app',
+	originChecksums: Checksum,
+): boolean {
+	switch (componentType) {
+		case 'connection':
+			return originChecksums.accounts.some((connection) => connection.name === componentName && connection.external);
+		case 'webhook':
+			return originChecksums.hooks.some((webhook) => webhook.name === componentName && webhook.external);
+		default:
+			return false; // Other components are always owned by app.
+	}
+}
+
 
 /**
  * Compares list of components from two sources. If some component is missing on one side,
@@ -35,7 +64,7 @@ export async function alignComponentsMapping(
 	newLocalComponentResolution: 'askUser' | 'ignore',
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew' | 'ignore',
 ): Promise<void> {
-	let makecomappJson = await getMakecomappJson(makecomappRootDir);
+	let makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(makecomappRootDir);
 
 	/**
 	 * Existing in `makecomappJson`, missing in `remoteComponents`
@@ -53,7 +82,7 @@ export async function alignComponentsMapping(
 	let remoteOnly: {
 		componentType: AppComponentType;
 		componentName: string;
-		componentMetadata: AppComponentMetadata;
+		componentMetadata: AppComponentMetadataRemoteIDs;
 	}[] = [];
 	/**
 	 * Deleted locally: Missing in local filesystem, but existing in `remoteComponents` and existing in 'mapping' with 'localDeleted: true'.
@@ -62,7 +91,7 @@ export async function alignComponentsMapping(
 	const deletedLocally: {
 		componentType: AppComponentType;
 		componentName: string;
-		componentMetadata: AppComponentMetadata;
+		componentMetadata: AppComponentMetadataRemoteIDs;
 	}[] = [];
 
 	// Fill `remoteOnly`
@@ -99,8 +128,8 @@ export async function alignComponentsMapping(
 	}
 
 	// Fill `localOnly`
-	for (const [componentType, components] of entries(makecomappJson.components)) {
-		const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+	for (const [componentType, components] of entries(makecomappJsonFile.content.components)) {
+		const componentIdMapping = new ComponentIdMappingHelper(makecomappJsonFile.content, origin);
 
 		for (const [componentLocalId, componentMetadata] of entries(components)) {
 			if (componentMetadata === null) {
@@ -147,9 +176,9 @@ export async function alignComponentsMapping(
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		while ((deletedLocallyComponent = deletedLocallyInSpecificComponentType.shift()!)) {
 			await deleteOriginComponent(origin, componentType, deletedLocallyComponent.componentName);
-			const mappingHelper = new ComponentIdMappingHelper(makecomappJson, origin);
+			const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
 			mappingHelper.removeByRemoteName(componentType, deletedLocallyComponent.componentName);
-			await updateMakecomappJson(makecomappRootDir, makecomappJson);
+			await makecomappJsonFile.saveChanges();
 		}
 
 		// Resolve 'localOnly' found components
@@ -226,6 +255,11 @@ export async function alignComponentsMapping(
 							localOnlyComponent.componentType,
 							localOnlyComponent.componentLocalId,
 							actionToProcess.conterpartyComponentID,
+							isNotOwnedByApp(
+								actionToProcess.conterpartyComponentID,
+								localOnlyComponent.componentType,
+								originChecksums,
+							), // can be non-owned by app when deploying to another app version, // in mapping with existing remote is always owned by app
 							makecomappRootDir,
 							origin,
 						);
@@ -249,7 +283,7 @@ export async function alignComponentsMapping(
 								componentType: localOnlyComponent.componentType,
 								componentMetadata: localOnlyComponent.componentMetadata,
 								componentName: localOnlyComponent.componentLocalId,
-								makecomappJson,
+								makecomappJson: makecomappJsonFile.content,
 								origin,
 							});
 
@@ -263,6 +297,7 @@ export async function alignComponentsMapping(
 								localOnlyComponent.componentType,
 								localOnlyComponent.componentLocalId,
 								newRemoteComponentName,
+								false, // can be non-owned by app when deploying to another app version
 								makecomappRootDir,
 								origin,
 							);
@@ -281,6 +316,8 @@ export async function alignComponentsMapping(
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			while ((remoteOnlyComponent = remoteOnlyInSpecificComponentType.shift()!)) {
 				// Remote component is not linked to local
+
+				const notOwnedByApp = isNotOwnedByApp(remoteOnlyComponent.componentName, componentType, originChecksums);
 
 				progresDialogReport('Asking user for additional information (see dialog on the top)');
 
@@ -301,7 +338,6 @@ export async function alignComponentsMapping(
 						componentMetadata: localComponent.componentMetadata,
 					}));
 
-				let selectedLocalComponentId: string | symbol | null;
 				switch (newRemoteComponentResolution) {
 					case 'askUser': {
 						const userAnswer =
@@ -359,6 +395,7 @@ export async function alignComponentsMapping(
 							remoteOnlyComponent.componentType,
 							actionToProcess.conterpartyComponentID,
 							remoteOnlyComponent.componentName,
+							notOwnedByApp, // mapped item is always owned by app
 							makecomappRootDir,
 							origin,
 						);
@@ -367,7 +404,7 @@ export async function alignComponentsMapping(
 						localOnly = localOnly.filter(
 							(component) =>
 								component.componentType !== remoteOnlyComponent.componentType ||
-								component.componentLocalId !== selectedLocalComponentId,
+								component.componentLocalId !== undefined,
 						);
 
 						// Note: Now, the remote component is fully linked with existing local.
@@ -378,9 +415,19 @@ export async function alignComponentsMapping(
 							// Create new empty local component
 							const newComponent = await createLocalEmptyComponent(
 								remoteOnlyComponent.componentType,
-								remoteOnlyComponent.componentName,
-								remoteOnlyComponent.componentMetadata,
+								// as the non-owned connection can have different name from component name, which is the case on what createLocalEmptyComponent() relies
+								COMPONENTS_CAN_BE_NON_OWNED.includes(remoteOnlyComponent.componentType) &&
+									notOwnedByApp
+									? ''
+									: remoteOnlyComponent.componentName,
+								await convertComponentMetadataRemoteNamesToLocalIds(
+									remoteOnlyComponent.componentMetadata,
+									makecomappJsonFile.getComponentIdMappingHelper(origin),
+									makecomappJsonFile,
+									origin,
+								),
 								makecomappRootDir,
+								notOwnedByApp,
 							);
 
 							/* Skipped here: Pull existing codes to new local component
@@ -392,6 +439,7 @@ export async function alignComponentsMapping(
 								remoteOnlyComponent.componentType,
 								newComponent.componentLocalId,
 								remoteOnlyComponent.componentName,
+								notOwnedByApp,
 								makecomappRootDir,
 								origin,
 							);
@@ -403,8 +451,10 @@ export async function alignComponentsMapping(
 			}
 		}
 		// Because the ID mapping was probably updated by `addComponentIdMapping()` execution above,
-		//   it is needed to refresh the `makecomappJson` variable by fresh data.
-		makecomappJson = await getMakecomappJson(makecomappRootDir);
+		// it is needed to refresh the `makecomappJsonFile` variable with the fresh data.
+		// Pls note there are used two ways of persisting changes inside of methods
+		// (via class MakecomappJsonFile and method `updateMakecomappJson`).
+		makecomappJsonFile = await MakecomappJsonFile.fromLocalProject(makecomappRootDir);
 	}
 	progresDialogReport('');
 }

@@ -36,7 +36,7 @@ export async function askForOrigin(
 	origins: LocalAppOrigin[],
 	makeappRootdir: vscode.Uri,
 	purposeLabel?: string,
-	enableFeatureAddNewOrigin: boolean = false,
+	enableFeatureAddNewOrigin = false,
 ): Promise<LocalAppOriginWithSecret | undefined> {
 	return includeApiKey(
 		await askForOrigin2(origins, makeappRootdir, purposeLabel, enableFeatureAddNewOrigin),
@@ -48,7 +48,7 @@ async function askForOrigin2(
 	origins: LocalAppOrigin[],
 	makeappRootdir: vscode.Uri,
 	purposeLabel?: string,
-	enableFeatureAddNewOrigin: boolean = false,
+	enableFeatureAddNewOrigin = false,
 ): Promise<LocalAppOrigin | undefined> {
 	// Get & return the default origin (if it was selected as default in the past)
 	const userPreferencesOriginKey = `origin.${makeappRootdir.path}`; // Store preference for each project separately.
@@ -113,7 +113,7 @@ async function askForOrigin2(
 	// Dialog option: "add new origin"
 	if (enableFeatureAddNewOrigin) {
 		quickPickOptions.push({
-			label: specialAnswers.ADD_ORIGIN.description!,
+			label: String(specialAnswers.ADD_ORIGIN.description),
 			description: '(add new remote to origins)',
 			origin: specialAnswers.ADD_ORIGIN,
 		});
