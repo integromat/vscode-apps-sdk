@@ -4,6 +4,7 @@ import type { Crud } from './crud.types';
 import type { ComponentCodeType, GeneralCodeType } from './code-type.types';
 import type { AppComponentType } from '../../types/app-component-type.types';
 import type { ConnectionType, ModuleType, WebhookType } from '../../types/component-types.types';
+import type { Tagged } from './tagger.types';
 
 export interface MakecomappJson {
 	fileVersion: number;
@@ -149,11 +150,10 @@ interface AppComponentMetadataRemoteIDsInternal extends AppComponentMetadataBase
 	webhook?: string | null;
 }
 
-// Prevent the two interfaces from being used interchangeably
-// Required, because these two interfaces has differences in optional properties only.
-type Tagged<T, Tag> = T & { __tag?: Tag };
 export type AppComponentMetadata = Tagged<AppComponentMetadataInternal, 'LocalIDs'>;
 export type AppComponentMetadataRemoteIDs = Tagged<AppComponentMetadataRemoteIDsInternal, 'RemoteIDs'>;
+// Note: Required to tag there ^^^ two interfaces for preventing to be used interchangeably.
+//       Interfaces are technically the same, but they are filled by different value (local vs remote ID references).
 
 /**
  * General Code Type => Code Local File Path.
