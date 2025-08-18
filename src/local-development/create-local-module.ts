@@ -89,7 +89,7 @@ async function onCreateLocalModuleClick(file: vscode.Uri) {
 	let actionCrud: Crud | null = null;
 	if (moduleTypePick.id === 'action') {
 		const actionCrudPick = await vscode.window.showQuickPick<vscode.QuickPickItem & { id: Crud | null }>(
-			[...crudTypes.map((crud) => ({ label: crud || '', id: crud })), { label: '- empty -', id: null }],
+			[...crudTypes.map((crud) => ({ label: String(crud), id: crud })), { label: '- empty -', id: null }],
 			{ ignoreFocusOut: true, title: 'Select the type of action module to be created' },
 		);
 		if (!actionCrudPick) {

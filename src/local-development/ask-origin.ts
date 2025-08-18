@@ -113,7 +113,7 @@ async function askForOrigin2(
 	// Dialog option: "add new origin"
 	if (enableFeatureAddNewOrigin) {
 		quickPickOptions.push({
-			label: specialAnswers.ADD_ORIGIN.description || '',
+			label: String(specialAnswers.ADD_ORIGIN.description),
 			description: '(add new remote to origins)',
 			origin: specialAnswers.ADD_ORIGIN,
 		});
