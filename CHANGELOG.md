@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+## [2.4.0](https://github.com/integromat/vscode-apps-sdk/compare/2.3.1...2.4.0) (2025-08-19)
+
+
+### Features
+
+* add support for multiple and external connections ([#299](https://github.com/integromat/vscode-apps-sdk/issues/299)) ([351fbf7](https://github.com/integromat/vscode-apps-sdk/commit/351fbf75766a7baec847647ace665ad8d7bd5ed2))
+
+
+### Miscellaneous Chores
+
+* tune makecomapp.schema.json generating from types with `Tagger` ([#300](https://github.com/integromat/vscode-apps-sdk/issues/300)) ([f60e702](https://github.com/integromat/vscode-apps-sdk/commit/f60e702bb2ff3dda7c2d84858df25a2b5487e9c3))
+
+
+### Build System
+
+* bump the deps-minor-update group with 2 updates ([#297](https://github.com/integromat/vscode-apps-sdk/issues/297)) ([16329b4](https://github.com/integromat/vscode-apps-sdk/commit/16329b4f8fb391ef518a83d1681f4f1e70540245))
+* bump the devdeps-minor-update group with 2 updates ([#296](https://github.com/integromat/vscode-apps-sdk/issues/296)) ([2396979](https://github.com/integromat/vscode-apps-sdk/commit/2396979d5ea40907ce3785d07d32840bf7b8aa39))
+
+
+### Continuous Integration
+
+* **codeowners:** sync CODEOWNERS with repository owner ([952ad7d](https://github.com/integromat/vscode-apps-sdk/commit/952ad7d18e8b160eedeb3b50e11ce926a37e94d9))
+
 ## [2.3.1](https://github.com/integromat/vscode-apps-sdk/compare/2.3.0...2.3.1) (2025-07-03)
 
 
