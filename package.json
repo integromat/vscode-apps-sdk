@@ -930,7 +930,7 @@
 		"@integromat/udt": "^1.2.2",
 		"@vscode/extension-telemetry": "^0.9.8",
 		"adm-zip": "^0.5.16",
-		"applicationinsights": "^3.8.0",
+		"applicationinsights": "^3.9.0",
 		"async-file": "^2.0.2",
 		"axios": "^1.11.0",
 		"compressing": "^1.10.3",
