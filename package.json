@@ -933,7 +933,7 @@
 		"applicationinsights": "^3.9.0",
 		"async-file": "^2.0.2",
 		"axios": "^1.11.0",
-		"compressing": "^1.10.3",
+		"compressing": "^2.0.0",
 		"image-downloader": "^4.3.0",
 		"jimp": "^1.6.0",
 		"jsonc-parser": "^3.3.1",
