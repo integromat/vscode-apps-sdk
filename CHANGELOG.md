@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## [2.4.1](https://github.com/integromat/vscode-apps-sdk/compare/2.4.0...2.4.1) (2025-09-04)
+
+
+### Build System
+
+* bump applicationinsights from 3.8.0 to 3.9.0 in the deps-minor-update group ([#301](https://github.com/integromat/vscode-apps-sdk/issues/301)) ([78f29ca](https://github.com/integromat/vscode-apps-sdk/commit/78f29ca377d2ad020068cbb2ec4686664b334d79))
+* bump the devdeps-minor-update group with 2 updates ([#303](https://github.com/integromat/vscode-apps-sdk/issues/303)) ([04f3f0f](https://github.com/integromat/vscode-apps-sdk/commit/04f3f0fa0256e1208fd5afd9c9d8ce99e2dac602))
+
 ## [2.4.0](https://github.com/integromat/vscode-apps-sdk/compare/2.3.1...2.4.0) (2025-08-19)
 
 
