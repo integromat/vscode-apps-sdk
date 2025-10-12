@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import * as vscode from 'vscode';
+import * as vscode from '../services/vscode-lib-wraper';
 import { deployComponentCode } from './code-pull-deploy';
 import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
@@ -27,19 +27,23 @@ export function registerCommands(): void {
  * TODO fix order of creation
  *  - `groups` after modules
  */
-async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
+export async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
 	// Probably executed by keybindings, needs to find opened file.
 	if (anyProjectPath === undefined) {
 		const activeEditor = vscode.window.activeTextEditor;
 		if (!activeEditor) {
-			vscode.window.showErrorMessage('No file is open in the editor, so local changes couldn’t be deployed to origin.');
+			vscode.window.showErrorMessage(
+				'No file is open in the editor, so local changes couldn’t be deployed to origin.',
+			);
 			return;
 		}
 		anyProjectPath = activeEditor.document.uri;
 	}
 
 	if (anyProjectPath === undefined) {
-		vscode.window.showErrorMessage('No file is open in the editor, so local changes couldn’t be deployed to origin.');
+		vscode.window.showErrorMessage(
+			'No file is open in the editor, so local changes couldn’t be deployed to origin.',
+		);
 		return;
 	}
 

@@ -2,7 +2,8 @@ import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 import { TextEncoder } from 'node:util';
 import pick from 'lodash/pick';
-import * as vscode from 'vscode';
+// import * as vscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import type { LocalAppOrigin, LocalAppOriginWithSecret, MakecomappJson } from './types/makecomapp.types';
 import { askForAppDirToClone } from './ask-local-dir';
 import { APIKEY_DIRNAME, MAKECOMAPP_FILENAME } from './consts';
@@ -18,8 +19,10 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
 import { downloadOriginChecksums } from './helpers/origin-checksum';
 
+const vscodeLibWrapper = vscodeLibWrapperFactory.lib;
+
 export function registerCommands(): void {
-	vscode.commands.registerCommand(
+	vscodeLibWrapper.commands.registerCommand(
 		'apps-sdk.local-dev.clone-to-workspace',
 		catchError('Clone app to workspace', cloneAppToWorkspace),
 	);
@@ -30,10 +33,10 @@ export function registerCommands(): void {
  */
 async function cloneAppToWorkspace(context: App): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
-	const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
+	const apikeyDir = vscodeLibWrapper.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 
 	// Introductory info dialog "Before use"
-	const confirmAnswer = await vscode.window.showInformationMessage(
+	const confirmAnswer = await vscodeLibWrapper.window.showInformationMessage(
 		'Before use the Local Development for Apps',
 		{
 			modal: true,
@@ -63,7 +66,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	}
 
 	// Ask to "Clone common data? Yes/No"
-	const commonDataAnswer = await vscode.window.showInformationMessage(
+	const commonDataAnswer = await vscodeLibWrapper.window.showInformationMessage(
 		'Include also all common data?',
 		{
 			modal: true,
@@ -132,14 +135,14 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 	};
 
 	// Save .gitignore: exclude secrets dir.
-	const gitignoreUri = vscode.Uri.joinPath(workspaceRoot, '.gitignore');
+	const gitignoreUri = vscodeLibWrapper.Uri.joinPath(workspaceRoot, '.gitignore');
 	const secretsDirRelativeToWorkspaceRoot = path.posix.relative(workspaceRoot.path, apikeyDir.path);
 	const gitignoreLines: string[] = [secretsDirRelativeToWorkspaceRoot];
 	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
-	await vscode.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
+	await vscodeLibWrapper.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
 	// Create apikey file
 	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
-	await vscode.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
+	await vscodeLibWrapper.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
 
 	await withProgressDialog({ title: `Cloning app ${origin.appId}` }, async () => {
 		// #region Process all app's general codes
@@ -159,7 +162,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		// #endregion Process all app's general codes
 
 		// Write makecomapp.json app metadata file (empty without any components yet)
-		await vscode.workspace.fs.writeFile(
+		await vscodeLibWrapper.workspace.fs.writeFile(
 			makeappJsonPath,
 			new TextEncoder().encode(JSON.stringify(makecomappJson, null, 4)),
 		);
@@ -169,11 +172,11 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 		await pullAllComponents(localAppRootdir, origin, 'cloneAsNew', originChecksums);
 
 		// VSCode show readme.md and open explorer
-		const readmeUri = vscode.Uri.joinPath(
+		const readmeUri = vscodeLibWrapper.Uri.joinPath(
 			localAppRootdir,
 			generalCodesDefinition.readme.filename + '.' + generalCodesDefinition.readme.fileext,
 		);
-		await vscode.commands.executeCommand('vscode.open', readmeUri);
-		await vscode.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
+		await vscodeLibWrapper.commands.executeCommand('vscode.open', readmeUri);
+		await vscodeLibWrapper.commands.executeCommand('workbench.files.action.showActiveFileInExplorer');
 	});
 }

@@ -1,3 +1,7 @@
+// set the vscode lib wrapper mode to ide
+import { vscodeLibWrapperFactory } from './services/vscode-lib-wraper';
+vscodeLibWrapperFactory.setMode('ide');
+
 import * as path from 'node:path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
@@ -248,7 +252,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 	);
 
-	function parseComponentPath(componentPath: string): { componentType: AppComponentType; componentName: string } | null {
+	function parseComponentPath(
+		componentPath: string,
+	): { componentType: AppComponentType; componentName: string } | null {
 		// Parse path
 		const pathParts = componentPath.split('/');
 
@@ -288,7 +294,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		const componentNames = Object.keys(makecomappJson.components[foundComponentInPath.componentType]);
 
 		// Component folders are derived as kebab-case of component name so some 'find' is here.
-		const foundComponent = componentNames.find(componentName => {
+		const foundComponent = componentNames.find((componentName) => {
 			return camelToKebab(componentName) === foundComponentInPath.componentName;
 		});
 		if (!foundComponent) {
@@ -297,11 +303,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		// The path is valid existing component, proceed with its deletion.
 		const rootDir = getMakecomappRootDir(uri);
-		await deleteLocalComponent(
-			rootDir,
-			foundComponentInPath.componentType as AppComponentType,
-			foundComponent,
-		);
+		await deleteLocalComponent(rootDir, foundComponentInPath.componentType as AppComponentType, foundComponent);
 	}
 
 	// Observe file/folder deletion even from external file explorer.
