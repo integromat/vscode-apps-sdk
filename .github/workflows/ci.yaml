@@ -23,10 +23,10 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
       # Setup .npmrc file to publish to npm
       # See https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages#publishing-packages-to-the-npm-registry
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
@@ -42,7 +42,7 @@ jobs:
           xvfb-run npm run testToJsonFile
 
       - name: Report to GitHub job
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@d61b558e8df85cb60d09ca3e5b09653b4477cea7 # v1
         if: success() || failure()     # run this step even if previous step failed
         with:
           name: Integration tests report  # Name of the check run which will be created
