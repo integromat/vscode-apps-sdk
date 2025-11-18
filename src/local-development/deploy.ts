@@ -10,7 +10,7 @@ import type { CodeType } from './types/code-type.types';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { deployComponentMetadata } from './deploy-metadata';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { catchError, showErrorDialog } from '../error-handling';
 import { progresDialogReport, withProgressDialog } from '../utils/vscode-progress-dialog';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';

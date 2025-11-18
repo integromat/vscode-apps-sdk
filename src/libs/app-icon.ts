@@ -4,7 +4,7 @@ import * as download from 'image-downloader';
 import { Jimp } from 'jimp';
 import * as Meta from '../Meta';
 import type { Environment } from '../types/environment.types';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { appsIconTempDir } from '../temp-dir';
 
 /**

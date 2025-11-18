@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { join } from 'path';
 import * as tempy from 'tempy';
 import * as vscode from 'vscode';
-import { log } from './output-channel';
+import { log } from './logging';
 
 const TEMPDIR_PREFIX = 'apps-sdk';
 

@@ -1,5 +1,5 @@
 import type { AppComponentType } from '../types/app-component-type.types';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { removeModuleFromGroups } from './groups-json';
 import * as vscode from 'vscode';
 import { getMakecomappJson, updateMakecomappJson } from './makecomappjson';

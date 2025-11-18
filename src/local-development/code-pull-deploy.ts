@@ -10,7 +10,7 @@ import type { ApiCodeType, CodeType } from './types/code-type.types';
 import { getComponentApiUrl } from './helpers/api-url';
 import { getCodeDef } from '../services/component-code-def';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';
 import { entries } from '../utils/typed-object';

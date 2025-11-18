@@ -3,7 +3,7 @@ import type { AppComponentMetadata, LocalAppOriginWithSecret, MakecomappJson } f
 import { MAKECOMAPP_FILENAME } from './consts';
 import { getApiBodyForComponentMetadataDeploy } from './deploy-metadata';
 import { getComponentApiUrl } from './helpers/api-url';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { requestMakeApi } from '../utils/request-api-make';

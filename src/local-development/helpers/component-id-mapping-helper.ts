@@ -1,7 +1,7 @@
 import { getOriginObject } from './get-origin-object';
 import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import { type AppComponentType, AppComponentTypes, type AppGeneralType } from '../../types/app-component-type.types';
-import { log } from '../../output-channel';
+import { log } from '../../logging';
 
 /**
  * Provides helping function to find remote component name from local ID and vice versa.

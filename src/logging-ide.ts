@@ -26,7 +26,7 @@ function getOutputChannel(): vscode.OutputChannel {
 /**
  * Logs error into output console `Make Apps SDK extension`.
  */
-export function log(level: 'debug'|'info'|'warn'|'error', errorMessage: string) {
+export function log(level: 'debug' | 'info' | 'warn' | 'error', errorMessage: string) {
 	const output = getOutputChannel();
 
 	const rawLogLine = level.toUpperCase() + ': ' + errorMessage;
@@ -36,7 +36,7 @@ export function log(level: 'debug'|'info'|'warn'|'error', errorMessage: string) 
 		console.log(extensionDisplayName + ' ' + rawLogLine);
 	}
 
-	output.appendLine((new Date()).toLocaleString() + ': ' + rawLogLine);
+	output.appendLine(new Date().toLocaleString() + ': ' + rawLogLine);
 }
 
 /**

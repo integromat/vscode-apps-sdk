@@ -1,7 +1,6 @@
 // Use CLI implementation of `vscode` wrapper
-import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
-vscodeLibWrapperFactory.setMode('cli');
-const vscode = vscodeLibWrapperFactory.lib;
+import { ideCliMode } from '../services/ide-or-cli-mode';
+ideCliMode.mode = 'cli'; // Must be set BEFORE importing other libs
 
 process.env.DEBUG = process.env.DEBUG ? process.env.DEBUG + ',app:*' : 'app:*';
 
@@ -9,8 +8,11 @@ import * as fs from 'node:fs/promises';
 import * as path from 'path';
 import debugFactory from 'debug';
 import { bulkDeploy } from '../local-development/deploy';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 
 const debug = debugFactory('app:main');
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 async function mainCli() {
 	let rootDir: string | undefined = process.argv[3];

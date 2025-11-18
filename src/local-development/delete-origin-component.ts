@@ -1,5 +1,5 @@
 import type { AppComponentType } from '../types/app-component-type.types';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { requestMakeApi } from '../utils/request-api-make';
 import { AxiosRequestConfig } from 'axios';
 import { version as ExtensionVersion } from '../Meta';

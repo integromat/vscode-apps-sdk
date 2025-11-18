@@ -1,13 +1,13 @@
-// set the vscode lib wrapper mode to ide
-import { vscodeLibWrapperFactory } from './services/vscode-lib-wraper';
-vscodeLibWrapperFactory.setMode('ide');
+// set the vscode lib wrapper mode to IDE
+import { ideCliMode } from './services/ide-or-cli-mode';
+ideCliMode.mode = 'ide';
 
 import * as path from 'node:path';
 import * as jsoncParser from 'jsonc-parser';
 import { v4 as uuidv4 } from 'uuid';
 import * as vscode from 'vscode';
 import * as vscodeLanguageclient from 'vscode-languageclient/node';
-import { log } from './output-channel';
+import { log } from './logging';
 import { FunctionCommands } from './commands/FunctionCommands';
 import { CommonCommands } from './commands/CommonCommands';
 import { CoreCommands } from './commands/CoreCommands';

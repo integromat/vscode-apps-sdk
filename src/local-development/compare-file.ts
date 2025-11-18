@@ -6,7 +6,7 @@ import { findCodeByFilePath } from './find-code-by-filepath';
 import { askForOrigin } from './ask-origin';
 import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper';
 import { catchError } from '../error-handling';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 
 export function registerCommands(): void {

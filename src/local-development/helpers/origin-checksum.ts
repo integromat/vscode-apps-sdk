@@ -4,7 +4,7 @@ import type { CodeType } from '../types/code-type.types';
 import { getCodeDef } from '../../services/component-code-def';
 import type { AxiosRequestConfig } from 'axios';
 import { requestMakeApi } from '../../utils/request-api-make';
-import { log } from '../../output-channel';
+import { log } from '../../logging';
 import type { LocalAppOriginWithSecret } from '../types/makecomapp.types';
 import { md5 } from './md5';
 

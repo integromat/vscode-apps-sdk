@@ -13,7 +13,7 @@ import { TempProvider } from '../providers/TempProvider';
 import { DataProvider } from '../providers/DataProvider';
 import { GroupsProvider } from '../providers/GroupsProvider';
 import { catchError, showAndLogError } from '../error-handling';
-import { log } from '../output-channel';
+import { log } from '../logging';
 import { AppsProvider } from '../providers/AppsProvider';
 import type { Environment } from '../types/environment.types';
 

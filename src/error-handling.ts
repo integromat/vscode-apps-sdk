@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import * as vscode from 'vscode';
-import { log, showLog } from './output-channel';
+import { log, showLog } from './logging';
 
 /**
  * Smart convert a varios types of errors to string.

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { log } from '../output-channel';
+import { log } from '../logging';
 
 /**
  * Gets the extension configuration stored in VS Code settings.json file under keys `apps-sdk.*`.
