@@ -1,0 +1,10 @@
+// Extends the main vs code, just overriding the entrypoints thats is needed (in context of cli).
+{
+	"extends": "./tsconfig.json",
+	"include": [
+		"src/cli/index.ts",
+		"src/services/vscode-lib-wraper/vscode-cli-modules/index.ts",
+		"src/services/vscode-lib-wraper/vscode-ide-modules/index.ts"
+	],
+	"main": "src/cli/index.ts",
+}

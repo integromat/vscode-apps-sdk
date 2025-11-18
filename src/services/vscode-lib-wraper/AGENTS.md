@@ -1,5 +1,4 @@
-Directory `vscode-lib-wraper` documentation
-===========================================
+# Directory `vscode-lib-wraper` documentation
 
 This directory contains the wrapper around the VSCode API.
 

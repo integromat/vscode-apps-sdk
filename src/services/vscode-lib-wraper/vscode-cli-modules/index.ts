@@ -1,15 +1,14 @@
-// import debugFactory from 'debug';
 import { vsCodeLibWrapperWindowImplementationForCLI } from './window';
 import { vsCodeLibWrapperWorkspaceImplementationForCLI } from './workspace';
 import type { VscodeLibWrapperInterface } from '../types';
-import { VsCodeWrapperUri } from '../uri';
+import { Uri } from './uri';
 import { vsCodeLibWrapperCommandsImplementationForCLI } from './commands';
-
-// const debug = debugFactory('app:vscode-cli-override');
+import { FileType } from '../vscode-file-type.enum';
 
 export const vscodeLibWrapperImplementationForCLI: VscodeLibWrapperInterface = {
 	commands: vsCodeLibWrapperCommandsImplementationForCLI,
 	window: vsCodeLibWrapperWindowImplementationForCLI,
 	workspace: vsCodeLibWrapperWorkspaceImplementationForCLI,
-	Uri: VsCodeWrapperUri,
+	Uri: Uri,
+	FileType: FileType,
 };

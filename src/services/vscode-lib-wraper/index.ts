@@ -7,12 +7,12 @@ class VscodeLibWraperFactory {
 		switch (mode) {
 			case 'ide':
 				// eslint-disable-next-line @typescript-eslint/no-require-imports
-				this._library = require('./vscode-ide-modules/index');
+				this._library = require('./vscode-ide-modules/index').vscodeLibWrapperImplementationForIDE;
 				break;
 
 			case 'cli':
 				// eslint-disable-next-line @typescript-eslint/no-require-imports
-				this._library = require('./vscode-cli-modules/index');
+				this._library = require('./vscode-cli-modules/index').vscodeLibWrapperImplementationForCLI;
 				break;
 
 			default:
@@ -20,7 +20,7 @@ class VscodeLibWraperFactory {
 		}
 	}
 
-	public get lib() {
+	public get lib(): VscodeLibWrapperInterface {
 		if (!this._library) {
 			throw new Error('VscodeLibWraper library is not initialized. Call setMode() first.');
 		}

@@ -89,7 +89,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 
 	const environment = getCurrentEnvironment();
 
-	const makeappJsonPath = vscode.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME); // TODO rename to `makecomappJsonPath`
+	const makeappJsonPath = vscodeLibWrapper.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME); // TODO rename to `makecomappJsonPath`
 	// If manifest exists, cancel this task.
 	if (existsSync(makeappJsonPath.fsPath)) {
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');

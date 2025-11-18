@@ -1,9 +1,12 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
+// import { vscodeLibWrapperFactory } from '../../services/vscode-lib-wraper';
 import { generateAndReserveComponentLocalId, getMakecomappJson, updateMakecomappJson } from '../makecomappjson';
 import type { ComponentIdMappingItem, LocalAppOrigin, MakecomappJson } from '../types/makecomapp.types';
 import type { AppComponentType, AppGeneralType } from '../../types/app-component-type.types';
 import { getOriginObject } from './get-origin-object';
 import { ComponentIdMappingHelper } from './component-id-mapping-helper';
+
+// const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * Represents the content of `makecomapp.json` and methods, which are possible to execute over this content.
@@ -14,14 +17,14 @@ export class MakecomappJsonFile {
 	/**
 	 * @param content The in-memory representation of `makecomapp.json` file content.
 	 */
-	private constructor(public content: MakecomappJson, private anyProjectPath: vscode.Uri) {}
+	private constructor(public content: MakecomappJson, private anyProjectPath: IVscode.Uri) {}
 
 	/**
 	 * Creates new class instance with the freshly loaded file content.
 	 * @param anyProjectPath
 	 * @returns New class instance
 	 */
-	public static async fromLocalProject(anyProjectPath: vscode.Uri): Promise<MakecomappJsonFile> {
+	public static async fromLocalProject(anyProjectPath: IVscode.Uri): Promise<MakecomappJsonFile> {
 		const content = await getMakecomappJson(anyProjectPath);
 		return new MakecomappJsonFile(content, anyProjectPath);
 	}
@@ -83,7 +86,7 @@ export class MakecomappJsonFile {
 
 		// Check if a mapping for this remoteName already exists (should not, but double-check)
 		const existingMapping = originInMakecomappJson.idMapping[componentType].find(
-			(item: ComponentIdMappingItem) => item.remote === remoteName
+			(item: ComponentIdMappingItem) => item.remote === remoteName,
 		);
 		if (existingMapping) {
 			return existingMapping.local;

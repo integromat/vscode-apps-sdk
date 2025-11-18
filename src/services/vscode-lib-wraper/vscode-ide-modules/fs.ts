@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import type { VscodeLibWrapperFsInterface } from '../types';
 
-export const vsCodeLibWrapperFsImplementationForCLI: VscodeLibWrapperFsInterface = {
+export const vsCodeLibWrapperFsImplementationForIDE: VscodeLibWrapperFsInterface = {
 	writeFile: async (_uri: any, _content: Uint8Array): Promise<void> => {
 		return vscode.workspace.fs.writeFile(_uri, _content);
 	},

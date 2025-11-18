@@ -1,4 +1,4 @@
-import type { VsCodeWrapperUri } from './uri';
+import * as IVscode from 'vscode';
 
 /**
  * The interface mirrors the subset of the VSCode API used in the project.
@@ -9,7 +9,8 @@ export interface VscodeLibWrapperInterface {
 	commands: VsCodeLibWrapperCommandsInterface;
 	window: VscodeLibWrapperWindowInterface;
 	workspace: VscodeLibWrapperWorkspaceInterface;
-	Uri: typeof VsCodeWrapperUri;
+	Uri: typeof IVscode.Uri;
+	FileType: typeof IVscode.FileType;
 }
 
 export interface VsCodeLibWrapperCommandsInterface {
@@ -18,29 +19,38 @@ export interface VsCodeLibWrapperCommandsInterface {
 }
 
 export interface VscodeLibWrapperWindowInterface {
-	showErrorMessage: (message: string, ...items: string[]) => Promise<string | undefined>;
-	showWarningMessage: (message: string, ...items: string[]) => Promise<string | undefined>;
-	showInformationMessage: (message: string, ...items: string[]) => Promise<string | undefined>;
-	showInputBox: (options?: import('vscode').InputBoxOptions) => Promise<string | undefined>;
-	showQuickPick: (
-		items: readonly string[],
-		options?: import('vscode').QuickPickOptions,
-	) => Promise<string | undefined>;
-	readonly activeTextEditor: import('vscode').TextEditor | undefined;
+	showErrorMessage: <T extends IVscode.MessageItem>(
+		message: string,
+		options?: IVscode.MessageOptions,
+		...items: T[]
+	) => Promise<T | undefined>;
+	showWarningMessage: <T extends IVscode.MessageItem>(
+		message: string,
+		options?: IVscode.MessageOptions,
+		...items: T[]
+	) => Promise<T | undefined>;
+	showInformationMessage: <T extends IVscode.MessageItem>(
+		message: string,
+		options?: IVscode.MessageOptions,
+		...items: T[]
+	) => Promise<T | undefined>;
+	showInputBox: (options?: IVscode.InputBoxOptions) => Promise<string | undefined>;
+	showQuickPick: (items: readonly string[], options?: IVscode.QuickPickOptions) => Promise<string | undefined>;
+	readonly activeTextEditor: IVscode.TextEditor | undefined;
 }
 
 export interface VscodeLibWrapperWorkspaceInterface {
-	asRelativePath: typeof import('vscode').workspace.asRelativePath;
+	asRelativePath: typeof IVscode.workspace.asRelativePath;
 	fs: VscodeLibWrapperFsInterface;
 }
 
 export interface VscodeLibWrapperFsInterface {
-	readFile: typeof import('vscode').workspace.fs.readFile;
-	writeFile: typeof import('vscode').workspace.fs.writeFile;
-	stat: typeof import('vscode').workspace.fs.stat;
-	readDirectory: typeof import('vscode').workspace.fs.readDirectory;
-	createDirectory: typeof import('vscode').workspace.fs.createDirectory;
-	delete: typeof import('vscode').workspace.fs.delete;
+	readFile: typeof IVscode.workspace.fs.readFile;
+	writeFile: typeof IVscode.workspace.fs.writeFile;
+	stat: typeof IVscode.workspace.fs.stat;
+	readDirectory: typeof IVscode.workspace.fs.readDirectory;
+	createDirectory: typeof IVscode.workspace.fs.createDirectory;
+	delete: typeof IVscode.workspace.fs.delete;
 }
 
 // `FileSystemError` vscode interface -  Even though it is used in `local-development`, it is not needed to be reimplemented, because it is internal type only without any interface.

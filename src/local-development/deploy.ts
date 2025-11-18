@@ -1,5 +1,6 @@
 import * as path from 'node:path';
-import * as vscode from '../services/vscode-lib-wraper';
+import type * as IVscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import { deployComponentCode } from './code-pull-deploy';
 import { askForOrigin } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
@@ -17,6 +18,8 @@ import { sendTelemetry } from '../utils/telemetry';
 import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 import { userPreferences } from './helpers/user-preferences';
 
+const vscode = vscodeLibWrapperFactory.lib;
+
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
 }
@@ -27,7 +30,7 @@ export function registerCommands(): void {
  * TODO fix order of creation
  *  - `groups` after modules
  */
-export async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
+export async function bulkDeploy(anyProjectPath: IVscode.Uri | undefined) {
 	// Probably executed by keybindings, needs to find opened file.
 	if (anyProjectPath === undefined) {
 		const activeEditor = vscode.window.activeTextEditor;
@@ -37,7 +40,7 @@ export async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
 			);
 			return;
 		}
-		anyProjectPath = activeEditor.document.uri;
+		anyProjectPath = activeEditor.document.uri as unknown as IVscode.Uri;
 	}
 
 	if (anyProjectPath === undefined) {

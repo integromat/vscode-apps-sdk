@@ -1,7 +1,26 @@
-import type { Uri as UriType } from 'vscode';
+import { URI, Utils } from 'vscode-uri';
 
-const isCli = globalThis.environmentUI === 'cli';
+/**
+ * Wrapper class that extends vscode-uri's URI with additional static methods
+ * to match the full vscode.Uri interface, specifically adding joinPath.
+ */
+export class Uri extends URI {
+	/**
+	 * Creates a new URI by joining path segments to a base URI.
+	 * This method is present in vscode.Uri but missing in vscode-uri package.
+	 *
+	 * @param base The base URI
+	 * @param pathSegments Path segments to append
+	 */
+	static joinPath(base: URI, ...pathSegments: string[]): Uri {
+		// Use Utils.joinPath from vscode-uri which provides this functionality
+		return Utils.joinPath(base, ...pathSegments) as Uri;
+	}
 
-export const Uri: UriType = isCli ? require('monaco-editor/esm/vs/base/common/uri') : require('vscode').Uri;
-
-export type Uri = UriType;
+	// Re-export all static methods from URI to ensure they're available on Uri class
+	// static override isUri = URI.isUri;
+	static override parse = URI.parse;
+	static override file = URI.file;
+	static override from = URI.from;
+	// static override revive = URI.revive;
+}

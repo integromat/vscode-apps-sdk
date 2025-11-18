@@ -2,7 +2,8 @@ import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 import { TextDecoder, TextEncoder } from 'node:util';
 import throat from 'throat';
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper/index';
 import type { AppComponentMetadataWithCodeFiles, LocalAppOrigin, MakecomappJson } from './types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from './consts';
 import { migrateMakecomappJsonFile } from './makecomappjson-migrations';
@@ -15,6 +16,8 @@ import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 import { isNotOwnedByApp } from './align-components-mapping';
 import { Checksum } from './types/checksum.types';
 
+const vscode = vscodeLibWrapperFactory.lib;
+
 const limitConcurrency = throat(1);
 
 /**
@@ -22,7 +25,7 @@ const limitConcurrency = throat(1);
  * File must be located in the workspace.
  * @return Directory, where makecomapp.json is located.
  */
-export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
+export function getMakecomappRootDir(anyProjectPath: IVscode.Uri): IVscode.Uri {
 	const workspace = getCurrentWorkspace();
 	let currentProjectPath = anyProjectPath;
 	let currentDirRelative: string;
@@ -49,7 +52,7 @@ export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
 /**
  * Gets makecomapp.json content from the nearest parent dir, where makecomapp.json is located.
  */
-export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<MakecomappJson> {
+export async function getMakecomappJson(anyProjectPath: IVscode.Uri): Promise<MakecomappJson> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
 	let makecomappJsonRaw: string;
@@ -105,10 +108,7 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 /**
  * Writes new content into `makecomapp.json` file.
  */
-export async function updateMakecomappJson(
-	anyProjectPath: vscode.Uri,
-	newMakecomappJson: MakecomappJson,
-): Promise<void> {
+export async function updateMakecomappJson(anyProjectPath: IVscode.Uri, newMakecomappJson: MakecomappJson): Promise<void> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
 	await vscode.workspace.fs.writeFile(
@@ -126,7 +126,7 @@ export async function upsertComponentInMakecomappjson(
 	componentLocalId: string,
 	remoteComponentName: string,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
-	anyProjectPath: vscode.Uri,
+	anyProjectPath: IVscode.Uri,
 	origin: LocalAppOrigin,
 	originChecksums: Checksum | null,
 ): Promise<void>;
@@ -135,7 +135,7 @@ export async function upsertComponentInMakecomappjson(
 	componentLocalId: string,
 	remoteComponentName: null,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
-	anyProjectPath: vscode.Uri,
+	anyProjectPath: IVscode.Uri,
 	origin: null,
 	originChecksums: Checksum | null,
 ): Promise<void>;
@@ -144,7 +144,7 @@ export async function upsertComponentInMakecomappjson(
 	componentLocalId: string,
 	remoteComponentName: string | null,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
-	anyProjectPath: vscode.Uri,
+	anyProjectPath: IVscode.Uri,
 	origin: LocalAppOrigin | null,
 	originChecksums: Checksum | null,
 ): Promise<void> {
@@ -208,7 +208,7 @@ export async function upsertComponentInMakecomappjson(
 	});
 }
 
-export async function addEmptyOriginInMakecomappjson(anyProjectPath: vscode.Uri): Promise<LocalAppOrigin> {
+export async function addEmptyOriginInMakecomappjson(anyProjectPath: IVscode.Uri): Promise<LocalAppOrigin> {
 	return await limitConcurrency(async () => {
 		const makecomappJson = await getMakecomappJson(anyProjectPath);
 		const newOrigin: LocalAppOrigin = {
@@ -235,7 +235,7 @@ export async function addComponentIdMapping(
 	internalComponentId: string | null,
 	remoteComponentName: string | null,
 	nonOwnedByApp: boolean,
-	anyProjectPath: vscode.Uri,
+	anyProjectPath: IVscode.Uri,
 	origin: LocalAppOrigin,
 ) {
 	return await limitConcurrency(async () => {
@@ -257,7 +257,7 @@ export async function addComponentIdMapping(
 export async function generateAndReserveComponentLocalId(
 	componentType: AppComponentType,
 	preferredComponentLocalId: string,
-	anyProjectPath: vscode.Uri,
+	anyProjectPath: IVscode.Uri,
 ): Promise<string> {
 	return await limitConcurrency(async () => {
 		const componentInternalId = await _generateComponentLocalId(
@@ -288,7 +288,7 @@ export async function generateAndReserveComponentLocalId(
 async function _generateComponentLocalId(
 	componentType: AppComponentType,
 	preferedComponentLocalId: string,
-	anyProjectPath: vscode.Uri,
+	anyProjectPath: IVscode.Uri,
 	origin: LocalAppOrigin | undefined,
 ): Promise<string> {
 	const makecomappJson = await getMakecomappJson(anyProjectPath);
