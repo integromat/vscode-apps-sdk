@@ -1,16 +1,20 @@
-import * as vscode from 'vscode';
+import { ideCliMode } from '../services/ide-or-cli-mode';
+import type * as IWorkspaceIDE from './workspace-ide';
+import type * as IWorkspaceCLI from './workspace-cli';
 
-export function getCurrentWorkspace(): vscode.WorkspaceFolder {
-	if (!vscode.workspace.workspaceFolders) {
-		const e = new Error('No folder opened yet. Please open some folder first by "File" -> "Open Folder...".');
-		e.name = 'PopupError';
-		throw e;
-	}
-	if (vscode.workspace.workspaceFolders.length > 1) {
-		const e = new Error('More than one workspace\' folder opened. Cannot decide, where to download app.');
-		e.name = 'PopupError';
-		throw e;
-	}
-
-	return vscode.workspace.workspaceFolders[0];
+const mode = ideCliMode.mode;
+let logModule: typeof IWorkspaceIDE | typeof IWorkspaceCLI;
+switch (mode) {
+	case 'ide':
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		logModule = require('./workspace-ide');
+		break;
+	case 'cli':
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		logModule = require('./workspace-cli');
+		break;
+	default:
+		throw new Error(`Unknown ideCliMode: ${mode}`);
 }
+
+export const getCurrentWorkspace = logModule.getCurrentWorkspace;
