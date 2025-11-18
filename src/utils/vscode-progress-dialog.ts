@@ -1,51 +1,27 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-import * as vscode from 'vscode';
+import { ideCliMode } from '../services/ide-or-cli-mode';
 
-const asyncLocalStorage = new AsyncLocalStorage<AsyncStorageWithProgress>();
+const mode = ideCliMode.mode;
+let libModule: typeof import('./vscode-progress-dialog-ide') | typeof import('./vscode-progress-dialog-cli');
 
-/**
- * Displays the progress/busy dialog on top right of VSCode, until `asyncFunc` is finished.
- * During this time it is possible to use `progresDialogReport()` in any called function to update the dialog text details.
- */
-export async function withProgressDialog<R>(
-	options: Omit<vscode.ProgressOptions, 'location'>,
-	asyncFunc: (
-		progress: vscode.Progress<{ message?: string; increment?: number }>,
-		cancellationToken: vscode.CancellationToken,
-	) => Promise<R>,
-): Promise<R> {
-	return await vscode.window.withProgress(
-		{
-			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			...options,
-		},
-		async (progress, cancellationToken) => {
-			return asyncLocalStorage.run({ progressDialog: { progress, cancellationToken } }, () => {
-				return asyncFunc(progress, cancellationToken);
-			});
-		},
-	);
+switch (mode) {
+	case 'ide':
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		libModule = require('./vscode-progress-dialog-ide');
+		break;
+	case 'cli':
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		libModule = require('./vscode-progress-dialog-cli');
+		break;
+	default:
+		throw new Error(`Unknown ideCliMode: ${mode}`);
 }
 
 /**
- * Updates the dialog text details displayed by `withProgressDialog()`.
- * Function can be called from any called function.
- *
- * Note: If no dialog is displayed, does not do anything.
+ * Shows progress dialog with given options while executing the given async function.
  */
-export function progresDialogReport(message: string) {
-	const storage = asyncLocalStorage.getStore();
-	(storage?.progressDialog as ProgressDialog)?.progress?.report({
-		message,
-	});
-}
+export const withProgressDialog = libModule.withProgressDialog;
 
-interface ProgressDialog {
-	cancellationToken: vscode.CancellationToken;
-	progress: vscode.Progress<{ message?: string; increment?: number }>;
-}
-
-interface AsyncStorageWithProgress {
-	progressDialog: ProgressDialog;
-}
+/**
+ * Updates progress dialog detailed text.
+ */
+export const progresDialogReport = libModule.progresDialogReport;
