@@ -1,6 +1,9 @@
 import { AxiosError } from 'axios';
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import { log, showLog } from './logging';
+import { vscodeLibWrapperFactory } from './services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * Smart convert a varios types of errors to string.
@@ -117,7 +120,7 @@ export const showError = showAndLogError;
  *
  * Note: Does not log the error into error console. If needed to log it, use `showAndLogError()` instead.
  */
-export function showErrorDialog(message: string, messageOptions: vscode.MessageOptions = {}): void {
+export function showErrorDialog(message: string, messageOptions: IVscode.MessageOptions = {}): void {
 	vscode.window
 		.showErrorMessage(
 			message,
