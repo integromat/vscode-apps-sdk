@@ -3,6 +3,7 @@ import * as jsoncParser from 'jsonc-parser';
 import * as vscode from 'vscode';
 import type { Environment } from '../types/environment.types';
 import * as Core from '../Core';
+import * as coreUtils from '../utils/core-utils';
 import { showAndLogError } from '../error-handling';
 import { requestMakeApi } from '../utils/request-api-make';
 
@@ -28,7 +29,7 @@ export class ParametersProvider {
 
 		// Preparing api route
 		let urn = `/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}`;
-		if (Core.isVersionable(crumbs[3])) {
+		if (coreUtils.isVersionable(crumbs[3])) {
 			urn += `/${crumbs[2]}/${version}`;
 		}
 		urn += `/${crumbs[3]}/${crumbs[4]}`;

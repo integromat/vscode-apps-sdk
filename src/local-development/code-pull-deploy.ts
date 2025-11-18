@@ -1,8 +1,11 @@
 import * as path from 'node:path';
 import { AxiosRequestConfig } from 'axios';
 import { TextDecoder } from 'util';
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import type { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from './types/makecomapp.types';
+
+const vscode = vscodeLibWrapperFactory.lib;
 import type { ApiCodeType, CodeType } from './types/code-type.types';
 import { getComponentApiUrl } from './helpers/api-url';
 import { getCodeDef } from '../services/component-code-def';
@@ -37,7 +40,7 @@ export async function pullComponentCode({
 	remoteComponentName: string;
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
-	destinationPath: vscode.Uri;
+	destinationPath: IVscode.Uri;
 }): Promise<void> {
 	log('debug', `Pull ${appComponentType} ${remoteComponentName}: code ${codeType}`);
 
@@ -154,7 +157,7 @@ export async function deployComponentCode({
 	remoteComponentName: string;
 	codeType: CodeType;
 	origin: LocalAppOriginWithSecret;
-	sourcePath: vscode.Uri;
+	sourcePath: IVscode.Uri;
 	originChecksums: Checksum;
 	originChecksum?: string[] | undefined | null;
 }) {
@@ -237,7 +240,7 @@ export async function deployComponentCode({
 export async function pullComponentCodes(
 	appComponentType: AppComponentType,
 	remoteComponentName: string,
-	localAppRootdir: vscode.Uri,
+	localAppRootdir: IVscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	componentMetadata: AppComponentMetadataWithCodeFiles,
 ): Promise<void> {

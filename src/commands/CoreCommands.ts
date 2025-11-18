@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import axios from 'axios';
 import * as vscode from 'vscode';
 import * as Core from '../Core';
+import * as coreUtils from '../utils/core-utils';
 import * as Meta from '../Meta';
 import { RpcProvider } from '../providers/RpcProvider';
 import { ImlProvider } from '../providers/ImlProvider';
@@ -633,7 +634,7 @@ export class CoreCommands {
 				)}/${Core.getApp(item).name}`;
 
 				// Add version to URN for versionable items
-				if (Core.isVersionable(item.apiPath)) {
+				if (coreUtils.isVersionable(item.apiPath)) {
 					urn += `${_environment.version === 2 ? `/${Core.getApp(item).name}` : ''}/${
 						Core.getApp(item).version
 					}`;
@@ -729,7 +730,7 @@ export class CoreCommands {
 				)}/${Core.getApp(item).name}`;
 
 				// Add version to URN for versionable items
-				if (Core.isVersionable(item.apiPath)) {
+				if (coreUtils.isVersionable(item.apiPath)) {
 					urn += `${_environment.version === 2 ? `/${Core.getApp(item).name}` : ''}/${
 						Core.getApp(item).version
 					}`;

@@ -24,10 +24,6 @@ export function getApp(item: any): any {
 	return item.parent === undefined ? item : getApp(item.parent);
 }
 
-export function isVersionable(item: string) {
-	return !['connection', 'webhook', 'connections', 'webhooks'].includes(item);
-}
-
 export function contextGuard(context: any) {
 	if (context === undefined || context === null) {
 		vscode.window.showErrorMessage(

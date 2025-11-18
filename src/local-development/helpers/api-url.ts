@@ -1,5 +1,5 @@
 import type { LocalAppOriginWithSecret } from '../types/makecomapp.types';
-import * as Core from '../../Core';
+import * as coreUtils from '../../utils/core-utils';
 import type { AppComponentType } from '../../types/app-component-type.types';
 
 const apiV2SdkAppsBasePath = 'v2/sdk/apps';
@@ -21,7 +21,7 @@ export function getComponentApiUrl({
 	let url = `${origin.baseUrl}/${apiV2SdkAppsBasePath}`;
 
 	// Add version to URN for versionable items
-	if (Core.isVersionable(componentType)) {
+	if (coreUtils.isVersionable(componentType)) {
 		url += `/${origin.appId}/${origin.appVersion}`;
 	} else if (!remoteComponentName) {
 		// Case URL:
