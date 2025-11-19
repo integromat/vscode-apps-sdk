@@ -31,7 +31,7 @@ export function registerCommands(): void {
 /**
  * Clones whole app from Make cloud to the local repository
  */
-async function cloneAppToWorkspace(context: App): Promise<void> {
+export async function cloneAppToWorkspace(context: Pick<App, 'name' | 'version'>): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscodeLibWrapper.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 

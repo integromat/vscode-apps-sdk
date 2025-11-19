@@ -1,11 +1,13 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import { getCurrentWorkspace } from '../services/workspace';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 
+const vscode = vscodeLibWrapperFactory.lib;
 /**
  * Opens vs code directory selector and returns the selected directory.
  * Returns undefined, when user cancels the dialog.
  */
-export async function askForAppDirToClone(): Promise<vscode.Uri | undefined> {
+export async function askForAppDirToClone(): Promise<IVscode.Uri | undefined> {
 	const workspace = getCurrentWorkspace();
 
 	// Ask user for the destination directory.

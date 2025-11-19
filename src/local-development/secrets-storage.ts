@@ -1,8 +1,11 @@
 import throat from 'throat';
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import { APIKEY_DIRNAME } from './consts';
 import { getCurrentWorkspace } from '../services/workspace';
 import { getFirstNonExistingPath } from '../utils/non-existing-path';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 const limitConcurrency = throat(1);
 
@@ -10,7 +13,7 @@ const limitConcurrency = throat(1);
  * Stores a secret into new local file into `/.secrets/secretName-[postfixNubmber]` file.
  * @returns Uri of new apikey file.
  */
-export async function storeSecret(secretName: string, secret: string): Promise<vscode.Uri> {
+export async function storeSecret(secretName: string, secret: string): Promise<IVscode.Uri> {
 	return limitConcurrency(async () => {
 		const workspaceRoot = getCurrentWorkspace().uri;
 		const apikeyDir = vscode.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);

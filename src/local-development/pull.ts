@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import {
 	AppComponentMetadata,
 	AppComponentMetadataWithCodeFiles,
@@ -20,6 +20,9 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
 import type { Checksum } from './types/checksum.types';
 import { downloadOriginChecksums, getComponentChecksumArray } from './helpers/origin-checksum';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 export function registerCommands(): void {
 	/**
@@ -27,7 +30,7 @@ export function registerCommands(): void {
 	 */
 	vscode.commands.registerCommand(
 		'apps-sdk.local-dev.pull-all-components',
-		catchError('Pull all components', async (makecomappJsonPath: vscode.Uri) => {
+		catchError('Pull all components', async (makecomappJsonPath: IVscode.Uri) => {
 			const localAppRootdir = getMakecomappRootDir(makecomappJsonPath);
 			const origin = await askForProjectOrigin(localAppRootdir);
 			if (!origin) {
@@ -48,7 +51,7 @@ export function registerCommands(): void {
  * Creates all necessary local files and adds component to makecomapp.json manifest.
  */
 export async function pullAllComponents(
-	localAppRootdir: vscode.Uri,
+	localAppRootdir: IVscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	newRemoteComponentResolution: 'askUser' | 'cloneAsNew',
 	originChecksums: Checksum,
@@ -151,10 +154,10 @@ async function pullComponent(
 	remoteComponentName: string,
 	componentLocalId: string,
 	updatedComponentMetadata: AppComponentMetadata | AppComponentMetadataWithCodeFiles,
-	localAppRootdir: vscode.Uri,
+	localAppRootdir: IVscode.Uri,
 	origin: LocalAppOriginWithSecret,
 	includeCommonFiles: boolean,
-	originChecksums: Checksum // need to distinguish non-owned components
+	originChecksums: Checksum, // need to distinguish non-owned components
 ) {
 	// Generate code files paths if local component does not exist yet.
 	//   (In this case the `updatedComponentMetadata` param value is being provided without `codeFiles`.)
