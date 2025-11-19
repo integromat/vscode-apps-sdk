@@ -1,9 +1,12 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import type { CodePath } from './types/code-path.types';
 import type { AppComponentType } from '../types/app-component-type.types';
 import type { ComponentCodeFilesMetadata, MakecomappJson } from '../local-development/types/makecomapp.types';
 import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { entries } from '../utils/typed-object';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * Gets app's and component's code, which matches with the local file path.
@@ -11,7 +14,7 @@ import { entries } from '../utils/typed-object';
 export function findCodeByFilePath(
 	fileRelativePath: string,
 	makecomappJson: MakecomappJson,
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 ): CodePath {
 	const codes = findCodesByFilePath(fileRelativePath, makecomappJson, makeappRootdir);
 	if (codes.length === 0) {
@@ -34,7 +37,7 @@ export function findCodeByFilePath(
 export function findCodesByFilePath(
 	relativePath: string,
 	makecomappJson: MakecomappJson,
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 ): CodePath[] {
 	const ret: CodePath[] = [];
 
