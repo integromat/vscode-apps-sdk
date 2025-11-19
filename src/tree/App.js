@@ -1,10 +1,11 @@
 /* eslint-disable semi,@typescript-eslint/no-var-requires */
-const path = require('path')
 const EnhancedTreeItem = require('./EnhancedTreeItem')
-const { appsIconTempDir } = require('../temp-dir');
 const { getIconLocalPath } = require('../libs/app-icon');
 
 class App extends EnhancedTreeItem {
+	/**
+	 * @param {number} version - major version
+	 */
 	constructor(name, label, description, version, isPublic, isApproved, theme, changes, iconVersion, isOpensource  = false) {
 		super(
 			label
@@ -15,6 +16,7 @@ class App extends EnhancedTreeItem {
 		this.id = `${name}@${version}`
 		this.name = name
 		this.description = description || ''
+		/** @type {number} */
 		this.version = version
 		this.public = isPublic
 		this.approved = isApproved
