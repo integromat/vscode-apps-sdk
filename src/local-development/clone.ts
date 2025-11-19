@@ -11,13 +11,13 @@ import { generateDefaultLocalFilename } from './local-file-paths';
 import { pullAllComponents } from './pull';
 import { storeSecret } from './secrets-storage';
 import { getCurrentWorkspace } from '../services/workspace';
-import { getCurrentEnvironment } from '../providers/configuration';
 import App from '../tree/App';
 import { generalCodesDefinition } from '../services/component-code-def';
 import { catchError } from '../error-handling';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
 import { downloadOriginChecksums } from './helpers/origin-checksum';
+import { getApiBaseUrlConfiguration, getApikeyConfiguration } from '../providers/configuration-makeapi';
 
 const vscodeLibWrapper = vscodeLibWrapperFactory.lib;
 
@@ -87,7 +87,9 @@ export async function cloneAppToWorkspace(context: Pick<App, 'name' | 'version'>
 
 	const includeCommonData = commonDataAnswer.title.startsWith('Include');
 
-	const environment = getCurrentEnvironment();
+	// Load API key and API base URL from configuration (from the VSCode extension's settings or from CLI parameters)
+	const apikey = await getApikeyConfiguration();
+	const apiBaseUrl = await getApiBaseUrlConfiguration();
 
 	const makeappJsonPath = vscodeLibWrapper.Uri.joinPath(localAppRootdir, MAKECOMAPP_FILENAME); // TODO rename to `makecomappJsonPath`
 	// If manifest exists, cancel this task.
@@ -95,11 +97,11 @@ export async function cloneAppToWorkspace(context: Pick<App, 'name' | 'version'>
 		throw new Error(MAKECOMAPP_FILENAME + ' already exists in the workspace. Clone cancelled.');
 	}
 
-	const apikeyFileUri = await storeSecret('apikey', environment.apikey);
+	const apikeyFileUri = await storeSecret('apikey', apikey);
 
 	const origin: LocalAppOriginWithSecret = {
 		label: 'Origin',
-		baseUrl: 'https://' + environment.url,
+		baseUrl: apiBaseUrl,
 		appId: context.name,
 		appVersion: context.version,
 		idMapping: {
@@ -110,7 +112,7 @@ export async function cloneAppToWorkspace(context: Pick<App, 'name' | 'version'>
 			webhook: [],
 		},
 		apikeyFile: path.posix.relative(localAppRootdir.path, apikeyFileUri.path),
-		apikey: environment.apikey,
+		apikey: apikey,
 	};
 	const originWithoutApiKey: LocalAppOrigin = pick(origin, [
 		'label',
@@ -141,7 +143,7 @@ export async function cloneAppToWorkspace(context: Pick<App, 'name' | 'version'>
 	const gitignoreContent = new TextEncoder().encode(gitignoreLines.join('\n') + '\n');
 	await vscodeLibWrapper.workspace.fs.writeFile(gitignoreUri, gitignoreContent);
 	// Create apikey file
-	const apiKeyFileContent = new TextEncoder().encode(environment.apikey + '\n');
+	const apiKeyFileContent = new TextEncoder().encode(apikey + '\n');
 	await vscodeLibWrapper.workspace.fs.writeFile(apikeyFileUri, apiKeyFileContent);
 
 	await withProgressDialog({ title: `Cloning app ${origin.appId}` }, async () => {

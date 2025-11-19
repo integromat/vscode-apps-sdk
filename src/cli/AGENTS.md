@@ -1,6 +1,6 @@
 # CLI Directory - AI Agent Instructions
 
-This directory provides command-line interface functions for local development of Make Custom Applications.
+This directory provides command-line interface functions for local development of Make.com Custom Applications.
 
 ## Purpose
 

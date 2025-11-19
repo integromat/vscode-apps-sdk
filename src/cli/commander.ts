@@ -14,7 +14,7 @@ export const cliProgram = new Command();
 
 cliProgram
 	.name('make-local-apps-cli')
-	.description('A CLI tool for local development and deployment of Make Custom Apps.')
+	.description('A CLI tool for local development and deployment of Make.com Custom Apps.')
 
 	.command('clone')
 	// parameter "directory"
