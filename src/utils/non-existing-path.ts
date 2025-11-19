@@ -1,10 +1,13 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * Finds the file, which does not exist in filesystem.
  * If `basedir/basename` already exists, tries to add a number as postfix until non existing path found.
  */
-export async function getFirstNonExistingPath(basedir: vscode.Uri, basename: string) {
+export async function getFirstNonExistingPath(basedir: IVscode.Uri, basename: string) {
 	let postfix = 1; // Note: '1' will not be added as postfix (1 == without postfix)
 	do {
 		const filePath = vscode.Uri.joinPath(basedir, basename + (postfix > 1 ? postfix : ''));

@@ -45,7 +45,10 @@ function showInputBox(options?: IVscode.InputBoxOptions): Promise<string | undef
 	// TODO: Implement CLI version
 }
 
-function showQuickPick(items: readonly string[], options?: IVscode.QuickPickOptions): Promise<string | undefined> {
+function showQuickPick<T extends IVscode.QuickPickItem>(
+	items: readonly T[],
+	options?: IVscode.QuickPickOptions,
+): Promise<T | undefined> {
 	throw new Error('showQuickPick is not implemented in CLI yet');
 	// TODO: Implement CLI version
 }

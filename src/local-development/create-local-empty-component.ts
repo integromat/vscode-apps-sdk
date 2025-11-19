@@ -1,11 +1,14 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import type { AppComponentMetadata, AppComponentMetadataWithCodeFiles } from './types/makecomapp.types';
 import { generateAndReserveComponentLocalId, upsertComponentInMakecomappjson } from './makecomappjson';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import { generateComponentDefaultCodeFilesPaths } from './local-file-paths';
 import { getEmptyCodeContent } from './helpers/get-empty-code-content';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
 import { entries } from '../utils/typed-object';
 import type { AppComponentType } from '../types/app-component-type.types';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * Handles the VS Code right click and select "Create local component: IML Function".
@@ -16,7 +19,7 @@ export async function createLocalEmptyComponent(
 	componentType: AppComponentType,
 	preferedComponentLocalId: string,
 	componentMetadata: AppComponentMetadata,
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 	nonOwnedByApp = false,
 ): Promise<{ componentMetadata: AppComponentMetadataWithCodeFiles; componentLocalId: string }> {
 	// Validate `componentMetadata` for mandatory additional data
@@ -62,13 +65,15 @@ export async function createLocalEmptyComponent(
 		...componentMetadata,
 		// Generate Local file paths (Relative to app rootdir) + store metadata
 		// when the connection is not owned by the app, dont create code files
-		codeFiles: nonOwnedByApp ? {} : await generateComponentDefaultCodeFilesPaths(
-			componentType,
-			newComponentLocalId,
-			componentMetadata,
-			makeappRootdir,
-			includeCommonData,
-		),
+		codeFiles: nonOwnedByApp
+			? {}
+			: await generateComponentDefaultCodeFilesPaths(
+					componentType,
+					newComponentLocalId,
+					componentMetadata,
+					makeappRootdir,
+					includeCommonData,
+			  ),
 	};
 	// Write empty files (empty JSON objects or arrays)
 	for (const [codeType, codeFilePath] of entries(componentMetadataWithCodeFiles.codeFiles)) {
@@ -89,7 +94,7 @@ export async function createLocalEmptyComponent(
 		componentMetadataWithCodeFiles,
 		makeappRootdir,
 		null,
-		null
+		null,
 	);
 
 	return {

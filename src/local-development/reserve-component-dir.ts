@@ -1,9 +1,12 @@
 import sanitize from 'sanitize-filename';
 import throat from 'throat';
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { getFirstNonExistingPath } from '../utils/non-existing-path';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 const limitConcurrency = throat(1);
 
@@ -14,8 +17,8 @@ const limitConcurrency = throat(1);
 export async function reserveComponentCodeFilesDirectory(
 	componentType: AppComponentType,
 	componentName: string,
-	localAppRootdir: vscode.Uri,
-): Promise<vscode.Uri> {
+	localAppRootdir: IVscode.Uri,
+): Promise<IVscode.Uri> {
 	return limitConcurrency(async () => {
 		const componentDir = await getFirstNonExistingPath(
 			vscode.Uri.joinPath(localAppRootdir, componentType + 's'),

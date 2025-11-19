@@ -1,8 +1,11 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import type { LocalAppOrigin } from './types/makecomapp.types';
 import { downloadComponentCode } from './code-pull-deploy';
 import { getConfiguration } from '../providers/configuration';
 import { withProgressDialog } from '../utils/vscode-progress-dialog';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * User is asked for an API token (if secret file is missing in origin configuration).
@@ -12,7 +15,7 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
  *
  * @return API token
  */
-export async function askAddMissingApiKey(origin: LocalAppOrigin, makeappRootdir: vscode.Uri): Promise<string> {
+export async function askAddMissingApiKey(origin: LocalAppOrigin, makeappRootdir: IVscode.Uri): Promise<string> {
 	if (!origin.apikeyFile) {
 		throw new Error(
 			`Cannot set new API token to origin "${
@@ -86,7 +89,7 @@ async function askApiKey(origin: LocalAppOrigin): Promise<string> {
 	};
 
 	// Prepare dialog options
-	const pickOptions: (vscode.QuickPickItem & { apikey: string | symbol; order: number })[] = [
+	const pickOptions: (IVscode.QuickPickItem & { apikey: string | symbol; order: number })[] = [
 		// Offer all existing suitable counterparty components
 		...configuration.environments.map((makeEnvironment) => ({
 			label: `Use API token from "${makeEnvironment.name}" environment${

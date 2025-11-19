@@ -35,7 +35,10 @@ export interface VscodeLibWrapperWindowInterface {
 		...items: T[]
 	) => Promise<T | undefined>;
 	showInputBox: (options?: IVscode.InputBoxOptions) => Promise<string | undefined>;
-	showQuickPick: (items: readonly string[], options?: IVscode.QuickPickOptions) => Promise<string | undefined>;
+	showQuickPick: <T extends IVscode.QuickPickItem>(
+		items: readonly T[],
+		options?: IVscode.QuickPickOptions,
+	) => Promise<T | undefined>;
 	readonly activeTextEditor: IVscode.TextEditor | undefined;
 }
 

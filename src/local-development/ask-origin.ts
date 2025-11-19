@@ -1,5 +1,5 @@
 import path from 'path';
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
 import { TextDecoder } from 'util';
 import type { LocalAppOrigin, LocalAppOriginWithSecret } from './types/makecomapp.types';
 import { addEmptyOriginInMakecomappjson, getMakecomappJson } from './makecomappjson';
@@ -8,6 +8,9 @@ import { askAddMissingApiKey } from './ask-add-missing-apikey';
 import { getCurrentWorkspace } from '../services/workspace';
 import { userPreferences } from './helpers/user-preferences';
 import { getOriginObject } from './helpers/get-origin-object';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 export const specialAnswers = {
 	ADD_ORIGIN: Symbol('> Deploy into another app'),
@@ -19,7 +22,7 @@ export const specialAnswers = {
  *
  * Note: Gets the list of origins from project's makecomapp.json.
  */
-export async function askForProjectOrigin(makeappRootdir: vscode.Uri, purposeLabel?: string) {
+export async function askForProjectOrigin(makeappRootdir: IVscode.Uri, purposeLabel?: string) {
 	const makecomappJson = await getMakecomappJson(makeappRootdir);
 	return askForOrigin(makecomappJson.origins, makeappRootdir, purposeLabel);
 }
@@ -34,7 +37,7 @@ export async function askForProjectOrigin(makeappRootdir: vscode.Uri, purposeLab
  */
 export async function askForOrigin(
 	origins: LocalAppOrigin[],
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 	purposeLabel?: string,
 	enableFeatureAddNewOrigin = false,
 ): Promise<LocalAppOriginWithSecret | undefined> {
@@ -46,7 +49,7 @@ export async function askForOrigin(
 
 async function askForOrigin2(
 	origins: LocalAppOrigin[],
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 	purposeLabel?: string,
 	enableFeatureAddNewOrigin = false,
 ): Promise<LocalAppOrigin | undefined> {
@@ -80,7 +83,7 @@ async function askForOrigin2(
 	}
 
 	// Prepare list of dialog options (list of origins)
-	const quickPickOptions: ({ origin: LocalAppOrigin | symbol; setDefault?: boolean } & vscode.QuickPickItem)[] = [];
+	const quickPickOptions: ({ origin: LocalAppOrigin | symbol; setDefault?: boolean } & IVscode.QuickPickItem)[] = [];
 	origins.forEach((origin, index) => {
 		try {
 			const originHost = new URL(origin.baseUrl).host;
@@ -162,15 +165,15 @@ async function askForOrigin2(
 /**
  * Takes the origin and return new structure, where apiKey is included.
  */
-async function includeApiKey(origin: LocalAppOrigin, makeappRootdir: vscode.Uri): Promise<LocalAppOriginWithSecret>;
-async function includeApiKey(origin: undefined, makeappRootdir: vscode.Uri): Promise<undefined>;
+async function includeApiKey(origin: LocalAppOrigin, makeappRootdir: IVscode.Uri): Promise<LocalAppOriginWithSecret>;
+async function includeApiKey(origin: undefined, makeappRootdir: IVscode.Uri): Promise<undefined>;
 async function includeApiKey(
 	origin: LocalAppOrigin | undefined,
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 ): Promise<LocalAppOriginWithSecret | undefined>;
 async function includeApiKey(
 	origin: LocalAppOrigin | undefined,
-	makeappRootdir: vscode.Uri,
+	makeappRootdir: IVscode.Uri,
 ): Promise<LocalAppOriginWithSecret | undefined> {
 	if (!origin) {
 		return undefined;

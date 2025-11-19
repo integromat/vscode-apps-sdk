@@ -1,4 +1,5 @@
-import * as vscode from 'vscode';
+import type * as IVscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import type { AppComponentMetadata, AppComponentMetadataRemoteIDs } from './types/makecomapp.types';
 import type { AppComponentType } from '../types/app-component-type.types';
 
@@ -8,6 +9,8 @@ export const specialAnswers = {
 	MAP_WITH_NULL: Symbol('Ignore compoment in counterparty'),
 	MAP_WITH_NULL__FOR_ALL: Symbol("Ignore compoment in counterparty (apply for all, don't ask again)"),
 };
+
+const vscode = vscodeLibWrapperFactory.lib;
 
 /**
  * Opens dialog, which asks user to do with component unmapped to counterparty.
@@ -21,7 +24,10 @@ export async function askForSelectMappedComponent(
 	componentType: AppComponentType,
 	componentIdOrName: string,
 	componentLabel: string | undefined,
-	counterpartyComponents: { componentName: string; componentMetadata: AppComponentMetadata | AppComponentMetadataRemoteIDs }[],
+	counterpartyComponents: {
+		componentName: string;
+		componentMetadata: AppComponentMetadata | AppComponentMetadataRemoteIDs;
+	}[],
 ): Promise<string | symbol> {
 	const counterpartyComponentsLocation = componentLocation === 'local' ? 'remote' : 'local';
 	const actionText = componentLocation === 'local' ? 'Deploy' : 'Pull';
@@ -39,7 +45,7 @@ export async function askForSelectMappedComponent(
 	}
 
 	// Prepare dialog options
-	const pickOptions: (vscode.QuickPickItem & { name: string | symbol; similarityScore: number })[] = [
+	const pickOptions: (IVscode.QuickPickItem & { name: string | symbol; similarityScore: number })[] = [
 		// Offer all existing suitable counterparty components
 		...counterpartyComponents.map((component) => ({
 			label: `Existing ${counterpartyComponentsLocation} ${componentType} "${component.componentMetadata.label}" [${component.componentName}]`,
