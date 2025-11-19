@@ -903,7 +903,8 @@
 		"vscePublishPrerelease": "isPreReleaseBuild=true npm run __writePrereleaseFlag && vsce publish --pre-release && npm run __deletePrereleaseFlag",
 		"schema:makecomapp": "typescript-json-schema src/local-development/types/makecomapp.types.ts MakecomappJson --out syntaxes/local-development/schemas/makecomapp.schema.json --required --noExtraProps --strictNullChecks --includeEnum --uniqueNames --refs --topRef --ignoreErrors",
 		"cli:build": "rm -rf ./out && tsc -p ./tsconfig-cli.json",
-		"cli:start": "npm run cli:build && node --enable-source-maps out/cli/index"
+		"cli:run": "node --enable-source-maps out/cli/index",
+		"cli:start": "npm run cli:build && npm run cli:run --"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.30.0",

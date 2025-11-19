@@ -2,8 +2,13 @@ import type * as IVscode from 'vscode';
 import { getCurrentCliContext } from '../cli/cli-context';
 import { Uri } from './vscode-lib-wraper/vscode-cli-modules/uri';
 
+/**
+ * @returns The current workspace folder object.
+ * In CLI mode, the workspace is the directory provided by CLI option `--local-dir <filesystem-path>`.
+ */
+
 export function getCurrentWorkspace(): IVscode.WorkspaceFolder {
-	const pathFromCliArgument = getCurrentCliContext().arguments.directory as string;
+	const pathFromCliArgument = getCurrentCliContext().options.localDir as string | undefined;
 	if (!pathFromCliArgument) {
 		throw new Error('No directory provided in CLI arguments.');
 	}

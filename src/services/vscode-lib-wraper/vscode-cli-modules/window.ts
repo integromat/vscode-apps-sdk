@@ -13,7 +13,7 @@ export const vsCodeLibWrapperWindowImplementationForCLI: VscodeLibWrapperWindowI
 	},
 };
 
-function showErrorMessage<T extends IVscode.MessageItem>(
+async function showErrorMessage<T extends IVscode.MessageItem>(
 	message: string,
 	options?: IVscode.MessageOptions,
 	...items: T[]
@@ -22,30 +22,48 @@ function showErrorMessage<T extends IVscode.MessageItem>(
 	// TODO: Implement CLI version
 }
 
-function showWarningMessage<T extends IVscode.MessageItem>(
+async function showWarningMessage<T extends IVscode.MessageItem>(
 	message: string,
 	options?: IVscode.MessageOptions,
 	...items: T[]
 ): Promise<T | undefined> {
-	throw new Error('showWarningMessage is not implemented in CLI yet');
-	// TODO: Implement CLI version
+	console.log(`FAIL/WARN: ${message}`);
+	return undefined;
 }
 
-function showInformationMessage<T extends IVscode.MessageItem>(
+async function showInformationMessage<T extends IVscode.MessageItem>(
 	message: string,
 	options?: IVscode.MessageOptions,
 	...items: T[]
 ): Promise<T | undefined> {
-	throw new Error('showInformationMessage is not implemented in CLI yet');
-	// TODO: Implement CLI version
+	if (!options?.modal) {
+		console.log(`INFO: ${message}`);
+		if (options?.detail) {
+			console.log(`  DETAIL: ${options.detail}`);
+		}
+		return items[0];
+	} else {
+		// Ask user for selection of one of the items before continuing.
+		console.log(`INFO DIALOG: ${message}`);
+		if (options?.detail) {
+			console.log(`  DETAIL: ${options.detail}`);
+		}
+		for (const item of items) {
+			console.log(`  OPTION to select: ${item.title}`);
+		}
+		console.log(`  OPTION to select: Cancel`);
+
+		// TODO implement
+		return undefined; // Returns the modal cancel button before full implementation.
+	}
 }
 
-function showInputBox(options?: IVscode.InputBoxOptions): Promise<string | undefined> {
+async function showInputBox(options?: IVscode.InputBoxOptions): Promise<string | undefined> {
 	throw new Error('showInputBox is not implemented in CLI yet');
 	// TODO: Implement CLI version
 }
 
-function showQuickPick<T extends IVscode.QuickPickItem>(
+async function showQuickPick<T extends IVscode.QuickPickItem>(
 	items: readonly T[],
 	options?: IVscode.QuickPickOptions,
 ): Promise<T | undefined> {

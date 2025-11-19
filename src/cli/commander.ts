@@ -12,28 +12,37 @@ import { getCurrentCliContext, storeCurrentCliContext } from './cli-context';
 
 export const cliProgram = new Command();
 
-cliProgram
-	.name('make-local-apps-cli')
-	.description('A CLI tool for local development and deployment of Make.com Custom Apps.')
+cliProgram.name('makeapps-cli').description('A CLI tool for local development and deployment of Make.com Custom Apps.');
 
+cliProgram
 	.command('clone')
+	.description('Clones the Make Custom App (placed in Make.com) to local file system as a new project.')
 	// parameter "directory"
-	.argument('<directory>', 'The directory where the app will be cloned to.', (value) => {
-		const stat = fs.statSync(value);
-		// Must be a directory.
-		if (!stat.isDirectory()) {
-			throw new Error(`The directory "${value}" is not a directory.`);
-		}
-		// Must be empty.
-		if (fs.readdirSync(value).length > 0) {
-			throw new Error(
-				`The directory "${value}" is not empty. Please, use an empty directory as target directory for Custom App clone.`,
-			);
+	.argument('<app-name>', 'The name of the Make Custom App to clone.', (value) => {
+		// test if value is a valid app name by regex
+		if (!/^[a-z][0-9a-z-]+[0-9a-z]$/.test(value)) {
+			throw new Error(`The value "${value}" is not a valid app name.`);
 		}
 		return value;
 	})
-	.description('Clones the Make Custom App (placed in Make.com) to local file system as a new project.')
-	.addOption(new Option('--app-id <string>', 'The ID of the Make Custom App').makeOptionMandatory(true))
+	.addOption(
+		new Option('--local-dir <filesystem-path>', 'The directory where the app will be cloned to.')
+			.makeOptionMandatory(true)
+			.argParser((value: string) => {
+				const stat = fs.statSync(value);
+				// Must be a directory.
+				if (!stat.isDirectory()) {
+					throw new Error(`The directory "${value}" is not a directory.`);
+				}
+				// Must be empty.
+				if (fs.readdirSync(value).length > 0) {
+					throw new Error(
+						`The directory "${value}" is not empty. Please, use an empty directory as target directory for Custom App clone.`,
+					);
+				}
+				return value;
+			}),
+	)
 	.addOption(
 		new Option('--app-major <integer>', 'The major version of the Make Custom App').preset(1).argParser((value) => {
 			// test if value is an integer by regex
@@ -61,7 +70,10 @@ cliProgram
 		).preset(process.cwd()),
 	)
 	.addOption(new Option('--include-common-data', 'Include common data').preset(false))
-	.addHelpText('after', 'Examples:\n  $0 clone ./my-app')
+	.addHelpText(
+		'after',
+		`Example:\n  ${cliProgram.name()} clone my-app --make-host eu1.make.com --local-dir ./my-app\n    - Clones the Make app "my-app" to the local directory "./my-app".`,
+	)
 	.action(async function (directory: string) {
 		const cliOptions = this.opts();
 		storeCurrentCliContext('clone', { directory }, cliOptions);
