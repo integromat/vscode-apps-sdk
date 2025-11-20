@@ -1,5 +1,6 @@
 /* eslint @typescript-eslint/no-unused-vars: "warn" */ // TODO remove this line after full implementation
 import type * as IVscode from 'vscode';
+import Enquirer from 'enquirer';
 import type { VscodeLibWrapperWindowInterface } from '../types';
 
 export const vsCodeLibWrapperWindowImplementationForCLI: VscodeLibWrapperWindowInterface = {
@@ -44,17 +45,28 @@ async function showInformationMessage<T extends IVscode.MessageItem>(
 		return items[0];
 	} else {
 		// Ask user for selection of one of the items before continuing.
-		console.log(`INFO DIALOG: ${message}`);
-		if (options?.detail) {
-			console.log(`  DETAIL: ${options.detail}`);
-		}
-		for (const item of items) {
-			console.log(`  OPTION to select: ${item.title}`);
-		}
-		console.log(`  OPTION to select: Cancel`);
+		const response = await Enquirer.prompt<{ select1: string }>({
+			type: 'select',
+			name: 'select1',
+			message: message + (options?.detail ? `\n\n${options.detail}` : ''),
 
-		// TODO implement
-		return undefined; // Returns the modal cancel button before full implementation.
+			choices: [
+				...items.map((item, index) => ({
+					name: String(index), // returns the index of the selected item (must be as string)
+					message: item.title,
+				})),
+				{
+					name: '--Cancel--',
+					message: 'Cancel✖️',
+				},
+			],
+		}).catch(() => undefined); // Catch user abort (Escape key
+		if (response?.select1 === undefined || response?.select1 === '--Cancel--') {
+			// User cancelled the modal dialog
+			return undefined;
+		}
+		// Return whole original item object
+		return items[parseInt(response.select1)];
 	}
 }
 

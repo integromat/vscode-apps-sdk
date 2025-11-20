@@ -18,13 +18,7 @@ cliProgram
 	.command('clone')
 	.description('Clones the Make Custom App (placed in Make.com) to local file system as a new project.')
 	// parameter "directory"
-	.argument('<app-name>', 'The name of the Make Custom App to clone.', (value) => {
-		// test if value is a valid app name by regex
-		if (!/^[a-z][0-9a-z-]+[0-9a-z]$/.test(value)) {
-			throw new Error(`The value "${value}" is not a valid app name.`);
-		}
-		return value;
-	})
+	.argument('<app-name>', 'The name of the Make Custom App to clone.')
 	.addOption(
 		new Option('--local-dir <filesystem-path>', 'The directory where the app will be cloned to.')
 			.makeOptionMandatory(true)

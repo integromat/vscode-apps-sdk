@@ -38,6 +38,25 @@
 			"request": "attach",
 			"name": "Attach Language Server",
 			"port": 6009
+		},
+		// Debug CLI
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Debug CLI - Clone Fake App",
+			"runtimeArgs": ["--enable-source-maps"],
+			"program": "${workspaceFolder}/out/cli/index.js",
+			"args": [
+				"clone",
+				"fake-app",
+				"--local-dir",
+				"./temp",
+				"--make-host",
+				"eu1.make.com"
+			],
+			"console": "integratedTerminal",
+			"cwd": "${workspaceFolder}",
+			"preLaunchTask": "npm: cli:build"
 		}
 	]
 }

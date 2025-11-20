@@ -941,6 +941,7 @@
 		"commander": "^14.0.2",
 		"compressing": "^1.10.3",
 		"debug": "^4.4.1",
+		"enquirer": "^2.4.1",
 		"image-downloader": "^4.3.0",
 		"jimp": "^1.6.0",
 		"jsonc-parser": "^3.3.1",
