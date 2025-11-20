@@ -11,19 +11,19 @@ export const vsCodeLibWrapperFsImplementationForCLI = {
 		return fs.readFile(uri.fsPath);
 	}) as typeof IVscode.workspace.fs.readFile,
 	writeFile: (async (uri: IVscode.Uri, content: Uint8Array) => {
-		throw new Error('writeFile is not implemented in CLI mock');
+		throw new Error('writeFile is not implemented in CLI yet');
 		// return fs.writeFile(uri.fsPath, content);
 	}) as typeof IVscode.workspace.fs.writeFile,
 	stat: (async (uri: IVscode.Uri) => {
-		throw new Error('stat is not implemented in CLI mock');
+		throw new Error('stat is not implemented in CLI yet');
 	}) as typeof IVscode.workspace.fs.stat,
 	readDirectory: (async (uri: IVscode.Uri) => {
-		throw new Error('readDirectory is not implemented in CLI mock');
+		throw new Error('readDirectory is not implemented in CLI yet');
 	}) as typeof IVscode.workspace.fs.readDirectory,
 	createDirectory: (async (uri: IVscode.Uri) => {
-		throw new Error('createDirectory is not implemented in CLI mock');
+		throw new Error('createDirectory is not implemented in CLI yet');
 	}) as typeof IVscode.workspace.fs.createDirectory,
 	delete: (async (uri: IVscode.Uri) => {
-		throw new Error('delete is not implemented in CLI mock');
+		throw new Error('delete is not implemented in CLI yet');
 	}) as typeof IVscode.workspace.fs.delete,
 };

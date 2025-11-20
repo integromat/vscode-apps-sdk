@@ -3,7 +3,7 @@ import { vsCodeLibWrapperFsImplementationForCLI } from './fs';
 
 export const vsCodeLibWrapperWorkspaceImplementationForCLI: VscodeLibWrapperWorkspaceInterface = {
 	asRelativePath: () => {
-		throw new Error('asRelativePath is not implemented in CLI mock');
+		throw new Error('asRelativePath is not implemented in CLI yet');
 	},
 	fs: vsCodeLibWrapperFsImplementationForCLI,
 };
