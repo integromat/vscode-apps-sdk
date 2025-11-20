@@ -19,8 +19,16 @@ async function showErrorMessage<T extends IVscode.MessageItem>(
 	options?: IVscode.MessageOptions,
 	...items: T[]
 ): Promise<T | undefined> {
-	throw new Error('showErrorMessage is not implemented in CLI yet');
-	// TODO: Implement CLI version
+	if (!options?.modal) {
+		console.error(`ERROR: ${message}`);
+		if (options?.detail) {
+			console.error(`  DETAIL: ${options.detail}`);
+		}
+		return items[0];
+	} else {
+		console.log('----- ERROR ERROR ERROR -----');
+		return showInformationMessage(message, options, ...items);
+	}
 }
 
 async function showWarningMessage<T extends IVscode.MessageItem>(
@@ -28,10 +36,21 @@ async function showWarningMessage<T extends IVscode.MessageItem>(
 	options?: IVscode.MessageOptions,
 	...items: T[]
 ): Promise<T | undefined> {
-	console.log(`FAIL/WARN: ${message}`);
-	return undefined;
+	if (!options?.modal) {
+		console.warn(`WARNING: ${message}`);
+		if (options?.detail) {
+			console.warn(`  DETAIL: ${options.detail}`);
+		}
+		return items[0];
+	} else {
+		console.log('----- WARNING WARNING WARNING -----');
+		return showInformationMessage(message, options, ...items);
+	}
 }
 
+/**
+ * Note: Reused also for warning and error modal dialogs.
+ */
 async function showInformationMessage<T extends IVscode.MessageItem>(
 	message: string,
 	options?: IVscode.MessageOptions,
@@ -70,9 +89,18 @@ async function showInformationMessage<T extends IVscode.MessageItem>(
 	}
 }
 
+/**
+ * Input box dialog to ask user for text input.
+ * Uses `Enquirer` for CLI implementation.
+ */
 async function showInputBox(options?: IVscode.InputBoxOptions): Promise<string | undefined> {
-	throw new Error('showInputBox is not implemented in CLI yet');
-	// TODO: Implement CLI version
+	const response = await Enquirer.prompt<{ input1: string }>({
+		type: 'input',
+		name: 'input1',
+		message: (options?.prompt || 'Please enter input:') + (options?.placeHolder ? ` (${options.placeHolder})` : ''),
+		initial: options?.value || '',
+	}).catch(() => undefined);
+	return response?.input1;
 }
 
 async function showQuickPick<T extends IVscode.QuickPickItem>(

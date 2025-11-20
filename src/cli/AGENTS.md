@@ -38,6 +38,14 @@ This wrap automatically detects the environment (CLI or VSCode) and uses the app
 To test that the typescript builds correctly, run from the workspace root:
 
 ```bash
-## dry run
-npm run build
+## dry build to test Typescript compilation
+npm run cli:build
+
+## run the CLI (initial help should appear, includes build step)
+npm run cli:start
+
+## run specific command:
+
+### Example: clone an app "fake-app-id" from cloud "eu1.make.com" into local folder "./temp"
+npm run cli:start -- clone fake-app-id --make-host eu1.make.com --local-dir ./temp
 ```
