@@ -68,11 +68,11 @@ cliProgram
 		'after',
 		`Example:\n  ${cliProgram.name()} clone my-app --make-host eu1.make.com --local-dir ./my-app\n    - Clones the Make app "my-app" to the local directory "./my-app".`,
 	)
-	.action(async function (directory: string) {
+	.action(async function (appName: string) {
 		const cliOptions = this.opts();
-		storeCurrentCliContext('clone', { directory }, cliOptions);
+		// TODO directory and context
+		storeCurrentCliContext('clone', {  }, cliOptions);
 
-		// debug output
 		console.log(
 			`Executing command: '${getCurrentCliContext().command}'. Arguments: ${JSON.stringify(
 				getCurrentCliContext().arguments,
@@ -80,7 +80,7 @@ cliProgram
 		);
 
 		await cloneAppToWorkspace({
-			name: cliOptions.appId as string,
-			version: cliOptions.appMajor as number,
+			name: appName,
+			version: (cliOptions.appMajor as number) ?? 1,
 		});
 	});
