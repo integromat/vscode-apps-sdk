@@ -104,11 +104,54 @@ async function showInputBox(options?: IVscode.InputBoxOptions): Promise<string |
 }
 
 async function showQuickPick<T extends IVscode.QuickPickItem>(
-	items: readonly T[],
-	options?: IVscode.QuickPickOptions,
+    items: readonly T[],
+    options?: IVscode.QuickPickOptions,
 ): Promise<T | undefined> {
-	throw new Error('showQuickPick is not implemented in CLI yet');
-	// TODO: Implement CLI version
+    // Basic CLI implementation using Enquirer select
+    // Note: Only single-pick is supported. If VSCode's canPickMany is provided, we ignore it for now
+    // and behave as single pick to keep CLI UX simple.
+    if (!items || items.length === 0) {
+        return undefined;
+    }
+
+    // Determine initially picked index (first item with picked=true), otherwise default to 0
+    const initialIndex = Math.max(
+        0,
+        items.findIndex((i) => (i as IVscode.QuickPickItem).picked === true),
+    );
+
+    const formatMessage = (item: IVscode.QuickPickItem): string => {
+        const base = item.label ?? '';
+        const desc = item.description ? ` — ${item.description}` : '';
+        const detail = item.detail ? `\n${item.detail}` : '';
+        return `${base}${desc}${detail}`;
+    };
+
+    const message =
+        (options?.title || options?.placeHolder || 'Select an option') +
+        (options?.matchOnDescription || options?.matchOnDetail ? '' : '');
+
+    const response = await Enquirer.prompt<{ select1: string }>(
+        {
+            type: 'select',
+            name: 'select1',
+            message,
+            choices: [
+                ...items.map((item, index) => ({
+                    name: String(index),
+                    message: formatMessage(item),
+                })),
+                { name: '--Cancel--', message: 'Cancel✖️' },
+            ],
+            // Enquirer supports numeric index for "initial"
+            initial: initialIndex,
+        } as any, // cast due to Enquirer typings differences
+    ).catch(() => undefined);
+
+    if (response?.select1 === undefined || response?.select1 === '--Cancel--') {
+        return undefined;
+    }
+    return items[parseInt(response.select1)];
 }
 
 function getActiveTextEditor(): IVscode.TextEditor | undefined {
