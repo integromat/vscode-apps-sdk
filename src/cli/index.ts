@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Use CLI implementation of `vscode` wrapper
 import { ideCliMode } from '../services/ide-or-cli-mode';
 ideCliMode.mode = 'cli'; // Must be set BEFORE importing other libs
