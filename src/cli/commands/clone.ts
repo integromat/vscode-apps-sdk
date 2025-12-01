@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Command, Option } from 'commander';
 import { cloneAppToWorkspace } from '../../local-development/clone';
 import { getCurrentCliContext, storeCurrentCliContext } from '../cli-context';
@@ -13,22 +14,25 @@ export function registerCloneCommand(program: Command): void {
       new Option('--local-dir <filesystem-path>', 'The directory where the app will be cloned to.')
         .makeOptionMandatory(true)
         .argParser((value: string) => {
-          const stat = fs.statSync(value);
+          const absPath = path.resolve(value);
+          const stat = fs.statSync(absPath);
           // Must be a directory.
           if (!stat.isDirectory()) {
-            throw new Error(`The directory "${value}" is not a directory.`);
+            throw new Error(`The directory "${absPath}" is not a directory.`);
           }
           // Must be empty.
-          if (fs.readdirSync(value).length > 0) {
+          if (fs.readdirSync(absPath).length > 0) {
             throw new Error(
-              `The directory "${value}" is not empty. Please, use an empty directory as target directory for Custom App clone.`,
+              `The directory "${absPath}" is not empty. Please, use an empty directory as target directory for Custom App clone.`,
             );
           }
-          return value;
+          return absPath;
         }),
     )
     .addOption(
-      new Option('--app-major <integer>', 'The major version of the Make Custom App').preset(1).argParser((value) => {
+      new Option('--app-major <integer>', 'The major version of the Make Custom App')
+        .preset(1)
+        .argParser((value) => {
         // test if value is an integer by regex
         if (!/^\d+$/.test(value)) {
           throw new Error(`The value "${value}" is not an integer.`);
