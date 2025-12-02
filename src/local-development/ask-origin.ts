@@ -10,6 +10,7 @@ import { userPreferences } from './helpers/user-preferences';
 import { getOriginObject } from './helpers/get-origin-object';
 import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import { ideCliMode } from '../services/ide-or-cli-mode';
+
 const vscode = vscodeLibWrapperFactory.lib;
 
 export const specialAnswers = {
@@ -178,53 +179,57 @@ async function includeApiKey(
 	if (!origin) {
 		return undefined;
 	}
-
-	// In cli we want always use the env token.
-	if (ideCliMode.mode === 'cli'){
-		if (process.env.MAKE_API_TOKEN){
-			return {
-				...origin,
-				apikey: process.env.MAKE_API_TOKEN,
-			};
-		}
-		throw new Error('Please define environment vairable MAKE_API_TOKEN.');
-	}
-
-	if (!origin.apikeyFile) {
-		throw new Error(
-			`Missing the object property "apikeyFile" of origin "${
-				origin.label ?? origin.appId ?? 'unnamed'
-			} in the file ${MAKECOMAPP_FILENAME}"`,
-		);
-	}
-	const apiKeyUri = vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile);
 	try {
-		const apiKey = new TextDecoder().decode(await vscode.workspace.fs.readFile(apiKeyUri)).trim();
-		return {
-			...origin,
-			apikey: apiKey,
-		};
-	} catch (e: any) {
-		if (e.code === 'FileNotFound') {
-			// Ask user to fill the missing API key
-			const apiKey = await askAddMissingApiKey(origin, makeappRootdir);
+		if (!origin.apikeyFile) {
+			throw new Error(
+				`Missing the object property "apikeyFile" of origin "${
+					origin.label ?? origin.appId ?? 'unnamed'
+				} in the file ${MAKECOMAPP_FILENAME}"`,
+			);
+		}
+		const apiKeyUri = vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile);
+		try {
+			const apiKey = new TextDecoder().decode(await vscode.workspace.fs.readFile(apiKeyUri)).trim();
 			return {
 				...origin,
 				apikey: apiKey,
 			};
-		} else {
-			// Unknown/unexpected error
-			const workspaceRoot = getCurrentWorkspace().uri;
-			const err = new Error(
-				`Cannot read API key file defined in "${MAKECOMAPP_FILENAME}" origin "${
-					origin.label ?? origin.appId ?? 'unnamed'
-				}". File: "${path.posix.relative(
-					workspaceRoot.path,
-					vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile).path,
-				)}" of current workspace. ${e}`,
-			);
-			err.name = 'PopupError';
-			throw err;
+		} catch (e: any) {
+			if (e.code === 'FileNotFound') {
+				// Ask user to fill the missing API key
+				const apiKey = await askAddMissingApiKey(origin, makeappRootdir);
+				return {
+					...origin,
+					apikey: apiKey,
+				};
+			} else {
+				// Unknown/unexpected error
+				const workspaceRoot = getCurrentWorkspace().uri;
+				const err = new Error(
+					`Cannot read API key file defined in "${MAKECOMAPP_FILENAME}" origin "${
+						origin.label ?? origin.appId ?? 'unnamed'
+					}". File: "${path.posix.relative(
+						workspaceRoot.path,
+						vscode.Uri.joinPath(makeappRootdir, origin.apikeyFile).path,
+					)}" of current workspace. ${e}`,
+				);
+				err.name = 'PopupError';
+				throw err;
+			}
 		}
+	} catch (err) {
+		// In cli we want to allow env token fallback.
+		if (ideCliMode.mode === 'cli') {
+			if (process.env.MAKE_API_TOKEN) {
+				return {
+					...origin,
+					apikey: process.env.MAKE_API_TOKEN,
+				};
+			}
+			throw new Error('Please define environment variable MAKE_API_TOKEN.');
+		}
+		// Not in cli, heavily depends on apiKey.
+		throw err;
 	}
+
 }
