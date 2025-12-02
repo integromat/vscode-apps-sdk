@@ -12,7 +12,7 @@ import { registerPullCommand } from './commands/pull';
 
 export const cliProgram = new Command();
 
-cliProgram.name('makeapps-cli').description('A CLI tool for local development and deployment of Make.com Custom Apps.');
+cliProgram.name('make-cli').description('A CLI tool for local development and deployment of Make.com Custom Apps.');
 
 // Register sub-commands (split into single tools)
 registerCloneCommand(cliProgram);

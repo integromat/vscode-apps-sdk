@@ -4,6 +4,7 @@ import { Command, Option } from 'commander';
 import { storeCurrentCliContext } from '../cli-context';
 import { bulkDeploy } from '../../local-development/deploy';
 import { Uri } from '../../services/vscode-lib-wraper/vscode-cli-modules/uri';
+import { MAKECOMAPP_FILENAME } from '../../local-development/consts';
 
 export function registerDeployCommand(program: Command): void {
   program
@@ -13,24 +14,28 @@ export function registerDeployCommand(program: Command): void {
       new Option('--local-dir <filesystem-path>', 'The root directory of the local app project.')
         .makeOptionMandatory(true)
         .argParser((value: string) => {
-          const stat = fs.statSync(value);
+          const absPath = path.resolve(value);
+          const stat = fs.statSync(absPath);
           if (!stat.isDirectory()) {
-            throw new Error(`The directory "${value}" is not a directory.`);
+            throw new Error(`The directory "${absPath}" is not a directory.`);
           }
-          return path.resolve(value);
+          return path.resolve(absPath);
         }),
+    )
+    .addOption(
+      new Option(
+        '--src-prefix <relative-path>',
+        `Path relative to the --local-dir where the ${MAKECOMAPP_FILENAME} file is located (default: src)`,
+      ).default('src'),
     )
     .addHelpText(
       'after',
       `Examples:\n  ${program.name()} deploy --local-dir ./my-app\n    - Deploys all components under ./my-app.\n  ${program.name()} deploy --local-dir ./my-app \n    - Deploys only the components matching the specified path.`,
     )
     .action(async function () {
-      const cliOptions = this.opts() as { localDir: string; target?: string };
+      const cliOptions = this.opts() as { localDir: string; srcPrefix: string; target?: string };
       storeCurrentCliContext('deploy', {}, cliOptions);
 
-      const localDir = path.resolve(cliOptions.localDir);
-		console.log('The dir!');
-		console.log(localDir);
-      await bulkDeploy(Uri.file(localDir) as unknown as any);
+      await bulkDeploy(Uri.file(path.join(cliOptions.localDir, cliOptions.srcPrefix)) as unknown as any);
     });
 }
