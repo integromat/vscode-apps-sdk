@@ -9,7 +9,7 @@ import { getCurrentWorkspace } from '../services/workspace';
 import { userPreferences } from './helpers/user-preferences';
 import { getOriginObject } from './helpers/get-origin-object';
 import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
-
+import { ideCliMode } from '../services/ide-or-cli-mode';
 const vscode = vscodeLibWrapperFactory.lib;
 
 export const specialAnswers = {
@@ -178,6 +178,18 @@ async function includeApiKey(
 	if (!origin) {
 		return undefined;
 	}
+
+	// In cli we want always use the env token.
+	if (ideCliMode.mode === 'cli'){
+		if (process.env.MAKE_API_TOKEN){
+			return {
+				...origin,
+				apikey: process.env.MAKE_API_TOKEN,
+			};
+		}
+		throw new Error('Please define environment vairable MAKE_API_TOKEN.');
+	}
+
 	if (!origin.apikeyFile) {
 		throw new Error(
 			`Missing the object property "apikeyFile" of origin "${
