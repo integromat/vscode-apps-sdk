@@ -28,34 +28,46 @@ export function registerCommands(): void {
 	);
 }
 
+export interface CloneExtraOptions {
+	askForPrompts?: boolean;
+}
+
 /**
  * Clones whole app from Make cloud to the local repository
  */
-export async function cloneAppToWorkspace(context: Pick<App, 'name' | 'version'>): Promise<void> {
+export async function cloneAppToWorkspace(
+	context: Pick<App, 'name' | 'version'>,
+	options?: CloneExtraOptions,
+): Promise<void> {
 	const workspaceRoot = getCurrentWorkspace().uri;
 	const apikeyDir = vscodeLibWrapper.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 
 	// Introductory info dialog "Before use"
-	const confirmAnswer = await vscodeLibWrapper.window.showInformationMessage(
-		'Before use the Local Development for Apps',
-		{
-			modal: true,
-			detail:
-				'ABOUT LOCAL DEVELOPMENT FOR APPS:' +
-				'\n\n' +
-				'This feature enables you to clone your app from Make to the currently opened VS Code workspace (folder). ' +
-				'After cloning, your app will be placed in a local folder as local files, with the "makecomapp.json" file located in the project root. ' +
-				'This "makecomapp.json" serves as the starting point for the entire local structure. ' +
-				'To explore available actions for your locally cloned app, simply right-click on the "makecomapp.json" file. ' +
-				'These actions allow you to deploy all local changes back to Make, among other things.' +
-				'\n\n' +
-				'RECOMMENDATION AFTER CLONNING:' +
-				'\n\n' +
-				'We recommend initializing a GIT repository and committing the entire local project there.',
-		},
-		{ title: 'Continue' },
-	);
+	const confirmAnswer =
+		options?.askForPrompts === false
+			? { title: 'Continue' }
+			: await vscodeLibWrapper.window.showInformationMessage(
+					'Before use the Local Development for Apps',
+					{
+						modal: true,
+						detail:
+							'ABOUT LOCAL DEVELOPMENT FOR APPS:' +
+							'\n\n' +
+							'This feature enables you to clone your app from Make to the currently opened VS Code workspace (folder). ' +
+							'After cloning, your app will be placed in a local folder as local files, with the "makecomapp.json" file located in the project root. ' +
+							'This "makecomapp.json" serves as the starting point for the entire local structure. ' +
+							'To explore available actions for your locally cloned app, simply right-click on the "makecomapp.json" file. ' +
+							'These actions allow you to deploy all local changes back to Make, among other things.' +
+							'\n\n' +
+							'RECOMMENDATION AFTER CLONNING:' +
+							'\n\n' +
+							'We recommend initializing a GIT repository and committing the entire local project there.',
+					},
+					{ title: 'Continue' },
+				);
+
 	if (confirmAnswer?.title !== 'Continue') {
+		console.log(confirmAnswer);
 		return;
 	}
 

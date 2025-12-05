@@ -34,7 +34,8 @@ export function registerCloneCommand(program: Command): void {
 		)
 		.addOption(
 			new Option('--app-major <integer>', 'The major version of the Make Custom App')
-				.preset(1)
+				.default(1)
+				.makeOptionMandatory(true)
 				.argParser((value) => {
 					// test if value is an integer by regex
 					if (!/^\d+$/.test(value)) {
@@ -54,13 +55,7 @@ export function registerCloneCommand(program: Command): void {
 					return value;
 				}),
 		)
-		.addOption(
-			new Option(
-				'--project-root <string>',
-				'The target of the Make Custom App. Used the current working directory if not provided.',
-			).preset(process.cwd()),
-		)
-		.addOption(new Option('--include-common-data', 'Include common data').preset(false))
+		.addOption(new Option('--no-prompt', 'Skip all interactive prompts and accept sensible defautls'))
 		.addHelpText(
 			'after',
 			`Example:\n  ${program.name()} clone my-app --make-host eu1.make.com --local-dir ./my-app\n    - Clones the Make app "my-app" to the local directory "./my-app".`,
@@ -76,9 +71,14 @@ export function registerCloneCommand(program: Command): void {
 				)}. Options: ${JSON.stringify(cliOptions)}.`,
 			);
 
-			await cloneAppToWorkspace({
-				name: appName,
-				version: (cliOptions.appMajor as number) ?? 1,
-			});
+			await cloneAppToWorkspace(
+				{
+					name: appName,
+					version: cliOptions.appMajor,
+				},
+				{
+					askForPrompts: cliOptions.prompt,
+				},
+			);
 		});
 }
