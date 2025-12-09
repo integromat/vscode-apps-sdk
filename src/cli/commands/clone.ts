@@ -62,7 +62,6 @@ export function registerCloneCommand(program: Command): void {
 		)
 		.action(async function (appName: string) {
 			const cliOptions = this.opts();
-			// TODO directory and context
 			storeCurrentCliContext('clone', {}, cliOptions);
 
 			console.log(

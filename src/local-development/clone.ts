@@ -18,6 +18,7 @@ import { withProgressDialog } from '../utils/vscode-progress-dialog';
 import { entries } from '../utils/typed-object';
 import { downloadOriginChecksums } from './helpers/origin-checksum';
 import { getApiBaseUrlConfiguration, getApikeyConfiguration } from '../providers/configuration-makeapi';
+import type * as IVscode from 'vscode';
 
 const vscodeLibWrapper = vscodeLibWrapperFactory.lib;
 
@@ -43,61 +44,78 @@ export async function cloneAppToWorkspace(
 	const apikeyDir = vscodeLibWrapper.Uri.joinPath(workspaceRoot, APIKEY_DIRNAME);
 
 	// Introductory info dialog "Before use"
-	const confirmAnswer =
-		options?.askForPrompts === false
-			? { title: 'Continue' }
-			: await vscodeLibWrapper.window.showInformationMessage(
-					'Before use the Local Development for Apps',
-					{
-						modal: true,
-						detail:
-							'ABOUT LOCAL DEVELOPMENT FOR APPS:' +
-							'\n\n' +
-							'This feature enables you to clone your app from Make to the currently opened VS Code workspace (folder). ' +
-							'After cloning, your app will be placed in a local folder as local files, with the "makecomapp.json" file located in the project root. ' +
-							'This "makecomapp.json" serves as the starting point for the entire local structure. ' +
-							'To explore available actions for your locally cloned app, simply right-click on the "makecomapp.json" file. ' +
-							'These actions allow you to deploy all local changes back to Make, among other things.' +
-							'\n\n' +
-							'RECOMMENDATION AFTER CLONNING:' +
-							'\n\n' +
-							'We recommend initializing a GIT repository and committing the entire local project there.',
-					},
-					{ title: 'Continue' },
-				);
 
-	if (confirmAnswer?.title !== 'Continue') {
-		console.log(confirmAnswer);
-		return;
+	if (options?.askForPrompts !== false) {
+		const confirmAnswer = await vscodeLibWrapper.window.showInformationMessage(
+			'Before use the Local Development for Apps',
+			{
+				modal: true,
+				detail:
+					'ABOUT LOCAL DEVELOPMENT FOR APPS:' +
+					'\n\n' +
+					'This feature enables you to clone your app from Make to the currently opened VS Code workspace (folder). ' +
+					'After cloning, your app will be placed in a local folder as local files, with the "makecomapp.json" file located in the project root. ' +
+					'This "makecomapp.json" serves as the starting point for the entire local structure. ' +
+					'To explore available actions for your locally cloned app, simply right-click on the "makecomapp.json" file. ' +
+					'These actions allow you to deploy all local changes back to Make, among other things.' +
+					'\n\n' +
+					'RECOMMENDATION AFTER CLONNING:' +
+					'\n\n' +
+					'We recommend initializing a GIT repository and committing the entire local project there.',
+			},
+			{ title: 'Continue' },
+		);
+
+		if (confirmAnswer?.title !== 'Continue') {
+			console.log(confirmAnswer);
+			return;
+		}
 	}
 
-	const localAppRootdir = await askForAppDirToClone();
-	if (!localAppRootdir) {
-		// Cancelled by user
-		return;
+	let localAppRootdir: IVscode.Uri;
+
+	if (options?.askForPrompts !== false) {
+		const localAppRootdirRes = await askForAppDirToClone();
+		if (!localAppRootdirRes) {
+			// Cancelled by user
+			return;
+		}
+
+		localAppRootdir = localAppRootdirRes;
+	} else {
+		const workspace = getCurrentWorkspace();
+		localAppRootdir = vscodeLibWrapper.Uri.joinPath(workspace.uri, 'src');
 	}
 
-	// Ask to "Clone common data? Yes/No"
-	const commonDataAnswer = await vscodeLibWrapper.window.showInformationMessage(
-		'Include also all common data?',
-		{
-			modal: true,
-			detail:
-				'COMMON DATA INCLUDE/EXCLUDE:' +
-				'\n\n' +
-				'Common data could contain sensitive data or secrets. It depends on your app design. ' +
-				'We recommend that you exclude common data files from the local clone of the application. ' +
-				'If you decide to include it, be aware that these common data files will also be part of your GIT commits.',
-		},
-		{ title: 'Exclude (more secure)' },
-		{ title: 'Include (for advanced users only)' },
-	);
-	if (!commonDataAnswer) {
-		// Cancelled by user
-		return;
-	}
+	console.log(localAppRootdir);
 
-	const includeCommonData = commonDataAnswer.title.startsWith('Include');
+	let includeCommonData: boolean;
+
+	if (options?.askForPrompts !== false) {
+		// Ask to "Clone common data? Yes/No"
+		const commonDataAnswer = await vscodeLibWrapper.window.showInformationMessage(
+			'Include also all common data?',
+			{
+				modal: true,
+				detail:
+					'COMMON DATA INCLUDE/EXCLUDE:' +
+					'\n\n' +
+					'Common data could contain sensitive data or secrets. It depends on your app design. ' +
+					'We recommend that you exclude common data files from the local clone of the application. ' +
+					'If you decide to include it, be aware that these common data files will also be part of your GIT commits.',
+			},
+			{ title: 'Exclude (more secure)' },
+			{ title: 'Include (for advanced users only)' },
+		);
+		if (!commonDataAnswer) {
+			// Cancelled by user
+			return;
+		}
+
+		includeCommonData = commonDataAnswer.title.startsWith('Include');
+	} else {
+		includeCommonData = false;
+	}
 
 	// Load API key and API base URL from configuration (from the VSCode extension's settings or from CLI parameters)
 	const apikey = await getApikeyConfiguration();
