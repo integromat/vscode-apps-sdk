@@ -2,7 +2,7 @@ import * as path from 'node:path';
 import type * as IVscode from 'vscode';
 import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import { deployComponentCode } from './code-pull-deploy';
-import { askForOrigin } from './ask-origin';
+import { askForOrigin, includeApiKey } from './ask-origin';
 import { findCodesByFilePath } from './find-code-by-filepath';
 import { alignComponentsMapping } from './align-components-mapping';
 import { MAKECOMAPP_FILENAME } from './consts';
@@ -17,11 +17,16 @@ import type { AppComponentType, AppGeneralType } from '../types/app-component-ty
 import { sendTelemetry } from '../utils/telemetry';
 import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
 import { userPreferences } from './helpers/user-preferences';
+import type { LocalAppOriginWithSecret } from './types/makecomapp.types';
 
 const vscode = vscodeLibWrapperFactory.lib;
 
 export function registerCommands(): void {
 	vscode.commands.registerCommand('apps-sdk.local-dev.deploy', catchError('Deploy to Make', bulkDeploy));
+}
+
+export interface DeployExtraOptions {
+	askForPrompts?: boolean;
 }
 
 /**
@@ -30,7 +35,7 @@ export function registerCommands(): void {
  * TODO fix order of creation
  *  - `groups` after modules
  */
-export async function bulkDeploy(anyProjectPath: IVscode.Uri | undefined) {
+export async function bulkDeploy(anyProjectPath: IVscode.Uri | undefined, options?: DeployExtraOptions) {
 	// Probably executed by keybindings, needs to find opened file.
 	if (anyProjectPath === undefined) {
 		const activeEditor = vscode.window.activeTextEditor;
@@ -42,6 +47,8 @@ export async function bulkDeploy(anyProjectPath: IVscode.Uri | undefined) {
 		}
 		anyProjectPath = activeEditor.document.uri as unknown as IVscode.Uri;
 	}
+
+	console.log(options?.askForPrompts);
 
 	if (anyProjectPath === undefined) {
 		vscode.window.showErrorMessage(
@@ -67,10 +74,20 @@ export async function bulkDeploy(anyProjectPath: IVscode.Uri | undefined) {
 		throw new Error('Sorry, no associated component code with this file/path found.');
 	}
 
-	const origin = await askForOrigin(makecomappJson.origins, makeappRootdir, 'the deployment', true);
-	if (!origin) {
-		return;
+	let origin: LocalAppOriginWithSecret;
+
+	if (options?.askForPrompts !== false) {
+		const originRes = await askForOrigin(makecomappJson.origins, makeappRootdir, 'the deployment', true);
+		if (!originRes) {
+			return;
+		}
+		origin = originRes;
+	} else {
+		// NOTE: It is an assumption that the first origin is a sensible default
+		origin = await includeApiKey(makecomappJson.origins[0], makeappRootdir);
 	}
+
+	console.log(origin);
 
 	await withProgressDialog(
 		{ title: `Deploying ${codesToDeploy.length} code${codesToDeploy.length !== 1 ? 's' : ''}`, cancellable: true },

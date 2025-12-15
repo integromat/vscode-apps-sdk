@@ -166,13 +166,16 @@ async function askForOrigin2(
 /**
  * Takes the origin and return new structure, where apiKey is included.
  */
-async function includeApiKey(origin: LocalAppOrigin, makeappRootdir: IVscode.Uri): Promise<LocalAppOriginWithSecret>;
-async function includeApiKey(origin: undefined, makeappRootdir: IVscode.Uri): Promise<undefined>;
-async function includeApiKey(
+export async function includeApiKey(
+	origin: LocalAppOrigin,
+	makeappRootdir: IVscode.Uri,
+): Promise<LocalAppOriginWithSecret>;
+export async function includeApiKey(origin: undefined, makeappRootdir: IVscode.Uri): Promise<undefined>;
+export async function includeApiKey(
 	origin: LocalAppOrigin | undefined,
 	makeappRootdir: IVscode.Uri,
 ): Promise<LocalAppOriginWithSecret | undefined>;
-async function includeApiKey(
+export async function includeApiKey(
 	origin: LocalAppOrigin | undefined,
 	makeappRootdir: IVscode.Uri,
 ): Promise<LocalAppOriginWithSecret | undefined> {
@@ -231,5 +234,4 @@ async function includeApiKey(
 		// Not in cli, heavily depends on apiKey.
 		throw err;
 	}
-
 }

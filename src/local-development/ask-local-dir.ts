@@ -10,6 +10,8 @@ const vscode = vscodeLibWrapperFactory.lib;
 export async function askForAppDirToClone(): Promise<IVscode.Uri | undefined> {
 	const workspace = getCurrentWorkspace();
 
+	// TODO: allow setting of `directory` from outside (or other method of skipping the prompt)
+
 	// Ask user for the destination directory.
 	const directory = await vscode.window.showInputBox({
 		ignoreFocusOut: true,
