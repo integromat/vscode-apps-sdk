@@ -52,6 +52,6 @@ export function registerPullCommand(program: Command): void {
 
 			const originChecksums = await downloadOriginChecksums(origin);
 
-			await pullAllComponents(localAppRootdir, origin, 'askUser', originChecksums);
+			await pullAllComponents(localAppRootdir, origin, 'cloneAsNew', originChecksums);
 		});
 }
