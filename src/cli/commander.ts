@@ -7,6 +7,7 @@
 
 import { Command } from 'commander';
 import { registerCloneCommand } from './commands/clone';
+import { registerCreateModuleCommand } from './commands/create-module';
 import { registerDeployCommand } from './commands/deploy';
 import { registerPullCommand } from './commands/pull';
 
@@ -16,5 +17,6 @@ cliProgram.name('make-cli').description('A CLI tool for local development and de
 
 // Register sub-commands (split into single tools)
 registerCloneCommand(cliProgram);
+registerCreateModuleCommand(cliProgram);
 registerDeployCommand(cliProgram);
 registerPullCommand(cliProgram);
