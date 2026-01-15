@@ -17,6 +17,7 @@ import type { Checksum } from './types/checksum.types';
 import { getComponentChecksumArray } from './helpers/origin-checksum';
 import { convertComponentMetadataRemoteNamesToLocalIds, getRemoteComponent } from './remote-components-summary';
 import { MakecomappJsonFile } from './helpers/makecomapp-json-file-class';
+import { ideCliMode } from '../services/ide-or-cli-mode';
 
 // Components that can be non owned by app. For example connections and webhooks can be owned by another app version.
 export const COMPONENTS_CAN_BE_NON_OWNED = ['connection', 'webhook'];
@@ -24,7 +25,7 @@ export const COMPONENTS_CAN_BE_NON_OWNED = ['connection', 'webhook'];
 /**
  * Checks if the component is not owned by the app.
  * This is used to determine if the component can be created as non-owned.
- * 
+ *
  * @param componentName - The remote name of the component.
  * @param componentType - The type of the component.
  * @param originChecksums - The checksums of the origin.
@@ -159,6 +160,10 @@ export async function alignComponentsMapping(
 	let userPreferedResolutionOfUnmappedLocal: symbol | undefined = undefined;
 	/** Stores the user's preference for case of answer "apply for all". */
 	let userPreferedResolutionOfUnmappedRemote: symbol | undefined = undefined;
+
+	if (ideCliMode.mode === 'cli') {
+		userPreferedResolutionOfUnmappedLocal = specialAnswers.CREATE_NEW_COMPONENT;
+	}
 
 	for (const componentType of componentsProcessingOrder) {
 		const localOnlyInSpecificComponentType = localOnly.filter(
