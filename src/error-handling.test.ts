@@ -93,7 +93,7 @@ describe('errorToString()', () => {
 		});
 	});
 
-	describe('Specific errors shold be rewritten to more user-friendly message with link to known issue', () => {
+	describe('Specific errors should be rewritten to more user-friendly message with link to known issue', () => {
 		test('should improve known error about invalid name pattern', () => {
 			const result = errorToString("Value doesn't match pattern in parameter 'name'.");
 			assert.strictEqual(result.isImproved, true);
