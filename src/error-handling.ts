@@ -16,9 +16,11 @@ export function errorToString(err: Error | AxiosError<any> | string): { message:
 		// #region Case of the Error toast notification
 		else if (err instanceof AxiosError) {
 			// Use error `detail` + `suberrors`, which are used by Make API as part of error responses.
-			const hasSuberrors =
-				err.response?.data?.suberrors instanceof Array && err.response.data.suberrors.length > 0;
-			if (err.response?.data?.detail || hasSuberrors) {
+			const subErrors: { message: string }[] =
+				err.response?.data?.suberrors instanceof Array && err.response.data.suberrors.length > 0
+					? err.response?.data?.suberrors
+					: [];
+			if (err.response?.data?.detail || subErrors.length > 0) {
 				if (err.response?.data?.detail) {
 					const detailMessages: string[] =
 						err.response.data.detail instanceof Array
@@ -26,13 +28,16 @@ export function errorToString(err: Error | AxiosError<any> | string): { message:
 							: [err.response.data.detail];
 					errMessages.push(...detailMessages.map((m) => String(m)));
 				}
-				if (hasSuberrors) {
-					errMessages.push(
-						...(err.response!.data.suberrors as { message: string }[]).map((suberror) => suberror.message),
-					);
-				}
+				errMessages.push(...subErrors.map((suberror) => suberror.message));
 			} else if (err.response?.data.message) {
 				errMessages.push(err.response.data.message);
+				// Include remaining response body properties for additional context
+				const bodyKeys = Object.keys(err.response.data).filter((k) => k !== 'message');
+				if (bodyKeys.length > 0) {
+					const data = err.response?.data;
+					const rest = Object.fromEntries(bodyKeys.map((k) => [k, data[k]]));
+					errMessages.push('Additional response body properties: ' + JSON.stringify(rest));
+				}
 			} else if (typeof err.response?.data === 'string') {
 				// Axios can return JSON error message stringified, so try to parse them.
 				errMessages.push(String(err.response.data));
@@ -55,7 +60,7 @@ export function errorToString(err: Error | AxiosError<any> | string): { message:
 			message: improved.messages.join(' - '),
 			isImproved: improved.isImproved,
 		};
-	} catch (e: any) {
+	} catch (_e: any) {
 		/*
 		 * To avoid an infinit loop in case of internal error,
 		 * it is needed to handle exception and have the stupid solution as fallback.
