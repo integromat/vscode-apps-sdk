@@ -1,0 +1,26 @@
+name: Context file refresher
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, ready_for_review]
+
+concurrency:
+  group: context-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh-if-needed:
+    if: ${{ !contains(github.actor, '[bot]') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 3 # three times the average; avoid burning credits when stuck
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: integromat/actions/context-refresher@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          telemetry_url: ${{ vars.AGENTS_METRICS_URL }}
+          telemetry_api_key: ${{ secrets.AGENTS_METRICS_API_KEY }}
