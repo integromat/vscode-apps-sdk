@@ -912,7 +912,6 @@
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^22.19.13",
 		"@types/pngjs": "^6.0.5",
-		"@types/uuid": "^11.0.0",
 		"@types/vscode": "1.109.0",
 		"@vscode/test-electron": "^2.5.2",
 		"eslint": "^9.30.0",
@@ -921,7 +920,7 @@
 		"glob": "^13.0.4",
 		"globals": "^16.3.0",
 		"mocha": "^11.7.5",
-		"typescript": "~5.5.4",
+		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.56.0",
 		"typescript-json-schema": "^0.67.1"
 	},
@@ -942,7 +941,6 @@
 		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
-		"uuid": "^13.0.0",
 		"vscode-json-languageservice": "^5.7.1",
 		"vscode-languageclient": "^9.0.1",
 		"vscode-languageserver": "^9.0.1"
