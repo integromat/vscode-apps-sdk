@@ -10,6 +10,22 @@ export default [
 		ignores: ['syntaxes/imljson-language-features/**'],
 	},
 	eslint.configs.recommended,
+
+	// Google JavaScript style guide rules (quality-focused subset from eslint-config-google@0.14.0).
+	// Only rules that prevent bugs or improve error handling are kept.
+	// Formatting/stylistic rules omitted (handled by Prettier).
+	{
+		rules: {
+			"guard-for-in": "error",
+			"no-caller": "error",
+			"no-extend-native": "error",
+			"no-throw-literal": "error",
+			"prefer-promise-reject-errors": "error",
+			"no-var": "error",
+			"prefer-const": ["error", { "destructuring": "all" }],
+		},
+	},
+
 	{
 		languageOptions: {
 			ecmaVersion: 'latest',
@@ -39,8 +55,6 @@ export default [
 			"quote-props": ["error", "as-needed"],
 			// "object-curly-spacing" is not aligned in Google with Typescript default used style
 			"object-curly-spacing": ["error", "always", { "objectsInObjects": true }],
-			"require-jsdoc": "off",
-			"valid-jsdoc":"off",
 			"quotes": ["error", "single", { "avoidEscape": true }],  // Allow to used double-quotes if inner string has single-quote.
 			"block-spacing": ["error", "always"],  // Rollback from Google style to ESLint default.
 			"padded-blocks": "off", // Allow to start and end block ith blank lines.

@@ -1,4 +1,4 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable semi */
 const path = require('path')
 const EnhancedTreeItem = require('./EnhancedTreeItem')
 const { appsIconTempDir } = require('../temp-dir');
