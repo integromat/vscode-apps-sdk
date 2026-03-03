@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+## [2.4.1](https://github.com/integromat/vscode-apps-sdk/compare/2.4.0...2.4.1) (2026-03-03)
+
+
+### Miscellaneous Chores
+
+* dependabot cooldown settings ([#314](https://github.com/integromat/vscode-apps-sdk/issues/314)) ([7846a47](https://github.com/integromat/vscode-apps-sdk/commit/7846a47d56b4e4a60127d6f00e217dde236984ec))
+* pin github action to a hash ([#308](https://github.com/integromat/vscode-apps-sdk/issues/308)) ([3786305](https://github.com/integromat/vscode-apps-sdk/commit/3786305c78df5ce51616f9969e2f936af4021db9))
+* tune HTTP response error logging ([#322](https://github.com/integromat/vscode-apps-sdk/issues/322)) ([cf7937c](https://github.com/integromat/vscode-apps-sdk/commit/cf7937cf7e5d126c68cc78532dbc9ae299afe307))
+
+
+### Build System
+
+* bump @vscode/extension-telemetry from 0.9.8 to 1.4.0 ([#317](https://github.com/integromat/vscode-apps-sdk/issues/317)) ([06db2d8](https://github.com/integromat/vscode-apps-sdk/commit/06db2d8938718cfe0097f15519976c1257a1a407))
+* bump applicationinsights from 3.8.0 to 3.9.0 in the deps-minor-update group ([#301](https://github.com/integromat/vscode-apps-sdk/issues/301)) ([78f29ca](https://github.com/integromat/vscode-apps-sdk/commit/78f29ca377d2ad020068cbb2ec4686664b334d79))
+* bump compressing from 1.10.3 to 2.1.0 ([#318](https://github.com/integromat/vscode-apps-sdk/issues/318)) ([dcc3835](https://github.com/integromat/vscode-apps-sdk/commit/dcc3835333e3f8ee6731a20e6422d2c13319d5f3))
+* bump the deps-minor-update group with 3 updates ([#306](https://github.com/integromat/vscode-apps-sdk/issues/306)) ([2c280f5](https://github.com/integromat/vscode-apps-sdk/commit/2c280f504c96a740de7a02a199dc9142199c1c84))
+* bump the devdeps-minor-update group with 2 updates ([#303](https://github.com/integromat/vscode-apps-sdk/issues/303)) ([04f3f0f](https://github.com/integromat/vscode-apps-sdk/commit/04f3f0fa0256e1208fd5afd9c9d8ce99e2dac602))
+
 ## [2.4.0](https://github.com/integromat/vscode-apps-sdk/compare/2.3.1...2.4.0) (2025-08-19)
 
 
