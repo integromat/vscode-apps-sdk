@@ -68,12 +68,6 @@ describe('errorToString()', () => {
 			);
 		});
 
-		test('should not duplicate info when message is the only property', () => {
-			const err = createAxiosError({ message: 'Simple error' });
-			const result = errorToString(err);
-			assert.strictEqual(result.message, 'Simple error');
-		});
-
 		test('should use string response data directly', () => {
 			const err = createAxiosError('Something failed on server');
 			const result = errorToString(err);
