@@ -1,4 +1,4 @@
-import TelemetryReporter from '@vscode/extension-telemetry';
+import { TelemetryReporter } from '@vscode/extension-telemetry';
 import * as appInsights from 'applicationinsights';
 import { getConfiguration } from '../providers/configuration';
 
