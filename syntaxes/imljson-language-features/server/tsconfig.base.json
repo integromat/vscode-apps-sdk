@@ -25,7 +25,7 @@
 			"ES2021.String",
 			"ES2021.WeakRef"
 		],
-		"module": "commonjs",
+		"module": "node16",
 		"strict": true,
 		"exactOptionalPropertyTypes": false,
 		"useUnknownInCatchVariables": false,
