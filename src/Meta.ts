@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as vscode from 'vscode';
 
 /**
@@ -7,9 +8,9 @@ export const version: string = vscode.extensions.getExtension('Integromat.apps-s
 
 // Production -> load from file created during the publishing process.
 // See `package.json` -> `scripts` for details.
-let isPreReleaseBuild: boolean = false;
+let isPreReleaseBuild = false;
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	isPreReleaseBuild = require('./__is-pre-release-build').isPreReleaseBuild;
 } catch (e: any) {
 	/* ignore */
