@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+## [2.4.2](https://github.com/integromat/vscode-apps-sdk/compare/2.4.1...2.4.2) (2026-03-03)
+
+
+### Build System
+
+* bump @vscode/extension-telemetry from 1.4.0 to 1.5.0 in the deps-minor-update group ([#329](https://github.com/integromat/vscode-apps-sdk/issues/329)) ([8e0592b](https://github.com/integromat/vscode-apps-sdk/commit/8e0592bf3868104fb7616a999b01307f1f503323))
+* bump glob from 11.0.0 to 13.0.4 ([#330](https://github.com/integromat/vscode-apps-sdk/issues/330)) ([7b9ec75](https://github.com/integromat/vscode-apps-sdk/commit/7b9ec758dd9d821b771568ce8077a528ad1a20bd))
+* bump the deps-minor-update group with 4 updates ([#325](https://github.com/integromat/vscode-apps-sdk/issues/325)) ([5fc7071](https://github.com/integromat/vscode-apps-sdk/commit/5fc707177d7a587d6f26d8e72aaed4dfd6d522fb))
+* bump the devdeps-minor-update group with 5 updates ([#324](https://github.com/integromat/vscode-apps-sdk/issues/324)) ([3efef01](https://github.com/integromat/vscode-apps-sdk/commit/3efef010e3b590f22417d5116a009ba8008a6268))
+* **deps:** uuid to node:crypto, vscode 1.95 to 1.109, language lib 9 to 10 next, typescript 5.5 to 5.9 ([#307](https://github.com/integromat/vscode-apps-sdk/issues/307)) ([03f05ef](https://github.com/integromat/vscode-apps-sdk/commit/03f05efae5ebc10b9d4fd0bfc22a922d7b180272))
+
 ## [2.4.1](https://github.com/integromat/vscode-apps-sdk/compare/2.4.0...2.4.1) (2026-03-03)
 
 
