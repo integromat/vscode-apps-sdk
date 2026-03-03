@@ -8,7 +8,14 @@ updates:
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Europe/Prague
+    cooldown: # Postpone updates for a while after they are released
+      default-days: 14
+      exclude:
+        - "@integromat/*" # Internal packages should be updated immediately
     target-branch: master
     commit-message:
       prefix: build
