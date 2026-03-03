@@ -10,8 +10,8 @@
 	},
 	"publisher": "Integromat",
 	"engines": {
-		"//": "VSCode 1.95.1 comes with Node 20.18 (part of new Electron). See https://code.visualstudio.com/updates/v1_95",
-		"vscode": "^1.95.1"
+		"//": "VSCode 1.109.5 comes with Node 22.21.1 (part of new Electron).",
+		"vscode": "^1.109.5"
 	},
 	"keywords": [
 		"Make",
@@ -910,10 +910,9 @@
 		"@types/eslint-config-prettier": "^6.11.3",
 		"@types/lodash": "^4.17.23",
 		"@types/mocha": "^10.0.10",
-		"@types/node": "^20.17.5",
+		"@types/node": "^22.19.13",
 		"@types/pngjs": "^6.0.5",
-		"@types/uuid": "^10.0.0",
-		"@types/vscode": "^1.95.0",
+		"@types/vscode": "1.109.0",
 		"@vscode/test-electron": "^2.5.2",
 		"eslint": "^9.30.0",
 		"eslint-config-google": "^0.14.0",
@@ -921,7 +920,7 @@
 		"glob": "^13.0.4",
 		"globals": "^16.3.0",
 		"mocha": "^11.7.5",
-		"typescript": "~5.5.4",
+		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.56.0",
 		"typescript-json-schema": "^0.67.1"
 	},
@@ -942,10 +941,9 @@
 		"sanitize-filename": "^1.6.3",
 		"tempy": "^1.0.1",
 		"throat": "^6.0.2",
-		"uuid": "^11.1.0",
 		"vscode-json-languageservice": "^5.7.1",
-		"vscode-languageclient": "^9.0.1",
-		"vscode-languageserver": "^9.0.1"
+		"vscode-languageclient": "10.0.0-next.20",
+		"vscode-languageserver": "10.0.0-next.16"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {

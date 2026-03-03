@@ -6,7 +6,7 @@ const Core = require('../Core')
 const QuickPick = require('../QuickPick')
 const Meta = require('../Meta')
 
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('node:crypto');
 
 class EnvironmentCommands {
 	static async register(envChanger, _configuration) {
@@ -70,7 +70,7 @@ class EnvironmentCommands {
 			let envs = JSON.parse(JSON.stringify(_configuration.environments))
 
 			// Add new env to environments object
-			const newEnvUuid = uuidv4();
+			const newEnvUuid = randomUUID();
 			envs.push({
 				uuid: newEnvUuid,
 				url: url,
