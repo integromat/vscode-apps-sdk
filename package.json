@@ -915,7 +915,7 @@
 		"eslint": "^10.0.0",
 		"eslint-config-prettier": "^10.1.8",
 		"glob": "^13.0.4",
-		"globals": "^16.3.0",
+		"globals": "^17.3.0",
 		"mocha": "^11.7.5",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.56.0",
