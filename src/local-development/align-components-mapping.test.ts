@@ -464,4 +464,81 @@ describe('alignComponentsMapping()', () => {
 			assert.strictEqual(saveChangesCalls.length, 1, 'should save changes');
 		});
 	});
+
+	describe('stale mapping detection', () => {
+		/*
+		 * Initial state: Connection "connA" has a valid idMapping {local: "connA", remote: "connA"},
+		 *   but the remote component was deleted externally (e.g. via Make UI) — it is no longer
+		 *   in checksums. Without this detection, deploy would fail with a FK constraint error.
+		 * Align resolves: Shows a dialog, user chooses "unlink" → removes the stale idMapping entry,
+		 *   saves changes to makecomapp.json. The local component becomes "localOnly"
+		 *   and can be re-deployed as new in the subsequent flow.
+		 */
+		test('removes stale mapping when user chooses "unlink"', async () => {
+			const showQuickPick = trackCalls(async () => ({ action: 'unlink' as const }));
+			const logCalls = trackCalls();
+
+			const origin = createOrigin({
+				connection: [{ local: 'connA', remote: 'connA' }],
+				webhook: [],
+				module: [],
+				rpc: [],
+				function: [],
+			});
+
+			const checksums = createEmptyChecksums();
+			// connA is NOT in checksums.accounts → stale mapping
+
+			const makecomappJson = createMakecomappJson(
+				{ connection: { connA: createComponentMetadata('Connection A') } },
+				[origin],
+			);
+
+			const { alignComponentsMapping, removeByRemoteNameCalls, saveChangesCalls } = loadModule({
+				showQuickPick,
+				log: logCalls,
+				makecomappJson,
+				getRemoteName: () => undefined, // after removal, no mapping
+			});
+
+			await alignComponentsMapping(dummyUri, origin, checksums, 'ignore', 'ignore');
+
+			assert.strictEqual(showQuickPick.calls.length, 1, 'should show one dialog');
+			assert.strictEqual(removeByRemoteNameCalls.length, 1, 'should remove stale mapping');
+			assert.deepStrictEqual(removeByRemoteNameCalls[0], ['connection', 'connA']);
+			assert.strictEqual(saveChangesCalls.length, 1, 'should save changes immediately');
+			assert.ok(
+				logCalls.calls.some((c) => c[0] === 'warn' && c[1].includes('stale')),
+				'should log a warning about stale mapping',
+			);
+		});
+
+		/*
+		 * Initial state: Connection "connA" has localDeleted: true in idMapping AND is missing
+		 *   from checksums. It looks like a stale mapping, but the developer intentionally
+		 *   marked it for deletion.
+		 * Align resolves: Stale detection does NOT trigger — this case is handled
+		 *   by the "deletedLocally" flow instead.
+		 */
+		test('skips mapping with localDeleted=true (handled by deletedLocally flow)', async () => {
+			const showQuickPick = trackCalls();
+
+			const origin = createOrigin({
+				connection: [{ local: 'connA', remote: 'connA', localDeleted: true }],
+				webhook: [],
+				module: [],
+				rpc: [],
+				function: [],
+			});
+
+			const checksums = createEmptyChecksums();
+			// connA NOT in checksums, but localDeleted=true → should NOT trigger stale detection
+
+			const { alignComponentsMapping } = loadModule({ showQuickPick });
+
+			await alignComponentsMapping(dummyUri, origin, checksums, 'ignore', 'ignore');
+
+			assert.strictEqual(showQuickPick.calls.length, 0, 'should not show stale mapping dialog');
+		});
+	});
 });
