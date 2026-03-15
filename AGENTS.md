@@ -2,7 +2,7 @@
 
 VSCode extension for developing, managing, and deploying custom apps on the [Make](https://make.com) no-code integration platform.
 
-Tech stack: Mix of Javascript (older code) and TypeScript, VSCode Extension API, Axios for Make REST API communication.
+Tech stack: Mix of JavaScript (older code) and TypeScript, VSCode Extension API, Axios for Make REST API communication.
 
 ## Project Purpose
 
