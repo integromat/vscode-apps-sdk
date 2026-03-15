@@ -2,6 +2,9 @@ import * as path from 'path';
 
 import { runTests } from '@vscode/test-electron';
 
+// Prevent Electron from running as plain Node.js (e.g. when launched from Claude Code)
+delete process.env.ELECTRON_RUN_AS_NODE;
+
 async function main() {
 	try {
 		// The folder containing the Extension Manifest package.json
