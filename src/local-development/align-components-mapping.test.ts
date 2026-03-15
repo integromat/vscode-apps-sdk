@@ -102,6 +102,10 @@ function loadModule(mockOverrides: Record<string, any> = {}) {
 		}),
 	};
 
+	// Clear cached module to ensure each test gets fresh stubs
+	// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+	delete require.cache[require.resolve('./align-components-mapping')];
+
 	const mod = proxyquire('./align-components-mapping', {
 		'./remote-components-summary': {
 			getRemoteComponent: m.getRemoteComponent,
