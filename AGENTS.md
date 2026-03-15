@@ -21,7 +21,9 @@ Entry point: `src/extension.ts`. Activates when workspace contains `makecomapp.j
 
 - `src/utils/request-api-make.ts` - Central HTTP client wrapping Axios. Rate-limits to 2 concurrent requests (via `throat`), auto-retries on 429. Adds extension version header.
 - `src/Core.ts` - Higher-level API helpers (`rpGet`, `addEntity`, `editEntity`, `patchEntity`, `deleteEntity`). Supports both API v1 (legacy Integromat) and v2 (Make) via `pathDeterminer()`.
-- Authentication: API key stored in VSCode settings, sent as `Authorization: Token <key>`.
+- Authentication:
+  - **Online Mode**: API key is stored in VSCode settings as part of the configured Make environments and sent as `Authorization: Token <key>`.
+  - **Local Development Mode**: API key is read from each origin’s `apikeyFile` defined in `makecomapp.json` (typically pointing to a `.secrets/...` file). The extension can prompt to create/update this secret file. The same `Authorization: Token <key>` header is used for requests.
 
 Note: API v1 (legacy Integromat) is deprecated - do NOT implement new features using v1 endpoints. Use v2 endpoints exclusively.
 
