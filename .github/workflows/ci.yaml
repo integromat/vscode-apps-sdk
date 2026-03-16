@@ -51,7 +51,7 @@ jobs:
           reporter: mocha-json         # Format of test results
 
   validate-generated-files:
-    name: "Generated `makecomapp.schema.json` is up-to-date"
+    name: "Validate freshness of makecomapp.schema.json"
     runs-on: ubuntu-latest
     timeout-minutes: 5 # minutes
     steps:
