@@ -212,15 +212,14 @@ export async function alignComponentsMapping(
 						await makecomappJsonFile.saveChanges();
 
 						// If local component exists, add to `localOnly` so existing flow handles re-creation
-						if (mappingItem.local) {
+						if (mappingItem.local !== null) {
 							const componentMetadata =
 								makecomappJsonFile.content.components[componentType]?.[mappingItem.local];
 							if (
 								componentMetadata &&
 								!localOnly.some(
 									(c) =>
-										c.componentType === componentType &&
-										c.componentLocalId === mappingItem.local,
+										c.componentType === componentType && c.componentLocalId === mappingItem.local,
 								)
 							) {
 								localOnly.push({
