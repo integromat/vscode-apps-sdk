@@ -62,7 +62,7 @@ Each component has a **local ID** (chosen by developer) and a **remote name** (a
 - `{local: "myConn", remote: "myConn"}` - paired
 - `{local: "myConn", remote: null}` - local only, not yet deployed
 - `{local: null, remote: "oldConn"}` - remote only, ignored locally
-- `{localDeleted: true, ...}` - marked for remote deletion
+- `{localDeleted: true, ...}` - marked for remote deletion. Purspose: allows tracking deleted components to remove them from Make on next deploy.
 
 Helper class: `src/local-development/helpers/component-id-mapping-helper.ts` (`ComponentIdMappingHelper`).
 
