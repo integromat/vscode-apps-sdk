@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+## [2.5.0](https://github.com/integromat/vscode-apps-sdk/compare/2.4.1...2.5.0) (2026-03-16)
+
+
+### Features
+
+* pre-deploy validator of connection/webhook references ([54ed55e](https://github.com/integromat/vscode-apps-sdk/commit/54ed55e94921465e3505aad029e4764c061eb4d7))
+
+
+### Bug Fixes
+
+* detect and handle stale component mappings (deleted externally) ([#335](https://github.com/integromat/vscode-apps-sdk/issues/335)) ([54ed55e](https://github.com/integromat/vscode-apps-sdk/commit/54ed55e94921465e3505aad029e4764c061eb4d7))
+* use dynamic componentType instead of hardcoded 'module' in createRemoteAppComponent ([#333](https://github.com/integromat/vscode-apps-sdk/issues/333)) ([8f8a68f](https://github.com/integromat/vscode-apps-sdk/commit/8f8a68f33eb90abb98940c514ee42015c89b359c))
+
+
+### Build System
+
+* bump @vscode/extension-telemetry from 1.4.0 to 1.5.0 in the deps-minor-update group ([#329](https://github.com/integromat/vscode-apps-sdk/issues/329)) ([8e0592b](https://github.com/integromat/vscode-apps-sdk/commit/8e0592bf3868104fb7616a999b01307f1f503323))
+* bump eslint from 9.30.0 to 10.0.0 ([#327](https://github.com/integromat/vscode-apps-sdk/issues/327)) ([6d0ff99](https://github.com/integromat/vscode-apps-sdk/commit/6d0ff999f7e3720d8066e2cd54e2f5d54d997be3))
+* bump glob from 11.0.0 to 13.0.4 ([#330](https://github.com/integromat/vscode-apps-sdk/issues/330)) ([7b9ec75](https://github.com/integromat/vscode-apps-sdk/commit/7b9ec758dd9d821b771568ce8077a528ad1a20bd))
+* bump globals from 16.3.0 to 17.3.0 ([#332](https://github.com/integromat/vscode-apps-sdk/issues/332)) ([c9311f4](https://github.com/integromat/vscode-apps-sdk/commit/c9311f4e831a1466d0276b4865ab370ac8eb70d6))
+* bump the deps-minor-update group with 4 updates ([#325](https://github.com/integromat/vscode-apps-sdk/issues/325)) ([5fc7071](https://github.com/integromat/vscode-apps-sdk/commit/5fc707177d7a587d6f26d8e72aaed4dfd6d522fb))
+* bump the deps-minor-update group with 4 updates ([#336](https://github.com/integromat/vscode-apps-sdk/issues/336)) ([432e048](https://github.com/integromat/vscode-apps-sdk/commit/432e04899a5d5ae96a26fbed614f0dda355e486c))
+* bump the devdeps-minor-update group across 1 directory with 5 updates ([#337](https://github.com/integromat/vscode-apps-sdk/issues/337)) ([b295b6f](https://github.com/integromat/vscode-apps-sdk/commit/b295b6ff8d9163e908b363acc60e82f7ac77fd51))
+* bump the devdeps-minor-update group with 5 updates ([#324](https://github.com/integromat/vscode-apps-sdk/issues/324)) ([3efef01](https://github.com/integromat/vscode-apps-sdk/commit/3efef010e3b590f22417d5116a009ba8008a6268))
+* **deps:** uuid to node:crypto, vscode 1.95 to 1.109, language lib 9 to 10 next, typescript 5.5 to 5.9 ([#307](https://github.com/integromat/vscode-apps-sdk/issues/307)) ([03f05ef](https://github.com/integromat/vscode-apps-sdk/commit/03f05efae5ebc10b9d4fd0bfc22a922d7b180272))
+
 ## [2.4.1](https://github.com/integromat/vscode-apps-sdk/compare/2.4.0...2.4.1) (2026-03-03)
 
 
