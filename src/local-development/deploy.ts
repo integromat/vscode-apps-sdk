@@ -15,6 +15,7 @@ import { progresDialogReport, withProgressDialog } from '../utils/vscode-progres
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { sendTelemetry } from '../utils/telemetry';
 import { downloadOriginChecksums, findOriginChecksum } from './helpers/origin-checksum';
+import { validateComponentReferences } from './helpers/validate-component-references';
 import { userPreferences } from './helpers/user-preferences';
 
 export function registerCommands(): void {
@@ -88,6 +89,10 @@ async function bulkDeploy(anyProjectPath: vscode.Uri | undefined) {
 			const errors: DeploymentError[] = [];
 
 			const componentIdMapping = new ComponentIdMappingHelper(makecomappJson, origin);
+
+			// Validate that all component references (connection, altConnection, webhook)
+			// point to components that have a valid idMapping entry.
+			validateComponentReferences(makecomappJson, componentIdMapping);
 
 			// Deploy codes one-by-one
 			for (const componentCode of codesToDeploy) {
