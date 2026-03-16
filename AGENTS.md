@@ -62,7 +62,8 @@ Each component has a **local ID** (chosen by developer) and a **remote name** (a
 - `{local: "myConn", remote: "myConn"}` - paired
 - `{local: "myConn", remote: null}` - local only, not yet deployed
 - `{local: null, remote: "oldConn"}` - remote only, ignored locally
-- `{localDeleted: true, ...}` - marked for remote deletion
+- `{localDeleted: true, ...}` - marked for remote deletion. Purspose: allows tracking deleted components to remove them from Make on next deploy.
+- `{nonOwnedByApp: true, ...}` - remote component that belongs to a different app version (typically connections/webhooks from another major version). No local code files are created; code deployment is skipped. These components are placed in `makecomapp.json` so they can be referenced by other components (e.g., a module referencing a non-owned connection).
 
 Helper class: `src/local-development/helpers/component-id-mapping-helper.ts` (`ComponentIdMappingHelper`).
 
@@ -138,7 +139,7 @@ File types are validated against schemas in `syntaxes/imljson/schemas/` (paramet
 - API uses different names for component types than the extension: `accounts` (not connections), `hooks` (not webhooks).
 - Checksum API returns component types under these API names, not local names.
 - When creating remote components during deploy, all referenced components (connections, webhooks) must already exist in remote. The deploy ordering handles this, but the ID translation from local to remote must be correct.
-- Some components may be "non-owned" (`external: true` in checksums) - belonging to a different app version. These are read-only.
+- Some components may be "non-owned" - belonging to a different app version. In checksums they have `external: true`, in idMapping they have `nonOwnedByApp: true`. Applies only to connections and webhooks. Their code is not deployed and no local files are created, but they can be referenced by other components.
 
 ## When in Plan Mode
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.

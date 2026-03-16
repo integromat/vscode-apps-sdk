@@ -27,7 +27,7 @@ export async function createRemoteAppComponent(opt: {
 	origin: LocalAppOriginWithSecret;
 }): Promise<string> {
 	try {
-		const infoMessage = `Creating ${opt.componentName} "${
+		const infoMessage = `Creating ${opt.componentType} ${opt.componentName} "${
 			opt.componentMetadata.label ?? opt.componentName
 		}" in remote app ${opt.origin.appId}`;
 		log('debug', infoMessage);
@@ -47,7 +47,12 @@ export async function createRemoteAppComponent(opt: {
 			url: componentCreationUrl,
 			method: 'POST',
 			// Add all editable component metadata
-			data: getApiBodyForComponentMetadataDeploy('module', opt.componentMetadata, opt.makecomappJson, opt.origin),
+			data: getApiBodyForComponentMetadataDeploy(
+				opt.componentType,
+				opt.componentMetadata,
+				opt.makecomappJson,
+				opt.origin,
+			),
 		};
 
 		// Add metadata, which are not covered by `getComponentRemoteMetadataToDeploy`,
