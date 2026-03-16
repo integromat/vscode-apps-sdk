@@ -554,5 +554,43 @@ describe('alignComponentsMapping()', () => {
 				'should log info about orphan cleanup',
 			);
 		});
+
+		/*
+		 * Initial state: Connection "connA" has local=null in idMapping (deliberately ignored remote)
+		 *   AND is missing from checksums — the remote component was deleted externally.
+		 * Align resolves: Silently cleans up the stale mapping (no dialog, no API delete call).
+		 *   There is no local component to re-create, so no user interaction is needed.
+		 */
+		test('silently cleans up stale mapping with local=null (ignored remote deleted externally)', async () => {
+			const showQuickPick = trackCalls();
+			const logCalls = trackCalls();
+
+			const origin = createOrigin({
+				connection: [{ local: null, remote: 'connA' }],
+				webhook: [],
+				module: [],
+				rpc: [],
+				function: [],
+			});
+
+			const checksums = createEmptyChecksums();
+			// connA NOT in checksums AND local=null → stale ignored mapping, silent cleanup
+
+			const { alignComponentsMapping, removeByRemoteNameCalls, saveChangesCalls } = loadModule({
+				showQuickPick,
+				log: logCalls,
+			});
+
+			await alignComponentsMapping(dummyUri, origin, checksums, 'ignore', 'ignore');
+
+			assert.strictEqual(showQuickPick.calls.length, 0, 'should not show any dialog');
+			assert.strictEqual(removeByRemoteNameCalls.length, 1, 'should remove stale mapping');
+			assert.deepStrictEqual(removeByRemoteNameCalls[0], ['connection', 'connA']);
+			assert.strictEqual(saveChangesCalls.length, 1, 'should save changes');
+			assert.ok(
+				logCalls.calls.some((c) => c[0] === 'info' && c[1].includes('Deliberately ignored')),
+				'should log info about ignored remote cleanup',
+			);
+		});
 	});
 });

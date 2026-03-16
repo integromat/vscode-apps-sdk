@@ -171,6 +171,17 @@ export async function alignComponentsMapping(
 						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
 						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
 						await makecomappJsonFile.saveChanges();
+					} else if (mappingItem.local === null) {
+						// Mapping has local=null (deliberately ignored remote) AND remote is now gone.
+						// No local component to re-create, no user action needed → silently clean up.
+						log(
+							'info',
+							`Deliberately ignored remote ${componentType} "${mappingItem.remote}" no longer exists` +
+								` in Make. Cleaning up stale mapping.`,
+						);
+						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
+						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
+						await makecomappJsonFile.saveChanges();
 					} else {
 						// Stale mapping: remote was deleted externally, but local still references it.
 						log(
