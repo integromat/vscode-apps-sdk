@@ -515,13 +515,15 @@ describe('alignComponentsMapping()', () => {
 
 		/*
 		 * Initial state: Connection "connA" has localDeleted: true in idMapping AND is missing
-		 *   from checksums. It looks like a stale mapping, but the developer intentionally
-		 *   marked it for deletion.
-		 * Align resolves: Stale detection does NOT trigger — this case is handled
-		 *   by the "deletedLocally" flow instead.
+		 *   from checksums. Both sides agree the component should not exist — the developer
+		 *   deleted it locally, and someone also deleted it in Make.
+		 * Align resolves: Silently cleans up the orphan mapping (no dialog, no API delete call).
+		 *   The mapping is removed and changes are saved.
 		 */
-		test('skips mapping with localDeleted=true (handled by deletedLocally flow)', async () => {
+		test('silently cleans up orphan mapping with localDeleted=true and remote missing', async () => {
 			const showQuickPick = trackCalls();
+			const deleteOriginComponent = trackCalls(async () => { /* noop */ });
+			const logCalls = trackCalls();
 
 			const origin = createOrigin({
 				connection: [{ local: 'connA', remote: 'connA', localDeleted: true }],
@@ -532,13 +534,25 @@ describe('alignComponentsMapping()', () => {
 			});
 
 			const checksums = createEmptyChecksums();
-			// connA NOT in checksums, but localDeleted=true → should NOT trigger stale detection
+			// connA NOT in checksums AND localDeleted=true → orphan mapping, silent cleanup
 
-			const { alignComponentsMapping } = loadModule({ showQuickPick });
+			const { alignComponentsMapping, removeByRemoteNameCalls, saveChangesCalls } = loadModule({
+				showQuickPick,
+				deleteOriginComponent,
+				log: logCalls,
+			});
 
 			await alignComponentsMapping(dummyUri, origin, checksums, 'ignore', 'ignore');
 
-			assert.strictEqual(showQuickPick.calls.length, 0, 'should not show stale mapping dialog');
+			assert.strictEqual(showQuickPick.calls.length, 0, 'should not show any dialog');
+			assert.strictEqual(deleteOriginComponent.calls.length, 0, 'should not call API delete (remote already gone)');
+			assert.strictEqual(removeByRemoteNameCalls.length, 1, 'should remove orphan mapping');
+			assert.deepStrictEqual(removeByRemoteNameCalls[0], ['connection', 'connA']);
+			assert.strictEqual(saveChangesCalls.length, 1, 'should save changes');
+			assert.ok(
+				logCalls.calls.some((c) => c[0] === 'info' && c[1].includes('orphan')),
+				'should log info about orphan cleanup',
+			);
 		});
 	});
 });

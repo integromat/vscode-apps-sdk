@@ -157,64 +157,78 @@ export async function alignComponentsMapping(
 
 		for (const mappingItem of idMappingItems) {
 			// If remote is defined in mapping
-			if (mappingItem.remote !== null && mappingItem.remote !== undefined && !mappingItem.localDeleted) {
-				// ...and it is missing in checksums, it means that remote component was deleted externally, but mapping was not updated yet (stale mapping).
+			if (mappingItem.remote !== null && mappingItem.remote !== undefined) {
+				// Remote is missing in checksums → the remote component was deleted externally.
 				if (!remoteNamesInChecksums.has(mappingItem.remote)) {
-					log(
-						'warn',
-						`Component ${componentType} mapping to remote "${mappingItem.remote}" is stale` +
-							` (remote component no longer exists in Make).`,
-					);
-
-					// Ask user what to do
-					const userChoice = await vscode.window.showQuickPick(
-						[
-							{
-								label: 'Unlink from deleted remote and continue',
-								description: `Remove the outdated mapping for ${componentType} "${mappingItem.local ?? mappingItem.remote}"`,
-								action: 'unlink' as const,
-							},
-							{
-								label: 'Cancel operation with no fix',
-								description: 'Stop the current operation. Resolve the issue manually.',
-								action: 'cancel' as const,
-							},
-						],
-						{
-							ignoreFocusOut: true,
-							title: `Remote ${componentType} "${mappingItem.remote}" no longer exists in Make, but local mapping still references it`,
-						},
-					);
-
-					if (!userChoice || userChoice.action === 'cancel') {
-						throw new Error(
-							`Operation cancelled. Remote ${componentType} "${mappingItem.remote}" no longer exists.` +
-								` Remove or fix the mapping in makecomapp.json manually.`,
+					if (mappingItem.localDeleted) {
+						// Mapping has localDeleted=true AND remote is already gone.
+						// Both sides agree the component should not exist → silently clean up the orphan mapping.
+						log(
+							'info',
+							`Component ${componentType} "${mappingItem.remote}" was deleted locally and` +
+								` also no longer exists in Make. Cleaning up orphan mapping.`,
 						);
-					}
+						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
+						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
+						await makecomappJsonFile.saveChanges();
+					} else {
+						// Stale mapping: remote was deleted externally, but local still references it.
+						log(
+							'warn',
+							`Component ${componentType} mapping to remote "${mappingItem.remote}" is stale` +
+								` (remote component no longer exists in Make).`,
+						);
 
-					// action === 'unlink'
-					const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
-					mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
-					await makecomappJsonFile.saveChanges();
+						// Ask user what to do
+						const userChoice = await vscode.window.showQuickPick(
+							[
+								{
+									label: 'Unlink from deleted remote and continue',
+									description: `Remove the outdated mapping for ${componentType} "${mappingItem.local ?? mappingItem.remote}"`,
+									action: 'unlink' as const,
+								},
+								{
+									label: 'Cancel operation with no fix',
+									description: 'Stop the current operation. Resolve the issue manually.',
+									action: 'cancel' as const,
+								},
+							],
+							{
+								ignoreFocusOut: true,
+								title: `Remote ${componentType} "${mappingItem.remote}" no longer exists in Make, but local mapping still references it`,
+							},
+						);
 
-					// If local component exists, add to `localOnly` so existing flow handles re-creation
-					if (mappingItem.local) {
-						const componentMetadata =
-							makecomappJsonFile.content.components[componentType]?.[mappingItem.local];
-						if (
-							componentMetadata &&
-							!localOnly.some(
-								(c) =>
-									c.componentType === componentType &&
-									c.componentLocalId === mappingItem.local,
-							)
-						) {
-							localOnly.push({
-								componentType,
-								componentLocalId: mappingItem.local,
-								componentMetadata,
-							});
+						if (!userChoice || userChoice.action === 'cancel') {
+							throw new Error(
+								`Operation cancelled. Remote ${componentType} "${mappingItem.remote}" no longer exists.` +
+									` Remove or fix the mapping in makecomapp.json manually.`,
+							);
+						}
+
+						// action === 'unlink'
+						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
+						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
+						await makecomappJsonFile.saveChanges();
+
+						// If local component exists, add to `localOnly` so existing flow handles re-creation
+						if (mappingItem.local) {
+							const componentMetadata =
+								makecomappJsonFile.content.components[componentType]?.[mappingItem.local];
+							if (
+								componentMetadata &&
+								!localOnly.some(
+									(c) =>
+										c.componentType === componentType &&
+										c.componentLocalId === mappingItem.local,
+								)
+							) {
+								localOnly.push({
+									componentType,
+									componentLocalId: mappingItem.local,
+									componentMetadata,
+								});
+							}
 						}
 					}
 				}
