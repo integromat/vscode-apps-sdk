@@ -51,7 +51,7 @@ jobs:
           reporter: mocha-json         # Format of test results
 
   validate-generated-files:
-    name: "Validate generated `makecomapp.schema.json` is up-to-date"
+    name: "Generated `makecomapp.schema.json` is up-to-date"
     runs-on: ubuntu-latest
     timeout-minutes: 5 # minutes
     steps:
@@ -70,7 +70,7 @@ jobs:
       - name: Regenerate makecomapp.schema.json
         run: npm run schema:makecomapp
 
-      - name: Check for uncommitted changes
+      - name: Check for uncommitted changes (must be empty)
         run: |
           if ! git diff --exit-code; then
             echo ""
