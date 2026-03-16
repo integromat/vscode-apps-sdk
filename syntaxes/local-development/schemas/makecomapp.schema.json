@@ -29,7 +29,7 @@
                     ]
                 },
                 "codeFiles": {
-                    "$ref": "#/definitions/Partial<Record<ComponentCodeType,string|null>>.c4962aad"
+                    "$ref": "#/definitions/Partial%3CRecord%3CComponentCodeType%2Cstring%7Cnull%3E%3E.5db18c0a"
                 },
                 "connection": {
                     "description": "Relevant for modules, webhooks, RPCs only.",
@@ -86,7 +86,7 @@
             ],
             "type": "object"
         },
-        "AppComponentTypesMetadata.1862ee92": {
+        "AppComponentTypesMetadata.9d95f8e6": {
             "additionalProperties": false,
             "properties": {
                 "connection": {
@@ -128,7 +128,7 @@
             "description": "Component ID => Component metadata or null (null can be temporary in makecomapp.json file)\n\nNote: `null` is used only temporary if component name is reserved, but not implemeted yet.",
             "type": "object"
         },
-        "ComponentIdMapping.1862ee92": {
+        "ComponentIdMapping.9d95f8e6": {
             "additionalProperties": false,
             "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...).",
             "properties": {
@@ -204,7 +204,7 @@
             ],
             "type": "object"
         },
-        "GeneralCodeFilesMetadata.1862ee92": {
+        "GeneralCodeFilesMetadata.9d95f8e6": {
             "additionalProperties": false,
             "description": "General Code Type => Code Local File Path.\n\n If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).\n The `null` used primarly for common data in case a developer decided to not include common data in local project.",
             "properties": {
@@ -266,7 +266,7 @@
                     "type": "string"
                 },
                 "idMapping": {
-                    "$ref": "#/definitions/ComponentIdMapping.1862ee92",
+                    "$ref": "#/definitions/ComponentIdMapping.9d95f8e6",
                     "description": "List of component ID-mapping between local and remote components of same component type (like modules, connections, ...)."
                 },
                 "label": {
@@ -287,13 +287,13 @@
             "additionalProperties": false,
             "properties": {
                 "components": {
-                    "$ref": "#/definitions/AppComponentTypesMetadata.1862ee92"
+                    "$ref": "#/definitions/AppComponentTypesMetadata.9d95f8e6"
                 },
                 "fileVersion": {
                     "type": "number"
                 },
                 "generalCodeFiles": {
-                    "$ref": "#/definitions/GeneralCodeFilesMetadata.1862ee92"
+                    "$ref": "#/definitions/GeneralCodeFilesMetadata.9d95f8e6"
                 },
                 "origins": {
                     "items": {
@@ -310,7 +310,7 @@
             ],
             "type": "object"
         },
-        "Partial<Record<ComponentCodeType,string|null>>.c4962aad": {
+        "Partial<Record<ComponentCodeType,string|null>>.5db18c0a": {
             "additionalProperties": false,
             "description": "Component's Code Type => Code Local File Path\n\n If `CodeFilePath` is `null`, it means the code is being ignored in local development (during pulls and deployments).\n The `null` used primarly for common data in case a developer decided to not include common data in local project.",
             "properties": {

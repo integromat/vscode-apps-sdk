@@ -28,8 +28,9 @@ jobs:
       # See https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages#publishing-packages-to-the-npm-registry
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       - name: Install modules
         run: npm ci
@@ -48,3 +49,32 @@ jobs:
           name: Integration tests report  # Name of the check run which will be created
           path: out/tests-report.json  # Path to test results
           reporter: mocha-json         # Format of test results
+
+  validate-generated-files:
+    name: "Validate freshness of makecomapp.schema.json"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5 # minutes
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install modules
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Regenerate makecomapp.schema.json
+        run: npm run schema:makecomapp
+
+      - name: Check for uncommitted changes (must be empty)
+        run: |
+          if ! git diff --exit-code; then
+            echo ""
+            echo "ERROR: Generated files are out of date. See the diff above."
+            echo "Run 'npm run schema:makecomapp' locally and commit the result."
+            exit 1
+          fi
