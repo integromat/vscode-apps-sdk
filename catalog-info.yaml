@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vscode-apps-sdk
+  annotations:
+    github.com/project-slug: integromat/vscode-apps-sdk
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/plato
+  partOfCoreProduct: false
