@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+## [2.5.1](https://github.com/integromat/vscode-apps-sdk/compare/2.5.0...2.5.1) (2026-04-17)
+
+
+### Bug Fixes
+
+* run IML function tests against draft code, not published code ([#338](https://github.com/integromat/vscode-apps-sdk/issues/338)) ([ba449d9](https://github.com/integromat/vscode-apps-sdk/commit/ba449d98e76f131d7ce055a5396c9ac00a5ba17d))
+
+
+### Build System
+
+* bump the devdeps-minor-update group with 2 updates ([#339](https://github.com/integromat/vscode-apps-sdk/issues/339)) ([7a395b3](https://github.com/integromat/vscode-apps-sdk/commit/7a395b3a903cda7c8b17be3637f9fcb48368a39b))
+* bump vscode-languageclient from 10.0.0-next.20 to 10.0.0-next.21 ([#340](https://github.com/integromat/vscode-apps-sdk/issues/340)) ([3af925d](https://github.com/integromat/vscode-apps-sdk/commit/3af925d14fa287723f3ed80665c28656a0ef0979))
+* bump vscode-languageserver from 10.0.0-next.16 to 10.0.0-next.17 ([#341](https://github.com/integromat/vscode-apps-sdk/issues/341)) ([163fab9](https://github.com/integromat/vscode-apps-sdk/commit/163fab9e91daf8f442c9ce401b1b051ed6656a5d))
+
+
+### Continuous Integration
+
+* update validate-pr.yml ([10857a5](https://github.com/integromat/vscode-apps-sdk/commit/10857a58ada1059aa0914cbc3a134176fea54a9a))
+
 ## [2.5.0](https://github.com/integromat/vscode-apps-sdk/compare/2.4.1...2.5.0) (2026-03-16)
 
 
