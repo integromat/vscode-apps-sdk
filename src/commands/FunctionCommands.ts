@@ -98,16 +98,23 @@ export class FunctionCommands {
 				}
 			}
 
-			// Get current test code
-			const test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
+			// Get current test code and the list of all function names
+			const [test, functionListResponse] = await Promise.all([
+				Core.rpGet(`${urn}/${functionName}/test`, _authorization),
+				Core.rpGet(`${urn}`, _authorization, { cols: ['name'] }),
+			]);
 
-			// Get all custom IML functions (includes the tested one)
-			let userFunctions: CustomImlFunction[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
-			if (_environment.version === 2) {
-				userFunctions = (<any>userFunctions).appFunctions;
-			}
+			const functionList: { name: string }[] = _environment.version === 2
+				? (functionListResponse as any).appFunctions
+				: functionListResponse;
 
-			// Merge codes
+			// Fetch each function's draft code via its direct endpoint
+			const userFunctions: CustomImlFunction[] = await Promise.all(
+				functionList.map(async (fn): Promise<CustomImlFunction> => ({
+					name: fn.name,
+					code: await Core.rpGet(`${urn}/${fn.name}/code`, _authorization),
+				})),
+			);
 
 			await executeCustomFunctionTest(functionName, test, userFunctions, outputChannel, _timezone);
 
