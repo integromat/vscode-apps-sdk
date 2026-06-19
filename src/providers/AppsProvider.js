@@ -17,6 +17,21 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 		this._admin = _admin;
+		this._searchFilter = '';
+	}
+
+	get searchFilter() {
+		return this._searchFilter;
+	}
+
+	setSearchFilter(term) {
+		this._searchFilter = (term || '').trim();
+		this.refresh();
+	}
+
+	clearSearchFilter() {
+		this._searchFilter = '';
+		this.refresh();
 	}
 
 	refresh() {
@@ -54,11 +69,21 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			if (response === undefined) { return }
 			//#endregion Get apps list
 
-			const apps = await Promise.all(response.map(async (app) => {
+			let apps = await Promise.all(response.map(async (app) => {
 				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion)
 			}));
 			apps.sort(Core.compareApps)
+
+			if (this._searchFilter) {
+				const needle = this._searchFilter.toLowerCase();
+				apps = apps.filter(app =>
+					app.bareLabel.toLowerCase().includes(needle) ||
+					app.name.toLowerCase().includes(needle) ||
+					(app.description && app.description.toLowerCase().includes(needle))
+				);
+			}
+
 			return apps
 		}
 		/*
