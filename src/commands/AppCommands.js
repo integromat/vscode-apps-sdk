@@ -484,12 +484,18 @@ class AppCommands {
 						data: fs.createReadStream(uri[0].fsPath),
 					});
 
-					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
-					if (await asyncfile.exists(rawIcon.dark)) {
-						await asyncfile.rename(rawIcon.dark, `${rawIcon.dark}.old`);
-					}
-					if (await asyncfile.exists(rawIcon.light)) {
-						await asyncfile.rename(rawIcon.light, `${rawIcon.light}.old`);
+					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded).
+					// Invalidate every locally cached icon path so the background loader re-downloads the fresh one:
+					//  - `rawIcon.*`: the just-resolved path (may not exist if the on-demand fetch failed and version stayed 0)
+					//  - `app.rawIcon.*`: the tree node's current cached path (e.g. from an earlier session/background load)
+					const stalePaths = new Set([
+						rawIcon.dark, rawIcon.light,
+						app.rawIcon?.dark, app.rawIcon?.light,
+					].filter(Boolean));
+					for (const stalePath of stalePaths) {
+						if (await asyncfile.exists(stalePath)) {
+							await asyncfile.rename(stalePath, `${stalePath}.old`);
+						}
 					}
 
 					vscode.commands.executeCommand('apps-sdk.refresh');

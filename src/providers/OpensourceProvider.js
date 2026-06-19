@@ -20,31 +20,46 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		/** Resolved icon versions, keyed by `${name}@${version}`. */
 		this._iconVersions = new Map();
 		this._iconsLoaded = false;
-		this._bgIconAborted = false;
+		/** True while a background icon load is in flight (single-flight guard). */
+		this._iconsLoading = false;
+		/** Monotonic token identifying the current icon-load run. Bumping it cancels older runs. */
+		this._iconLoadToken = 0;
 	}
 
 	refresh() {
-		this._bgIconAborted = true;
+		// Invalidate any in-flight background load and reset state so icons are reloaded.
+		this._iconLoadToken++;
+		this._iconsLoading = false;
 		this._iconsLoaded = false;
 		this._iconVersions.clear();
 		this._onDidChangeTreeData.fire();
 	}
 
 	_startBackgroundIconLoad(appsData) {
-		this._bgIconAborted = false;
+		// Single-flight: never run two background loaders at once.
+		if (this._iconsLoading) return;
+		this._iconsLoading = true;
+		const token = ++this._iconLoadToken;
 		setImmediate(async () => {
 			try {
 				for (const app of appsData) {
-					if (this._bgIconAborted) return;
+					// Bail out if this run was superseded (refresh or a newer run).
+					if (token !== this._iconLoadToken) return;
 					const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, true);
+					if (token !== this._iconLoadToken) return;
 					this._iconVersions.set(`${app.name}@${app.version}`, iconVersion);
 				}
-				if (!this._bgIconAborted) {
+				if (token === this._iconLoadToken) {
 					this._iconsLoaded = true;
 					this._onDidChangeTreeData.fire();
 				}
 			} catch (err) {
 				log('error', `Background example icon load failed: ${err.message}`);
+			} finally {
+				// Release the single-flight lock only if we still own the current run.
+				if (token === this._iconLoadToken) {
+					this._iconsLoading = false;
+				}
 			}
 		});
 	}
