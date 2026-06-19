@@ -45,9 +45,14 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				for (const app of appsData) {
 					// Bail out if this run was superseded (refresh or a newer run).
 					if (token !== this._iconLoadToken) return;
-					const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, true);
-					if (token !== this._iconLoadToken) return;
-					this._iconVersions.set(`${app.name}@${app.version}`, iconVersion);
+					try {
+						const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, true);
+						if (token !== this._iconLoadToken) return;
+						this._iconVersions.set(`${app.name}@${app.version}`, iconVersion);
+					} catch (err) {
+						// Isolate per-app failures (e.g. a corrupt PNG) so one bad icon does not abort the whole batch.
+						log('error', `Background example icon load failed for ${app.name}@${app.version}: ${err.message}`);
+					}
 				}
 				if (token === this._iconLoadToken) {
 					this._iconsLoaded = true;
