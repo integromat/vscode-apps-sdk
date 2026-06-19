@@ -204,7 +204,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		appsTreeView.description = isActive ? `Filter: "${appsProvider.searchFilter}"` : undefined;
 	}
 
-	vscode.commands.registerCommand('apps-sdk.search', async () => {
+	vscode.commands.registerCommand('apps-sdk.search', catchError('Search custom apps', async () => {
 		const term = await vscode.window.showInputBox({
 			prompt: 'Search custom apps by name, label, or description',
 			placeHolder: 'Type to filter apps…',
@@ -214,12 +214,12 @@ export async function activate(context: vscode.ExtensionContext) {
 			appsProvider.setSearchFilter(term);
 			updateSearchContext();
 		}
-	});
+	}));
 
-	vscode.commands.registerCommand('apps-sdk.search.clear', () => {
+	vscode.commands.registerCommand('apps-sdk.search.clear', catchError('Clear custom apps search', async () => {
 		appsProvider.clearSearchFilter();
 		updateSearchContext();
-	});
+	}));
 
 	/**
 	 * Registering commands
