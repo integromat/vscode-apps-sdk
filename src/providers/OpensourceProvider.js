@@ -7,6 +7,7 @@ const Code = require('../tree/Code')
 const Core = require('../Core');
 const camelCase = require('lodash/camelCase');
 const { downloadAndStoreAppIcon } = require('../libs/app-icon');
+const { log } = require('../output-channel');
 
 class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR) {
@@ -16,10 +17,36 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		this._environment = _environment;
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
+		/** Resolved icon versions, keyed by `${name}@${version}`. */
+		this._iconVersions = new Map();
+		this._iconsLoaded = false;
+		this._bgIconAborted = false;
 	}
 
 	refresh() {
+		this._bgIconAborted = true;
+		this._iconsLoaded = false;
+		this._iconVersions.clear();
 		this._onDidChangeTreeData.fire();
+	}
+
+	_startBackgroundIconLoad(appsData) {
+		this._bgIconAborted = false;
+		setImmediate(async () => {
+			try {
+				for (const app of appsData) {
+					if (this._bgIconAborted) return;
+					const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, true);
+					this._iconVersions.set(`${app.name}@${app.version}`, iconVersion);
+				}
+				if (!this._bgIconAborted) {
+					this._iconsLoaded = true;
+					this._onDidChangeTreeData.fire();
+				}
+			} catch (err) {
+				log('error', `Background example icon load failed: ${err.message}`);
+			}
+		});
 	}
 
 	getParent(element) {
@@ -53,11 +80,16 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			}
 			if (response === undefined) { return }
 
-			const apps = await Promise.all(response.map(async (app) => {
-				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, true);
+			const apps = response.map((app) => {
+				const iconVersion = this._iconVersions.get(`${app.name}@${app.version}`) ?? 0;
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion, true);
-			}));
+			});
 			apps.sort(Core.compareApps)
+
+			if (!this._iconsLoaded) {
+				this._startBackgroundIconLoad(response);
+			}
+
 			return apps
 		}
 		/*
