@@ -408,6 +408,10 @@ class AppCommands {
 				}
 			);
 
+			// Track disposal so we never touch the webview after the user closes the panel (that throws).
+			let panelDisposed = false;
+			panel.onDidDispose(() => { panelDisposed = true; });
+
 			// Show a loading indicator while the current icon is fetched on demand.
 			panel.webview.html = getIconLoadingHtml();
 
@@ -422,6 +426,12 @@ class AppCommands {
 				);
 			} catch (err) {
 				showError(err, 'Get/change icon');
+			}
+
+			// If the user closed the panel while the icon was downloading, stop here -
+			// writing to a disposed webview (or registering its listeners) would throw.
+			if (panelDisposed) {
+				return;
 			}
 
 			// Resolve the local path of the freshly downloaded icon (version may differ from the tree node).

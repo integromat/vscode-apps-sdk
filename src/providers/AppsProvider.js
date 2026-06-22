@@ -6,8 +6,7 @@ const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
 const camelCase = require('lodash/camelCase');
-const { downloadAndStoreAppIcon } = require('../libs/app-icon');
-const { log } = require('../output-channel');
+const { BackgroundIconLoader } = require('../libs/background-icon-loader');
 
 class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR, _admin) {
@@ -18,56 +17,20 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 		this._admin = _admin;
-		/** Resolved icon versions, keyed by `${name}@${version}`. */
-		this._iconVersions = new Map();
-		this._iconsLoaded = false;
-		/** True while a background icon load is in flight (single-flight guard). */
-		this._iconsLoading = false;
-		/** Monotonic token identifying the current icon-load run. Bumping it cancels older runs. */
-		this._iconLoadToken = 0;
+		this._iconLoader = new BackgroundIconLoader({
+			baseUrl: this._baseUrl,
+			authorization: this._authorization,
+			environment: this._environment,
+			isOpensource: false,
+			logLabel: 'Background app',
+			onLoaded: () => this._onDidChangeTreeData.fire(),
+		});
 	}
 
 	refresh() {
-		// Invalidate any in-flight background load and reset state so icons are reloaded.
-		this._iconLoadToken++;
-		this._iconsLoading = false;
-		this._iconsLoaded = false;
-		this._iconVersions.clear();
+		// Invalidate any in-flight background icon load and reset state so icons are reloaded.
+		this._iconLoader.reset();
 		this._onDidChangeTreeData.fire();
-	}
-
-	_startBackgroundIconLoad(appsData) {
-		// Single-flight: never run two background loaders at once.
-		if (this._iconsLoading) return;
-		this._iconsLoading = true;
-		const token = ++this._iconLoadToken;
-		setImmediate(async () => {
-			try {
-				for (const app of appsData) {
-					// Bail out if this run was superseded (refresh or a newer run).
-					if (token !== this._iconLoadToken) return;
-					try {
-						const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
-						if (token !== this._iconLoadToken) return;
-						this._iconVersions.set(`${app.name}@${app.version}`, iconVersion);
-					} catch (err) {
-						// Isolate per-app failures (e.g. a corrupt PNG) so one bad icon does not abort the whole batch.
-						log('error', `Background app icon load failed for ${app.name}@${app.version}: ${err.message}`);
-					}
-				}
-				if (token === this._iconLoadToken) {
-					this._iconsLoaded = true;
-					this._onDidChangeTreeData.fire();
-				}
-			} catch (err) {
-				log('error', `Background app icon load failed: ${err.message}`);
-			} finally {
-				// Release the single-flight lock only if we still own the current run.
-				if (token === this._iconLoadToken) {
-					this._iconsLoading = false;
-				}
-			}
-		});
 	}
 
 	getParent(element /* : Dependency */) {
@@ -102,13 +65,13 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			//#endregion Get apps list
 
 			const apps = response.map((app) => {
-				const iconVersion = this._iconVersions.get(`${app.name}@${app.version}`) ?? 0;
+				const iconVersion = this._iconLoader.getIconVersion(app.name, app.version);
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion)
 			});
 			apps.sort(Core.compareApps)
 
-			if (!this._iconsLoaded) {
-				this._startBackgroundIconLoad(response);
+			if (!this._iconLoader.isLoaded) {
+				this._iconLoader.start(response);
 			}
 
 			return apps
