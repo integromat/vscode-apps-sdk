@@ -26,16 +26,38 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 
 	setSearchFilter(term) {
 		this._searchFilter = (term || '').trim();
-		this.refresh();
+		// Only re-render the tree to apply the filter. Intentionally NOT calling refresh():
+		// a full refresh reloads everything and (with background icon loading) invalidates the icon cache,
+		// which would re-download all icons on every search change.
+		this._onDidChangeTreeData.fire();
 	}
 
 	clearSearchFilter() {
 		this._searchFilter = '';
-		this.refresh();
+		// See note in setSearchFilter: re-render only, do not invalidate caches.
+		this._onDidChangeTreeData.fire();
 	}
 
 	refresh() {
 		this._onDidChangeTreeData.fire();
+	}
+
+	/**
+	 * Filters the given apps by the active search term, matching (case-insensitive)
+	 * against the app's label, name (id), or description.
+	 * @param {Array} apps Apps to filter.
+	 * @returns {Array} The matching apps, or all apps when no filter is active.
+	 */
+	_applySearchFilter(apps) {
+		if (!this._searchFilter) {
+			return apps;
+		}
+		const needle = this._searchFilter.toLowerCase();
+		return apps.filter(app =>
+			app.bareLabel.toLowerCase().includes(needle) ||
+			app.name.toLowerCase().includes(needle) ||
+			(app.description && app.description.toLowerCase().includes(needle))
+		);
 	}
 
 	getParent(element /* : Dependency */) {
@@ -75,14 +97,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			}));
 			apps.sort(Core.compareApps)
 
-			if (this._searchFilter) {
-				const needle = this._searchFilter.toLowerCase();
-				apps = apps.filter(app =>
-					app.bareLabel.toLowerCase().includes(needle) ||
-					app.name.toLowerCase().includes(needle) ||
-					(app.description && app.description.toLowerCase().includes(needle))
-				);
-			}
+			apps = this._applySearchFilter(apps)
 
 			return apps
 		}
