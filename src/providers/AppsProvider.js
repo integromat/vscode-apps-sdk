@@ -25,12 +25,49 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			logLabel: 'Background app',
 			onLoaded: () => this._onDidChangeTreeData.fire(),
 		});
+		this._searchFilter = '';
+	}
+
+	get searchFilter() {
+		return this._searchFilter;
+	}
+
+	setSearchFilter(term) {
+		this._searchFilter = (term || '').trim();
+		// Only re-render the tree to apply the filter. Intentionally NOT calling refresh():
+		// a full refresh reloads everything and (with background icon loading) invalidates the icon cache,
+		// which would re-download all icons on every search change.
+		this._onDidChangeTreeData.fire();
+	}
+
+	clearSearchFilter() {
+		this._searchFilter = '';
+		// See note in setSearchFilter: re-render only, do not invalidate caches.
+		this._onDidChangeTreeData.fire();
 	}
 
 	refresh() {
 		// Invalidate any in-flight background icon load and reset state so icons are reloaded.
 		this._iconLoader.reset();
 		this._onDidChangeTreeData.fire();
+	}
+
+	/**
+	 * Filters the given apps by the active search term, matching (case-insensitive)
+	 * against the app's label, name (id), or description.
+	 * @param {Array} apps Apps to filter.
+	 * @returns {Array} The matching apps, or all apps when no filter is active.
+	 */
+	_applySearchFilter(apps) {
+		if (!this._searchFilter) {
+			return apps;
+		}
+		const needle = this._searchFilter.toLowerCase();
+		return apps.filter(app =>
+			app.bareLabel.toLowerCase().includes(needle) ||
+			app.name.toLowerCase().includes(needle) ||
+			(app.description && app.description.toLowerCase().includes(needle))
+		);
 	}
 
 	getParent(element /* : Dependency */) {
@@ -64,7 +101,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			if (response === undefined) { return }
 			//#endregion Get apps list
 
-			const apps = response.map((app) => {
+			let apps = response.map((app) => {
 				const iconVersion = this._iconLoader.getIconVersion(app.name, app.version);
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion)
 			});
@@ -73,6 +110,8 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			if (!this._iconLoader.isLoaded) {
 				this._iconLoader.start(response);
 			}
+
+			apps = this._applySearchFilter(apps)
 
 			return apps
 		}
