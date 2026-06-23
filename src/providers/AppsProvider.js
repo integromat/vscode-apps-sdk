@@ -17,10 +17,47 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 		this._admin = _admin;
+		this._searchFilter = '';
+	}
+
+	get searchFilter() {
+		return this._searchFilter;
+	}
+
+	setSearchFilter(term) {
+		this._searchFilter = (term || '').trim();
+		// Only re-render the tree to apply the filter. Intentionally NOT calling refresh():
+		// a full refresh reloads everything and (with background icon loading) invalidates the icon cache,
+		// which would re-download all icons on every search change.
+		this._onDidChangeTreeData.fire();
+	}
+
+	clearSearchFilter() {
+		this._searchFilter = '';
+		// See note in setSearchFilter: re-render only, do not invalidate caches.
+		this._onDidChangeTreeData.fire();
 	}
 
 	refresh() {
 		this._onDidChangeTreeData.fire();
+	}
+
+	/**
+	 * Filters the given apps by the active search term, matching (case-insensitive)
+	 * against the app's label, name (id), or description.
+	 * @param {Array} apps Apps to filter.
+	 * @returns {Array} The matching apps, or all apps when no filter is active.
+	 */
+	_applySearchFilter(apps) {
+		if (!this._searchFilter) {
+			return apps;
+		}
+		const needle = this._searchFilter.toLowerCase();
+		return apps.filter(app =>
+			app.bareLabel.toLowerCase().includes(needle) ||
+			app.name.toLowerCase().includes(needle) ||
+			(app.description && app.description.toLowerCase().includes(needle))
+		);
 	}
 
 	getParent(element /* : Dependency */) {
@@ -54,11 +91,14 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			if (response === undefined) { return }
 			//#endregion Get apps list
 
-			const apps = await Promise.all(response.map(async (app) => {
+			let apps = await Promise.all(response.map(async (app) => {
 				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion)
 			}));
 			apps.sort(Core.compareApps)
+
+			apps = this._applySearchFilter(apps)
+
 			return apps
 		}
 		/*

@@ -192,6 +192,18 @@
 		],
 		"commands": [
 			{
+				"command": "apps-sdk.search",
+				"title": "Search Apps",
+				"category": "Make Apps",
+				"icon": "$(search)"
+			},
+			{
+				"command": "apps-sdk.search.clear",
+				"title": "Clear Search",
+				"category": "Make Apps",
+				"icon": "$(close)"
+			},
+			{
 				"command": "apps-sdk.refresh",
 				"title": "Refresh",
 				"category": "Make Apps",
@@ -495,19 +507,29 @@
 			],
 			"view/title": [
 				{
+					"command": "apps-sdk.search",
+					"when": "view == apps && config.apps-sdk.login == true && !apps-sdk.searchActive",
+					"group": "navigation@1"
+				},
+				{
+					"command": "apps-sdk.search.clear",
+					"when": "view == apps && config.apps-sdk.login == true && apps-sdk.searchActive",
+					"group": "navigation@1"
+				},
+				{
 					"command": "apps-sdk.refresh",
 					"when": "view == apps && config.apps-sdk.login == true",
-					"group": "navigation"
+					"group": "navigation@2"
 				},
 				{
 					"command": "apps-sdk.app.new",
 					"when": "view == apps && config.apps-sdk.login == true",
-					"group": "navigation"
+					"group": "navigation@3"
 				},
 				{
 					"command": "apps-sdk.app.import",
 					"when": "view == apps && config.apps-sdk.login == true",
-					"group": "navigation"
+					"group": "navigation@4"
 				}
 			],
 			"view/item/context": [
