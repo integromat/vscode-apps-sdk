@@ -22,6 +22,29 @@ const AdmZip = require('adm-zip');
 const { showError, catchError } = require('../error-handling');
 const { promisify2 } = require('../utils');
 const { getModuleDefFromId, getModuleDefFromType } = require('../services/module-types-naming');
+const { downloadAndStoreAppIcon, getIconLocalPath } = require('../libs/app-icon');
+
+/**
+ * Returns a self-contained HTML page with a centered spinner, shown in the icon webview
+ * while the app icon is being fetched on demand.
+ */
+function getIconLoadingHtml() {
+	return `<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+		body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: var(--vscode-font-family); color: var(--vscode-foreground); }
+		.spinner { width: 40px; height: 40px; border: 4px solid var(--vscode-foreground); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; opacity: 0.8; }
+		@keyframes spin { to { transform: rotate(360deg); } }
+	</style>
+</head>
+<body>
+	<div class="spinner"></div>
+	<div>Loading app icon…</div>
+</body>
+</html>`;
+}
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -385,19 +408,48 @@ class AppCommands {
 				}
 			);
 
+			// Track disposal so we never touch the webview after the user closes the panel (that throws).
+			let panelDisposed = false;
+			panel.onDidDispose(() => { panelDisposed = true; });
+
+			// Show a loading indicator while the current icon is fetched on demand.
+			panel.webview.html = getIconLoadingHtml();
+
+			// Fetch this app's current icon on demand (do not wait for the background icon loader),
+			// forcing a fresh download so the user always edits the up-to-date icon.
+			// On failure, fall back to a blank icon so the user can still upload a new one.
+			let iconVersion = 0;
+			try {
+				iconVersion = await vscode.window.withProgress(
+					{ location: vscode.ProgressLocation.Notification, title: `Loading icon of ${app.label}…` },
+					() => downloadAndStoreAppIcon(app, _environment.baseUrl, _authorization, _environment, false, true)
+				);
+			} catch (err) {
+				showError(err, 'Get/change icon');
+			}
+
+			// If the user closed the panel while the icon was downloading, stop here -
+			// writing to a disposed webview (or registering its listeners) would throw.
+			if (panelDisposed) {
+				return;
+			}
+
+			// Resolve the local path of the freshly downloaded icon (version may differ from the tree node).
+			const rawIcon = getIconLocalPath(app.name, app.version, iconVersion, false);
+
 			// Prepare variable for storing the base64
 			let buff;
 
 			// If the icon exists on the disc -> get its BASE64
-			if (fs.existsSync(app.rawIcon.dark)) {
-				buff = Buffer.from(fs.readFileSync(app.rawIcon.dark)).toString('base64');
+			if (iconVersion > 0 && fs.existsSync(rawIcon.dark)) {
+				buff = Buffer.from(fs.readFileSync(rawIcon.dark)).toString('base64');
 			} else {
 				// If not, use the BASE64 of blank 512*512 png square
 				// eslint-disable-next-line max-len
 				buff = 'iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg==';
 			}
 
-			// Inject the theme color and the icon to the generated HTML
+			// Inject the theme color and the icon to the generated HTML (replaces the loading spinner).
 			panel.webview.html = Core.getIconHtml(buff, app.theme, path.join(__dirname, '..', '..'));
 
 			panel.webview.onDidReceiveMessage(catchError('Icon change', async (message) => {
@@ -442,12 +494,18 @@ class AppCommands {
 						data: fs.createReadStream(uri[0].fsPath),
 					});
 
-					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
-					if (await asyncfile.exists(app.rawIcon.dark)) {
-						await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
-					}
-					if (await asyncfile.exists(app.rawIcon.light)) {
-						await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
+					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded).
+					// Invalidate every locally cached icon path so the background loader re-downloads the fresh one:
+					//  - `rawIcon.*`: the just-resolved path (may not exist if the on-demand fetch failed and version stayed 0)
+					//  - `app.rawIcon.*`: the tree node's current cached path (e.g. from an earlier session/background load)
+					const stalePaths = new Set([
+						rawIcon.dark, rawIcon.light,
+						app.rawIcon?.dark, app.rawIcon?.light,
+					].filter(Boolean));
+					for (const stalePath of stalePaths) {
+						if (await asyncfile.exists(stalePath)) {
+							await asyncfile.rename(stalePath, `${stalePath}.old`);
+						}
 					}
 
 					vscode.commands.executeCommand('apps-sdk.refresh');

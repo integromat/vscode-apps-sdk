@@ -6,7 +6,7 @@ const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
 const camelCase = require('lodash/camelCase');
-const { downloadAndStoreAppIcon } = require('../libs/app-icon');
+const { BackgroundIconLoader } = require('../libs/background-icon-loader');
 
 class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR, _admin) {
@@ -17,6 +17,14 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 		this._admin = _admin;
+		this._iconLoader = new BackgroundIconLoader({
+			baseUrl: this._baseUrl,
+			authorization: this._authorization,
+			environment: this._environment,
+			isOpensource: false,
+			logLabel: 'Background app',
+			onLoaded: () => this._onDidChangeTreeData.fire(),
+		});
 		this._searchFilter = '';
 	}
 
@@ -39,6 +47,8 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	}
 
 	refresh() {
+		// Invalidate any in-flight background icon load and reset state so icons are reloaded.
+		this._iconLoader.reset();
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -91,11 +101,15 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			if (response === undefined) { return }
 			//#endregion Get apps list
 
-			let apps = await Promise.all(response.map(async (app) => {
-				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
+			let apps = response.map((app) => {
+				const iconVersion = this._iconLoader.getIconVersion(app.name, app.version);
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion)
-			}));
+			});
 			apps.sort(Core.compareApps)
+
+			if (!this._iconLoader.isLoaded) {
+				this._iconLoader.start(response);
+			}
 
 			apps = this._applySearchFilter(apps)
 
