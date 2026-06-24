@@ -1,6 +1,34 @@
 Change Log
 ==========
 
+## [2.6.0](https://github.com/integromat/vscode-apps-sdk/compare/2.5.0...2.6.0) (2026-06-23)
+
+
+### Features
+
+* add search field to filter custom apps ([#359](https://github.com/integromat/vscode-apps-sdk/issues/359)) ([f3eebc7](https://github.com/integromat/vscode-apps-sdk/commit/f3eebc784ed149d81e7c38915d6abbffc64fa7c5))
+* lazy background loading of app icons ([#360](https://github.com/integromat/vscode-apps-sdk/issues/360)) ([6d13b8d](https://github.com/integromat/vscode-apps-sdk/commit/6d13b8dcb020e9b1c0a8ea3c21f57250bc4f913c))
+
+
+### Bug Fixes
+
+* run IML function tests against draft code, not published code ([#338](https://github.com/integromat/vscode-apps-sdk/issues/338)) ([ba449d9](https://github.com/integromat/vscode-apps-sdk/commit/ba449d98e76f131d7ce055a5396c9ac00a5ba17d))
+
+
+### Build System
+
+* bump the devdeps-minor-update group with 2 updates ([#339](https://github.com/integromat/vscode-apps-sdk/issues/339)) ([7a395b3](https://github.com/integromat/vscode-apps-sdk/commit/7a395b3a903cda7c8b17be3637f9fcb48368a39b))
+* bump vscode-languageclient from 10.0.0-next.20 to 10.0.0-next.21 ([#340](https://github.com/integromat/vscode-apps-sdk/issues/340)) ([3af925d](https://github.com/integromat/vscode-apps-sdk/commit/3af925d14fa287723f3ed80665c28656a0ef0979))
+* bump vscode-languageserver from 10.0.0-next.16 to 10.0.0-next.17 ([#341](https://github.com/integromat/vscode-apps-sdk/issues/341)) ([163fab9](https://github.com/integromat/vscode-apps-sdk/commit/163fab9e91daf8f442c9ce401b1b051ed6656a5d))
+
+
+### Continuous Integration
+
+* update release-please.yml [skip CI] ([ecefb1c](https://github.com/integromat/vscode-apps-sdk/commit/ecefb1c0d0c6eb944c757f2b3cad1410da840868))
+* update validate-pr.yml ([3c1bff4](https://github.com/integromat/vscode-apps-sdk/commit/3c1bff4f10c8bdd61fda93c8f5fa67936dd11cb7))
+* update validate-pr.yml ([10857a5](https://github.com/integromat/vscode-apps-sdk/commit/10857a58ada1059aa0914cbc3a134176fea54a9a))
+* update validate-pr.yml [skip CI] ([b4152ce](https://github.com/integromat/vscode-apps-sdk/commit/b4152ceb1e361d79a1e9106f6d3d95d0fa0634be))
+
 ## [2.5.0](https://github.com/integromat/vscode-apps-sdk/compare/2.4.1...2.5.0) (2026-03-16)
 
 
