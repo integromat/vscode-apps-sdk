@@ -1,0 +1,199 @@
+import camelCase from 'lodash/camelCase';
+import * as Core from '../Core';
+import { log } from '../output-channel';
+import type { Environment } from '../types/environment.types';
+import Group from '../tree/Group';
+import Item from '../tree/Item';
+
+/**
+ * A flattened description of a single app component (connection, webhook, module,
+ * RPC or function) sufficient to display it in a Quick Pick and to rebuild the
+ * matching tree node for `TreeView.reveal`.
+ */
+export interface AppComponentSummary {
+	/** Internal component name (the API id). This is what the user searches by when it differs from the label. */
+	name: string;
+	/**
+	 * Human-readable label: the API `label` if present, otherwise `name + args`. The fallback
+	 * applies to any component type, but in practice only functions lack a `label`.
+	 */
+	label: string;
+	/** Singular component type, e.g. `module` / `rpc` (matches `Item.supertype`). */
+	supertype: string;
+	/** API plural used as the tree group id, e.g. `modules` / `rpcs`. */
+	groupPlural: string;
+	/**
+	 * Component type, mirroring `Item.type` in the tree model: a numeric type id for modules,
+	 * or a string (e.g. `'oauth'`) for connections; undefined for component types without a type.
+	 */
+	type: number | string | undefined;
+	public: boolean | undefined;
+	approved: boolean | undefined;
+	description: string | undefined;
+	crud: string | undefined;
+}
+
+interface FetchAppComponentsOptions {
+	baseUrl: string;
+	authorization: string;
+	environment: Environment;
+	appName: string;
+	appVersion: number;
+}
+
+export interface AppComponentsSummaryResult {
+	/** Flat list of all successfully fetched components. */
+	components: AppComponentSummary[];
+	/**
+	 * API plural names of the component groups whose fetch failed (e.g. `['modules']`).
+	 * Lets the caller distinguish a genuinely empty app from a failed load - the underlying
+	 * `rpGet` already surfaces an error dialog per failed group.
+	 */
+	failedGroups: string[];
+}
+
+/** API plural names of the component groups, in the order they should be listed. */
+const COMPONENT_GROUPS = ['connections', 'webhooks', 'modules', 'rpcs', 'functions'] as const;
+
+/**
+ * Humanized group labels, mirroring the group labels built in `AppsProvider.getChildren`
+ * (note `rpcs` -> "Remote procedures", not a title-cased plural). Used so a node rebuilt for
+ * `TreeView.reveal` shows the same label/casing as the real tree.
+ */
+const GROUP_LABELS: Record<string, string> = {
+	connections: 'Connections',
+	webhooks: 'Webhooks',
+	modules: 'Modules',
+	rpcs: 'Remote procedures',
+	functions: 'Functions',
+};
+
+/**
+ * Unwraps the component list from a Make API response. v1 returns the array directly,
+ * while v2 nests it under `app<GroupPlural>` (e.g. `appModules`). Mirrors the level-2
+ * logic in `AppsProvider.getChildren`.
+ */
+export function unwrapComponentsResponse(response: any, groupPlural: string, version: number): any[] {
+	const items = version === 1 ? response : response?.[camelCase(`app_${groupPlural}`)];
+	return Array.isArray(items) ? items : [];
+}
+
+/**
+ * Maps a single raw API component to a flat summary, using the same label handling as the
+ * tree (`Item`): a present `label` wins, otherwise it falls back to `name + args` regardless
+ * of component type (in practice only functions lack a `label`).
+ */
+export function toComponentSummary(item: any, supertype: string, groupPlural: string): AppComponentSummary {
+	return {
+		name: item.name,
+		label: item.label || `${item.name}${item.args ?? ''}`,
+		supertype,
+		groupPlural,
+		type: item.type || item.type_id || item.typeId,
+		public: item.public,
+		approved: item.approved,
+		description: item.description,
+		crud: item.crud,
+	};
+}
+
+/**
+ * Fetches the components of a single app across all five component types and returns the
+ * flattened summaries together with the API plural names of any groups whose fetch failed.
+ * Each type is fetched independently: a single failing/missing type is logged and skipped so
+ * the rest still resolve, and the caller can tell a genuinely empty app from a failed load.
+ *
+ * Faithfully mirrors the level-2 logic in `AppsProvider.getChildren`:
+ *  - connections/webhooks URIs omit the app version segment,
+ *  - the v2 response is unwrapped via `response[camelCase('app_<plural>')]`,
+ *  - the label uses the same fallback as the tree (`label || name + args`).
+ */
+export async function fetchAppComponentsSummary(
+	options: FetchAppComponentsOptions,
+): Promise<AppComponentsSummaryResult> {
+	const { baseUrl, authorization, environment, appName, appVersion } = options;
+
+	const perGroup = await Promise.all(
+		COMPONENT_GROUPS.map(
+			async (groupPlural): Promise<{ components: AppComponentSummary[]; failed: boolean }> => {
+				const supertype = groupPlural.slice(0, -1);
+				try {
+					const sdkPart = Core.pathDeterminer(environment.version, '__sdk');
+					const appPart = Core.pathDeterminer(environment.version, 'app');
+					const typePart = Core.pathDeterminer(environment.version, supertype);
+					const appBase = `${baseUrl}/${sdkPart}${appPart}/${appName}`;
+					// Connections and webhooks are not versioned; everything else needs the version segment.
+					const uri = Core.isVersionable(supertype)
+						? `${appBase}/${appVersion}/${typePart}`
+						: `${appBase}/${typePart}`;
+
+					const response = await Core.rpGet(uri, authorization);
+					const items = unwrapComponentsResponse(response, groupPlural, environment.version);
+					return { components: items.map((item) => toComponentSummary(item, supertype, groupPlural)), failed: false };
+				} catch (err: any) {
+					// Isolate per-type failures so one bad/missing endpoint does not break the whole search.
+					// `rpGet` already logs at error level (via `showAndLogError`) before throwing, so log at
+					// `warn` here to avoid duplicate error noise; guard against `err` not being an `Error`.
+					const message = err instanceof Error ? err.message : String(err);
+					log('warn', `App component search: failed to load ${groupPlural} of ${appName}: ${message}`);
+					return { components: [], failed: true };
+				}
+			},
+		),
+	);
+
+	return {
+		components: perGroup.flatMap((group) => group.components),
+		failedGroups: COMPONENT_GROUPS.filter((_, index) => perGroup[index].failed),
+	};
+}
+
+/**
+ * Selects the pending-change records that belong to a given component group, mirroring the
+ * group filter in `AppsProvider.getChildren`: the API change `group` is normalized
+ * (`account` -> `connection`, `hook` -> `webhook`) and the synthetic `groups` change (the
+ * categories node) is excluded.
+ */
+function changesForGroup(appChanges: any, supertype: string): any[] {
+	if (!Array.isArray(appChanges)) {
+		return [];
+	}
+	return appChanges.filter((change: any) => {
+		const normalizedGroup =
+			change.group === 'account' ? 'connection' : change.group === 'hook' ? 'webhook' : change.group;
+		return normalizedGroup === supertype && change.code !== 'groups';
+	});
+}
+
+/**
+ * Rebuilds the tree node (`Item`) for a component so it can be passed to
+ * `TreeView.reveal`. The node ids are deterministic and match what
+ * `AppsProvider.getChildren` produces, which is what reveal matches on:
+ *   `App.id = name@version` -> `Group.id = <app.id>_<plural>` -> `Item.id = <group.id>_<name>`.
+ *
+ * The pending-change subsets are also rebuilt from `appNode.changes` (same filtering as the
+ * tree) so the revealed node renders the "changed" marker exactly like the lazily-built one.
+ *
+ * @param appNode The real `App` tree node the command was invoked on (used as the ancestor).
+ * @param summary The picked component summary.
+ */
+export function buildComponentTreeItem(appNode: any, summary: AppComponentSummary): any {
+	// The group `id` must stay `groupPlural` (that is what reveal matches on), but the label is
+	// humanized to match what `AppsProvider.getChildren` renders.
+	const groupLabel = GROUP_LABELS[summary.groupPlural] ?? summary.groupPlural;
+	const groupChanges = changesForGroup(appNode.changes, summary.supertype);
+	const itemChanges = groupChanges.filter((change: any) => change.item === summary.name);
+	const group = new (Group as any)(summary.groupPlural, groupLabel, appNode, groupChanges);
+	return new (Item as any)(
+		summary.name,
+		summary.label,
+		group,
+		summary.supertype,
+		summary.type,
+		summary.public,
+		summary.approved,
+		itemChanges,
+		summary.description,
+		summary.crud,
+	);
+}

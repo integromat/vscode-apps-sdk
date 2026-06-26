@@ -36,6 +36,7 @@ import { type AppComponentType, AppComponentTypes } from './types/app-component-
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
 import { camelToKebab } from './utils/camel-to-kebab';
+import { contextGuard } from './Core';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -219,6 +220,49 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('apps-sdk.search.clear', catchError('Clear custom apps search', async () => {
 		appsProvider.clearSearchFilter();
 		updateSearchContext();
+	}));
+
+	vscode.commands.registerCommand('apps-sdk.app.search-components', catchError('Search app components', async (app) => {
+		if (!contextGuard(app)) {
+			return;
+		}
+
+		const { components, failedGroups } = await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: `Loading components of ${app.bareLabel}…` },
+			() => appsProvider.getAppComponentsSummary(app),
+		);
+
+		if (components.length === 0) {
+			// Only claim the app is empty when nothing failed; a failed fetch already surfaced an
+			// error dialog (via rpGet), so showing "No components found" on top would be misleading.
+			if (failedGroups.length === 0) {
+				vscode.window.showInformationMessage('No components found in this app.');
+			}
+			return;
+		}
+
+		const items = components.map((summary: any) => ({
+			label: summary.label,
+			// `description` (the raw name/id) and `detail` are matched on too, so a name that
+			// differs from the label is still searchable.
+			description: summary.name,
+			detail: summary.supertype + (summary.description ? ` — ${summary.description}` : ''),
+			summary,
+		}));
+
+		const picked = await vscode.window.showQuickPick(items, {
+			matchOnDescription: true,
+			matchOnDetail: true,
+			placeHolder: 'Search components by name or label',
+		});
+		if (picked === undefined) {
+			return;
+		}
+
+		// Rebuild the component's tree node and reveal it. Deliberately NOT calling refresh()
+		// (that would clear the icon cache and restart background loading).
+		const item = appsProvider.buildComponentTreeItem(app, picked.summary);
+		await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
 	}));
 
 	/**
