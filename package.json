@@ -204,6 +204,12 @@
 				"icon": "$(close)"
 			},
 			{
+				"command": "apps-sdk.app.search-components",
+				"title": "Search components...",
+				"category": "Make Apps",
+				"icon": "$(search)"
+			},
+			{
 				"command": "apps-sdk.refresh",
 				"title": "Refresh",
 				"category": "Make Apps",
@@ -533,6 +539,11 @@
 				}
 			],
 			"view/item/context": [
+				{
+					"command": "apps-sdk.app.search-components",
+					"group": "7_modification_online",
+					"when": "viewItem =~ /^app/ && view == apps"
+				},
 				{
 					"command": "apps-sdk.function.new",
 					"group": "7_modification_online",
