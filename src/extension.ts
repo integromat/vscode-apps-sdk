@@ -26,6 +26,8 @@ import {
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
+import { ComponentReferenceHoverProvider } from './providers/ComponentReferenceHoverProvider';
+import Code from './tree/Code';
 import RpcCommands = require('./commands/RpcCommands');
 import { EndpointCommands } from './commands/EndpointCommands';
 import ModuleCommands = require('./commands/ModuleCommands');
@@ -42,7 +44,7 @@ import { type AppComponentType, AppComponentTypes } from './types/app-component-
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
 import { camelToKebab } from './utils/camel-to-kebab';
-import { contextGuard } from './Core';
+import { contextGuard, pathDeterminer } from './Core';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -257,6 +259,60 @@ export async function activate(context: vscode.ExtensionContext) {
 		const item = appsProvider.buildComponentTreeItem(app, picked.summary);
 		await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
 	}));
+
+	// Hover-to-open for component references (rpc://Name and custom IML function calls) in app code.
+	// Captured as const so the values stay narrowed (non-undefined) inside the command closure below.
+	const environment = _environment;
+	vscode.languages.registerHoverProvider(
+		[
+			{ language: 'imljson', scheme: 'file' },
+			{ language: 'javascript', scheme: 'file' },
+		],
+		new ComponentReferenceHoverProvider(_authorization, environment),
+	);
+
+	vscode.commands.registerCommand(
+		'apps-sdk.open-referenced-component',
+		catchError('Open referenced component', async (target) => {
+			if (!target) {
+				return;
+			}
+
+			// Local-development mode: the code file is already resolved to an on-disk URI.
+			if (target.mode === 'local') {
+				const uri = vscode.Uri.parse(target.fileUri);
+				await vscode.window.showTextDocument(uri, { preview: true });
+				await vscode.commands.executeCommand('revealInExplorer', uri);
+				return;
+			}
+
+			// Online mode: rebuild the tree nodes, open the code via the shared loader, and reveal it.
+			const appNode = {
+				id: `${target.appName}@${target.appVersion}`,
+				name: target.appName,
+				version: target.appVersion,
+				parent: undefined,
+			};
+			const { components } = await appsProvider.getAppComponentsSummary(appNode);
+			const summary = components.find(
+				(component: any) => component.supertype === target.supertype && component.name === target.componentName,
+			);
+			if (!summary) {
+				vscode.window.showWarningMessage(`Component "${target.componentName}" was not found in the app.`);
+				return;
+			}
+
+			const item = appsProvider.buildComponentTreeItem(appNode, summary);
+			// RPC code lives in the "api" (imljson) file; function code in the "code" (js) file.
+			const codeName = target.supertype === 'rpc' ? 'api' : 'code';
+			const language = target.supertype === 'rpc' ? 'imljson' : 'js';
+			const apiPath = pathDeterminer(environment.version, target.supertype);
+			const codeNode = new (Code as any)(codeName, codeName, item, language, apiPath, false, null, undefined);
+
+			await vscode.commands.executeCommand('apps-sdk.load-source', codeNode);
+			await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
+		}),
+	);
 
 	/**
 	 * Registering commands
