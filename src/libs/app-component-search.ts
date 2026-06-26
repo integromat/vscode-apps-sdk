@@ -13,7 +13,10 @@ import Item from '../tree/Item';
 export interface AppComponentSummary {
 	/** Internal component name (the API id). This is what the user searches by when it differs from the label. */
 	name: string;
-	/** Human-readable label (mirrors the tree's label fallbacks; functions fall back to `name + args`). */
+	/**
+	 * Human-readable label: the API `label` if present, otherwise `name + args`. The fallback
+	 * applies to any component type, but in practice only functions lack a `label`.
+	 */
 	label: string;
 	/** Singular component type, e.g. `module` / `rpc` (matches `Item.supertype`). */
 	supertype: string;
@@ -63,8 +66,9 @@ export function unwrapComponentsResponse(response: any, groupPlural: string, ver
 }
 
 /**
- * Maps a single raw API component to a flat summary, using the same label fallback as the
- * tree (`Item`): a present `label` wins, otherwise functions fall back to `name + args`.
+ * Maps a single raw API component to a flat summary, using the same label handling as the
+ * tree (`Item`): a present `label` wins, otherwise it falls back to `name + args` regardless
+ * of component type (in practice only functions lack a `label`).
  */
 export function toComponentSummary(item: any, supertype: string, groupPlural: string): AppComponentSummary {
 	return {
