@@ -132,7 +132,10 @@ export async function fetchAppComponentsSummary(
 					return { components: items.map((item) => toComponentSummary(item, supertype, groupPlural)), failed: false };
 				} catch (err: any) {
 					// Isolate per-type failures so one bad/missing endpoint does not break the whole search.
-					log('error', `App component search: failed to load ${groupPlural} of ${appName}: ${err.message}`);
+					// `rpGet` already logs at error level (via `showAndLogError`) before throwing, so log at
+					// `warn` here to avoid duplicate error noise; guard against `err` not being an `Error`.
+					const message = err instanceof Error ? err.message : String(err);
+					log('warn', `App component search: failed to load ${groupPlural} of ${appName}: ${message}`);
 					return { components: [], failed: true };
 				}
 			},
@@ -146,10 +149,30 @@ export async function fetchAppComponentsSummary(
 }
 
 /**
+ * Selects the pending-change records that belong to a given component group, mirroring the
+ * group filter in `AppsProvider.getChildren`: the API change `group` is normalized
+ * (`account` -> `connection`, `hook` -> `webhook`) and the synthetic `groups` change (the
+ * categories node) is excluded.
+ */
+function changesForGroup(appChanges: any, supertype: string): any[] {
+	if (!Array.isArray(appChanges)) {
+		return [];
+	}
+	return appChanges.filter((change: any) => {
+		const normalizedGroup =
+			change.group === 'account' ? 'connection' : change.group === 'hook' ? 'webhook' : change.group;
+		return normalizedGroup === supertype && change.code !== 'groups';
+	});
+}
+
+/**
  * Rebuilds the tree node (`Item`) for a component so it can be passed to
  * `TreeView.reveal`. The node ids are deterministic and match what
  * `AppsProvider.getChildren` produces, which is what reveal matches on:
  *   `App.id = name@version` -> `Group.id = <app.id>_<plural>` -> `Item.id = <group.id>_<name>`.
+ *
+ * The pending-change subsets are also rebuilt from `appNode.changes` (same filtering as the
+ * tree) so the revealed node renders the "changed" marker exactly like the lazily-built one.
  *
  * @param appNode The real `App` tree node the command was invoked on (used as the ancestor).
  * @param summary The picked component summary.
@@ -158,7 +181,9 @@ export function buildComponentTreeItem(appNode: any, summary: AppComponentSummar
 	// The group `id` must stay `groupPlural` (that is what reveal matches on), but the label is
 	// humanized to match what `AppsProvider.getChildren` renders.
 	const groupLabel = GROUP_LABELS[summary.groupPlural] ?? summary.groupPlural;
-	const group = new (Group as any)(summary.groupPlural, groupLabel, appNode, []);
+	const groupChanges = changesForGroup(appNode.changes, summary.supertype);
+	const itemChanges = groupChanges.filter((change: any) => change.item === summary.name);
+	const group = new (Group as any)(summary.groupPlural, groupLabel, appNode, groupChanges);
 	return new (Item as any)(
 		summary.name,
 		summary.label,
@@ -167,7 +192,7 @@ export function buildComponentTreeItem(appNode: any, summary: AppComponentSummar
 		summary.type,
 		summary.public,
 		summary.approved,
-		[],
+		itemChanges,
 		summary.description,
 		summary.crud,
 	);

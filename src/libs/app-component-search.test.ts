@@ -45,6 +45,49 @@ suite('app-component-search buildComponentTreeItem()', () => {
 		assert.strictEqual(item.name, 'getData', 'name carried through');
 		assert.strictEqual(item.supertype, 'module', 'supertype carried through');
 	});
+
+	test('Leaves changes empty when the app has none for the component', () => {
+		const item = buildComponentTreeItem(app, summary);
+		assert.deepStrictEqual(item.changes, [], 'no item changes');
+		assert.deepStrictEqual(item.parent.changes, [], 'no group changes');
+	});
+
+	test('Mirrors the app pending-changes onto the rebuilt group and item', () => {
+		const changes = [
+			{ group: 'module', item: 'getData', code: 'api', id: 1 },
+			{ group: 'module', item: 'other', code: 'api', id: 2 },
+			{ group: 'app', code: 'groups', id: 3 },
+		];
+		const appWithChanges = new (App as any)('myApp', 'My App', 'desc', 2, false, false, 'light', changes, 0);
+		const item = buildComponentTreeItem(appWithChanges, summary);
+		assert.deepStrictEqual(
+			item.changes,
+			[{ group: 'module', item: 'getData', code: 'api', id: 1 }],
+			'item changes are filtered by group and item name',
+		);
+		assert.deepStrictEqual(
+			item.parent.changes,
+			[
+				{ group: 'module', item: 'getData', code: 'api', id: 1 },
+				{ group: 'module', item: 'other', code: 'api', id: 2 },
+			],
+			'group changes keep the whole group but drop the synthetic "groups" change',
+		);
+	});
+
+	test('Normalizes account/hook change groups when matching connection/webhook components', () => {
+		const changes = [{ group: 'account', item: 'myConn', code: 'api', id: 1 }];
+		const appWithChanges = new (App as any)('myApp', 'My App', 'desc', 2, false, false, 'light', changes, 0);
+		const conn: AppComponentSummary = {
+			...summary,
+			name: 'myConn',
+			supertype: 'connection',
+			groupPlural: 'connections',
+			type: 'oauth',
+		};
+		const item = buildComponentTreeItem(appWithChanges, conn);
+		assert.deepStrictEqual(item.changes, changes, 'an "account" change maps to the connection component');
+	});
 });
 
 /**
