@@ -56,6 +56,19 @@ export interface AppComponentsSummaryResult {
 const COMPONENT_GROUPS = ['connections', 'webhooks', 'modules', 'rpcs', 'functions'] as const;
 
 /**
+ * Humanized group labels, mirroring the group labels built in `AppsProvider.getChildren`
+ * (note `rpcs` -> "Remote procedures", not a title-cased plural). Used so a node rebuilt for
+ * `TreeView.reveal` shows the same label/casing as the real tree.
+ */
+const GROUP_LABELS: Record<string, string> = {
+	connections: 'Connections',
+	webhooks: 'Webhooks',
+	modules: 'Modules',
+	rpcs: 'Remote procedures',
+	functions: 'Functions',
+};
+
+/**
  * Unwraps the component list from a Make API response. v1 returns the array directly,
  * while v2 nests it under `app<GroupPlural>` (e.g. `appModules`). Mirrors the level-2
  * logic in `AppsProvider.getChildren`.
@@ -142,7 +155,10 @@ export async function fetchAppComponentsSummary(
  * @param summary The picked component summary.
  */
 export function buildComponentTreeItem(appNode: any, summary: AppComponentSummary): any {
-	const group = new (Group as any)(summary.groupPlural, summary.groupPlural, appNode, []);
+	// The group `id` must stay `groupPlural` (that is what reveal matches on), but the label is
+	// humanized to match what `AppsProvider.getChildren` renders.
+	const groupLabel = GROUP_LABELS[summary.groupPlural] ?? summary.groupPlural;
+	const group = new (Group as any)(summary.groupPlural, groupLabel, appNode, []);
 	return new (Item as any)(
 		summary.name,
 		summary.label,

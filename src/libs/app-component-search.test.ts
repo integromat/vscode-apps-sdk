@@ -34,6 +34,12 @@ suite('app-component-search buildComponentTreeItem()', () => {
 		assert.strictEqual(item.parent.parent, app, 'Group parent is the real App node');
 	});
 
+	test('Humanizes the parent Group label to match the real tree', () => {
+		assert.strictEqual(buildComponentTreeItem(app, summary).parent.label, 'Modules', 'modules -> Modules');
+		const rpc: AppComponentSummary = { ...summary, groupPlural: 'rpcs', supertype: 'rpc' };
+		assert.strictEqual(buildComponentTreeItem(app, rpc).parent.label, 'Remote procedures', 'rpcs -> Remote procedures');
+	});
+
 	test('Preserves the component identity on the rebuilt node', () => {
 		const item = buildComponentTreeItem(app, summary);
 		assert.strictEqual(item.name, 'getData', 'name carried through');
