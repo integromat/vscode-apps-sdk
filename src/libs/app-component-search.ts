@@ -19,8 +19,11 @@ export interface AppComponentSummary {
 	supertype: string;
 	/** API plural used as the tree group id, e.g. `modules` / `rpcs`. */
 	groupPlural: string;
-	/** Module type id (only meaningful for modules); undefined otherwise. */
-	type: number | undefined;
+	/**
+	 * Component type, mirroring `Item.type` in the tree model: a numeric type id for modules,
+	 * or a string (e.g. `'oauth'`) for connections; undefined for component types without a type.
+	 */
+	type: number | string | undefined;
 	public: boolean | undefined;
 	approved: boolean | undefined;
 	description: string | undefined;
