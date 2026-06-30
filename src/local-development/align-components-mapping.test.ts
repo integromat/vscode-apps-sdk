@@ -23,7 +23,7 @@ function createOrigin(idMapping?: MakecomappJson['origins'][0]['idMapping']): Lo
 		appVersion: 1,
 		apikeyFile: '.secrets/apikey',
 		apikey: 'test-key',
-		idMapping: idMapping ?? { connection: [], webhook: [], module: [], rpc: [], function: [] },
+		idMapping: idMapping ?? { connection: [], webhook: [], module: [], rpc: [], function: [], endpoint: [] },
 	};
 }
 
@@ -44,6 +44,7 @@ function createMakecomappJson(
 			module: {},
 			rpc: {},
 			function: {},
+			endpoint: {},
 			...components,
 		},
 		origins: origins ?? [],
@@ -241,6 +242,7 @@ describe('alignComponentsMapping()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();
@@ -338,6 +340,7 @@ describe('alignComponentsMapping()', () => {
 				module: [],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();
@@ -407,6 +410,7 @@ describe('alignComponentsMapping()', () => {
 				module: [],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();
@@ -446,6 +450,7 @@ describe('alignComponentsMapping()', () => {
 				module: [],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();
@@ -484,6 +489,7 @@ describe('alignComponentsMapping()', () => {
 				module: [],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();
@@ -531,6 +537,7 @@ describe('alignComponentsMapping()', () => {
 				module: [],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();
@@ -571,6 +578,7 @@ describe('alignComponentsMapping()', () => {
 				module: [],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			});
 
 			const checksums = createEmptyChecksums();

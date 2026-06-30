@@ -128,6 +128,8 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				[`modules`, "Modules"],
 				[`rpcs`, "Remote procedures"],
 				[`functions`, "Functions"],
+				// Endpoints exist in API v2 only.
+				...(this._environment.version === 2 ? [[`endpoints`, "Endpoints"]] : []),
 				[`docs`, "Docs"]
 			].map(group => {
 
@@ -195,14 +197,24 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 
 			// REST
 			else {
-				for (const needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+				for (const needle of ["connections", "webhooks", "modules", "rpcs", "functions", "endpoints"]) {
 					// TODO Convert to `getAppEntitySummary`
 					if (element.id.includes(`_${needle}`)) {
 						const componentType = needle.slice(0, -1);
 						const uri = ["connection", "webhook"].includes(componentType) ?
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, componentType)}` :
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, componentType)}`
-						const response = await Core.rpGet(uri, this._authorization)
+						let response
+						try {
+							// For endpoints, suppress the error dialog: the feature may be disabled on the
+							// environment — we fall back to an empty list below instead of surfacing an error.
+							response = await Core.rpGet(uri, this._authorization, undefined, componentType === "endpoint")
+						} catch (err) {
+							if (componentType === "endpoint") {
+								return []
+							}
+							throw err
+						}
 						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
 						return items.map(item => {
 							const changes = element.changes.filter(change => {
@@ -371,6 +383,22 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 						}
 						return new Code(code[0], code[1], element, "js", Core.pathDeterminer(this._environment.version, 'function'), false, change ? change.id : null, code[2])
 					})
+				case "endpoint": {
+					const findChange = (codeName) => (element.changes ? element.changes.find(change => change.code == codeName) : undefined);
+					const endpointCodes = [
+						[`api`, "Communication", "Specification of the third-party API call this endpoint performs."],
+						[`inputParameters`, "Input parameters", "Array of input parameters the endpoint accepts."],
+						[`outputParameters`, "Output parameters", "Array of output parameters the endpoint returns."],
+						[`scope`, "Required scope", "Scope required by this endpoint. Array of strings."]
+					].map(code => {
+						const change = findChange(code[0]);
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), false, change ? change.id : null, code[2])
+					});
+					// `context` is editable as a markdown source (metadata-backed; see component-code-def.ts).
+					const contextChange = findChange('context');
+					endpointCodes.push(new Code(`context`, "Context", element, "md", Core.pathDeterminer(this._environment.version, 'endpoint'), false, contextChange ? contextChange.id : null, "Context for AI agents on how to use this endpoint. Editable as a markdown source."));
+					return endpointCodes;
+				}
 			}
 		}
 	}

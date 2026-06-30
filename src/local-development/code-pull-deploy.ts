@@ -6,6 +6,7 @@ import type { AppComponentMetadataWithCodeFiles, LocalAppOriginWithSecret } from
 import type { ApiCodeType, CodeType } from './types/code-type.types';
 import { getComponentApiUrl } from './helpers/api-url';
 import { getCodeDef } from '../services/component-code-def';
+import { getAppComponentDetails } from '../services/get-app-components';
 import type { AppComponentType, AppGeneralType } from '../types/app-component-type.types';
 import { log } from '../output-channel';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
@@ -80,6 +81,18 @@ export async function downloadComponentCode({
 	origin: LocalAppOriginWithSecret;
 }): Promise<string> {
 	const codeDef = getCodeDef(appComponentType, codeType);
+
+	// Metadata-backed code (e.g. endpoint `context`): no `/{apiCodeType}` section route exists.
+	// Read the value from the component detail metadata field named by `apiCodeType` instead.
+	if (codeDef.metadataBacked) {
+		const componentDetail = await getAppComponentDetails(
+			appComponentType as AppComponentType,
+			remoteComponentName,
+			origin,
+		);
+		const fieldValue = (componentDetail as Record<string, unknown>)[codeDef.apiCodeType];
+		return fieldValue === null || fieldValue === undefined ? '' : String(fieldValue);
+	}
 
 	// Get the code from the API
 	let codeContent = await requestMakeApi<string>({
@@ -202,6 +215,27 @@ export async function deployComponentCode({
 
 	const localChecksum = md5(sourceContent);
 	if (!originChecksum?.includes(localChecksum)) {
+		// Metadata-backed code (e.g. endpoint `context`): no `/{apiCodeType}` section route — PATCH the
+		// component's metadata field named by `apiCodeType` instead of PUT-ing to a section URL.
+		if (codeDef.metadataBacked) {
+			const axiosConfig: AxiosRequestConfig = {
+				url: getComponentApiUrl({ componentType: appComponentType, remoteComponentName, origin }),
+				method: 'PATCH',
+				headers: {
+					Authorization: 'Token ' + origin.apikey,
+					'imt-vsce-localmode': 'true',
+					'imt-apps-sdk-version': ExtensionVersion,
+				},
+				data: { [codeDef.apiCodeType]: sourceContent },
+			};
+			await requestMakeApi(axiosConfig);
+			log(
+				'debug',
+				`Deployed metadata-backed ${appComponentType} ${codeType} (${sourcePath}) to ${origin.baseUrl} app ${origin.appId} ${origin.appVersion}`,
+			);
+			progresDialogReport('');
+			return;
+		}
 		// Get the code from the API
 		const axiosConfig: AxiosRequestConfig = {
 			url: getCodeApiUrl({ appComponentType, remoteComponentName, apiCodeType: codeDef.apiCodeType, origin }),

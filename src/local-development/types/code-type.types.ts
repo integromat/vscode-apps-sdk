@@ -15,6 +15,8 @@ type RpcCodeType = 'communication' | 'params';
 
 type FunctionCodeType = 'code' | 'test';
 
+type EndpointCodeType = 'communication' | 'scope' | 'inputParameters' | 'outputParameters' | 'context';
+
 /**
  * General code type.
  * It is very similar to `ApiCodeType`, but these are more aligned with names used in web UI.
@@ -30,7 +32,8 @@ export type ComponentCodeType =
 	| WebhookCodeType
 	| ModuleCodeType
 	| RpcCodeType
-	| FunctionCodeType;
+	| FunctionCodeType
+	| EndpointCodeType;
 
 export type CodeType = ComponentCodeType | GeneralCodeType;
 
@@ -55,6 +58,10 @@ export type ApiCodeType =
 	| 'expect'
 	| 'interface'
 	| 'samples'
+	// + Endpoint
+	| 'inputParameters'
+	| 'outputParameters'
+	| 'context'
 	// + Function
 	| 'code'
 	| 'test'

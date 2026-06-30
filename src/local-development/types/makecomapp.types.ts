@@ -3,7 +3,7 @@
 import type { Crud } from './crud.types';
 import type { ComponentCodeType, GeneralCodeType } from './code-type.types';
 import type { AppComponentType } from '../../types/app-component-type.types';
-import type { ConnectionType, ModuleType, WebhookType } from '../../types/component-types.types';
+import type { ConnectionType, EndpointAnnotations, ModuleType, WebhookType } from '../../types/component-types.types';
 import type { Tagged } from './tagger.types';
 
 export interface MakecomappJson {
@@ -124,6 +124,12 @@ export interface AppComponentMetadataBase {
 	//       See `makecomappjson-migrations.ts`, which executes the automatic renaming to new name if old one found.
 	moduleType?: ModuleType;
 	actionCrud?: Crud;
+	/**
+	 * Relevant for endpoints only. MCP-inspired behavior hints.
+	 * Note: The endpoint's `context` is NOT here — it is managed as a source code file
+	 *       (metadata-backed code, see `componentsCodesDefinition.endpoint.context`).
+	 */
+	annotations?: EndpointAnnotations;
 }
 
 /**
@@ -136,6 +142,8 @@ interface AppComponentMetadataInternal extends AppComponentMetadataBase {
 	altConnection?: string | null;
 	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
 	webhook?: string | null;
+	/** Relevant for endpoints only. Array of connection references (local IDs) attached to the endpoint. */
+	attachedAccounts?: string[];
 }
 
 /**
@@ -148,6 +156,8 @@ interface AppComponentMetadataRemoteIDsInternal extends AppComponentMetadataBase
 	altConnection?: string | null;
 	/** Relevant for module subtype "instant_trigger" only, mandatory there. */
 	webhook?: string | null;
+	/** Relevant for endpoints only. Array of connection references (remote names) attached to the endpoint. */
+	attachedAccounts?: string[];
 }
 
 export type AppComponentMetadata = Tagged<AppComponentMetadataInternal, 'LocalIDs'>;

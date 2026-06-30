@@ -8,6 +8,7 @@ export interface Checksum {
 	accounts: ComponentChecksum[];
 	hooks: ComponentChecksum[];
 	app: ComponentChecksum[];
+	endpoints?: ComponentChecksum[];
 }
 
 export interface ComponentChecksum {

@@ -215,6 +215,7 @@ export class ComponentIdMappingHelper {
 						function: [],
 						rpc: [],
 						webhook: [],
+						endpoint: [],
 					};
 				}
 				// Update `this.content.origins[someOrigin]` in memory

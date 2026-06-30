@@ -1,9 +1,11 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import axios from 'axios';
+import camelCase from 'lodash/camelCase';
 import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as Meta from '../Meta';
+import { getMetadataBackedCodeDef, getMetadataBackedCodes } from '../services/component-code-def';
 import { RpcProvider } from '../providers/RpcProvider';
 import { ImlProvider } from '../providers/ImlProvider';
 import { ParametersProvider } from '../providers/ParametersProvider';
@@ -79,14 +81,24 @@ export class CoreCommands {
 			url = urlSplitted.join('/');
 		}
 
+		// Metadata-backed codes (e.g. endpoint `context`) have no section route — they are a component
+		// metadata field. Detect them generically (driven by `CodeDef.metadataBacked`) and save by PATCH-ing
+		// the component with `{ [apiCodeType]: file }` instead of PUT-ing to a `/{apiCodeType}` section URL.
+		const metadataBackedCode = getMetadataBackedCodes().find(({ componentType, apiCodeType }) =>
+			new RegExp(`/${Core.pathDeterminer(this._environment.version, componentType)}/[^/]+/${apiCodeType}$`).test(url),
+		);
+		if (metadataBackedCode) {
+			url = url.replace(new RegExp(`/${metadataBackedCode.apiCodeType}$`), '');
+		}
+
 		// And compose the URI
 		const uri = this._environment.baseUrl + url;
 
 		// Prepare request options
 		const options = {
 			url: uri,
-			method: 'PUT',
-			data: file,
+			method: metadataBackedCode ? 'PATCH' : 'PUT',
+			data: metadataBackedCode ? JSON.stringify({ [metadataBackedCode.apiCodeType]: file }) : file,
 			headers: {
 				'Content-Type': 'application/jsonc',
 				Authorization: this._authorization,
@@ -107,6 +119,10 @@ export class CoreCommands {
 		}
 		if (path.basename(right) === 'common.imljson') {
 			// Comments are not allowd in encrypted common data, so only JSON is accepted
+			options.headers['Content-Type'] = 'application/json';
+		}
+		if (metadataBackedCode) {
+			// Metadata-backed code is PATCHed as a JSON body `{ [apiCodeType]: file }`.
 			options.headers['Content-Type'] = 'application/json';
 		}
 
@@ -640,6 +656,10 @@ export class CoreCommands {
 					urnForFile += `/${Core.getApp(item).version}`;
 				}
 
+				// Metadata-backed codes (e.g. endpoint `context`) have no section route — they are read from a
+				// component metadata field. Detect generically via `CodeDef.metadataBacked` (same flag as Local dev).
+				const metadataBackedDef = getMetadataBackedCodeDef(item.parent?.supertype, item.name);
+
 				// Complete the URN by the type of item
 				switch (item.apiPath) {
 					case 'function':
@@ -652,7 +672,10 @@ export class CoreCommands {
 					case 'connections':
 					case 'webhook':
 					case 'webhooks':
-						urn += `/${item.apiPath}/${item.parent.name}/${item.name}`;
+					case 'endpoint':
+					case 'endpoints':
+						// Metadata-backed → fetch the component DETAIL (no `/{name}` section); extract the field below.
+						urn += `/${item.apiPath}/${item.parent.name}${metadataBackedDef ? '' : `/${item.name}`}`;
 						urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`;
 						break;
 					case 'app':
@@ -688,17 +711,26 @@ export class CoreCommands {
 				 * GET THE SOURCE CODE
 				 * Those lines are responsible straight for the download of code
 				 */
-				const axiosResponse = await axios({
-					url: url,
-					headers: {
-						Authorization: _authorization,
-						'imt-apps-sdk-version': Meta.version,
-					},
-					transformResponse: (res) => res, // Do not parse the response into JSON
-				});
+				let exampleContent: string;
+				if (metadataBackedDef) {
+					// Read the metadata field from the component detail (JSON), not a raw section body.
+					const componentDetail = await Core.rpGet(url, _authorization);
+					exampleContent =
+						componentDetail?.[camelCase(`app_${item.parent.supertype}`)]?.[metadataBackedDef.apiCodeType] ?? '';
+				} else {
+					const axiosResponse = await axios({
+						url: url,
+						headers: {
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version,
+						},
+						transformResponse: (res) => res, // Do not parse the response into JSON
+					});
+					exampleContent = axiosResponse.data;
+				}
 
 				// Save the received code to the temp directory
-				await writeFile(path.join(_DIR, 'opensource', filepath), axiosResponse.data, { mode: 440 });
+				await writeFile(path.join(_DIR, 'opensource', filepath), exampleContent, { mode: 440 });
 
 				// Open the downloaded code in the editor
 				vscode.window.showTextDocument(
@@ -736,6 +768,10 @@ export class CoreCommands {
 					urnForFile += `/${Core.getApp(item).version}`;
 				}
 
+				// Metadata-backed codes (e.g. endpoint `context`) have no section route — they are read from a
+				// component metadata field. Detect generically via `CodeDef.metadataBacked` (same flag as Local dev).
+				const metadataBackedDef = getMetadataBackedCodeDef(item.parent?.supertype, item.name);
+
 				// Complete the URN by the type of item
 				switch (item.apiPath) {
 					case 'function':
@@ -748,7 +784,11 @@ export class CoreCommands {
 					case 'connections':
 					case 'webhook':
 					case 'webhooks':
-						urn += `/${item.apiPath}/${item.parent.name}/${item.name}`;
+					case 'endpoint':
+					case 'endpoints':
+						// Metadata-backed → fetch the component DETAIL (no `/{name}` section); extract the field below.
+						// The local file is still named `…/{name}.{ext}`.
+						urn += `/${item.apiPath}/${item.parent.name}${metadataBackedDef ? '' : `/${item.name}`}`;
 						urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`;
 						break;
 					case 'app':
@@ -791,19 +831,27 @@ export class CoreCommands {
 				 * GET THE SOURCE CODE
 				 * Those lines are responsible straight for the download of code
 				 */
-				const axiosResponse = await axios({
-					url: url,
-					headers: {
-						Authorization: _authorization,
-						'imt-apps-sdk-version': Meta.version,
-					},
-					transformResponse: (res) => {
-						return res;
-					}, // Do not parse the response into JSON
-				});
+				let write: string;
+				if (metadataBackedDef) {
+					// Read the metadata field from the component detail (JSON), not a raw section body.
+					const componentDetail = await Core.rpGet(url, _authorization);
+					write =
+						componentDetail?.[camelCase(`app_${item.parent.supertype}`)]?.[metadataBackedDef.apiCodeType] ?? '';
+				} else {
+					const axiosResponse = await axios({
+						url: url,
+						headers: {
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version,
+						},
+						transformResponse: (res) => {
+							return res;
+						}, // Do not parse the response into JSON
+					});
 
-				// Prepare a stream to be saved
-				let write = axiosResponse.data;
+					// Prepare a stream to be saved
+					write = axiosResponse.data;
+				}
 
 				// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
 				// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"

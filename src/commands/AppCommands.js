@@ -953,7 +953,51 @@ class AppCommands {
 					}
 
 					/**
-					 * 9 - Get Icon
+					 * 9 - Get Endpoints (API v2 only; feature may be disabled → skip defensively)
+					 */
+					if (canceled) {
+						return;
+					}
+					let endpoints = [];
+					try {
+						if (_environment.version === 2) {
+							// Suppress the error dialog: the feature may be disabled on the environment — the
+							// catch below skips endpoints instead of surfacing an error and aborting the export.
+							endpoints = (await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'endpoint')}`, _authorization, undefined, true)).appEndpoints || [];
+						}
+					} catch {
+						// Endpoints feature may be disabled on the server (or unsupported). Skip without aborting the export.
+						endpoints = [];
+					}
+					if (endpoints.length === 0) {
+						progress.report({ increment: 5, message: `${app.label} - No Endpoints (skipping)` });
+					} else {
+						await asyncfile.mkdir(path.join(archive, 'endpoints'));
+						const endpointProgress = 5 / endpoints.length;
+						for (const endpoint of endpoints) {
+							if (canceled) {
+								return;
+							}
+							const archivePath = path.join(archive, 'endpoints', endpoint.name);
+							await asyncfile.mkdir(archivePath);
+
+							// Get Endpoint Metadata (incl. `context` and `annotations` — these are metadata fields)
+							let e = (await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'endpoint')}/${endpoint.name}`, _authorization));
+							e = e.appEndpoint;
+							await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
+								JSON.stringify(pick(e, ['name', 'label', 'description', 'context', 'annotations', 'attachedAccounts']), null, 4));
+
+							// Get Corresponding Sources
+							for (const key of [`api`, `scope`, `inputParameters`, `outputParameters`]) {
+								progress.report({ increment: endpointProgress * 0.25, message: `${app.label} - Exporting Endpoint ${endpoint.label} (${key})` });
+								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
+									Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'endpoint')}/${endpoint.name}/${key}`, _authorization), key));
+							}
+						}
+					}
+
+					/**
+					 * 10 - Get Icon
 					 */
 					if (canceled) {
 						return;
@@ -974,7 +1018,7 @@ class AppCommands {
 					}
 
 					/**
-					 * 10 - Note the format
+					 * 11 - Note the format
 					 */
 					if (canceled) {
 						return
@@ -984,7 +1028,7 @@ class AppCommands {
 					}, null, 4));
 
 					/**
-					 * 11 - Compress and save
+					 * 12 - Compress and save
 					 */
 					if (canceled) {
 						return;
@@ -1086,7 +1130,7 @@ class AppCommands {
 				return promisify2(entry.getDataAsync)();
 			};
 
-			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined) => {
+			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined, _replaceArrayInBody = undefined) => {
 				return {
 					endpoint: endpoint,
 					method: method,
@@ -1094,6 +1138,7 @@ class AppCommands {
 					body: body,
 					_store: _store,
 					_replaceInBody: _replaceInBody,
+					_replaceArrayInBody: _replaceArrayInBody,
 					_label: _label
 				};
 			};
@@ -1172,6 +1217,8 @@ class AppCommands {
 					responder: [`api`, `parameters`, `expect`],
 				}, 'imljson');
 				app.functions = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'function'), ['code', 'test'], 'js', false);
+				// Endpoints exist in API v2 only. Guard so a v2 zip imported into a v1 env doesn't attempt them.
+				app.endpoints = _sdk.version === 2 ? await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'endpoint'), [`api`, `scope`, `inputParameters`, `outputParameters`], 'imljson') : [];
 				return app;
 
 				// validator.count should equal entries.length;
@@ -1318,6 +1365,36 @@ class AppCommands {
 							'PUT', 'application/javascript', appFunction[code]));
 					});
 				});
+				// Create & upload endpoints (API v2 only). Endpoint name is client-specified (stable), so it is
+				// referenced directly; only `attachedAccounts` (connection refs) may be remapped on import.
+				// Guard on v2 so a v2 zip imported into a v1 env doesn't attempt endpoint requests.
+				(_environment.version === 2 ? (app.endpoints || []) : []).forEach((endpoint) => {
+					const name = endpoint.metadata.name;
+					// Create endpoint in Make
+					requests.push(makeRequestProto(`Endpoint ${endpoint.metadata.label}`,
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'endpoint')}`,
+						'POST', 'application/json', JSON.stringify(extract(endpoint.metadata, ['name', 'label', 'description']))));
+					// Upload endpoint's sections
+					[`api`, `scope`, `inputParameters`, `outputParameters`].forEach(code => {
+						requests.push(makeRequestProto(`Endpoint ${endpoint.metadata.label} - ${code}`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'endpoint')}/${name}/${code}`,
+							'PUT', 'application/jsonc', endpoint[code]));
+					});
+					// PATCH the metadata-only fields: context, annotations, attachedAccounts (connection refs).
+					const patchBody = {};
+					if (typeof endpoint.metadata.context === 'string') { patchBody.context = endpoint.metadata.context; }
+					if (endpoint.metadata.annotations && typeof endpoint.metadata.annotations === 'object') { patchBody.annotations = endpoint.metadata.annotations; }
+					const attachedAccounts = Array.isArray(endpoint.metadata.attachedAccounts) ? endpoint.metadata.attachedAccounts : [];
+					if (attachedAccounts.length > 0) { patchBody.attachedAccounts = attachedAccounts; }
+					if (Object.keys(patchBody).length > 0) {
+						requests.push(makeRequestProto(`Endpoint ${endpoint.metadata.label} - metadata`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'endpoint')}/${name}`,
+							'PATCH', 'application/json', JSON.stringify(patchBody), undefined, undefined,
+							attachedAccounts.length > 0
+								? [{ key: 'attachedAccounts', slugs: attachedAccounts.map(connName => `connection-${connName}`) }]
+								: undefined));
+					}
+				});
 				return requests;
 
 				// requests.length should equal entries.lenght - 1 (because app create preflight is not in queue)
@@ -1400,11 +1477,19 @@ class AppCommands {
 
 					let bodyProto = r.body;
 					// Fill all dynamic variables defined in request body by it's current values (stored in `store`)
-					if (r._replaceInBody !== undefined) {
+					if (r._replaceInBody !== undefined || r._replaceArrayInBody !== undefined) {
 						bodyProto = JSON.parse(bodyProto);
-						r._replaceInBody.forEach(replacement => {
+						(r._replaceInBody || []).forEach(replacement => {
 							if (bodyProto[replacement.key]) {
 								bodyProto[replacement.key] = store[replacement.slug];
+							}
+						});
+						// Array refs (e.g. endpoint `attachedAccounts`): map each slug to its stored (possibly renamed) value.
+						(r._replaceArrayInBody || []).forEach(replacement => {
+							if (Array.isArray(bodyProto[replacement.key])) {
+								bodyProto[replacement.key] = replacement.slugs
+									.map(slug => store[slug])
+									.filter(value => value !== undefined && value !== null);
 							}
 						});
 						bodyProto = JSON.stringify(bodyProto);
