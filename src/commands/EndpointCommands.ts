@@ -153,7 +153,7 @@ export class EndpointCommands {
 			'apps-sdk.endpoint.edit-annotations',
 			catchError('Endpoint annotations edit', async (context: any) => {
 				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
-					return
+					return;
 				}
 				const endpointUrl = `${endpointsCollectionUrl(context.parent.parent)}/${context.name}`;
 
