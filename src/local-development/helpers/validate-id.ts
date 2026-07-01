@@ -43,6 +43,13 @@ export const COMPONENT_ID_VALIDATION_RULES: Record<
 		...ruleWebhookConnection,
 		examples: 'tokenAuth, oAuth',
 	},
+	endpoint: {
+		// Local ID must match the remote Make endpoint name rule, because the "Deploy to Make" action
+		// creates the remote endpoint with the same name as the local ID.
+		regexp: /^[a-zA-Z][0-9a-zA-Z]{1,126}[0-9a-zA-Z]$/,
+		hint: '3-128 letters and numbers (a-z, A-Z, 0-9). Must start with a letter.',
+		examples: 'getEntity, listEntities, createEntity',
+	},
 };
 
 /**

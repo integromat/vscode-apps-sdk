@@ -5,6 +5,7 @@ import * as createLocalConnection from './create-local-connection';
 import * as createLocalWebhook from './create-local-webhook';
 import * as createLocalModule from './create-local-module';
 import * as createLocalRpc from './create-local-rpc';
+import * as createLocalEndpoint from './create-local-endpoint';
 import * as createLocalImlFunction from './create-local-imlfunction';
 import * as pullModule from './pull';
 
@@ -19,6 +20,7 @@ export function registerCommandForLocalDevelopment(): void {
 	createLocalWebhook.registerCommands();
 	createLocalModule.registerCommands();
 	createLocalRpc.registerCommands();
+	createLocalEndpoint.registerCommands();
 	createLocalImlFunction.registerCommands();
 	pullModule.registerCommands();
 }

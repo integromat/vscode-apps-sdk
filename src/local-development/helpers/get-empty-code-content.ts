@@ -27,9 +27,14 @@ export function getEmptyCodeContent(codeType: CodeType, componentLocalId: string
 		case 'groups':
 		case 'requiredScope':
 		case 'installSpec':
+		case 'inputParameters':
+		case 'outputParameters':
 			return '[]\n';
 		case 'readme':
 			return 'README\n======\n';
+		case 'context':
+			// Endpoint `context` — markdown source describing how an AI agent should use the endpoint.
+			return '';
 		case 'code':
 			return `function ${componentLocalId}() {\n` + '    // Write the JavaScript code here...\n' + '}';
 		case 'test':

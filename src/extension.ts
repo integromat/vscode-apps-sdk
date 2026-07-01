@@ -22,6 +22,7 @@ import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 import RpcCommands = require('./commands/RpcCommands');
+import { EndpointCommands } from './commands/EndpointCommands';
 import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
 import ConnectionCommands = require('./commands/ConnectionCommands');
@@ -231,6 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await WebhookCommands.register(appsProvider, _authorization, _environment);
 	await ModuleCommands.register(appsProvider, _authorization, _environment);
 	await RpcCommands.register(appsProvider, _authorization, _environment);
+	await EndpointCommands.register(appsProvider, _authorization, _environment);
 	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);

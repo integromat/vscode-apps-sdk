@@ -19,6 +19,7 @@ function createMakecomappJson(
 			module: {},
 			rpc: {},
 			function: {},
+			endpoint: {},
 			...components,
 		},
 		origins: [],
@@ -30,6 +31,7 @@ function createMakecomappJson(
 		module: [],
 		rpc: [],
 		function: [],
+		endpoint: [],
 	});
 
 	return { makecomappJson, componentIdMapping };
@@ -72,6 +74,7 @@ describe('validateComponentReferences()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -100,6 +103,7 @@ describe('validateComponentReferences()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -132,6 +136,7 @@ describe('validateComponentReferences()', () => {
 				module: [],
 				rpc: [{ local: 'rpcA', remote: 'rpcA' }],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -164,6 +169,7 @@ describe('validateComponentReferences()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -195,6 +201,7 @@ describe('validateComponentReferences()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -222,6 +229,7 @@ describe('validateComponentReferences()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -253,6 +261,7 @@ describe('validateComponentReferences()', () => {
 				module: [{ local: 'modA', remote: 'modA' }],
 				rpc: [{ local: 'rpcA', remote: 'rpcA' }],
 				function: [],
+				endpoint: [],
 			},
 		);
 
@@ -263,6 +272,68 @@ describe('validateComponentReferences()', () => {
 				assert.ok(err.message.includes('connection "connA"'), 'should mention connA');
 				assert.ok(err.message.includes('rpc "rpcA"'), 'should mention rpc');
 				assert.ok(err.message.includes('altConnection "connB"'), 'should mention connB');
+				return true;
+			},
+		);
+	});
+
+	/*
+	 * Initial state: Endpoint "epA" references connections "connA" and "connB" via `attachedAccounts`.
+	 *   Both connections have valid idMapping entries.
+	 * Validation resolves: All array references resolve — no error thrown.
+	 */
+	test('passes when all endpoint attachedAccounts references have valid mappings', () => {
+		const { makecomappJson, componentIdMapping } = createMakecomappJson(
+			{
+				endpoint: {
+					epA: { label: 'Endpoint A', attachedAccounts: ['connA', 'connB'], codeFiles: {} } as any,
+				},
+			},
+			{
+				connection: [
+					{ local: 'connA', remote: 'connA' },
+					{ local: 'connB', remote: 'connB' },
+				],
+				webhook: [],
+				module: [],
+				rpc: [],
+				function: [],
+				endpoint: [{ local: 'epA', remote: 'epA' }],
+			},
+		);
+
+		assert.doesNotThrow(() => {
+			validateComponentReferences(makecomappJson, componentIdMapping as any);
+		});
+	});
+
+	/*
+	 * Initial state: Endpoint "epA" references connection "connMissing" via `attachedAccounts`,
+	 *   but that connection has no idMapping entry.
+	 * Validation resolves: Throws error listing the broken attachedAccounts reference.
+	 */
+	test('throws on dangling endpoint attachedAccounts reference', () => {
+		const { makecomappJson, componentIdMapping } = createMakecomappJson(
+			{
+				endpoint: {
+					epA: { label: 'Endpoint A', attachedAccounts: ['connA', 'connMissing'], codeFiles: {} } as any,
+				},
+			},
+			{
+				connection: [{ local: 'connA', remote: 'connA' }],
+				webhook: [],
+				module: [],
+				rpc: [],
+				function: [],
+				endpoint: [{ local: 'epA', remote: 'epA' }],
+			},
+		);
+
+		assert.throws(
+			() => validateComponentReferences(makecomappJson, componentIdMapping as any),
+			(err: Error) => {
+				assert.ok(err.message.includes('endpoint "epA"'), 'should mention endpoint');
+				assert.ok(err.message.includes('attachedAccounts "connMissing"'), 'should mention missing connection');
 				return true;
 			},
 		);

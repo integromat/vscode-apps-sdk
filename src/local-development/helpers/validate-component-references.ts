@@ -5,7 +5,7 @@ import type { MakecomappJson } from '../types/makecomapp.types';
 interface ReferenceViolation {
 	componentType: AppComponentType;
 	componentLocalId: string;
-	referenceType: 'connection' | 'altConnection' | 'webhook';
+	referenceType: 'connection' | 'altConnection' | 'webhook' | 'attachedAccounts';
 	referencedLocalId: string;
 }
 
@@ -24,7 +24,7 @@ export function validateComponentReferences(
 ): void {
 	const violations: ReferenceViolation[] = [];
 
-	const componentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	const componentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function', 'endpoint'];
 
 	for (const componentType of componentTypes) {
 		const components = makecomappJson.components[componentType];
@@ -76,6 +76,21 @@ export function validateComponentReferences(
 						referenceType: 'webhook',
 						referencedLocalId: metadata.webhook,
 					});
+				}
+			}
+
+			// Check `attachedAccounts` references (endpoints reference connections as an array)
+			if (Array.isArray(metadata.attachedAccounts)) {
+				for (const referencedConnectionLocalId of metadata.attachedAccounts) {
+					const remoteName = componentIdMapping.getRemoteName('connection', referencedConnectionLocalId);
+					if (remoteName === undefined) {
+						violations.push({
+							componentType,
+							componentLocalId,
+							referenceType: 'attachedAccounts',
+							referencedLocalId: referencedConnectionLocalId,
+						});
+					}
 				}
 			}
 		}

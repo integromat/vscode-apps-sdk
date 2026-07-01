@@ -86,6 +86,8 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				new Group(`modules`, "Modules", element),
 				new Group(`rpcs`, "Remote procedures", element),
 				new Group(`functions`, "IML functions", element),
+				// Endpoints exist in API v2 only.
+				...(this._environment.version === 2 ? [new Group(`endpoints`, "Endpoints", element)] : []),
 				new Group(`docs`, "Docs", element)
 			]
 		}
@@ -109,13 +111,23 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			}
 			// REST
 			else {
-				for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+				for (let needle of ["connections", "webhooks", "modules", "rpcs", "functions", "endpoints"]) {
 					if (element.id.includes(needle)) {
 						let name = needle.slice(0, -1);
 						let uri = ["connection", "webhook"].includes(name) ?
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
 							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, name)}`
-						let response = await Core.rpGet(uri, this._authorization)
+						let response
+						try {
+							// For endpoints, suppress the error dialog: the feature may be disabled on the
+							// environment — we fall back to an empty list below instead of surfacing an error.
+							response = await Core.rpGet(uri, this._authorization, undefined, name === "endpoint")
+						} catch (err) {
+							if (name === "endpoint") {
+								return []
+							}
+							throw err
+						}
 						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
 						return items.map(item => new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id || item.typeId, item.public, item.approved))
 					}
@@ -196,6 +208,16 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				case "function":
 					return [
 						new Code(`code`, "Code", element, "js", Core.pathDeterminer(this._environment.version, 'function'), true)
+					]
+				case "endpoint":
+					// Note: code names must match the endpoint section URL segments used by the API.
+					// `context` is a markdown source (metadata-backed), like the app readme.
+					return [
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
+						new Code(`inputParameters`, "Input parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
+						new Code(`outputParameters`, "Output parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
+						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
+						new Code(`context`, "Context", element, "md", Core.pathDeterminer(this._environment.version, 'endpoint'), true)
 					]
 			}
 		}

@@ -54,6 +54,26 @@ export class ParametersProvider {
 		}
 
 		/*
+		 * ENDPOINT INPUT PARAMETERS
+		 * Endpoints store their mappable parameters under the `inputParameters` section (not `parameters`).
+		 */
+		if (crumbs[3] === 'endpoint' || crumbs[3] === 'endpoints') {
+			const url = `${this._environment.baseUrl}${urn}/inputParameters`;
+			try {
+				const parameters = await requestMakeApi({
+					url: url,
+					headers: {
+						Authorization: this._authorization,
+					},
+					transformResponse: (res: AxiosResponse) => { return res; },  // Do not parse the response into JSON
+				});
+				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), 'parameters'));
+			} catch (err: any) {
+				showAndLogError(err, 'loadParameters');
+			}
+		}
+
+		/*
 		 * EXPECT
 		 */
 		if (crumbs[3] === 'module' || crumbs[3] === 'modules') {

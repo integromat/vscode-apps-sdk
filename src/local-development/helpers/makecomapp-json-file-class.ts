@@ -73,6 +73,7 @@ export class MakecomappJsonFile {
 				webhook: [],
 				module: [],
 				rpc: [],
+				endpoint: [],
 			};
 		}
 

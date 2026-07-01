@@ -5,7 +5,17 @@ import type { Environment } from './types/environment.types';
 import { showAndLogError } from './error-handling';
 import { requestMakeApi } from './utils/request-api-make';
 
-export async function rpGet(uri: string, authorization: string, qs?: Record<string, string | string[] | boolean>) {
+export async function rpGet(
+	uri: string,
+	authorization: string,
+	qs?: Record<string, string | string[] | boolean>,
+	/**
+	 * When true, the error dialog/log is NOT shown on failure (the error is still thrown).
+	 * Opt-in, used for expected/recoverable failures the caller handles itself — e.g. listing
+	 * endpoints on an environment where the feature is disabled (caller falls back to an empty list).
+	 */
+	suppressErrorDialog = false,
+) {
 	try {
 		return await requestMakeApi({
 			url: uri,
@@ -15,7 +25,9 @@ export async function rpGet(uri: string, authorization: string, qs?: Record<stri
 			params: qs,
 		});
 	} catch (err: any) {
-		showAndLogError(err, 'rpGet');
+		if (!suppressErrorDialog) {
+			showAndLogError(err, 'rpGet');
+		}
 		throw err;
 	}
 }
@@ -206,6 +218,8 @@ export function pathDeterminer(version: number, originalPath: string): string {
 					return 'rpcs';
 				case 'function':
 					return 'functions';
+				case 'endpoint':
+					return 'endpoints';
 				case 'change':
 					return 'changes';
 				case '__sdk':

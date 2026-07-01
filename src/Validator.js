@@ -8,6 +8,9 @@ module.exports = {
     moduleName: function(string) {
         return RegExp("(^[a-zA-Z][0-9a-zA-Z]+[0-9a-zA-Z]$)").test(string) ? undefined : "Module id must match the following RegExp: (^[a-zA-Z][0-9a-zA-Z]+[0-9a-zA-Z]$), for example: myModule"
     },
+    endpointName: function(string) {
+        return RegExp("(^[a-zA-Z][0-9a-zA-Z]{1,126}[0-9a-zA-Z]$)").test(string) ? undefined : "Endpoint id must match the following RegExp: (^[a-zA-Z][0-9a-zA-Z]{1,126}[0-9a-zA-Z]$), for example: getEntity"
+    },
     appName: function(string) {
         return RegExp("(^[a-z][0-9a-z-]+[0-9a-z]$)").test(string) ? undefined : "App name must match the following RegExp: (^[a-z][0-9a-z-]+[0-9a-z]$), for example: my-new-app"
     },
