@@ -29,6 +29,6 @@ async function onCreateLocalImlFunctionClick(anyProjectPath: vscode.Uri) {
 
 	// OK info message
 	vscode.window.showInformationMessage(
-		`The Custom IML function "${newImlFunction.componentLocalId}" sucessfully created locally.`,
+		`The Custom IML function "${newImlFunction.componentLocalId}" successfully created locally.`,
 	);
 }

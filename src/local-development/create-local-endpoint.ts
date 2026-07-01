@@ -66,5 +66,5 @@ async function onCreateLocalEndpointClick(anyProjectPath: vscode.Uri) {
 	);
 
 	// OK info message
-	vscode.window.showInformationMessage(`The Endpoint "${newEndpoint.componentLocalId}" sucessfully created locally.`);
+	vscode.window.showInformationMessage(`The Endpoint "${newEndpoint.componentLocalId}" successfully created locally.`);
 }

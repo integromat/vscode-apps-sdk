@@ -35,7 +35,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.new',
 			catchError('Endpoint creation', async (context: any) => {
-				if (!Core.contextGuard(context)) {
+				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
 					return;
 				}
 				const app = context.parent;
@@ -78,7 +78,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.edit-metadata',
 			catchError('Endpoint metadata edit', async (context: any) => {
-				if (!Core.contextGuard(context)) {
+				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
 					return;
 				}
 
@@ -114,7 +114,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.visibility.public',
 			catchError('Endpoint publish', async (context: any) => {
-				if (!Core.contextGuard(context)) {
+				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
 					return;
 				}
 				await Core.executePlain(
@@ -132,7 +132,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.visibility.private',
 			catchError('Endpoint make private', async (context: any) => {
-				if (!Core.contextGuard(context)) {
+				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
 					return;
 				}
 				await Core.executePlain(
@@ -152,7 +152,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.edit-annotations',
 			catchError('Endpoint annotations edit', async (context: any) => {
-				if (!Core.contextGuard(context)) {
+				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
 					return
 				}
 				const endpointUrl = `${endpointsCollectionUrl(context.parent.parent)}/${context.name}`;
@@ -193,7 +193,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.edit-connections',
 			catchError('Endpoint connections edit', async (context: any) => {
-				if (!Core.contextGuard(context)) {
+				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
 					return;
 				}
 				const app = context.parent.parent;
@@ -222,8 +222,11 @@ export class EndpointCommands {
 					return;
 				}
 
-				// `description` holds the connection name (see QuickPick.connections).
-				const attachedAccounts = picked.map((item) => item.description);
+				// `description` holds the connection name (see QuickPick.connections). Filter to a clean
+				// `string[]` — `QuickPickItem.description` is optional in the type, so guard against undefined.
+				const attachedAccounts = picked
+					.map((item) => item.description)
+					.filter((name): name is string => Boolean(name));
 				await Core.patchEntity(_authorization, { attachedAccounts }, endpointUrl);
 				appsProvider.refresh();
 			}),
