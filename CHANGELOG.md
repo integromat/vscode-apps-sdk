@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## [2.7.0](https://github.com/integromat/vscode-apps-sdk/compare/2.6.0...2.7.0) (2026-07-01)
+
+
+### Features
+
+* **endpoints:** add support for SDK endpoint type ([#362](https://github.com/integromat/vscode-apps-sdk/issues/362)) ([c8a2687](https://github.com/integromat/vscode-apps-sdk/commit/c8a26875c7ccaa174c429112e25a9a84a07a94df))
+
 ## [2.6.0](https://github.com/integromat/vscode-apps-sdk/compare/2.5.0...2.6.0) (2026-06-23)
 
 
