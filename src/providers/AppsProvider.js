@@ -7,6 +7,7 @@ const Code = require('../tree/Code')
 const Core = require('../Core');
 const camelCase = require('lodash/camelCase');
 const { BackgroundIconLoader } = require('../libs/background-icon-loader');
+const { fetchAppComponentsSummary, buildComponentTreeItem } = require('../libs/app-component-search');
 
 class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR, _admin) {
@@ -50,6 +51,33 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		// Invalidate any in-flight background icon load and reset state so icons are reloaded.
 		this._iconLoader.reset();
 		this._onDidChangeTreeData.fire();
+	}
+
+	/**
+	 * Fetches a flat summary of all components (connections, webhooks, modules, rpcs, functions)
+	 * of the given app, used by the per-app component search Quick Pick.
+	 * @param {object} appNode The App tree node.
+	 * @returns {Promise<{ components: Array, failedGroups: string[] }>} Component summaries plus
+	 *          the API plural names of any component groups whose fetch failed.
+	 */
+	getAppComponentsSummary(appNode) {
+		return fetchAppComponentsSummary({
+			baseUrl: this._baseUrl,
+			authorization: this._authorization,
+			environment: this._environment,
+			appName: appNode.name,
+			appVersion: appNode.version,
+		});
+	}
+
+	/**
+	 * Rebuilds the tree node for a component summary so it can be passed to `TreeView.reveal`.
+	 * @param {object} appNode The App tree node (ancestor).
+	 * @param {object} summary A component summary from `getAppComponentsSummary`.
+	 * @returns {object} An Item tree node with reveal-compatible ids.
+	 */
+	buildComponentTreeItem(appNode, summary) {
+		return buildComponentTreeItem(appNode, summary);
 	}
 
 	/**
