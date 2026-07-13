@@ -18,6 +18,10 @@ import {
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
+import {
+	getStaticAndDerivedSchemaAssociations,
+	schemaAssociationsNotificationType,
+} from './services/imljson-schema-associations';
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
@@ -95,10 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await client.start();
 
 	// Register all JSON schemas for IMLJSON language
-	await client.sendNotification(
-		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
-		LanguageServersSettings.getJsonSchemas(),
-	);
+	await client.sendNotification(schemaAssociationsNotificationType, getStaticAndDerivedSchemaAssociations());
 
 	// Environment commands and envChanger
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10);

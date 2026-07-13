@@ -281,6 +281,32 @@ suite('base.imljson timeout directive (online mode)', () => {
 	});
 });
 
+suite('inputParameters.imljson derived schema validation (online mode)', () => {
+	let documentUri: vscode.Uri;
+	let textDocument: vscode.TextDocument;
+	let e: vscode.TextEditor;
+
+	before(async () => {
+		documentUri = vscode.Uri.parse(tempy.file({ name: 'inputParameters.imljson' }));
+		await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(''));
+		textDocument = await vscode.workspace.openTextDocument(documentUri);
+		e = await vscode.window.showTextDocument(textDocument, 1, false);
+	});
+
+	after(async () => {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor', documentUri);
+		await vscode.workspace.fs.delete(documentUri);
+	});
+
+	test('Flags a parameter missing `help`', async () => {
+		await setEditorContentAndWaitForDiagnosticsChange(e, '[{"name":"foo","type":"text"}]');
+		assert.deepStrictEqual(
+			vscode.languages.getDiagnostics(documentUri).map((problem) => problem.message),
+			['Missing property "help".'],
+		);
+	});
+});
+
 /**
  * Writes new `content` into and already opened file in VSCode editor
  * and waits for the "problems" section to be updated by background tasks.

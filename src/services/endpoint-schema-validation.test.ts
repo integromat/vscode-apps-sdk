@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { suite, test } from 'mocha';
 import { getLanguageService, TextDocument, type LanguageService, type SchemaConfiguration } from 'vscode-json-languageservice';
-import { getJsonSchemas } from '../LanguageServersSettings';
+import { getStaticAndDerivedSchemaAssociations } from './imljson-schema-associations';
 
 /**
  * Fixture suite validating IMLJSON api/base files against the real schemas in
@@ -15,6 +15,8 @@ const MODULE_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/modules/get-things/ap
 const ENDPOINT_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/endpoints/list-things/api.imljson';
 const LOCAL_ENDPOINT_URI = 'file:///w/src/endpoints/list-things/list-things.communication.iml.json';
 const BASE_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/base.imljson';
+const INPUT_PARAMS_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/endpoints/list-things/inputParameters.imljson';
+const OUTPUT_PARAMS_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/endpoints/list-things/outputParameters.imljson';
 
 function resolveRelativePath(relativePath: string, resource: string): string {
 	return new URL(relativePath, resource).toString();
@@ -41,7 +43,7 @@ async function validate(languageService: LanguageService, uri: string, content: 
 }
 
 suite('Endpoint IMLJSON schema validation (fixtures)', () => {
-	const languageService = buildLanguageService(getJsonSchemas());
+	const languageService = buildLanguageService(getStaticAndDerivedSchemaAssociations());
 
 	test('1. module: endpoint object form + response → OK', async () => {
 		const messages = await validate(languageService, MODULE_URI, '{"endpoint":{"name":"x"},"response":{}}');
@@ -116,6 +118,66 @@ suite('Endpoint IMLJSON schema validation (fixtures)', () => {
 
 		const localMessages = await validate(languageService, LOCAL_ENDPOINT_URI, '{"url":"/things","method":"GET"}');
 		assert.deepStrictEqual(localMessages, []);
+	});
+
+	test('12. inputParameters.imljson: parameter missing `help` → error', async () => {
+		const messages = await validate(languageService, INPUT_PARAMS_URI, '[{"name":"foo","type":"text"}]');
+		assert.deepStrictEqual(messages, ['Missing property "help".']);
+	});
+
+	test('13. inputParameters.imljson: parameter missing `name` → error', async () => {
+		const messages = await validate(languageService, INPUT_PARAMS_URI, '[{"type":"text","help":"h"}]');
+		assert.deepStrictEqual(messages, ['Missing property "name".']);
+	});
+
+	test('14. inputParameters.imljson: `banner` type is rejected', async () => {
+		const messages = await validate(
+			languageService,
+			INPUT_PARAMS_URI,
+			'[{"name":"foo","type":"banner","help":"h"}]',
+		);
+		assert.ok(messages.length > 0, 'Expected the banner type to be rejected.');
+	});
+
+	test('15. inputParameters.imljson: top-level `json` field must be named "inputSchema"', async () => {
+		const okMessages = await validate(
+			languageService,
+			INPUT_PARAMS_URI,
+			'[{"name":"inputSchema","type":"json","help":"h"}]',
+		);
+		assert.deepStrictEqual(okMessages, []);
+
+		const errorMessages = await validate(
+			languageService,
+			INPUT_PARAMS_URI,
+			'[{"name":"result","type":"json","help":"h"}]',
+		);
+		assert.ok(errorMessages.length > 0, 'Expected a mismatched top-level json name to be rejected.');
+	});
+
+	test('16. outputParameters.imljson: top-level `json` field must be named "outputSchema"', async () => {
+		const okMessages = await validate(
+			languageService,
+			OUTPUT_PARAMS_URI,
+			'[{"name":"outputSchema","type":"json","help":"h"}]',
+		);
+		assert.deepStrictEqual(okMessages, []);
+
+		const errorMessages = await validate(
+			languageService,
+			OUTPUT_PARAMS_URI,
+			'[{"name":"result","type":"json","help":"h"}]',
+		);
+		assert.ok(errorMessages.length > 0, 'Expected a mismatched top-level json name to be rejected.');
+	});
+
+	test('17. inputParameters.imljson: nested parameter missing `help` → error (recursion)', async () => {
+		const messages = await validate(
+			languageService,
+			INPUT_PARAMS_URI,
+			'[{"name":"parent","type":"collection","help":"h","nested":[{"name":"child","type":"text"}]}]',
+		);
+		assert.deepStrictEqual(messages, ['Missing property "help".']);
 	});
 
 	test('18. base.imljson: timeout within bounds → OK, over the maximum → error', async () => {

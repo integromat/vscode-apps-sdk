@@ -32,11 +32,7 @@
 			{
 				"fileMatch": [
 					"parameters.imljson",
-					"inputParameters.imljson",
-					"outputParameters.imljson",
-					"*.params.iml.json",
-					"*.input.iml.json",
-					"*.output.iml.json"
+					"*.params.iml.json"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
