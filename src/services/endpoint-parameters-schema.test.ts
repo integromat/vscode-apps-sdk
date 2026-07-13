@@ -70,7 +70,7 @@ suite('buildEndpointParametersSchema()', () => {
 		assert.deepStrictEqual(outputThen, { properties: { name: { const: 'outputSchema' } } });
 	});
 
-	test('removes every definition\'s `$id`', () => {
+	test("removes every definition's `$id`", () => {
 		const result = buildEndpointParametersSchema(parametersSchema, 'inputSchema');
 		for (const [name, definition] of Object.entries(definitionsOf(result))) {
 			assert.ok(!('$id' in definition), `definitions.${name} should not carry an $id`);

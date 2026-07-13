@@ -8,7 +8,11 @@ import { log } from '../output-channel';
 import { isFileBelongingToExtension } from '../temp-dir';
 import type { Environment } from '../types/environment.types';
 import * as LanguageServersSettings from '../LanguageServersSettings';
-import { enrichApiSchemaWithEndpoints, extractEndpointInputParameters, type SdkEndpointSchemaInfo } from './endpoint-api-enrichment';
+import {
+	enrichApiSchemaWithEndpoints,
+	extractEndpointInputParameters,
+	type SdkEndpointSchemaInfo,
+} from './endpoint-api-enrichment';
 import { buildEndpointParametersSchema } from './endpoint-parameters-schema';
 
 /**
@@ -54,10 +58,9 @@ function schemaFileUri(filename: string): string {
  */
 function getParametersSchema(): Record<string, unknown> {
 	if (!parametersSchemaCache) {
-		parametersSchemaCache = JSON.parse(fs.readFileSync(path.join(schemasDir(), 'parameters.json'), 'utf8')) as Record<
-			string,
-			unknown
-		>;
+		parametersSchemaCache = JSON.parse(
+			fs.readFileSync(path.join(schemasDir(), 'parameters.json'), 'utf8'),
+		) as Record<string, unknown>;
 	}
 	return parametersSchemaCache;
 }
@@ -131,6 +134,7 @@ interface EnrichmentCacheEntry {
 	fetchedAt: number;
 }
 
+/** Constructor dependencies of {@link ImljsonSchemaAssociations}. */
 export interface ImljsonSchemaAssociationsDependencies {
 	client: LanguageClient;
 	authorization: string;
@@ -213,7 +217,9 @@ export class ImljsonSchemaAssociations {
 					// A subdirectory would break the schema's relative `sources.json#/...` refs — it must be a
 					// flat sibling of the real schema files, like the derived parameter schemas above.
 					uri: schemaFileUri(`api-enriched--${app}--v${version}.json`),
-					fileMatch: ENRICHABLE_BASENAMES.map((basename) => `**/apps-sdk/**/${app}/${version}/**/${basename}`),
+					fileMatch: ENRICHABLE_BASENAMES.map(
+						(basename) => `**/apps-sdk/**/${app}/${version}/**/${basename}`,
+					),
 					schema: enrichApiSchemaWithEndpoints(getApiSchema(), endpoints),
 				},
 				fetchedAt: Date.now(),
@@ -238,7 +244,10 @@ export class ImljsonSchemaAssociations {
 
 			return appEndpoints
 				.filter((item): item is { name: string; inputParameters?: unknown } => typeof item?.name === 'string')
-				.map((item) => ({ name: item.name, inputParameters: extractEndpointInputParameters(item.inputParameters) }));
+				.map((item) => ({
+					name: item.name,
+					inputParameters: extractEndpointInputParameters(item.inputParameters),
+				}));
 		} catch (err) {
 			log('debug', `ImljsonSchemaAssociations: failed to fetch endpoints for ${app}/${version}: ${err}`);
 			return null;

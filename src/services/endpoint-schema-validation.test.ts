@@ -3,7 +3,12 @@ import { promises as fs, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { suite, test } from 'mocha';
-import { getLanguageService, TextDocument, type LanguageService, type SchemaConfiguration } from 'vscode-json-languageservice';
+import {
+	getLanguageService,
+	TextDocument,
+	type LanguageService,
+	type SchemaConfiguration,
+} from 'vscode-json-languageservice';
 import { enrichApiSchemaWithEndpoints } from './endpoint-api-enrichment';
 import { getStaticAndDerivedSchemaAssociations } from './imljson-schema-associations';
 
@@ -229,7 +234,7 @@ suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment'
 		assert.deepStrictEqual(messages, []);
 	});
 
-	test('23. module (enriched app/version): input-suggestion entries offer the endpoint\'s parameter keys', async () => {
+	test("23. module (enriched app/version): input-suggestion entries offer the endpoint's parameter keys", async () => {
 		const content = '{"endpoint":"list-things","input":{}}';
 		const document = TextDocument.create(MODULE_URI, 'imljson', 1, content);
 		const jsonDocument = languageService.parseJSONDocument(document);
