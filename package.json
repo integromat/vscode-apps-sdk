@@ -70,6 +70,13 @@
 			},
 			{
 				"fileMatch": [
+					"**/endpoints/*/api.imljson",
+					"**/endpoints/*/*.communication.iml.json"
+				],
+				"url": "./syntaxes/imljson/schemas/endpoint-api.json"
+			},
+			{
+				"fileMatch": [
 					"samples.imljson",
 					"*.samples.iml.json"
 				],

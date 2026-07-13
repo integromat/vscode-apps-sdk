@@ -29,6 +29,9 @@
 				"body": {
 					"$ref": "sources.json#/definitions/body"
 				},
+				"timeout": {
+					"$ref": "sources.json#/definitions/timeout"
+				},
 				"type": {
 					"$ref": "enums.json#/definitions/request-type"
 				},
