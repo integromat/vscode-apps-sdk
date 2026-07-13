@@ -1,8 +1,10 @@
 import * as assert from 'node:assert';
-import { promises as fs } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { promises as fs, readFileSync } from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { suite, test } from 'mocha';
 import { getLanguageService, TextDocument, type LanguageService, type SchemaConfiguration } from 'vscode-json-languageservice';
+import { enrichApiSchemaWithEndpoints } from './endpoint-api-enrichment';
 import { getStaticAndDerivedSchemaAssociations } from './imljson-schema-associations';
 
 /**
@@ -186,5 +188,57 @@ suite('Endpoint IMLJSON schema validation (fixtures)', () => {
 
 		const errorMessages = await validate(languageService, BASE_URI, '{"timeout":400000}');
 		assert.deepStrictEqual(errorMessages, ['Value is above the maximum of 300000.']);
+	});
+});
+
+suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment', () => {
+	const OTHER_APP_URI = 'file:///t/apps-sdk/sdk/apps/other-app/3/modules/get-others/api.imljson';
+
+	// The enriched entry's URI must be a flat sibling of the real schema files (like the production
+	// class builds it), so its relative `sources.json#/...` refs still resolve to real files on disk.
+	const schemasDir = path.join(__dirname, '../../syntaxes/imljson/schemas');
+	const apiSchema = JSON.parse(readFileSync(path.join(schemasDir, 'api.json'), 'utf8')) as Record<string, unknown>;
+	const enrichedEntry: SchemaConfiguration = {
+		uri: pathToFileURL(path.join(schemasDir, 'api-enriched--demo-app--v2.json')).toString(),
+		fileMatch: ['api.imljson', 'publish.imljson', 'attach.imljson', 'detach.imljson'].map(
+			(basename) => `**/apps-sdk/**/demo-app/2/**/${basename}`,
+		),
+		schema: enrichApiSchemaWithEndpoints(apiSchema, [
+			{ name: 'list-things', inputParameters: [{ name: 'page', description: 'Page number' }] },
+		]),
+	};
+	const languageService = buildLanguageService([...getStaticAndDerivedSchemaAssociations(), enrichedEntry]);
+
+	test('19. module (enriched app/version): known endpoint name → OK', async () => {
+		const messages = await validate(languageService, MODULE_URI, '{"endpoint":"list-things"}');
+		assert.deepStrictEqual(messages, []);
+	});
+
+	test('20. module (enriched app/version): unknown endpoint name → enum error', async () => {
+		const messages = await validate(languageService, MODULE_URI, '{"endpoint":"unknown-thing"}');
+		assert.ok(messages.length > 0, 'Expected an unknown endpoint name to be rejected.');
+	});
+
+	test('21. module (enriched app/version): `{{iml}}` endpoint name → OK', async () => {
+		const messages = await validate(languageService, MODULE_URI, '{"endpoint":"{{iml}}"}');
+		assert.deepStrictEqual(messages, []);
+	});
+
+	test('22. module (different app/version): unknown endpoint name → NO enum error (glob scoping)', async () => {
+		const messages = await validate(languageService, OTHER_APP_URI, '{"endpoint":"unknown-thing"}');
+		assert.deepStrictEqual(messages, []);
+	});
+
+	test('23. module (enriched app/version): input-suggestion entries offer the endpoint\'s parameter keys', async () => {
+		const content = '{"endpoint":"list-things","input":{}}';
+		const document = TextDocument.create(MODULE_URI, 'imljson', 1, content);
+		const jsonDocument = languageService.parseJSONDocument(document);
+		const position = document.positionAt(content.indexOf('"input":{') + '"input":{'.length);
+
+		const completions = await languageService.doComplete(document, position, jsonDocument);
+		assert.ok(
+			completions?.items.some((item) => item.label === 'page'),
+			`Expected a "page" completion, got: ${JSON.stringify(completions?.items.map((item) => item.label))}`,
+		);
 	});
 });
