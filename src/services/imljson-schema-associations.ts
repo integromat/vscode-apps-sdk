@@ -26,9 +26,12 @@ export const schemaAssociationsNotificationType = new NotificationType<SchemaCon
 /**
  * Basenames whose api schema is eligible for online-mode Endpoint enrichment (see
  * {@link ImljsonSchemaAssociations}) — the files whose `endpoint`/`pagination.endpoint` directives
- * reference a sibling Endpoint by name.
+ * reference a sibling Endpoint by name. `attach.imljson`/`detach.imljson` are webhook-only codes and
+ * webhooks are non-versionable (`Core.isVersionable`), so their temp paths never carry the version
+ * segment `parseAppAndVersion` requires — they're excluded here since they could never actually match.
+ * `publish.imljson` likely doesn't occur in v2 online paths either, but is kept for parity/completeness.
  */
-const ENRICHABLE_BASENAMES = ['api.imljson', 'publish.imljson', 'attach.imljson', 'detach.imljson'];
+const ENRICHABLE_BASENAMES = ['api.imljson', 'publish.imljson'];
 
 /** How long a fetched (or failed) app/version entry is considered fresh, in milliseconds. */
 const ENRICHMENT_CACHE_TTL_MS = 60_000;
@@ -166,8 +169,8 @@ export class ImljsonSchemaAssociations {
 
 	/**
 	 * Re-evaluates Endpoint enrichment for the newly active editor. A no-op unless the editor is an
-	 * online-mode `api.imljson`/`publish.imljson`/`attach.imljson`/`detach.imljson` file (as opposed to a
-	 * local-dev workspace file, or e.g. a version-less connection/webhook file) on API v2.
+	 * online-mode `api.imljson`/`publish.imljson` file (as opposed to a local-dev workspace file, or e.g.
+	 * a version-less connection/webhook file) on API v2.
 	 */
 	async handleActiveEditorChange(editor: vscode.TextEditor | undefined): Promise<void> {
 		try {
@@ -232,10 +235,14 @@ export class ImljsonSchemaAssociations {
 
 	private async fetchEndpoints(app: string, version: number): Promise<SdkEndpointSchemaInfo[] | null> {
 		try {
-			const url = `${this.environment.baseUrl}/${Core.pathDeterminer(version, '__sdk')}${Core.pathDeterminer(
-				version,
+			// `Core.pathDeterminer` switches on the *API* version (this.environment.version, always 2 here —
+			// see the guard in refreshForEditor), not the app's own major `version`, which only belongs in
+			// the URL path segment itself (see EndpointCommands.endpointsCollectionUrl for the same shape).
+			const apiVersion = this.environment.version;
+			const url = `${this.environment.baseUrl}/${Core.pathDeterminer(apiVersion, '__sdk')}${Core.pathDeterminer(
+				apiVersion,
 				'app',
-			)}/${app}/${version}/${Core.pathDeterminer(version, 'endpoint')}`;
+			)}/${app}/${version}/${Core.pathDeterminer(apiVersion, 'endpoint')}`;
 			const response = await Core.rpGet(url, this.authorization, { includeInputSchema: true }, true);
 			const appEndpoints: unknown = response?.appEndpoints;
 			if (!Array.isArray(appEndpoints)) {

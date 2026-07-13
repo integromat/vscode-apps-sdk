@@ -253,7 +253,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		environment: _environment,
 	});
 	vscode.window.onDidChangeActiveTextEditor((editor) => imljsonSchemaAssociations.handleActiveEditorChange(editor));
-	await imljsonSchemaAssociations.handleActiveEditorChange(vscode.window.activeTextEditor);
+	// Fire-and-forget: never throws, and activation shouldn't block on this API round-trip.
+	void imljsonSchemaAssociations.handleActiveEditorChange(vscode.window.activeTextEditor);
 
 	/**
 	 * Registering JSONC formatter
