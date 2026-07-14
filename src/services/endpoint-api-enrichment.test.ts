@@ -51,6 +51,91 @@ suite('extractEndpointInputParameters()', () => {
 			{ name: 'account', description: '(collection)' },
 		]);
 	});
+
+	test('unwraps a wrapped JSON Schema (type:"json" + schema) into flat suggestions, via @makehq/forman-schema', () => {
+		const parameters = [
+			{
+				name: 'inputSchema',
+				type: 'json',
+				schema: {
+					$schema: 'http://json-schema.org/draft-04/schema#',
+					title: 'Product',
+					description: 'A product from Acme catalog',
+					type: 'object',
+					properties: {
+						id: { description: 'The unique identifier for a product', type: 'integer' },
+						name: { description: 'Name of the product', type: 'string' },
+					},
+					required: ['id', 'name'],
+				},
+			},
+		];
+
+		// The wrapper's own name (`inputSchema`) is not a real `input` key at runtime, so it's replaced
+		// by the unwrapped properties rather than also appearing alongside them.
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{ name: 'id', description: 'The unique identifier for a product (number) required' },
+			{ name: 'name', description: 'Name of the product (text) required' },
+		]);
+	});
+
+	test('extracts both an ordinary field and an unwrapped wrapped-schema field from a mixed array', () => {
+		const parameters = [
+			{ name: 'page', label: 'Page number', type: 'integer' },
+			{
+				name: 'inputSchema',
+				type: 'json',
+				schema: { type: 'object', properties: { id: { type: 'integer' } }, required: ['id'] },
+			},
+		];
+
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{ name: 'page', description: 'Page number (integer)' },
+			{ name: 'id', description: '(number) required' },
+		]);
+	});
+
+	test('unwraps only one level — a nested object property is listed but not recursed into', () => {
+		const parameters = [
+			{
+				name: 'inputSchema',
+				type: 'json',
+				schema: {
+					type: 'object',
+					properties: {
+						address: { type: 'object', properties: { city: { type: 'string' } } },
+					},
+				},
+			},
+		];
+
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{ name: 'address', description: '(collection)' },
+		]);
+	});
+
+	test('falls back to the bare name when schema is missing, empty, array/primitive-typed, or malformed', () => {
+		const parameters = [
+			{ name: 'noSchema', type: 'json' },
+			{ name: 'emptyObjectSchema', type: 'json', schema: { type: 'object' } },
+			{ name: 'emptyPropsSchema', type: 'json', schema: { type: 'object', properties: {} } },
+			{ name: 'arraySchema', type: 'json', schema: { type: 'array', items: { type: 'string' } } },
+			{ name: 'primitiveSchema', type: 'json', schema: { type: 'string' } },
+			{ name: 'garbageSchema', type: 'json', schema: 'not an object' },
+			{ name: 'nullSchema', type: 'json', schema: null },
+		];
+
+		assert.doesNotThrow(() => extractEndpointInputParameters(parameters));
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{ name: 'noSchema', description: '(json)' },
+			{ name: 'emptyObjectSchema', description: '(json)' },
+			{ name: 'emptyPropsSchema', description: '(json)' },
+			{ name: 'arraySchema', description: '(json)' },
+			{ name: 'primitiveSchema', description: '(json)' },
+			{ name: 'garbageSchema', description: '(json)' },
+			{ name: 'nullSchema', description: '(json)' },
+		]);
+	});
 });
 
 suite('enrichApiSchemaWithEndpoints()', () => {
