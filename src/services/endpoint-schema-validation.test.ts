@@ -9,7 +9,7 @@ import {
 	type LanguageService,
 	type SchemaConfiguration,
 } from 'vscode-json-languageservice';
-import { enrichApiSchemaWithEndpoints } from './endpoint-api-enrichment';
+import { enrichApiSchemaWithEndpoints, extractEndpointInputParameters } from './endpoint-api-enrichment';
 import { getStaticAndDerivedSchemaAssociations } from './imljson-schema-associations';
 
 /**
@@ -203,16 +203,57 @@ suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment'
 	// class builds it), so its relative `sources.json#/...` refs still resolve to real files on disk.
 	const schemasDir = path.join(__dirname, '../../syntaxes/imljson/schemas');
 	const apiSchema = JSON.parse(readFileSync(path.join(schemasDir, 'api.json'), 'utf8')) as Record<string, unknown>;
+	// Endpoints built via `extractEndpointInputParameters` from realistic *raw* API-shaped
+	// `inputParameters` (not hand-built `EndpointInputParameter[]`), so these fixtures exercise the real
+	// extraction → suggestion-entry → completion pipeline end to end for all three shapes.
+	const endpoints = [
+		{
+			name: 'list-things',
+			inputParameters: extractEndpointInputParameters([{ name: 'page', label: 'Page number', type: 'integer' }]),
+		},
+		{
+			name: 'list-things-json',
+			inputParameters: extractEndpointInputParameters([
+				{
+					name: 'inputSchema',
+					type: 'json',
+					schema: {
+						type: 'object',
+						properties: { id: { type: 'integer', description: 'Thing id' } },
+						required: ['id'],
+					},
+				},
+			]),
+		},
+		{
+			name: 'list-things-mixed',
+			inputParameters: extractEndpointInputParameters([
+				{ name: 'page', label: 'Page number', type: 'integer' },
+				{
+					name: 'inputSchema',
+					type: 'json',
+					schema: { type: 'object', properties: { qty: { type: 'integer' } } },
+				},
+			]),
+		},
+	];
 	const enrichedEntry: SchemaConfiguration = {
 		uri: pathToFileURL(path.join(schemasDir, 'api-enriched--demo-app--v2.json')).toString(),
 		fileMatch: ['api.imljson', 'publish.imljson', 'attach.imljson', 'detach.imljson'].map(
 			(basename) => `**/apps-sdk/**/demo-app/2/**/${basename}`,
 		),
-		schema: enrichApiSchemaWithEndpoints(apiSchema, [
-			{ name: 'list-things', inputParameters: [{ name: 'page', description: 'Page number' }] },
-		]),
+		schema: enrichApiSchemaWithEndpoints(apiSchema, endpoints),
 	};
 	const languageService = buildLanguageService([...getStaticAndDerivedSchemaAssociations(), enrichedEntry]);
+
+	async function inputCompletionLabels(endpointName: string): Promise<(string | undefined)[]> {
+		const content = `{"endpoint":"${endpointName}","input":{}}`;
+		const document = TextDocument.create(MODULE_URI, 'imljson', 1, content);
+		const jsonDocument = languageService.parseJSONDocument(document);
+		const position = document.positionAt(content.indexOf('"input":{') + '"input":{'.length);
+		const completions = await languageService.doComplete(document, position, jsonDocument);
+		return (completions?.items ?? []).map((item) => item.label);
+	}
 
 	test('19. module (enriched app/version): known endpoint name → OK', async () => {
 		const messages = await validate(languageService, MODULE_URI, '{"endpoint":"list-things"}');
@@ -235,15 +276,29 @@ suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment'
 	});
 
 	test("23. module (enriched app/version): input-suggestion entries offer the endpoint's parameter keys", async () => {
-		const content = '{"endpoint":"list-things","input":{}}';
-		const document = TextDocument.create(MODULE_URI, 'imljson', 1, content);
-		const jsonDocument = languageService.parseJSONDocument(document);
-		const position = document.positionAt(content.indexOf('"input":{') + '"input":{'.length);
+		assert.deepStrictEqual(await inputCompletionLabels('list-things'), ['page']);
+	});
 
-		const completions = await languageService.doComplete(document, position, jsonDocument);
-		assert.ok(
-			completions?.items.some((item) => item.label === 'page'),
-			`Expected a "page" completion, got: ${JSON.stringify(completions?.items.map((item) => item.label))}`,
+	test('24. module (JSON-Schema-wrapped endpoint): input-suggestions are the unwrapped properties, not the wrapper name', async () => {
+		assert.deepStrictEqual(await inputCompletionLabels('list-things-json'), ['id']);
+	});
+
+	test('25. module (mixed form-field + JSON-Schema endpoint): input-suggestions include both', async () => {
+		assert.deepStrictEqual(await inputCompletionLabels('list-things-mixed'), ['page', 'qty']);
+	});
+
+	test('26. module (JSON-Schema-wrapped endpoint): suggestions do not leak across endpoints, and an unknown/missing key is still not an error', async () => {
+		// Referencing one endpoint must not offer another's keys.
+		const jsonLabels = await inputCompletionLabels('list-things-json');
+		assert.ok(!jsonLabels.includes('page') && !jsonLabels.includes('qty'));
+
+		// Suggestion-only: an unrecognized key, or a missing one the wrapped schema marked `required`,
+		// is never flagged — this is completion, not validation.
+		const messages = await validate(
+			languageService,
+			MODULE_URI,
+			'{"endpoint":"list-things-json","input":{"somethingElse":1}}',
 		);
+		assert.deepStrictEqual(messages, []);
 	});
 });
