@@ -236,6 +236,24 @@ suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment'
 				},
 			]),
 		},
+		{
+			name: 'list-things-nested',
+			inputParameters: extractEndpointInputParameters([
+				{
+					name: 'inputSchema',
+					type: 'json',
+					schema: {
+						type: 'object',
+						properties: {
+							address: {
+								type: 'object',
+								properties: { city: { type: 'string', description: 'City name' } },
+							},
+						},
+					},
+				},
+			]),
+		},
 	];
 	const enrichedEntry: SchemaConfiguration = {
 		uri: pathToFileURL(path.join(schemasDir, 'api-enriched--demo-app--v2.json')).toString(),
@@ -251,6 +269,19 @@ suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment'
 		const document = TextDocument.create(MODULE_URI, 'imljson', 1, content);
 		const jsonDocument = languageService.parseJSONDocument(document);
 		const position = document.positionAt(content.indexOf('"input":{') + '"input":{'.length);
+		const completions = await languageService.doComplete(document, position, jsonDocument);
+		return (completions?.items ?? []).map((item) => item.label);
+	}
+
+	async function nestedInputCompletionLabels(
+		endpointName: string,
+		parentKey: string,
+	): Promise<(string | undefined)[]> {
+		const content = `{"endpoint":"${endpointName}","input":{"${parentKey}":{}}}`;
+		const document = TextDocument.create(MODULE_URI, 'imljson', 1, content);
+		const jsonDocument = languageService.parseJSONDocument(document);
+		const marker = `"${parentKey}":{`;
+		const position = document.positionAt(content.indexOf(marker) + marker.length);
 		const completions = await languageService.doComplete(document, position, jsonDocument);
 		return (completions?.items ?? []).map((item) => item.label);
 	}
@@ -300,5 +331,10 @@ suite('Endpoint IMLJSON schema validation (fixtures) — online-mode enrichment'
 			'{"endpoint":"list-things-json","input":{"somethingElse":1}}',
 		);
 		assert.deepStrictEqual(messages, []);
+	});
+
+	test('27. module (nested-collection endpoint): completing inside input.<parent>.{} offers the nested sub-key', async () => {
+		assert.deepStrictEqual(await inputCompletionLabels('list-things-nested'), ['address']);
+		assert.deepStrictEqual(await nestedInputCompletionLabels('list-things-nested', 'address'), ['city']);
 	});
 });

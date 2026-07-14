@@ -8,6 +8,12 @@ import type { JSONSchema7 } from 'json-schema';
 export interface EndpointInputParameter {
 	name: string;
 	description?: string;
+	/**
+	 * Nested key suggestions, when this parameter is a `collection` with known sub-fields — see
+	 * {@link _toSuggestion}. Absent for leaves, including `array` fields (see there for why arrays don't
+	 * recurse).
+	 */
+	properties?: EndpointInputParameter[];
 }
 
 /**
@@ -26,6 +32,14 @@ const _isPrimitive = (value: unknown): value is string | number | boolean =>
  * (string) `name`. `label` is preferred for the description text — the raw API's Input Parameters use
  * it — falling back to `help` (the only descriptive text `toFormanSchema` produces, from a JSON Schema's
  * `description`).
+ *
+ * Recurses into `field.spec` when `field.type === 'collection'`, attaching the result as `properties` —
+ * this is the one function shared by both the raw-item path and the JSON-Schema-unwrap path (see
+ * {@link _extractFromJsonSchema}), so a nested object surfaces its own nested keys regardless of which
+ * path produced it. Deliberately excludes `type: 'array'`: an array's `.spec` describes its *item*
+ * shape, not a property bag of the array field itself (a real "sku" item-property isn't a direct
+ * `arrayField.sku` key — it belongs to each array element), so treating it the same as a `collection`
+ * would suggest a key that doesn't actually exist at that path.
  */
 function _toSuggestion(field: FormanSchemaField): EndpointInputParameter | undefined {
 	if (typeof field.name !== 'string') {
@@ -38,19 +52,31 @@ function _toSuggestion(field: FormanSchemaField): EndpointInputParameter | undef
 		field.required === true ? 'required' : undefined,
 	].filter((part): part is string => part !== undefined);
 
-	return { name: field.name, description: descriptionParts.length ? descriptionParts.join(' ') : undefined };
+	const properties =
+		field.type === 'collection' && Array.isArray(field.spec)
+			? field.spec
+					.map(_toSuggestion)
+					.filter((suggestion): suggestion is EndpointInputParameter => suggestion !== undefined)
+			: undefined;
+
+	return {
+		name: field.name,
+		description: descriptionParts.length ? descriptionParts.join(' ') : undefined,
+		...(properties?.length ? { properties } : {}),
+	};
 }
 
 /**
  * Unwraps a `type: 'json'` parameter's `schema` (a raw JSON Schema — e.g. describing the endpoint's whole
- * input as `{type:'object', properties:{...}}`) into flat suggestions, via `@makehq/forman-schema`'s
+ * input as `{type:'object', properties:{...}}`) into suggestions, via `@makehq/forman-schema`'s
  * `toFormanSchema` — Make's own JSON-Schema-to-Forman-Schema converter, used here instead of a bespoke
  * `properties` walker so this stays correct as that mapping evolves.
  *
- * Only one level is surfaced (`converted.spec`'s own entries, not their nested `.spec`), since this feeds
- * a flat `input`/`pagination.input` key-completion list, not a nested one. Bails to `[]` for anything
- * that isn't a non-null object, that `toFormanSchema` rejects (it throws on malformed input), or that
- * doesn't convert to named sub-fields (e.g. an array or primitive JSON Schema has no `spec` array).
+ * `converted.spec`'s entries are turned into suggestions via {@link _toSuggestion}, which recurses into
+ * nested `collection`-typed properties on its own — see there for how deep that goes and why `array`
+ * properties don't. Bails to `[]` for anything that isn't a non-null object, that `toFormanSchema` rejects
+ * (it throws on malformed input), or that doesn't convert to named sub-fields (e.g. an array or primitive
+ * JSON Schema has no `spec` array).
  */
 function _extractFromJsonSchema(schema: unknown): EndpointInputParameter[] {
 	if (typeof schema !== 'object' || schema === null) {
@@ -81,7 +107,8 @@ function _extractFromJsonSchema(schema: unknown): EndpointInputParameter[] {
  * Suggestions-only, never validation: the parameters section can have exotic shapes this helper doesn't
  * need to fully understand, so anything that isn't a plain array of Forman Schema fields — a parse
  * failure, a non-array value, an item without a string `name`, … — is silently skipped rather than
- * throwing. Top-level names are extracted; a `type: 'json'` item's `schema` is also unwrapped one level
+ * throwing. Names are extracted recursively into nested `collection`-typed sub-fields (see
+ * {@link _toSuggestion}); a `type: 'json'` item's `schema` is also unwrapped, recursively, the same way
  * (see {@link _extractFromJsonSchema}) — when that yields anything, it *replaces* the item's own
  * name/label, since a wrapped-schema item's own name (conventionally `inputSchema`/`outputSchema`, see
  * `endpoint-parameters-schema.ts`) isn't a real `input` key at runtime.
@@ -139,16 +166,34 @@ function _endpointNameIs(endpointName: string): Record<string, unknown> {
 }
 
 /**
+ * Recursively turns `EndpointInputParameter[]` into a JSON Schema `properties` map: `description` per
+ * key, plus a nested `properties` map when that parameter itself carries sub-fields. No `type`,
+ * `additionalProperties`, or `required` at any depth, so this stays suggestion-only all the way down —
+ * see {@link _buildInputSuggestionEntries}.
+ */
+function _buildPropertiesSchema(parameters: EndpointInputParameter[]): Record<string, unknown> {
+	return Object.fromEntries(
+		parameters.map(({ name, description, properties }) => [
+			name,
+			{
+				...(description ? { description } : {}),
+				...(properties?.length ? { properties: _buildPropertiesSchema(properties) } : {}),
+			},
+		]),
+	);
+}
+
+/**
  * Builds the `request.allOf` entries that turn each endpoint's known Input Parameters into
  * suggestion-only `input`/`pagination.input` key completions: one entry for the base `input`, one for
  * `pagination.input` when `pagination.endpoint` overrides the endpoint, and a fallback for
  * `pagination.input` when `pagination` has no `endpoint` override (so it reuses the base endpoint's
  * parameters). Endpoints without parameters contribute nothing.
  *
- * The injected `properties` carry no `additionalProperties` and no `required`, so the editor offers the
- * keys (with hover docs) in completion but can never flag an unknown or missing key — this is a
- * suggestion, not validation, because the parameters section can have shapes (nested `spec`, `json`
- * `schema`, …) this helper never inspects.
+ * The injected `properties` carry no `additionalProperties` and no `required` at any depth (see
+ * {@link _buildPropertiesSchema}), so the editor offers the keys (with hover docs) in completion but can
+ * never flag an unknown or missing key — this is a suggestion, not validation, because the parameters
+ * section can have shapes (`json` `schema`, …) this helper never inspects.
  */
 function _buildInputSuggestionEntries(endpoints: SdkEndpointSchemaInfo[]): Record<string, unknown>[] {
 	const entries: Record<string, unknown>[] = [];
@@ -158,9 +203,7 @@ function _buildInputSuggestionEntries(endpoints: SdkEndpointSchemaInfo[]): Recor
 			continue;
 		}
 
-		const properties = Object.fromEntries(
-			endpoint.inputParameters.map(({ name, description }) => [name, description ? { description } : {}]),
-		);
+		const properties = _buildPropertiesSchema(endpoint.inputParameters);
 
 		entries.push(
 			{

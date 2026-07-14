@@ -48,7 +48,11 @@ suite('extractEndpointInputParameters()', () => {
 		assert.doesNotThrow(() => extractEndpointInputParameters(exotic));
 		assert.deepStrictEqual(extractEndpointInputParameters(exotic), [
 			{ name: 'inputSchema', description: '(json)' },
-			{ name: 'account', description: '(collection)' },
+			{
+				name: 'account',
+				description: '(collection)',
+				properties: [{ name: 'id', description: '(text)' }],
+			},
 		]);
 	});
 
@@ -95,7 +99,7 @@ suite('extractEndpointInputParameters()', () => {
 		]);
 	});
 
-	test('unwraps only one level — a nested object property is listed but not recursed into', () => {
+	test('recurses into a nested object property, surfacing its own sub-keys', () => {
 		const parameters = [
 			{
 				name: 'inputSchema',
@@ -110,8 +114,82 @@ suite('extractEndpointInputParameters()', () => {
 		];
 
 		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
-			{ name: 'address', description: '(collection)' },
+			{
+				name: 'address',
+				description: '(collection)',
+				properties: [{ name: 'city', description: '(text)' }],
+			},
 		]);
+	});
+
+	test('recurses through multiple levels (deeply nested objects)', () => {
+		const parameters = [
+			{
+				name: 'inputSchema',
+				type: 'json',
+				schema: {
+					type: 'object',
+					properties: {
+						id: { description: 'The unique identifier for a product', type: 'integer' },
+						name: { description: 'Name of the product', type: 'string' },
+						nested: {
+							description: 'blabla',
+							type: 'object',
+							properties: {
+								deep: { description: 'blabla', type: 'boolean' },
+							},
+						},
+					},
+					required: ['id', 'name'],
+				},
+			},
+		];
+
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{ name: 'id', description: 'The unique identifier for a product (number) required' },
+			{ name: 'name', description: 'Name of the product (text) required' },
+			{
+				name: 'nested',
+				description: 'blabla (collection)',
+				properties: [{ name: 'deep', description: 'blabla (boolean)' }],
+			},
+		]);
+	});
+
+	test('a native (non-json) Forman `collection` field recurses the same way as an unwrapped JSON Schema', () => {
+		const parameters = [
+			{
+				name: 'address',
+				type: 'collection',
+				label: 'Address',
+				spec: [{ name: 'city', type: 'text', label: 'City' }],
+			},
+		];
+
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{
+				name: 'address',
+				description: 'Address (collection)',
+				properties: [{ name: 'city', description: 'City (text)' }],
+			},
+		]);
+	});
+
+	test('does not recurse into an array field, even when its items are objects', () => {
+		const parameters = [
+			{
+				name: 'inputSchema',
+				type: 'json',
+				schema: {
+					type: 'object',
+					properties: {
+						items: { type: 'array', items: { type: 'object', properties: { sku: { type: 'string' } } } },
+					},
+				},
+			},
+		];
+
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [{ name: 'items', description: '(array)' }]);
 	});
 
 	test('falls back to the bare name when schema is missing, empty, array/primitive-typed, or malformed', () => {
@@ -217,5 +295,32 @@ suite('enrichApiSchemaWithEndpoints()', () => {
 		assert.deepStrictEqual(fallbackEntry.then.properties.pagination.properties.input.properties, {
 			page: { description: 'Page number' },
 		});
+	});
+
+	test('nested `properties` on an Input Parameter are injected recursively, still with no `required`/`additionalProperties`', () => {
+		const result = enrichApiSchemaWithEndpoints(apiSchema, [
+			{
+				name: 'listUsers',
+				inputParameters: [
+					{
+						name: 'address',
+						description: 'Address (collection)',
+						properties: [{ name: 'city', description: 'City (text)' }],
+					},
+				],
+			},
+		]);
+		const allOf = definitionsOf(result).request.allOf as Record<string, any>[];
+
+		const baseEntry = allOf.find((entry) => entry.then?.properties?.input && !entry.if?.properties?.pagination);
+		assert.ok(baseEntry);
+		assert.deepStrictEqual(baseEntry.then.properties.input.properties, {
+			address: {
+				description: 'Address (collection)',
+				properties: { city: { description: 'City (text)' } },
+			},
+		});
+		assert.strictEqual(baseEntry.then.properties.input.properties.address.additionalProperties, undefined);
+		assert.strictEqual(baseEntry.then.properties.input.properties.address.required, undefined);
 	});
 });
