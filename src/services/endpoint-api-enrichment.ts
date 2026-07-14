@@ -135,10 +135,12 @@ export function extractEndpointInputParameters(value: unknown): EndpointInputPar
 			continue;
 		}
 
-		const unwrapped = _extractFromJsonSchema((item as { schema?: unknown }).schema);
-		if (unwrapped.length > 0) {
-			result.push(...unwrapped);
-			continue;
+		if ((item as { type?: unknown }).type === 'json') {
+			const unwrapped = _extractFromJsonSchema((item as { schema?: unknown }).schema);
+			if (unwrapped.length > 0) {
+				result.push(...unwrapped);
+				continue;
+			}
 		}
 
 		const suggestion = _toSuggestion(item as FormanSchemaField);

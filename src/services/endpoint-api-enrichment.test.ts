@@ -192,6 +192,23 @@ suite('extractEndpointInputParameters()', () => {
 		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [{ name: 'items', description: '(array)' }]);
 	});
 
+	test('does not unwrap `schema` on a non-"json" item — only `type: "json"` wrappers are unwrapped', () => {
+		const parameters = [
+			{
+				name: 'config',
+				type: 'collection',
+				label: 'Config',
+				// A stray `schema` on a non-json field is not the wrapped-JSON-Schema convention; it must be
+				// ignored rather than replacing `config`'s own name with `foo`.
+				schema: { type: 'object', properties: { foo: { type: 'string' } } },
+			},
+		];
+
+		assert.deepStrictEqual(extractEndpointInputParameters(parameters), [
+			{ name: 'config', description: 'Config (collection)' },
+		]);
+	});
+
 	test('falls back to the bare name when schema is missing, empty, array/primitive-typed, or malformed', () => {
 		const parameters = [
 			{ name: 'noSchema', type: 'json' },
