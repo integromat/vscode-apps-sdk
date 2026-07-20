@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## [2.8.0](https://github.com/integromat/vscode-apps-sdk/compare/2.7.0...2.8.0) (2026-07-20)
+
+
+### Features
+
+* **schemas:** sync endpoint IMLJSON schemas with web zone ([#364](https://github.com/integromat/vscode-apps-sdk/issues/364)) ([54ebfff](https://github.com/integromat/vscode-apps-sdk/commit/54ebfff7b2b27048c5d26a6d967093e999283a2b))
+
 ## [2.7.0](https://github.com/integromat/vscode-apps-sdk/compare/2.6.0...2.7.0) (2026-07-01)
 
 
