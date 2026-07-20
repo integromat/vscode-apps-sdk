@@ -1,0 +1,14 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$comment": "An Endpoint's own api is a single HTTP request. It reuses the module/RPC request definition but forbids the endpoint directive, because an Endpoint may not invoke other Endpoints (one level only).",
+	"allOf": [
+		{
+			"$ref": "api.json#/definitions/request"
+		},
+		{
+			"not": {
+				"required": ["endpoint"]
+			}
+		}
+	]
+}

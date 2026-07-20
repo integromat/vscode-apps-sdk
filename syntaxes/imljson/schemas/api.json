@@ -8,6 +8,12 @@
 				"url": {
 					"$ref": "sources.json#/definitions/url"
 				},
+				"endpoint": {
+					"$ref": "#/definitions/endpoint"
+				},
+				"input": {
+					"$ref": "#/definitions/input"
+				},
 				"encodeUrl": {
 					"$ref": "sources.json#/definitions/encodeUrl"
 				},
@@ -54,7 +60,8 @@
 					"$ref": "sources.json#/definitions/oauth-1"
 				},
 				"pagination": {
-					"$ref": "sources.json#/definitions/pagination"
+					"description": "Directive to specify how to process paginated responses.",
+					"type": "object"
 				},
 				"output": {
 					"$ref": "response.json#/definitions/output"
@@ -131,6 +138,127 @@
 			},
 			"then": {
 				"required": ["url", "body"]
+			},
+			"allOf": [
+				{
+					"$comment": "An endpoint call evaluates `input` in the caller's context before the call, so `input` only makes sense alongside `endpoint`.",
+					"dependencies": {
+						"input": ["endpoint"]
+					}
+				},
+				{
+					"$comment": "An endpoint call runs a sibling Endpoint instead of an HTTP request, so the HTTP-request directives are dead config, and pagination is driven by the module (endpointPagination) instead of the classic HTTP pagination.",
+					"if": {
+						"required": ["endpoint"]
+					},
+					"then": {
+						"errorMessage": "Not allowed when 'endpoint' is present — the request runs a sibling Endpoint instead of an HTTP request.",
+						"properties": {
+							"url": false,
+							"method": false,
+							"headers": false,
+							"qs": false,
+							"body": false,
+							"encodeUrl": false,
+							"ca": false,
+							"type": false,
+							"gzip": false,
+							"aws": false,
+							"followRedirects": false,
+							"followAllRedirects": false,
+							"oauth": false,
+							"pagination": {
+								"$ref": "#/definitions/endpointPagination"
+							}
+						}
+					},
+					"else": {
+						"properties": {
+							"pagination": {
+								"$ref": "sources.json#/definitions/pagination"
+							}
+						}
+					}
+				}
+			],
+			"additionalProperties": false
+		},
+		"endpoint": {
+			"$id": "#endpoint",
+			"description": "Runs a sibling Endpoint in-process instead of an HTTP request. Only a single call is made — sequencing across multiple calls or pagination is driven at the module level via the pagination directive. A plain string is shorthand for { \"name\": <string> }.",
+			"oneOf": [
+				{
+					"$comment": "Listed before the shorthand string ref: when neither branch matches (e.g. `{}`), Monaco's oneOf mismatch-reporting breaks ties by picking whichever alternative was tested first, so this order is what makes a malformed object surface \"missing property 'name'\" instead of \"expected string\".",
+					"type": "object",
+					"properties": {
+						"name": {
+							"$ref": "#/definitions/endpointName"
+						},
+						"connection": {
+							"description": "Overrides the connection used for the Endpoint call, evaluated in the caller's context.",
+							"type": "string",
+							"doNotSuggest": true
+						}
+					},
+					"required": ["name"],
+					"additionalProperties": false
+				},
+				{
+					"$ref": "#/definitions/endpointName"
+				}
+			]
+		},
+		"endpointName": {
+			"$id": "#endpointName",
+			"type": "string",
+			"description": "The name of the sibling Endpoint to run."
+		},
+		"input": {
+			"$id": "#input",
+			"type": "object",
+			"description": "Input passed to the Endpoint, evaluated in the caller's context before the call."
+		},
+		"paginationEndpoint": {
+			"$id": "#paginationEndpoint",
+			"description": "Overrides the sibling Endpoint to run for the pagination request. When omitted, the base endpoint is reused. A plain string is shorthand for { \"name\": <string> }.",
+			"oneOf": [
+				{
+					"$comment": "Listed before the shorthand string ref — see the same $comment on #/definitions/endpoint.",
+					"type": "object",
+					"properties": {
+						"name": {
+							"$ref": "#/definitions/endpointName"
+						}
+					},
+					"required": ["name"],
+					"additionalProperties": false
+				},
+				{
+					"$ref": "#/definitions/endpointName"
+				}
+			]
+		},
+		"endpointPagination": {
+			"$id": "#endpointPagination",
+			"description": "Directive to specify how to process pagination for a request that runs a sibling Endpoint.",
+			"type": "object",
+			"properties": {
+				"mergeWithParent": {
+					"description": "This directive specifies if to merge pagination.input with the base request's input, or not.",
+					"type": "boolean",
+					"default": true
+				},
+				"endpoint": {
+					"$ref": "#/definitions/paginationEndpoint"
+				},
+				"input": {
+					"description": "Input passed to the pagination Endpoint call, evaluated in the caller's context.",
+					"type": "object"
+				},
+				"condition": {
+					"description": "This directive specifies whether to execute the pagination request or not.",
+					"type": ["boolean", "string"]
+				}
 			},
 			"additionalProperties": false
 		}

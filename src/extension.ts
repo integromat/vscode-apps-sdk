@@ -18,6 +18,11 @@ import {
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
+import {
+	getStaticAndDerivedSchemaAssociations,
+	ImljsonSchemaAssociations,
+	schemaAssociationsNotificationType,
+} from './services/imljson-schema-associations';
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
@@ -95,10 +100,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await client.start();
 
 	// Register all JSON schemas for IMLJSON language
-	await client.sendNotification(
-		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
-		LanguageServersSettings.getJsonSchemas(),
-	);
+	await client.sendNotification(schemaAssociationsNotificationType, getStaticAndDerivedSchemaAssociations());
 
 	// Environment commands and envChanger
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10);
@@ -243,6 +245,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	 */
 	vscode.workspace.onWillSaveTextDocument((event) => coreCommands.sourceUpload(event));
 	vscode.window.onDidChangeActiveTextEditor((editor) => coreCommands.keepProviders(editor));
+
+	// Online-mode Endpoint schema enrichment (app endpoint names + input suggestions in api.imljson etc.).
+	const imljsonSchemaAssociations = new ImljsonSchemaAssociations({
+		client,
+		authorization: _authorization,
+		environment: _environment,
+	});
+	vscode.window.onDidChangeActiveTextEditor((editor) => imljsonSchemaAssociations.handleActiveEditorChange(editor));
+	// Fire-and-forget: never throws, and activation shouldn't block on this API round-trip.
+	void imljsonSchemaAssociations.handleActiveEditorChange(vscode.window.activeTextEditor);
 
 	/**
 	 * Registering JSONC formatter

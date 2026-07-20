@@ -289,6 +289,13 @@
 				}
 			}
 		},
+		"timeout": {
+			"$id": "#timeout",
+			"description": "This directive specifies the request timeout in milliseconds. The maximum timeout value is 300,000 milliseconds.",
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 300000
+		},
 		"repeat": {
 			"$id": "#repeat",
 			"description": "Repeats a request under a certain condition with a predefined delay in milliseconds. The maximum number of repeats can be bounded by the repeat.limit.",

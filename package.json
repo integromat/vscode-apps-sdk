@@ -32,11 +32,7 @@
 			{
 				"fileMatch": [
 					"parameters.imljson",
-					"inputParameters.imljson",
-					"outputParameters.imljson",
-					"*.params.iml.json",
-					"*.input.iml.json",
-					"*.output.iml.json"
+					"*.params.iml.json"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
@@ -67,6 +63,13 @@
 					"*.communication.iml.json"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
+			},
+			{
+				"fileMatch": [
+					"**/endpoints/*/api.imljson",
+					"**/endpoints/*/*.communication.iml.json"
+				],
+				"url": "./syntaxes/imljson/schemas/endpoint-api.json"
 			},
 			{
 				"fileMatch": [
@@ -1067,6 +1070,7 @@
 	"dependencies": {
 		"@integromat/iml": "^3.4.0",
 		"@integromat/udt": "^1.2.2",
+		"@makehq/forman-schema": "^1.15.0",
 		"@vscode/extension-telemetry": "^1.5.1",
 		"adm-zip": "^0.5.16",
 		"applicationinsights": "^3.14.0",
