@@ -25,24 +25,18 @@ class AccountCommands {
 			if (!Core.isFilled("apikey", "your account", apikey, "An", false)) { return }
 
 			// who-am-I endpoint test
-			if (environment.version === 2) {
-				let uri = `http${environment.unsafe === true ? '' : 's'}://${environment.url}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/users/me`
-				try {
-					await axios({
-						url: uri,
-						headers: {
-							Authorization: `Token ${apikey}`,
-							'imt-apps-sdk-version': Meta.version
-						}
-					})
-				} catch (err) {
-					showError(err, 'apps-sdk.login');
-					return;
-				}
-			} else {
-				let uri = `https://${environment.url}/v1/whoami`
-				let response = await Core.rpGet(uri, `Token ${apikey}`)
-				if (response === undefined) { return }
+			const uri = `http${environment.unsafe === true ? '' : 's'}://${environment.url}${environment.noVersionPath === true ? '' : `/v${environment.version}`}/users/me`
+			try {
+				await axios({
+					url: uri,
+					headers: {
+						Authorization: `Token ${apikey}`,
+						'imt-apps-sdk-version': Meta.version
+					}
+				})
+			} catch (err) {
+				showError(err, 'apps-sdk.login');
+				return;
 			}
 
 			// Update environments, save everything and reload the window

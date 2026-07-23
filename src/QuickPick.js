@@ -5,9 +5,8 @@ const { showError } = require('./error-handling');
 
 module.exports = {
 	connections: async function (environment, authorization, app, allow_no) {
-		const uri = `${environment.baseUrl}/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${app.name}/${Core.pathDeterminer(environment.version, 'connection')}`;
-		let response = await Core.rpGet(uri, authorization);
-		response = environment.version === 1 ? response : response[camelCase(`appConnections`)];
+		const uri = `${environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${Core.pathDeterminer('connection')}`;
+		const response = (await Core.rpGet(uri, authorization))[camelCase(`appConnections`)];
 		try {
 			let connections = response.map(connection => {
 				return {
@@ -26,9 +25,8 @@ module.exports = {
 	},
 
 	webhooks: async function (environment, authorization, app, allow_no) {
-		const uri = `${environment.baseUrl}/${Core.pathDeterminer(environment.version, '__sdk')}${Core.pathDeterminer(environment.version, 'app')}/${app.name}/${Core.pathDeterminer(environment.version, 'webhook')}`;
-		let response = await Core.rpGet(uri, authorization);
-		response = environment.version === 1 ? response : response[camelCase(`appWebhooks`)];
+		const uri = `${environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${Core.pathDeterminer('webhook')}`;
+		const response = (await Core.rpGet(uri, authorization))[camelCase(`appWebhooks`)];
 		try {
 			let webhooks = response.map(webhook => {
 				return {
@@ -47,14 +45,8 @@ module.exports = {
 	},
 
 	countries: async function (environment, authorization) {
-		let countries;
-		let code = 'code';
-		if (environment.version === 2) {
-			countries = (await Core.rpGet(`${environment.baseUrl}/enums/countries`, authorization)).countries
-			code = 'code2'
-		} else {
-			countries = await Core.rpGet(`${environment.baseUrl}/country`, authorization)
-		}
+		const code = 'code2';
+		const countries = (await Core.rpGet(`${environment.baseUrl}/enums/countries`, authorization)).countries
 		try {
 			return countries.map(country => {
 				return {
@@ -69,12 +61,7 @@ module.exports = {
 	},
 
 	languages: async function (environment, authorization, context) {
-		let response;
-		if (environment.version === 2) {
-			response = (await Core.rpGet(`${environment.baseUrl}/enums/languages`, authorization)).languages
-		} else {
-			response = await Core.rpGet(`${environment.baseUrl}/language`, authorization)
-		}
+		const response = (await Core.rpGet(`${environment.baseUrl}/enums/languages`, authorization)).languages
 		let languages = response.map(language => {
 			if (language == null) { return }
 			return {
@@ -99,18 +86,13 @@ module.exports = {
 	},
 
 	allApps: async function (environment, authorization) {
-		let response;
-		if (environment.version === 2) {
-			let appsResponse, noOfApps = [], offset = 0
-			do {
-				appsResponse = await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization, { all: true , "pg[offset]": offset * 10000 })
-				noOfApps = noOfApps.concat(appsResponse.apps)
-				offset++
-			} while (appsResponse.apps.length === 10000)
-			response = noOfApps
-		} else {
-			response = await Core.rpGet(`${environment.baseUrl}/app`, authorization, { all: true })
-		}
+		let appsResponse, noOfApps = [], offset = 0
+		do {
+			appsResponse = await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization, { all: true , "pg[offset]": offset * 10000 })
+			noOfApps = noOfApps.concat(appsResponse.apps)
+			offset++
+		} while (appsResponse.apps.length === 10000)
+		const response = noOfApps
 		try {
 			const apps = [];
 			const used = [];
@@ -131,12 +113,7 @@ module.exports = {
 	},
 
 	favApps: async function (environment, authorization) {
-		let response;
-		if (environment.version === 2) {
-			response = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization)).apps
-		} else {
-			response = await Core.rpGet(`${environment.baseUrl}/app`, authorization)
-		}
+		const response = (await Core.rpGet(`${environment.baseUrl}/admin/sdk/apps`, authorization)).apps
 		try {
 			return response.map(app => {
 				return {

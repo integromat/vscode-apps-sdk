@@ -45,22 +45,13 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		 * LEVEL 0 - APPS
 		 */
 		if (element === undefined) {
-			let response;
-			switch (this._environment.version) {
-				case 2:
-					// ! opensource filter is not available on admin endpoint
-					response = (await Core.rpGet(`${this._environment.baseUrl.replace('/admin', '')}/sdk/apps`, this._authorization, {
-						opensource: true,
-						'cols[]': [
-							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
-						]
-					})).apps
-					break;
-				case 1:
-				default:
-					response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization, { opensource: true })
-					break;
-			}
+			// ! opensource filter is not available on admin endpoint
+			const response = (await Core.rpGet(`${this._environment.baseUrl.replace('/admin', '')}/sdk/apps`, this._authorization, {
+				opensource: true,
+				'cols[]': [
+					'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
+				]
+			})).apps
 			if (response === undefined) { return }
 
 			const apps = response.map((app) => {
@@ -86,8 +77,7 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				new Group(`modules`, "Modules", element),
 				new Group(`rpcs`, "Remote procedures", element),
 				new Group(`functions`, "IML functions", element),
-				// Endpoints exist in API v2 only.
-				...(this._environment.version === 2 ? [new Group(`endpoints`, "Endpoints", element)] : []),
+				new Group(`endpoints`, "Endpoints", element),
 				new Group(`docs`, "Docs", element)
 			]
 		}
@@ -98,14 +88,14 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			// General
 			if (element.id.includes("general")) {
 				return [
-					new Code(`base`, "Base", element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), true),
-					new Code(`common`, "Common", element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), true)
+					new Code(`base`, "Base", element, "imljson", Core.pathDeterminer('app'), true),
+					new Code(`common`, "Common", element, "imljson", Core.pathDeterminer('app'), true)
 				]
 			}
 			// Docs
 			else if (element.id.includes("docs")) {
 				return [
-					new Code(`readme`, "Readme", element, "md", Core.pathDeterminer(this._environment.version, 'app'), true),
+					new Code(`readme`, "Readme", element, "md", Core.pathDeterminer('app'), true),
 					//new Code(`images`, "Images", element, "img", true)
 				]
 			}
@@ -115,8 +105,8 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 					if (element.id.includes(needle)) {
 						let name = needle.slice(0, -1);
 						let uri = ["connection", "webhook"].includes(name) ?
-							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, name)}` :
-							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, name)}`
+							`${this._baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${element.parent.name}/${Core.pathDeterminer(name)}` :
+							`${this._baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(name)}`
 						let response
 						try {
 							// For endpoints, suppress the error dialog: the feature may be disabled on the
@@ -128,7 +118,7 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 							}
 							throw err
 						}
-						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
+						const items = response[camelCase(`app_${needle}`)];
 						return items.map(item => new Item(item.name, item.label || (item.name + item.args), element, name, item.type || item.type_id || item.typeId, item.public, item.approved))
 					}
 				}
@@ -141,23 +131,21 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 			switch (element.supertype) {
 				case "connection":
 					return [
-						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
-						new Code(`common`, "Common data", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
-						new Code(`scopes`, "Scope list", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
-						new Code(`scope`, "Default scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true),
-						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), true)
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('connection'), true),
+						new Code(`common`, "Common data", element, "imljson", Core.pathDeterminer('connection'), true),
+						new Code(`scopes`, "Scope list", element, "imljson", Core.pathDeterminer('connection'), true),
+						new Code(`scope`, "Default scope", element, "imljson", Core.pathDeterminer('connection'), true),
+						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer('connection'), true)
 					]
 				case "webhook": {
 					const out = [
-						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
-						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
-						new Code(`attach`, "Attach", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
-						new Code(`detach`, "Detach", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
-						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true),
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('webhook'), true),
+						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer('webhook'), true),
+						new Code(`attach`, "Attach", element, "imljson", Core.pathDeterminer('webhook'), true),
+						new Code(`detach`, "Detach", element, "imljson", Core.pathDeterminer('webhook'), true),
+						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer('webhook'), true),
+						new Code(`update`, "Update", element, "imljson", Core.pathDeterminer('webhook'), true),
 					];
-					if (this._environment.version === 2) {
-						out.push(new Code(`update`, "Update", element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), true));
-					}
 					return out;
 				}
 				case "module":
@@ -166,58 +154,58 @@ class OpensourceProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 						case 4:
 						case 9:
 							return [
-								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`interface`, "Interface", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`scope`, "Scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`interface`, "Interface", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`scope`, "Scope", element, "imljson", Core.pathDeterminer('module'), true),
 							]
 						// Trigger
 						case 1:
 							return [
-								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`epoch`, "Epoch", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`interface`, "Interface", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`scope`, "Scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`epoch`, "Epoch", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`interface`, "Interface", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`scope`, "Scope", element, "imljson", Core.pathDeterminer('module'), true),
 							]
 						// Instant trigger
 						case 10:
 							return [
-								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`expect`, "Interface", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true)
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`expect`, "Interface", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`samples`, "Samples", element, "imljson", Core.pathDeterminer('module'), true)
 							]
 						// Responder
 						case 11:
 							return [
-								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true),
-								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), true)
+								new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`parameters`, "Static parameters", element, "imljson", Core.pathDeterminer('module'), true),
+								new Code(`expect`, "Mappable parameters", element, "imljson", Core.pathDeterminer('module'), true)
 							]
 					}
 					break;
 				case "rpc":
 					return [
-						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), true),
-						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), true)
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('rpc'), true),
+						new Code(`parameters`, "Parameters", element, "imljson", Core.pathDeterminer('rpc'), true)
 					]
 				case "function":
 					return [
-						new Code(`code`, "Code", element, "js", Core.pathDeterminer(this._environment.version, 'function'), true)
+						new Code(`code`, "Code", element, "js", Core.pathDeterminer('function'), true)
 					]
 				case "endpoint":
 					// Note: code names must match the endpoint section URL segments used by the API.
 					// `context` is a markdown source (metadata-backed), like the app readme.
 					return [
-						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
-						new Code(`inputParameters`, "Input parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
-						new Code(`outputParameters`, "Output parameters", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
-						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer(this._environment.version, 'endpoint'), true),
-						new Code(`context`, "Context", element, "md", Core.pathDeterminer(this._environment.version, 'endpoint'), true)
+						new Code(`api`, "Communication", element, "imljson", Core.pathDeterminer('endpoint'), true),
+						new Code(`inputParameters`, "Input parameters", element, "imljson", Core.pathDeterminer('endpoint'), true),
+						new Code(`outputParameters`, "Output parameters", element, "imljson", Core.pathDeterminer('endpoint'), true),
+						new Code(`scope`, "Required scope", element, "imljson", Core.pathDeterminer('endpoint'), true),
+						new Code(`context`, "Context", element, "md", Core.pathDeterminer('endpoint'), true)
 					]
 			}
 		}
