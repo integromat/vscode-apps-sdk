@@ -50,14 +50,6 @@ export function contextGuard(context: any) {
 	return true;
 }
 
-export function envGuard(environment: Environment, available: number[]) {
-	if (!available.includes(environment.version)) {
-		vscode.window.showErrorMessage('Not available in this version of Integromat.');
-		return false;
-	}
-	return true;
-}
-
 export function isFilled(subject: string, object: string, thing: any, article?: string, the?: boolean) {
 	if (thing === undefined || thing === '' || thing === null) {
 		vscode.window.showWarningMessage(
@@ -137,11 +129,7 @@ export async function executePlain(authorization: string, value: string, url: st
 }
 
 export async function getAppObject(environment: Environment, authorization: string, app: SdkApp) {
-	if (environment.version === 2) {
-		return (await rpGet(`${environment.baseUrl}/sdk/apps/${app.name}/${app.version}`, authorization)).app;
-	} else {
-		return await rpGet(`${environment.baseUrl}/app/${app.name}/${app.version}`, authorization);
-	}
+	return (await rpGet(`${environment.baseUrl}/sdk/apps/${app.name}/${app.version}`, authorization)).app;
 }
 
 export function getIconHtml(uri: string, color: string, dir: string) {
@@ -202,38 +190,28 @@ export function jsonString(text: any, sectionGuard: string | undefined): string 
 	return text;
 }
 
-export function pathDeterminer(version: number, originalPath: string): string {
-	switch (version) {
-		case 2:
-			switch (originalPath) {
-				case 'app':
-					return 'apps';
-				case 'connection':
-					return 'connections';
-				case 'webhook':
-					return 'webhooks';
-				case 'module':
-					return 'modules';
-				case 'rpc':
-					return 'rpcs';
-				case 'function':
-					return 'functions';
-				case 'endpoint':
-					return 'endpoints';
-				case 'change':
-					return 'changes';
-				case '__sdk':
-					return 'sdk/';
-				default:
-					return '';
-			}
-		case 1:
+export function pathDeterminer(originalPath: string): string {
+	switch (originalPath) {
+		case 'app':
+			return 'apps';
+		case 'connection':
+			return 'connections';
+		case 'webhook':
+			return 'webhooks';
+		case 'module':
+			return 'modules';
+		case 'rpc':
+			return 'rpcs';
+		case 'function':
+			return 'functions';
+		case 'endpoint':
+			return 'endpoints';
+		case 'change':
+			return 'changes';
+		case '__sdk':
+			return 'sdk/';
 		default:
-			if (originalPath === '__sdk') {
-				return '';
-			} else {
-				return originalPath;
-			}
+			return '';
 	}
 }
 

@@ -35,7 +35,8 @@ export interface AppsSdkConfigurationEnvironment {
  * User can define multiple environmnents.
  * Function returns the one that is currently selected by user.
  *
- * @throws {Error} If no environment is selected or if selected environment is not found in the configuration.
+ * @throws {Error} If no environment is selected, if selected environment is not found in the configuration,
+ *                 or if the selected environment is not using API v2.
  */
 export function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
 	const _configuration = getConfiguration();
@@ -48,6 +49,12 @@ export function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
 	const selectedEnvironment = environments.find((e: any) => e.uuid === _configuration.environment);
 	if (!selectedEnvironment) {
 		throw new Error("Selected environment ('apps-sdk.environment') not found in 'apps-sdk.environments'. Check your configuration.");
+	}
+	if (selectedEnvironment.version !== 2) {
+		throw new Error(
+			`Environment "${selectedEnvironment.name}" uses unsupported API v${selectedEnvironment.version ?? '(not set)'}. ` +
+				'Only Make API v2 is supported — please update this environment\'s version, or add a new one.',
+		);
 	}
 	return selectedEnvironment;
 }

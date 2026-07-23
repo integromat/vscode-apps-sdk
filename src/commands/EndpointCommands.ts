@@ -24,10 +24,9 @@ export class EndpointCommands {
 	static async register(appsProvider: AppsProvider, _authorization: string, _environment: Environment) {
 		/** Base URL of the endpoints collection for the app owning `context` (an endpoint tree Item). */
 		const endpointsCollectionUrl = (app: { name: string; version: number }): string =>
-			`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(
-				_environment.version,
+			`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer(
 				'app',
-			)}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'endpoint')}`;
+			)}/${app.name}/${app.version}/${Core.pathDeterminer('endpoint')}`;
 
 		/**
 		 * New endpoint
@@ -35,7 +34,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.new',
 			catchError('Endpoint creation', async (context: any) => {
-				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
+				if (!Core.contextGuard(context)) {
 					return;
 				}
 				const app = context.parent;
@@ -78,7 +77,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.edit-metadata',
 			catchError('Endpoint metadata edit', async (context: any) => {
-				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
+				if (!Core.contextGuard(context)) {
 					return;
 				}
 
@@ -114,7 +113,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.visibility.public',
 			catchError('Endpoint publish', async (context: any) => {
-				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
+				if (!Core.contextGuard(context)) {
 					return;
 				}
 				await Core.executePlain(
@@ -132,7 +131,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.visibility.private',
 			catchError('Endpoint make private', async (context: any) => {
-				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
+				if (!Core.contextGuard(context)) {
 					return;
 				}
 				await Core.executePlain(
@@ -152,7 +151,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.edit-annotations',
 			catchError('Endpoint annotations edit', async (context: any) => {
-				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
+				if (!Core.contextGuard(context)) {
 					return;
 				}
 				const endpointUrl = `${endpointsCollectionUrl(context.parent.parent)}/${context.name}`;
@@ -193,7 +192,7 @@ export class EndpointCommands {
 		vscode.commands.registerCommand(
 			'apps-sdk.endpoint.edit-connections',
 			catchError('Endpoint connections edit', async (context: any) => {
-				if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) {
+				if (!Core.contextGuard(context)) {
 					return;
 				}
 				const app = context.parent.parent;

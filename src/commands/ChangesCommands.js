@@ -20,7 +20,7 @@ class ChangesCommands {
 		vscode.commands.registerCommand('apps-sdk.changes.show', async function (code) {
 
 			// Get the diff
-			const url = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(code).name}/${Core.getApp(code).version}/${Core.pathDeterminer(_environment.version, 'change')}/${code.change}`
+			const url = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.getApp(code).name}/${Core.getApp(code).version}/${Core.pathDeterminer('change')}/${code.change}`
 			let diffdata = await Core.rpGet(url, _authorization)
 
 			// Prepare paths for files
@@ -77,9 +77,9 @@ class ChangesCommands {
 				case "No":
 					vscode.window.showInformationMessage("No changes were commited.")
 					break
-				case "Yes":
+				case "Yes": {
 					// Compose URI
-					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/commit`
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}/commit`
 					try {
 						await axios({
 							method: 'POST',
@@ -98,7 +98,8 @@ class ChangesCommands {
 					catch (err) {
 						showError(err, 'apps-sdk.changes.commit');
 					}
-					break
+					break;
+				}
 			}
 		})
 
@@ -122,9 +123,9 @@ class ChangesCommands {
 				case "No":
 					vscode.window.showInformationMessage("No changes were rolled back.")
 					break
-				case "Yes":
+				case "Yes": {
 					// Compose URI
-					let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/rollback`
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}/rollback`
 					try {
 						await axios({
 							method: 'POST',
@@ -139,7 +140,8 @@ class ChangesCommands {
 					catch (err) {
 						showError(err, 'apps-sdk.changes.rollback');
 					}
-					break
+					break;
+				}
 			}
 		})
 	}

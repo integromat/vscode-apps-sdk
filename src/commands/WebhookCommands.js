@@ -40,7 +40,7 @@ class WebhookCommands {
 			if (!Core.isFilled("connection", "webhook", connection)) { return }
 
 			// Build URI and prepare connection value
-			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${Core.pathDeterminer(_environment.version, 'webhook')}`
+			let uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${Core.pathDeterminer('webhook')}`
 			connection = connection.label === "--- Without connection ---" ? "" : connection.description
 
 			// Send the request
@@ -73,24 +73,14 @@ class WebhookCommands {
 			if (!Core.isFilled("label", "webhook", label)) { return }
 
 			// Send the request
-			if (_environment.version === 2) {
-				try {
-					await Core.patchEntity(_authorization, {
-						label: label
-					}, `${_environment.baseUrl}/sdk/apps/webhooks/${context.name}`)
-					appsProvider.refresh()
-				}
-				catch (err) {
-					showError(err)
-				}
-			} else {
-				try {
-					await Core.editEntityPlain(_authorization, label, `${_environment.baseUrl}/app/${context.parent.parent.name}/webhook/${context.name}/label`)
-					appsProvider.refresh()
-				}
-				catch (err) {
-					showError(err);
-				}
+			try {
+				await Core.patchEntity(_authorization, {
+					label: label
+				}, `${_environment.baseUrl}/sdk/apps/webhooks/${context.name}`)
+				appsProvider.refresh()
+			}
+			catch (err) {
+				showError(err)
 			}
 		})
 
@@ -124,12 +114,7 @@ class WebhookCommands {
 			}
 
 			if (multi) {
-				let webhookDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${_environment.version === 2 ? '' : `${context.parent.parent.name}/`}${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`, _authorization);
-
-				// ApiFlip
-				if (_environment.version === 2) {
-					webhookDetail = webhookDetail.appWebhook;
-				}
+				const webhookDetail = (await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.pathDeterminer('webhook')}/${context.name}`, _authorization)).appWebhook;
 
 				const primaryConnectionOptions = connections;
 
@@ -160,22 +145,13 @@ class WebhookCommands {
 						hasPrimary = true;
 					}
 					connection = connection.label === "--- Without connection ---" ? "" : connection.description
-					if (_environment.version === 2) {
-						try {
-							await Core.patchEntity(_authorization, {
-								connection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
-						}
-						catch (err) {
-							showError(err);
-						}
-					} else {
-						try {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
-						}
-						catch (err) {
-							showError(err);
-						}
+					try {
+						await Core.patchEntity(_authorization, {
+							connection: connection
+						}, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.pathDeterminer('webhook')}/${context.name}`)
+					}
+					catch (err) {
+						showError(err);
 					}
 				}
 				if (!hasPrimary) {
@@ -213,23 +189,13 @@ class WebhookCommands {
 				if (!Core.isFilled("connection", "webhook", connection)) { return }
 				if (connection.description !== "keep") {
 					connection = connection.label === "--- Don\'t use secondary connection ---" ? "" : connection.description
-					if (_environment.version === 2) {
-						try {
-							await Core.patchEntity(_authorization, {
-								altConnection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
-						}
-						catch (err) {
-							showError(err);
-						}
-					} else {
-						try {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/alt_connection`)
-							appsProvider.refresh()
-						}
-						catch (err) {
-							showError(err);
-						}
+					try {
+						await Core.patchEntity(_authorization, {
+							altConnection: connection
+						}, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.pathDeterminer('webhook')}/${context.name}`)
+					}
+					catch (err) {
+						showError(err);
 					}
 				}
 			} else {
@@ -243,13 +209,9 @@ class WebhookCommands {
 				try {
 					if (connection.description !== "keep") {
 						connection = connection.label === "--- Without connection ---" ? "" : connection.description
-						if (_environment.version === 2) {
-							await Core.patchEntity(_authorization, {
-								connection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'webhook')}/${context.name}`)
-						} else {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/webhook/${context.name}/connection`)
-						}
+						await Core.patchEntity(_authorization, {
+							connection: connection
+						}, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.pathDeterminer('webhook')}/${context.name}`)
 						appsProvider.refresh()
 					}
 				}

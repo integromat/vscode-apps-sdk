@@ -39,7 +39,7 @@ class RpcCommands {
 
 			// Connection and URI compose
 			connection = connection.label === "--- Without connection ---" ? undefined : connection.description
-			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/${Core.pathDeterminer('rpc')}`
 
 			// Request
 			try {
@@ -70,24 +70,14 @@ class RpcCommands {
 			})
 			if (!Core.isFilled("label", "RPC", label)) { return }
 
-			if (_environment.version === 2) {
-				try {
-					await Core.patchEntity(_authorization, {
-						label: label
-					}, `${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/${context.parent.parent.version}/rpcs/${context.name}`)
-					appsProvider.refresh()
-				}
-				catch (err) {
-					showError(err);
-				}
-			} else {
-				try {
-					await Core.editEntityPlain(_authorization, label, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/label`)
-					appsProvider.refresh()
-				}
-				catch (err) {
-					showError(err);
-				}
+			try {
+				await Core.patchEntity(_authorization, {
+					label: label
+				}, `${_environment.baseUrl}/sdk/apps/${context.parent.parent.name}/${context.parent.parent.version}/rpcs/${context.name}`)
+				appsProvider.refresh()
+			}
+			catch (err) {
+				showError(err);
 			}
 		})
 
@@ -103,12 +93,7 @@ class RpcCommands {
 			let connections = await QuickPick.connections(_environment, _authorization, context.parent.parent, true)
 
 			if (connections.length > 2) {
-				let rpcDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`, _authorization);
-
-				// ApiFlip
-				if (_environment.version === 2) {
-					rpcDetail = rpcDetail.appRpc;
-				}
+				const rpcDetail = (await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('rpc')}/${context.name}`, _authorization)).appRpc;
 
 				const primaryConnectionOptions = connections;
 				let hasPrimary = !!rpcDetail.connection;
@@ -139,22 +124,13 @@ class RpcCommands {
 						hasPrimary = true;
 					}
 					connection = connection.label === "--- Without connection ---" ? "" : connection.description
-					if (_environment.version === 2) {
-						try {
-							await Core.patchEntity(_authorization, {
-								connection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
-						}
-						catch (err) {
-							showError(err);
-						}
-					} else {
-						try {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
-						}
-						catch (err) {
-							showError(err);
-						}
+					try {
+						await Core.patchEntity(_authorization, {
+							connection: connection
+						}, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('rpc')}/${context.name}`)
+					}
+					catch (err) {
+						showError(err);
 					}
 				}
 				if (!hasPrimary) {
@@ -190,23 +166,13 @@ class RpcCommands {
 				if (!Core.isFilled("connection", "RPC", connection)) { return }
 				if (connection.description !== "keep") {
 					connection = connection.label === "--- Don\'t use secondary connection ---" ? "" : connection.description
-					if (_environment.version === 2) {
-						try {
-							await Core.patchEntity(_authorization, {
-								altConnection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
-						}
-						catch (err) {
-							showError(err);
-						}
-					} else {
-						try {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/alt_connection`)
-							appsProvider.refresh()
-						}
-						catch (err) {
-							showError(err);
-						}
+					try {
+						await Core.patchEntity(_authorization, {
+							altConnection: connection
+						}, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('rpc')}/${context.name}`)
+					}
+					catch (err) {
+						showError(err);
 					}
 				}
 			} else {
@@ -218,13 +184,9 @@ class RpcCommands {
 				try {
 					if (connection.description !== "keep") {
 						connection = connection.label === "--- Without connection ---" ? "" : connection.description
-						if (_environment.version === 2) {
-							await Core.patchEntity(_authorization, {
-								connection: connection
-							}, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${context.name}`)
-						} else {
-							await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/rpc/${context.name}/connection`)
-						}
+						await Core.patchEntity(_authorization, {
+							connection: connection
+						}, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('rpc')}/${context.name}`)
 						appsProvider.refresh()
 					}
 				}
