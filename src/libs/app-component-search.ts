@@ -52,6 +52,46 @@ export interface AppComponentsSummaryResult {
 	failedGroups: string[];
 }
 
+/**
+ * The subset of fields the Make API returns per component that this helper reads. Everything
+ * except `name` is optional because it varies by component type (e.g. only functions carry
+ * `args`, only modules carry a numeric type, only connections carry a string `type`).
+ */
+interface RawApiComponent {
+	name: string;
+	label?: string;
+	args?: string;
+	type?: number | string;
+	/** snake_case type id as returned by the Make v1 API (v2 uses `typeId`). */
+	type_id?: number;
+	typeId?: number;
+	public?: boolean;
+	approved?: boolean;
+	description?: string;
+	crud?: string;
+}
+
+/**
+ * A single pending-change record from `App.changes`. `group` is the API component group
+ * (`account` / `hook` / `module` / ...), `item` the component name, `code` the code file
+ * (or the synthetic `groups` marker). Only the fields this helper filters on are typed.
+ */
+interface AppComponentChange {
+	group?: string;
+	code?: string;
+	item?: string;
+}
+
+/**
+ * The minimal shape of the `App` tree node used as the ancestor when rebuilding a component
+ * node: `TreeView.reveal` walks the `parent` chain by `id`, and the humanized "changed" marker
+ * is derived from `changes`. The real `App` instance (untyped legacy JS) satisfies this.
+ */
+interface AppTreeNode {
+	id: string;
+	changes?: AppComponentChange[];
+}
+
 /** API plural names of the component groups, in the order they should be listed. */
 const COMPONENT_GROUPS = ['connections', 'webhooks', 'modules', 'rpcs', 'functions'] as const;
 
@@ -73,9 +113,14 @@ const GROUP_LABELS: Record<string, string> = {
  * while v2 nests it under `app<GroupPlural>` (e.g. `appModules`). Mirrors the level-2
  * logic in `AppsProvider.getChildren`.
  */
-export function unwrapComponentsResponse(response: any, groupPlural: string, version: number): any[] {
-	const items = version === 1 ? response : response?.[camelCase(`app_${groupPlural}`)];
-	return Array.isArray(items) ? items : [];
+export function unwrapComponentsResponse(
+	response: unknown,
+	groupPlural: string,
+	version: number,
+): RawApiComponent[] {
+	const items =
+		version === 1 ? response : (response as Record<string, unknown> | null | undefined)?.[camelCase(`app_${groupPlural}`)];
+	return Array.isArray(items) ? (items as RawApiComponent[]) : [];
 }
 
 /**
@@ -83,7 +128,11 @@ export function unwrapComponentsResponse(response: any, groupPlural: string, ver
  * tree (`Item`): a present `label` wins, otherwise it falls back to `name + args` regardless
  * of component type (in practice only functions lack a `label`).
  */
-export function toComponentSummary(item: any, supertype: string, groupPlural: string): AppComponentSummary {
+export function toComponentSummary(
+	item: RawApiComponent,
+	supertype: string,
+	groupPlural: string,
+): AppComponentSummary {
 	return {
 		name: item.name,
 		label: item.label || `${item.name}${item.args ?? ''}`,
@@ -130,7 +179,7 @@ export async function fetchAppComponentsSummary(
 					const response = await Core.rpGet(uri, authorization);
 					const items = unwrapComponentsResponse(response, groupPlural, environment.version);
 					return { components: items.map((item) => toComponentSummary(item, supertype, groupPlural)), failed: false };
-				} catch (err: any) {
+				} catch (err: unknown) {
 					// Isolate per-type failures so one bad/missing endpoint does not break the whole search.
 					// `rpGet` already logs at error level (via `showAndLogError`) before throwing, so log at
 					// `warn` here to avoid duplicate error noise; guard against `err` not being an `Error`.
@@ -154,11 +203,11 @@ export async function fetchAppComponentsSummary(
  * (`account` -> `connection`, `hook` -> `webhook`) and the synthetic `groups` change (the
  * categories node) is excluded.
  */
-function changesForGroup(appChanges: any, supertype: string): any[] {
+function changesForGroup(appChanges: AppComponentChange[] | undefined, supertype: string): AppComponentChange[] {
 	if (!Array.isArray(appChanges)) {
 		return [];
 	}
-	return appChanges.filter((change: any) => {
+	return appChanges.filter((change) => {
 		const normalizedGroup =
 			change.group === 'account' ? 'connection' : change.group === 'hook' ? 'webhook' : change.group;
 		return normalizedGroup === supertype && change.code !== 'groups';
@@ -177,14 +226,14 @@ function changesForGroup(appChanges: any, supertype: string): any[] {
  * @param appNode The real `App` tree node the command was invoked on (used as the ancestor).
  * @param summary The picked component summary.
  */
-export function buildComponentTreeItem(appNode: any, summary: AppComponentSummary): any {
+export function buildComponentTreeItem(appNode: AppTreeNode, summary: AppComponentSummary): InstanceType<typeof Item> {
 	// The group `id` must stay `groupPlural` (that is what reveal matches on), but the label is
 	// humanized to match what `AppsProvider.getChildren` renders.
 	const groupLabel = GROUP_LABELS[summary.groupPlural] ?? summary.groupPlural;
 	const groupChanges = changesForGroup(appNode.changes, summary.supertype);
-	const itemChanges = groupChanges.filter((change: any) => change.item === summary.name);
-	const group = new (Group as any)(summary.groupPlural, groupLabel, appNode, groupChanges);
-	return new (Item as any)(
+	const itemChanges = groupChanges.filter((change) => change.item === summary.name);
+	const group = new Group(summary.groupPlural, groupLabel, appNode, groupChanges);
+	return new Item(
 		summary.name,
 		summary.label,
 		group,
