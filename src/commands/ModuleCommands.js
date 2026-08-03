@@ -99,7 +99,7 @@ class ModuleCommands {
             if (!Core.isFilled("type", "module", type)) { return }
 
             // Prepare URI and request body
-            let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'module')}`
+            let uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/${Core.pathDeterminer('module')}`
             let body = {
                 "name": id,
                 "label": label,
@@ -108,11 +108,9 @@ class ModuleCommands {
             }
 
             // ApiFlip
-            if (_environment.version === 2) {
-                body.typeId = parseInt(body.type_id);
-                delete body.type_id;
-				body.moduleInitMode = 'example';
-            }
+            body.typeId = parseInt(body.type_id);
+            delete body.type_id;
+            body.moduleInitMode = 'example';
 
             // Action type selector
             if (type.description === "4") {
@@ -196,27 +194,16 @@ class ModuleCommands {
 
             body.type_id = context.type
 
-            if (_environment.version === 2) {
-                try {
-                    body.label = label;
-                    delete body.type_id;
-                    if (body.crud === null) {
-                        delete body.crud;
-                    }
-                    await Core.patchEntity(_authorization, body, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
-                    appsProvider.refresh()
-                } catch (err) {
-                    showError(err);
+            try {
+                body.label = label;
+                delete body.type_id;
+                if (body.crud === null) {
+                    delete body.crud;
                 }
-            } else {
-                // Send the request
-                try {
-                    await Core.editEntityPlain(_authorization, label, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/label`)
-                    await Core.editEntity(_authorization, body, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
-                    appsProvider.refresh()
-                } catch (err) {
-                    showError(err);
-                }
+                await Core.patchEntity(_authorization, body, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`)
+                appsProvider.refresh()
+            } catch (err) {
+                showError(err);
             }
         })
 
@@ -237,10 +224,7 @@ class ModuleCommands {
 
                     // There's a "Without Connection" option, so that's why there's +1
                     if (connections.length > 2) {
-                        let moduleDetail = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`, _authorization);
-                        if (_environment.version === 2) {
-                            moduleDetail = moduleDetail.appModule
-                        }
+                        const moduleDetail = (await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`, _authorization)).appModule
                         const primaryConnectionOptions = connections;
                         let hasPrimary = !!moduleDetail.connection;
                         if (hasPrimary) {
@@ -268,20 +252,12 @@ class ModuleCommands {
                                 hasPrimary = true;
                             }
                             connection = connection.label === "--- Without connection ---" ? "" : connection.description
-                            if (_environment.version === 2) {
-                                try {
-                                    await Core.patchEntity(_authorization, {
-                                        connection: connection
-                                    }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
-                                } catch (err) {
-                                    showError(err);
-                                }
-                            } else {
-                                try {
-                                    await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-                                } catch (err) {
-                                    showError(err);
-                                }
+                            try {
+                                await Core.patchEntity(_authorization, {
+                                    connection: connection
+                                }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`)
+                            } catch (err) {
+                                showError(err);
                             }
                         }
                         if (!hasPrimary) {
@@ -314,21 +290,12 @@ class ModuleCommands {
                         if (!Core.isFilled("connection", "module", connection)) { return }
                         if (connection.description !== "keep") {
                             connection = connection.label === "--- Without connection ---" ? "" : connection.description
-                            if (_environment.version === 2) {
-                                try {
-                                    await Core.patchEntity(_authorization, {
-                                        altConnection: connection
-                                    }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
-                                } catch (err) {
-                                    showError(err);
-                                }
-                            } else {
-                                try {
-                                    await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/alt_connection`)
-                                    appsProvider.refresh()
-                                } catch (err) {
-                                    showError(err);
-                                }
+                            try {
+                                await Core.patchEntity(_authorization, {
+                                    altConnection: connection
+                                }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`)
+                            } catch (err) {
+                                showError(err);
                             }
                         }
                         break;
@@ -338,21 +305,12 @@ class ModuleCommands {
                         if (!Core.isFilled("connection", "module", connection)) { return }
                         if (connection.description !== "keep") {
                             connection = connection.label === "--- Without connection ---" ? "" : connection.description
-                            if (_environment.version === 2) {
-                                try {
-                                    await Core.patchEntity(_authorization, {
-                                        connection: connection
-                                    }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
-                                } catch (err) {
-                                    showError(err);
-                                }
-                            } else {
-                                try {
-                                    await Core.editEntityPlain(_authorization, connection, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/connection`)
-                                    appsProvider.refresh()
-                                } catch (err) {
-                                    showError(err);
-                                }
+                            try {
+                                await Core.patchEntity(_authorization, {
+                                    connection: connection
+                                }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`)
+                            } catch (err) {
+                                showError(err);
                             }
                         }
                         break;
@@ -364,21 +322,12 @@ class ModuleCommands {
                     let webhook = await vscode.window.showQuickPick(webhooks, { placeHolder: "Change webhook or keep existing." })
                     if (!Core.isFilled("webhook", "module", webhook)) { return }
                     if (webhook.description !== "keep") {
-                        if (_environment.version === 2) {
-                            try {
-                                await Core.patchEntity(_authorization, {
-                                    webhook: webhook.description
-                                }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
-                            } catch (err) {
-                                showError(err);
-                            }
-                        } else {
-                            try {
-                                await Core.editEntityPlain(_authorization, webhook.description, `${_environment}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}/webhook`)
-                                appsProvider.refresh()
-                            } catch (err) {
-                                showError(err);
-                            }
+                        try {
+                            await Core.patchEntity(_authorization, {
+                                webhook: webhook.description
+                            }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`)
+                        } catch (err) {
+                            showError(err);
                         }
                     }
                     break
@@ -399,29 +348,13 @@ class ModuleCommands {
                 case 4: {
                     let newType = await vscode.window.showQuickPick(Enum.moduleTypeActionSearch, { placeHolder: "Change the type or keep existing." })
                     if (!Core.isFilled("type", "module", module)) { return }
-                    if (_environment.version === 2) {
-                        if (newType.description !== "keep") {
-                            try {
-                                await Core.patchEntity(_authorization, {
-                                    typeId: parseInt(newType.description)
-                                }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`)
-                            } catch (err) {
-                                showError(err);
-                            }
-                        }
-                    } else {
-                        if (newType.description !== "keep") {
-                            try {
-                                await Core.editEntity(_authorization, {
-                                    label: context.bareLabel,
-                                    description: context.bareDescription,
-                                    crud: context.crud,
-                                    type_id: newType.description
-                                }, `${_environment.baseUrl}/app/${context.parent.parent.name}/${context.parent.parent.version}/module/${context.name}`)
-                                appsProvider.refresh()
-                            } catch (err) {
-                                showError(err);
-                            }
+                    if (newType.description !== "keep") {
+                        try {
+                            await Core.patchEntity(_authorization, {
+                                typeId: parseInt(newType.description)
+                            }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`)
+                        } catch (err) {
+                            showError(err);
                         }
                     }
                     break;
@@ -440,30 +373,17 @@ class ModuleCommands {
             // If called directly (by using a command pallete) -> die
             if (!Core.contextGuard(context)) { return }
 
-            let module = await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}`, _authorization)
-            if (_environment.version === 2) {
-                module = module.appModule;
+            const module = (await Core.rpGet(`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}`, _authorization)).appModule;
 
-                module.connection = module.connection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/connections/${module.connection}`, _authorization)).appConnection : null;
-                module.alt_connection = module.altConnection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/connections/${module.altConnection}`, _authorization)).appConnection : null;
-                module.webhook = module.webhook ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/webhooks/${module.webhook}`, _authorization)).appWebhook : null;
+            module.connection = module.connection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/connections/${module.connection}`, _authorization)).appConnection : null;
+            module.alt_connection = module.altConnection ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/connections/${module.altConnection}`, _authorization)).appConnection : null;
+            module.webhook = module.webhook ? (await Core.rpGet(`${_environment.baseUrl}/sdk/apps/webhooks/${module.webhook}`, _authorization)).appWebhook : null;
 
-                module.type = {
-                    id: module.typeId,
-                    label: translateModuleTypeId(module.typeId)
-                }
-                delete module.type_id;
-            } else {
-                module.connection = module.connection ? await Core.rpGet(`${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${module.connection}`, _authorization) : null;
-                module.alt_connection = module.alt_connection ? await Core.rpGet(`${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${module.alt_connection}`, _authorization) : null;
-                module.webhook = module.webhook ? await Core.rpGet(`${_environment.baseUrl}/app/${context.parent.parent.name}/webhook/${module.webhook}`, _authorization) : null;
-
-                module.type = {
-                    id: module.type_id,
-                    label: translateModuleTypeId(module.type_id)
-                }
-                delete module.type_id;
+            module.type = {
+                id: module.typeId,
+                label: translateModuleTypeId(module.typeId)
             }
+            delete module.type_id;
 
             const panel = vscode.window.createWebviewPanel(
                 `${context.parent.parent.name}_${context.name}_detail`,
@@ -509,7 +429,7 @@ class ModuleCommands {
                     break
                 case "Yes": {
                     // Set URI and send the request
-                    let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/private`
+                    const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}/private`
                     try {
                         await Core.executePlain(_authorization, "", uri)
                         appsProvider.refresh()
@@ -544,7 +464,7 @@ class ModuleCommands {
                     break
                 case "Yes": {
                     // Set URI and send the request
-                    let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/public`
+                    const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.parent.parent.name}/${context.parent.parent.version}/${Core.pathDeterminer('module')}/${context.name}/public`
                     try {
                         await Core.executePlain(_authorization, "", uri)
                         appsProvider.refresh()
@@ -560,7 +480,7 @@ class ModuleCommands {
          * Clone module
          */
         vscode.commands.registerCommand('apps-sdk.module.clone', async(context) => {
-            if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) { return; }
+            if (!Core.contextGuard(context)) { return; }
 
             // Form Data
             const form = await Felicia([{
@@ -579,7 +499,7 @@ class ModuleCommands {
             }
 
             const app = context.parent.parent;
-            const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'module')}/${context.name}/clone`
+            const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/${Core.pathDeterminer('module')}/${context.name}/clone`
             try {
                 await Core.addEntity(_authorization, form, uri);
                 appsProvider.refresh();

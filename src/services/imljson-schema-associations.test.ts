@@ -4,10 +4,13 @@ import proxyquire from 'proxyquire';
 import type * as vscode from 'vscode';
 
 /**
- * Regression coverage for the app-major-version vs. API-version mixup: `Core.pathDeterminer` must be
- * called with the *API* version (always 2 here, per the `environment.version !== 2` guard), not the
- * app's own major version parsed out of the temp file path — otherwise the fetch URL degenerates to the
- * v1 shape for any app whose major version isn't coincidentally 2 (e.g. every version-1 app).
+ * Regression coverage for `fetchEndpoints`'s URL construction. This used to guard against an API-version
+ * vs. app-major-version mixup (`Core.pathDeterminer` took an API-version argument that was easy to
+ * confuse with the app's own major version parsed out of the temp file path); that class of bug is now
+ * structurally impossible since `pathDeterminer` dropped its version argument and always returns its
+ * fixed v2 segment names (`sdk`, `apps`, `endpoints`, ...). What's left to protect is `parseAppAndVersion`:
+ * it must still pull the app's own major version out of the temp file path and place it correctly in the
+ * URL's version segment.
  */
 function loadModuleWithMockedCore(rpGet: (url: string, ...rest: unknown[]) => Promise<unknown>) {
 	return proxyquire('./imljson-schema-associations', {
@@ -20,7 +23,7 @@ function createEditorForFile(fileName: string): vscode.TextEditor {
 }
 
 suite('ImljsonSchemaAssociations', () => {
-	test("fetches endpoints using the API version, not the app's own major version", async () => {
+	test("fetches endpoints using the app's own major version parsed from the temp file path", async () => {
 		let requestedUrl: string | undefined;
 		const mod = loadModuleWithMockedCore(async (url: string) => {
 			requestedUrl = url;
@@ -33,9 +36,9 @@ suite('ImljsonSchemaAssociations', () => {
 				sendNotification: async (_type: unknown, payload: unknown) => sentNotifications.push(payload),
 			} as any,
 			authorization: 'Token test',
-			// The app in the file path below is major version 1 — a real app on API v2 whose own
-			// version number happens to differ from the API version (the bug's exact failure case).
-			environment: { baseUrl: 'https://example.make.com/v2', version: 2 },
+			// The app in the file path below is major version 1 — it must land in the URL's version
+			// segment as-is, not get conflated with anything else `pathDeterminer` produces.
+			environment: { baseUrl: 'https://example.make.com/v2' },
 		});
 
 		await associations.handleActiveEditorChange(
@@ -56,7 +59,7 @@ suite('ImljsonSchemaAssociations', () => {
 		const associations = new mod.ImljsonSchemaAssociations({
 			client: { sendNotification: async () => undefined } as any,
 			authorization: 'Token test',
-			environment: { baseUrl: 'https://example.make.com/v2', version: 2 },
+			environment: { baseUrl: 'https://example.make.com/v2' },
 		});
 
 		// Connections/webhooks are non-versionable (`Core.isVersionable`), so their temp paths have no

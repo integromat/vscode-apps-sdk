@@ -170,7 +170,7 @@ export class ImljsonSchemaAssociations {
 	/**
 	 * Re-evaluates Endpoint enrichment for the newly active editor. A no-op unless the editor is an
 	 * online-mode `api.imljson`/`publish.imljson` file (as opposed to a local-dev workspace file, or e.g.
-	 * a version-less connection/webhook file) on API v2.
+	 * a version-less connection/webhook file).
 	 */
 	async handleActiveEditorChange(editor: vscode.TextEditor | undefined): Promise<void> {
 		try {
@@ -181,7 +181,7 @@ export class ImljsonSchemaAssociations {
 	}
 
 	private async refreshForEditor(editor: vscode.TextEditor | undefined): Promise<void> {
-		if (!editor || this.environment.version !== 2) {
+		if (!editor) {
 			return;
 		}
 
@@ -235,14 +235,9 @@ export class ImljsonSchemaAssociations {
 
 	private async fetchEndpoints(app: string, version: number): Promise<SdkEndpointSchemaInfo[] | null> {
 		try {
-			// `Core.pathDeterminer` switches on the *API* version (this.environment.version, always 2 here —
-			// see the guard in refreshForEditor), not the app's own major `version`, which only belongs in
-			// the URL path segment itself (see EndpointCommands.endpointsCollectionUrl for the same shape).
-			const apiVersion = this.environment.version;
-			const url = `${this.environment.baseUrl}/${Core.pathDeterminer(apiVersion, '__sdk')}${Core.pathDeterminer(
-				apiVersion,
+			const url = `${this.environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer(
 				'app',
-			)}/${app}/${version}/${Core.pathDeterminer(apiVersion, 'endpoint')}`;
+			)}/${app}/${version}/${Core.pathDeterminer('endpoint')}`;
 			const response = await Core.rpGet(url, this.authorization, { includeInputSchema: true }, true);
 			const appEndpoints: unknown = response?.appEndpoints;
 			if (!Array.isArray(appEndpoints)) {

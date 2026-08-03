@@ -155,23 +155,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
 			_authorization = 'Token ' + currentEnvironment.apikey;
-			// If API version not set or it's 1
-			if (!currentEnvironment.version || currentEnvironment.version === 1) {
-				_environment = {
-					baseUrl: `https://${currentEnvironment.url}/v1`,
-					version: 1,
-				};
-			} else {
-				// API V2 and development purposes
-				// configuration.unsafe removes https
-				// configuration.noVersionPath removes vX in path
-				_environment = {
-					baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
-						currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
-					}${currentEnvironment.admin === true ? '/admin' : ''}`,
-					version: currentEnvironment.version,
-				};
-			}
+			// configuration.unsafe removes https
+			// configuration.noVersionPath removes vX in path
+			_environment = {
+				baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
+					currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
+				}${currentEnvironment.admin === true ? '/admin' : ''}`,
+			};
 			_admin = currentEnvironment.admin === true;
 		}
 	}
@@ -352,7 +342,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// ensure it gets properly disposed. Upon disposal the events will be flushed
 	context.subscriptions.push(telemetryReporter);
-	sendTelemetry('activated', { version: _environment.version });
+	sendTelemetry('activated', { version: 2 });
 
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }
