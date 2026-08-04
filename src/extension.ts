@@ -18,10 +18,16 @@ import {
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
+import {
+	getStaticAndDerivedSchemaAssociations,
+	ImljsonSchemaAssociations,
+	schemaAssociationsNotificationType,
+} from './services/imljson-schema-associations';
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 import RpcCommands = require('./commands/RpcCommands');
+import { EndpointCommands } from './commands/EndpointCommands';
 import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
 import ConnectionCommands = require('./commands/ConnectionCommands');
@@ -95,10 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await client.start();
 
 	// Register all JSON schemas for IMLJSON language
-	await client.sendNotification(
-		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
-		LanguageServersSettings.getJsonSchemas(),
-	);
+	await client.sendNotification(schemaAssociationsNotificationType, getStaticAndDerivedSchemaAssociations());
 
 	// Environment commands and envChanger
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10);
@@ -153,23 +156,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
 			_authorization = 'Token ' + currentEnvironment.apikey;
-			// If API version not set or it's 1
-			if (!currentEnvironment.version || currentEnvironment.version === 1) {
-				_environment = {
-					baseUrl: `https://${currentEnvironment.url}/v1`,
-					version: 1,
-				};
-			} else {
-				// API V2 and development purposes
-				// configuration.unsafe removes https
-				// configuration.noVersionPath removes vX in path
-				_environment = {
-					baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
-						currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
-					}${currentEnvironment.admin === true ? '/admin' : ''}`,
-					version: currentEnvironment.version,
-				};
-			}
+			// configuration.unsafe removes https
+			// configuration.noVersionPath removes vX in path
+			_environment = {
+				baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
+					currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
+				}${currentEnvironment.admin === true ? '/admin' : ''}`,
+			};
 			_admin = currentEnvironment.admin === true;
 		}
 	}
@@ -275,6 +268,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await WebhookCommands.register(appsProvider, _authorization, _environment);
 	await ModuleCommands.register(appsProvider, _authorization, _environment);
 	await RpcCommands.register(appsProvider, _authorization, _environment);
+	await EndpointCommands.register(appsProvider, _authorization, _environment);
 	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);
@@ -285,6 +279,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	 */
 	vscode.workspace.onWillSaveTextDocument((event) => coreCommands.sourceUpload(event));
 	vscode.window.onDidChangeActiveTextEditor((editor) => coreCommands.keepProviders(editor));
+
+	// Online-mode Endpoint schema enrichment (app endpoint names + input suggestions in api.imljson etc.).
+	const imljsonSchemaAssociations = new ImljsonSchemaAssociations({
+		client,
+		authorization: _authorization,
+		environment: _environment,
+	});
+	vscode.window.onDidChangeActiveTextEditor((editor) => imljsonSchemaAssociations.handleActiveEditorChange(editor));
+	// Fire-and-forget: never throws, and activation shouldn't block on this API round-trip.
+	void imljsonSchemaAssociations.handleActiveEditorChange(vscode.window.activeTextEditor);
 
 	/**
 	 * Registering JSONC formatter
@@ -382,7 +386,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// ensure it gets properly disposed. Upon disposal the events will be flushed
 	context.subscriptions.push(telemetryReporter);
-	sendTelemetry('activated', { version: _environment.version });
+	sendTelemetry('activated', { version: 2 });
 
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }

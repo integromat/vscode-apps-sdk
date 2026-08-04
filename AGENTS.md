@@ -114,7 +114,7 @@ The extension provides syntax support for Make-specific formats:
 - **IMLJSON** - JSON with embedded IML expressions. Grammar + schemas + snippets: `syntaxes/imljson/`
 - **Language Server** - Full LSP implementation in `syntaxes/imljson-language-features/server/` providing validation, completion, hover, formatting against JSON schemas.
 
-File types are validated against schemas in `syntaxes/imljson/schemas/` (parameters, api, common, base, scopes, etc.).
+File types are validated against schemas in `syntaxes/imljson/schemas/` (parameters, api, common, base, scopes, etc.). Not all schema associations are static files, though: `src/services/imljson-schema-associations.ts` also derives the Endpoint Input/Output Parameters schemas at runtime from `parameters.json`, and in online mode (API v2) dynamically enriches `api.json` per app+version with that app's real Endpoint names and Input Parameter suggestions (fetched and cached with a 60s TTL). Local development always gets the static/derived schemas only (free-string endpoint name).
 
 ## Build and Test
 

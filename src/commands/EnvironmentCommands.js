@@ -76,7 +76,7 @@ class EnvironmentCommands {
 				url: url,
 				name: name,
 				apikey: apikey,
-				version: 2, // 2 = Make, 1 = Integromat (deprecated). TODO remove `version`
+				version: 2, // 2 = Make, 1 = Integromat (deprecated, not supported by this extension anymore).
 			})
 
 			// Save all and reload the window

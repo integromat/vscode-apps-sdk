@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Make Apps Editor",
 	"description": "Helps to create, develop, download and deploy apps of the Make no-code visual integration and automation platform.",
-	"version": "2.6.0",
+	"version": "2.8.0",
 	"icon": "resources/make.png",
 	"repository": {
 		"type": "git",
@@ -63,6 +63,13 @@
 					"*.communication.iml.json"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
+			},
+			{
+				"fileMatch": [
+					"**/endpoints/*/api.imljson",
+					"**/endpoints/*/*.communication.iml.json"
+				],
+				"url": "./syntaxes/imljson/schemas/endpoint-api.json"
 			},
 			{
 				"fileMatch": [
@@ -240,6 +247,36 @@
 			{
 				"command": "apps-sdk.rpc.new",
 				"title": "New RPC",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.new",
+				"title": "New endpoint",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.edit-metadata",
+				"title": "Edit endpoint metadata",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.edit-annotations",
+				"title": "Edit endpoint annotations",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.edit-connections",
+				"title": "Edit endpoint connections",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.visibility.public",
+				"title": "Mark endpoint as public",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.visibility.private",
+				"title": "Mark endpoint as private",
 				"category": "Make Apps"
 			},
 			{
@@ -454,6 +491,11 @@
 				"category": "Make Apps"
 			},
 			{
+				"command": "apps-sdk.local-dev.create-local-endpoint",
+				"title": "New Local Component: Endpoint",
+				"category": "Make Apps"
+			},
+			{
 				"command": "apps-sdk.local-dev.create-local-imlfunction",
 				"title": "New Local Component: Custom IML Function",
 				"category": "Make Apps"
@@ -570,6 +612,11 @@
 					"when": "viewItem == rpcs && view == apps"
 				},
 				{
+					"command": "apps-sdk.endpoint.new",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoints && view == apps"
+				},
+				{
 					"command": "apps-sdk.module.new",
 					"group": "7_modification_online",
 					"when": "viewItem == modules && view == apps"
@@ -618,6 +665,76 @@
 					"command": "apps-sdk.delete",
 					"group": "7_modification_online",
 					"when": "viewItem == connection && view == apps"
+				},
+				{
+					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-metadata",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-metadata",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-metadata",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-annotations",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-annotations",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-annotations",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-connections",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-connections",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-connections",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.visibility.public",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.visibility.private",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.connection.edit-metadata",
@@ -862,6 +979,11 @@
 					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'rpc'"
 				},
 				{
+					"command": "apps-sdk.local-dev.create-local-endpoint",
+					"group": "7_modification",
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'endpoints'"
+				},
+				{
 					"command": "apps-sdk.local-dev.create-local-imlfunction",
 					"group": "7_modification",
 					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'functions'"
@@ -869,7 +991,7 @@
 				{
 					"command": "apps-sdk.local-dev.delete-local-component",
 					"group": "7_modification",
-					"when": "resourcePath =~ /^.*[\\\\/](modules|connections|rpcs|webhooks|functions)[\\\\/][^\\\\/]+$/ && resourceExtname == ''"
+					"when": "resourcePath =~ /^.*[\\\\/](modules|connections|rpcs|webhooks|functions|endpoints)[\\\\/][^\\\\/]+$/ && resourceExtname == ''"
 				}
 			]
 		},
@@ -959,6 +1081,7 @@
 	"dependencies": {
 		"@integromat/iml": "^3.4.0",
 		"@integromat/udt": "^1.2.2",
+		"@makehq/forman-schema": "^1.15.0",
 		"@vscode/extension-telemetry": "^1.5.1",
 		"adm-zip": "^0.5.16",
 		"applicationinsights": "^3.14.0",

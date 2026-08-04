@@ -59,6 +59,6 @@ async function onCreateLocalRpcClick(anyProjectPath: vscode.Uri) {
 
 	// OK info message
 	vscode.window.showInformationMessage(
-		`The Remote Procedure "${newRpc.componentLocalId}" sucessfully created locally.`,
+		`The Remote Procedure "${newRpc.componentLocalId}" successfully created locally.`,
 	);
 }

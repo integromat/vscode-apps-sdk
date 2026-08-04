@@ -101,8 +101,9 @@ export function findCodesByFilePath(
 const orderToDeploy: Record<AppComponentType | 'app', number> = {
 	app: 0, // Generic codes
 	connection: 1,
-	rpc: 2,
-	webhook: 3,
-	module: 4,
-	function: 5,
+	endpoint: 2,
+	rpc: 3,
+	webhook: 4,
+	module: 5,
+	function: 6,
 };

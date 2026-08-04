@@ -37,6 +37,7 @@ export function getComponentApiUrl({
 		case 'module':
 		case 'rpc':
 		case 'function':
+		case 'endpoint':
 			return url + `/${componentType}s` + (remoteComponentName ? `/${remoteComponentName}` : '');
 		// Base, common, readme, group
 		case 'app':

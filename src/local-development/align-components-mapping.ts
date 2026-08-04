@@ -96,7 +96,7 @@ export async function alignComponentsMapping(
 	}[] = [];
 
 	// Fill `remoteOnly`
-	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function', 'endpoint'];
 	for (const componentType of allComponentTypes) {
 		const checksums = getComponentChecksumArray(originChecksums, componentType);
 		const originNames = checksums.map((checksum) => {
@@ -250,10 +250,18 @@ export async function alignComponentsMapping(
 	 * Whole list of `localOnly` + `remoteOnly` will be processed (aligned) now.
 	 *
 	 * Note: The order is important here.
-	 *       Connections and webhooks must be created first, because modules and RPCs can references on them,
+	 *       Connections and webhooks must be created first, because modules, endpoints and RPCs can reference them,
 	 *       and it means that referenced webhooks/connections must already exists in time of referencing component creation.
+	 *       Additionally, endpoints can be referenced from Modules and RPCs.
 	 */
-	const componentsProcessingOrder: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	const componentsProcessingOrder: AppComponentType[] = [
+		'connection',
+		'webhook',
+		'endpoint',
+		'module',
+		'rpc',
+		'function',
+	];
 	/** Stores the user's preference for case of answer "apply for all". */
 	let userPreferedResolutionOfUnmappedLocal: symbol | undefined = undefined;
 	/** Stores the user's preference for case of answer "apply for all". */
