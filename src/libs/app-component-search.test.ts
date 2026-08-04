@@ -27,6 +27,11 @@ suite('app-component-search buildComponentTreeItem()', () => {
 		crud: undefined,
 	};
 
+	test('Humanizes the endpoints group label', () => {
+		const endpoint: AppComponentSummary = { ...summary, groupPlural: 'endpoints', supertype: 'endpoint' };
+		assert.strictEqual(buildComponentTreeItem(app, endpoint).parent.label, 'Endpoints', 'endpoints -> Endpoints');
+	});
+
 	test('Builds an Item whose id and parent Group id match the lazy tree', () => {
 		const item = buildComponentTreeItem(app, summary);
 		assert.strictEqual(item.id, 'myApp@2_modules_getData', 'Item id matches <app.id>_<plural>_<name>');
@@ -91,27 +96,27 @@ suite('app-component-search buildComponentTreeItem()', () => {
 });
 
 /**
- * Coverage for the regression-prone parsing logic: v1 vs v2 response unwrapping.
+ * Coverage for the regression-prone parsing logic: the v2 `app<Plural>` unwrapping.
  */
 suite('app-component-search unwrapComponentsResponse()', () => {
-	test('v1 returns the response array directly', () => {
-		const input = [{ name: 'a' }, { name: 'b' }];
-		assert.deepStrictEqual(unwrapComponentsResponse(input, 'modules', 1), input);
-	});
-
-	test('v2 unwraps the appModules property', () => {
+	test('Unwraps the appModules property', () => {
 		const input = { appModules: [{ name: 'a' }] };
-		assert.deepStrictEqual(unwrapComponentsResponse(input, 'modules', 2), [{ name: 'a' }]);
+		assert.deepStrictEqual(unwrapComponentsResponse(input, 'modules'), [{ name: 'a' }]);
 	});
 
-	test('v2 unwraps the appRpcs property', () => {
+	test('Unwraps the appRpcs property', () => {
 		const input = { appRpcs: [{ name: 'r' }] };
-		assert.deepStrictEqual(unwrapComponentsResponse(input, 'rpcs', 2), [{ name: 'r' }]);
+		assert.deepStrictEqual(unwrapComponentsResponse(input, 'rpcs'), [{ name: 'r' }]);
+	});
+
+	test('Unwraps the appEndpoints property', () => {
+		const input = { appEndpoints: [{ name: 'e' }] };
+		assert.deepStrictEqual(unwrapComponentsResponse(input, 'endpoints'), [{ name: 'e' }]);
 	});
 
 	test('Returns an empty array for a missing/undefined group', () => {
-		assert.deepStrictEqual(unwrapComponentsResponse({}, 'functions', 2), []);
-		assert.deepStrictEqual(unwrapComponentsResponse(undefined, 'functions', 2), []);
+		assert.deepStrictEqual(unwrapComponentsResponse({}, 'functions'), []);
+		assert.deepStrictEqual(unwrapComponentsResponse(undefined, 'functions'), []);
 	});
 });
 
@@ -133,7 +138,7 @@ suite('app-component-search toComponentSummary()', () => {
 		};
 		assert.deepStrictEqual(
 			toComponentSummary(
-				{ name: 'createContact', label: 'Create a Contact', type: 4, crud: 'create' },
+				{ name: 'createContact', label: 'Create a Contact', typeId: 4, crud: 'create' },
 				'module',
 				'modules',
 			),
@@ -148,9 +153,12 @@ suite('app-component-search toComponentSummary()', () => {
 		assert.strictEqual(result.groupPlural, 'functions', 'groupPlural is functions');
 	});
 
-	test('Resolves the module type from type, type_id, or typeId', () => {
-		// eslint-disable-next-line camelcase -- mirrors the snake_case field returned by the Make v1 API
-		assert.strictEqual(toComponentSummary({ name: 'a', type_id: 9 }, 'module', 'modules').type, 9, 'type_id');
-		assert.strictEqual(toComponentSummary({ name: 'a', typeId: 10 }, 'module', 'modules').type, 10, 'typeId');
+	test('Resolves the module type from typeId and the connection type from the string type', () => {
+		assert.strictEqual(toComponentSummary({ name: 'a', typeId: 10 }, 'module', 'modules').type, 10, 'module typeId');
+		assert.strictEqual(
+			toComponentSummary({ name: 'c', type: 'oauth' }, 'connection', 'connections').type,
+			'oauth',
+			'connection string type',
+		);
 	});
 });

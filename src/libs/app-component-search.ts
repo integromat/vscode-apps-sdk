@@ -1,14 +1,13 @@
 import camelCase from 'lodash/camelCase';
 import * as Core from '../Core';
 import { log } from '../output-channel';
-import type { Environment } from '../types/environment.types';
 import Group from '../tree/Group';
 import Item from '../tree/Item';
 
 /**
  * A flattened description of a single app component (connection, webhook, module,
- * RPC or function) sufficient to display it in a Quick Pick and to rebuild the
- * matching tree node for `TreeView.reveal`.
+ * RPC, function or endpoint) sufficient to display it in a Quick Pick and to rebuild
+ * the matching tree node for `TreeView.reveal`.
  */
 export interface AppComponentSummary {
 	/** Internal component name (the API id). This is what the user searches by when it differs from the label. */
@@ -36,7 +35,6 @@ export interface AppComponentSummary {
 interface FetchAppComponentsOptions {
 	baseUrl: string;
 	authorization: string;
-	environment: Environment;
 	appName: string;
 	appVersion: number;
 }
@@ -62,7 +60,7 @@ interface RawApiComponent {
 	label?: string;
 	args?: string;
 	type?: number | string;
-	/** snake_case type id as returned by the Make v1 API (v2 uses `typeId`). */
+	/** snake_case type id kept for parity with `getChildren`; the v2 API uses `typeId`. */
 	type_id?: number;
 	typeId?: number;
 	public?: boolean;
@@ -93,7 +91,7 @@ interface AppTreeNode {
 }
 
 /** API plural names of the component groups, in the order they should be listed. */
-const COMPONENT_GROUPS = ['connections', 'webhooks', 'modules', 'rpcs', 'functions'] as const;
+const COMPONENT_GROUPS = ['connections', 'webhooks', 'modules', 'rpcs', 'functions', 'endpoints'] as const;
 
 /**
  * Humanized group labels, mirroring the group labels built in `AppsProvider.getChildren`
@@ -106,20 +104,15 @@ const GROUP_LABELS: Record<string, string> = {
 	modules: 'Modules',
 	rpcs: 'Remote procedures',
 	functions: 'Functions',
+	endpoints: 'Endpoints',
 };
 
 /**
- * Unwraps the component list from a Make API response. v1 returns the array directly,
- * while v2 nests it under `app<GroupPlural>` (e.g. `appModules`). Mirrors the level-2
- * logic in `AppsProvider.getChildren`.
+ * Unwraps the component list from a Make API (v2) response, which nests it under
+ * `app<GroupPlural>` (e.g. `appModules`). Mirrors the level-2 logic in `AppsProvider.getChildren`.
  */
-export function unwrapComponentsResponse(
-	response: unknown,
-	groupPlural: string,
-	version: number,
-): RawApiComponent[] {
-	const items =
-		version === 1 ? response : (response as Record<string, unknown> | null | undefined)?.[camelCase(`app_${groupPlural}`)];
+export function unwrapComponentsResponse(response: unknown, groupPlural: string): RawApiComponent[] {
+	const items = (response as Record<string, unknown> | null | undefined)?.[camelCase(`app_${groupPlural}`)];
 	return Array.isArray(items) ? (items as RawApiComponent[]) : [];
 }
 
@@ -147,39 +140,42 @@ export function toComponentSummary(
 }
 
 /**
- * Fetches the components of a single app across all five component types and returns the
+ * Fetches the components of a single app across all component types and returns the
  * flattened summaries together with the API plural names of any groups whose fetch failed.
  * Each type is fetched independently: a single failing/missing type is logged and skipped so
  * the rest still resolve, and the caller can tell a genuinely empty app from a failed load.
  *
  * Faithfully mirrors the level-2 logic in `AppsProvider.getChildren`:
  *  - connections/webhooks URIs omit the app version segment,
- *  - the v2 response is unwrapped via `response[camelCase('app_<plural>')]`,
- *  - the label uses the same fallback as the tree (`label || name + args`).
+ *  - the response is unwrapped via `response[camelCase('app_<plural>')]`,
+ *  - the label uses the same fallback as the tree (`label || name + args`),
+ *  - endpoints (an opt-in feature) fail silently to an empty list when disabled.
  */
 export async function fetchAppComponentsSummary(
 	options: FetchAppComponentsOptions,
 ): Promise<AppComponentsSummaryResult> {
-	const { baseUrl, authorization, environment, appName, appVersion } = options;
+	const { baseUrl, authorization, appName, appVersion } = options;
 
 	const perGroup = await Promise.all(
 		COMPONENT_GROUPS.map(
 			async (groupPlural): Promise<{ components: AppComponentSummary[]; failed: boolean }> => {
 				const supertype = groupPlural.slice(0, -1);
+				// Endpoints may be disabled on the environment; suppress the error dialog and treat a
+				// failure as a benign empty list (not a real failure), exactly like `getChildren` does.
+				const isEndpoint = supertype === 'endpoint';
 				try {
-					const sdkPart = Core.pathDeterminer(environment.version, '__sdk');
-					const appPart = Core.pathDeterminer(environment.version, 'app');
-					const typePart = Core.pathDeterminer(environment.version, supertype);
-					const appBase = `${baseUrl}/${sdkPart}${appPart}/${appName}`;
+					const appBase = `${baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${appName}`;
+					const typePart = Core.pathDeterminer(supertype);
 					// Connections and webhooks are not versioned; everything else needs the version segment.
-					const uri = Core.isVersionable(supertype)
-						? `${appBase}/${appVersion}/${typePart}`
-						: `${appBase}/${typePart}`;
+					const uri = Core.isVersionable(supertype) ? `${appBase}/${appVersion}/${typePart}` : `${appBase}/${typePart}`;
 
-					const response = await Core.rpGet(uri, authorization);
-					const items = unwrapComponentsResponse(response, groupPlural, environment.version);
+					const response = await Core.rpGet(uri, authorization, undefined, isEndpoint);
+					const items = unwrapComponentsResponse(response, groupPlural);
 					return { components: items.map((item) => toComponentSummary(item, supertype, groupPlural)), failed: false };
 				} catch (err: unknown) {
+					if (isEndpoint) {
+						return { components: [], failed: false };
+					}
 					// Isolate per-type failures so one bad/missing endpoint does not break the whole search.
 					// `rpGet` already logs at error level (via `showAndLogError`) before throwing, so log at
 					// `warn` here to avoid duplicate error noise; guard against `err` not being an `Error`.

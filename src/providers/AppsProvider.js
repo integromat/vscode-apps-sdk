@@ -64,7 +64,6 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		return fetchAppComponentsSummary({
 			baseUrl: this._baseUrl,
 			authorization: this._authorization,
-			environment: this._environment,
 			appName: appNode.name,
 			appVersion: appNode.version,
 		});
