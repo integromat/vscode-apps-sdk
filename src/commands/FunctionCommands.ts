@@ -38,7 +38,7 @@ export class FunctionCommands {
 			if (!Core.isFilled('name', 'function', name)) { return }
 
 			// Add the new entity. Refresh the tree or show the error
-			await Core.addEntity(_authorization, { name: name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
+			await Core.addEntity(_authorization, { name: name }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/${Core.pathDeterminer('function')}`)
 			appsProvider.refresh()
 		}));
 
@@ -80,14 +80,14 @@ export class FunctionCommands {
 					return
 				}
 				// If all checks passed, set URN
-				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${crumbs[4]}/${crumbs[3]}/${Core.pathDeterminer(_environment.version, 'function')}`
+				urn = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${crumbs[4]}/${crumbs[3]}/${Core.pathDeterminer('function')}`
 				functionName = `${crumbs[1]}`
 			}
 
 			// Else parse from context
 			else {
 				// Set correct URN (if called from function or core or test)
-				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(context).name}/${Core.getApp(context).version}/${Core.pathDeterminer(_environment.version, 'function')}`
+				urn = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.getApp(context).name}/${Core.getApp(context).version}/${Core.pathDeterminer('function')}`
 				if (context.supertype === 'function') {
 					functionName = `${context.name}`
 				}
@@ -104,9 +104,7 @@ export class FunctionCommands {
 				Core.rpGet(`${urn}`, _authorization, { cols: ['name'] }),
 			]);
 
-			const functionList: { name: string }[] = _environment.version === 2
-				? (functionListResponse as any).appFunctions
-				: functionListResponse;
+			const functionList: { name: string }[] = (functionListResponse as any).appFunctions;
 
 			// Fetch each function's draft code via its direct endpoint
 			const userFunctions: CustomImlFunction[] = await Promise.all(

@@ -42,6 +42,7 @@ import { type AppComponentType, AppComponentTypes } from './types/app-component-
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
 import { camelToKebab } from './utils/camel-to-kebab';
+import { contextGuard } from './Core';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -155,23 +156,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
 			_authorization = 'Token ' + currentEnvironment.apikey;
-			// If API version not set or it's 1
-			if (!currentEnvironment.version || currentEnvironment.version === 1) {
-				_environment = {
-					baseUrl: `https://${currentEnvironment.url}/v1`,
-					version: 1,
-				};
-			} else {
-				// API V2 and development purposes
-				// configuration.unsafe removes https
-				// configuration.noVersionPath removes vX in path
-				_environment = {
-					baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
-						currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
-					}${currentEnvironment.admin === true ? '/admin' : ''}`,
-					version: currentEnvironment.version,
-				};
-			}
+			// configuration.unsafe removes https
+			// configuration.noVersionPath removes vX in path
+			_environment = {
+				baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
+					currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
+				}${currentEnvironment.admin === true ? '/admin' : ''}`,
+			};
 			_admin = currentEnvironment.admin === true;
 		}
 	}
@@ -222,6 +213,49 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('apps-sdk.search.clear', catchError('Clear custom apps search', async () => {
 		appsProvider.clearSearchFilter();
 		updateSearchContext();
+	}));
+
+	vscode.commands.registerCommand('apps-sdk.app.search-components', catchError('Search app components', async (app) => {
+		if (!contextGuard(app)) {
+			return;
+		}
+
+		const { components, failedGroups } = await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: `Loading components of ${app.bareLabel}…` },
+			() => appsProvider.getAppComponentsSummary(app),
+		);
+
+		if (components.length === 0) {
+			// Only claim the app is empty when nothing failed; a failed fetch already surfaced an
+			// error dialog (via rpGet), so showing "No components found" on top would be misleading.
+			if (failedGroups.length === 0) {
+				vscode.window.showInformationMessage('No components found in this app.');
+			}
+			return;
+		}
+
+		const items = components.map((summary: any) => ({
+			label: summary.label,
+			// `description` (the raw name/id) and `detail` are matched on too, so a name that
+			// differs from the label is still searchable.
+			description: summary.name,
+			detail: summary.supertype + (summary.description ? ` — ${summary.description}` : ''),
+			summary,
+		}));
+
+		const picked = await vscode.window.showQuickPick(items, {
+			matchOnDescription: true,
+			matchOnDetail: true,
+			placeHolder: 'Search components by name or label',
+		});
+		if (picked === undefined) {
+			return;
+		}
+
+		// Rebuild the component's tree node and reveal it. Deliberately NOT calling refresh()
+		// (that would clear the icon cache and restart background loading).
+		const item = appsProvider.buildComponentTreeItem(app, picked.summary);
+		await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
 	}));
 
 	/**
@@ -352,7 +386,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// ensure it gets properly disposed. Upon disposal the events will be flushed
 	context.subscriptions.push(telemetryReporter);
-	sendTelemetry('activated', { version: _environment.version });
+	sendTelemetry('activated', { version: 2 });
 
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }

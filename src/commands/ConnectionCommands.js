@@ -26,7 +26,7 @@ class ConnectionCommands {
 			if (!Core.isFilled("type", "connection", type)) { return }
 
 			// Prepare URI
-			let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${Core.pathDeterminer(_environment.version, 'connection')}`
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${Core.pathDeterminer('connection')}`
 
 			// Send the request
 			try {
@@ -57,15 +57,10 @@ class ConnectionCommands {
 			if (!Core.isFilled("label", "connection", label)) { return }
 
 
-			if (_environment.version === 2) {
-				let uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, 'connection')}/${context.name}`
-				await Core.patchEntity(_authorization, {
-					label: label
-				}, uri);
-			} else {
-				let uri = `${_environment.baseUrl}/app/${context.parent.parent.name}/connection/${context.name}/label`
-				await Core.editEntityPlain(_authorization, label, uri)
-			}
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.pathDeterminer('connection')}/${context.name}`
+			await Core.patchEntity(_authorization, {
+				label: label
+			}, uri);
 			appsProvider.refresh();
 		}));
 	}

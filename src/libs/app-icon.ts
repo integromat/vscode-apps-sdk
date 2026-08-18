@@ -38,15 +38,7 @@ export async function downloadAndStoreAppIcon(
 						Authorization: apiAuthorization,
 						'imt-apps-sdk-version': Meta.version,
 					},
-					url: (() => {
-						switch (environment.version) {
-							case 2:
-								return `${apiBaseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`;
-							case 1:
-							default:
-								return `${apiBaseUrl}/app/${app.name}/${app.version}/icon/512`;
-						}
-					})(),
+					url: `${apiBaseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`,
 					dest: iconLocalPath.dark,
 				});
 			} catch (_err: any) {
