@@ -9,7 +9,7 @@
  *
  * Detection here is intentionally syntactic only. Deciding whether a detected token is a *real*,
  * openable component is the caller's job: it matches the token against the current app's known
- * RPC / custom-function names. That allow-list is exactly what filters out built-in IML functions
+ * RPC / custom-function names. This allow-list is exactly what filters out built-in IML functions
  * such as `length()` or `join()` (they are not in the app's custom-function list).
  */
 

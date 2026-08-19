@@ -240,7 +240,8 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		const markdown = new vscode.MarkdownString(
 			`$(go-to-file) [Open ${label} \`${reference.name}\`](command:apps-sdk.open-referenced-component?${args})`,
 		);
-		markdown.isTrusted = true;
+		// Trust only this specific command, not every command URI the markdown could contain.
+		markdown.isTrusted = { enabledCommands: ['apps-sdk.open-referenced-component'] };
 		markdown.supportThemeIcons = true;
 		return new vscode.Hover(markdown, range);
 	}

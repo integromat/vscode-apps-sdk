@@ -298,7 +298,14 @@ export async function activate(context: vscode.ExtensionContext) {
 				{ location: vscode.ProgressLocation.Notification, title: `Opening ${target.componentName}…` },
 				async () => {
 					const [apps, componentsResult] = await Promise.all([
-						appsProvider.getChildren(),
+						// Tolerate a failure here: the file can still be opened via target.appName/
+						// appVersion below using a minimal fallback ancestor. Only the component-summary
+						// fetch (needed to find the code file) should fail the whole command.
+						appsProvider.getChildren().catch((err: unknown) => {
+							const message = err instanceof Error ? err.message : String(err);
+							log('warn', `Open referenced component: failed to load the apps list: ${message}`);
+							return undefined;
+						}),
 						// Reuse the hover provider's cache so a click right after hover does not re-fetch.
 						componentReferenceHoverProvider.getComponentsForApp(target.appName, target.appVersion),
 					]);
