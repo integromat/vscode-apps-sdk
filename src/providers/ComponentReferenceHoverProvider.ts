@@ -1,8 +1,14 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { fetchAppComponentsSummary, type AppComponentsSummaryResult } from '../libs/app-component-search';
+import {
+	fetchAppComponentsSummary,
+	type AppComponentsSummaryResult,
+} from '../libs/app-component-search';
 import { detectReferenceAt, parseOnlineAppContext, type DetectedReference } from '../libs/component-reference';
 import { isFileBelongingToExtension } from '../temp-dir';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
+import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { ComponentIdMappingHelper } from '../local-development/helpers/component-id-mapping-helper';
 import type { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
@@ -27,19 +33,29 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 	private readonly onlineCache = new Map<string, { at: number; result: Promise<AppComponentsSummaryResult> }>();
 	private static readonly ONLINE_CACHE_TTL_MS = 30_000;
 
+	/**
+	 * Directory → local app root fsPath, or `null` when a prior walk proved this directory (and the
+	 * path upward from a failed resolve) is not under a `makecomapp.json`. Avoids re-walking the
+	 * filesystem on every hover over `foo(` in unrelated `.js` files.
+	 */
+	private readonly localAppRootCache = new Map<string, string | null>();
+
 	constructor(private readonly authorization: string, private readonly environment: Environment) {}
 
 	async provideHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
 	): Promise<vscode.Hover | undefined> {
+		const isOnline = isFileBelongingToExtension(document.fileName);
+		// imljson: only treat `foo(` inside `{{ }}` as a function reference. javascript: whole file.
+		const functionScope = document.languageId === 'imljson' ? 'iml-templates' : 'anywhere';
 		const line = document.lineAt(position.line).text;
-		const reference = detectReferenceAt(line, position.character);
+		const reference = detectReferenceAt(line, position.character, { functionScope });
 		if (!reference) {
 			return undefined;
 		}
 
-		const target = isFileBelongingToExtension(document.fileName)
+		const target = isOnline
 			? await this.resolveOnline(document, reference)
 			: await this.resolveLocal(document.uri, reference);
 
@@ -48,6 +64,14 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		}
 
 		return this.buildHover(reference, target, position);
+	}
+
+	/**
+	 * Returns the (possibly cached) component summary for an online app. Used by the open command
+	 * so a click after hover does not repeat the network fetch.
+	 */
+	getComponentsForApp(appName: string, version: number): Promise<AppComponentsSummaryResult> {
+		return this.getOnlineComponents(appName, version);
 	}
 
 	/** Resolves an online (cloud) reference into a command target, or `undefined` if unknown. */
@@ -63,8 +87,9 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		let components: AppComponentsSummaryResult['components'];
 		try {
 			({ components } = await this.getOnlineComponents(context.appName, context.version));
-		} catch (err: any) {
-			log('warn', `Component reference hover: failed to load components of ${context.appName}: ${err.message}`);
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : String(err);
+			log('warn', `Component reference hover: failed to load components of ${context.appName}: ${message}`);
 			return undefined;
 		}
 
@@ -89,13 +114,20 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		documentUri: vscode.Uri,
 		reference: DetectedReference,
 	): Promise<OpenReferencedComponentTarget | undefined> {
+		const appRootFsPath = this.findLocalAppRoot(documentUri.fsPath);
+		if (!appRootFsPath) {
+			return undefined;
+		}
+
 		let root: vscode.Uri;
 		let makecomappJson: Awaited<ReturnType<typeof getMakecomappJson>>;
 		try {
 			root = getMakecomappRootDir(documentUri);
 			makecomappJson = await getMakecomappJson(documentUri);
 		} catch {
-			// Not inside a local app project (e.g. a stray .js file) - nothing to resolve.
+			// Treat as miss: either a race (cache said there is a root but the file became
+			// unreadable) or a genuine data problem (e.g. a malformed makecomapp.json). Either way
+			// there is nothing openable to hover, so fail silently rather than showing a hover error.
 			return undefined;
 		}
 
@@ -130,6 +162,50 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		return { mode: 'local', fileUri: vscode.Uri.joinPath(root, relativePath).toString() };
 	}
 
+	/**
+	 * Walks from the file's directory upward looking for `makecomapp.json`, caching hits and misses
+	 * per directory so unrelated workspace `.js` hovers do not repeat the walk.
+	 */
+	private findLocalAppRoot(fileFsPath: string): string | null {
+		let dir = path.dirname(fileFsPath);
+		const visited: string[] = [];
+
+		while (true) {
+			const cached = this.localAppRootCache.get(dir);
+			if (cached !== undefined) {
+				if (cached === null) {
+					for (const visitedDir of visited) {
+						this.localAppRootCache.set(visitedDir, null);
+					}
+					return null;
+				}
+				for (const visitedDir of visited) {
+					this.localAppRootCache.set(visitedDir, cached);
+				}
+				return cached;
+			}
+
+			visited.push(dir);
+			if (fs.existsSync(path.join(dir, MAKECOMAPP_FILENAME))) {
+				for (const visitedDir of visited) {
+					this.localAppRootCache.set(visitedDir, dir);
+				}
+				return dir;
+			}
+
+			const parent = path.dirname(dir);
+			if (parent === dir) {
+				break;
+			}
+			dir = parent;
+		}
+
+		for (const visitedDir of visited) {
+			this.localAppRootCache.set(visitedDir, null);
+		}
+		return null;
+	}
+
 	private getOnlineComponents(appName: string, version: number): Promise<AppComponentsSummaryResult> {
 		const key = `${appName}@${version}`;
 		const cached = this.onlineCache.get(key);
@@ -139,11 +215,17 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		const result = fetchAppComponentsSummary({
 			baseUrl: this.environment.baseUrl,
 			authorization: this.authorization,
-			environment: this.environment,
 			appName,
 			appVersion: version,
 		});
 		this.onlineCache.set(key, { at: Date.now(), result });
+		// Do not keep a rejected promise in the cache — the next hover should retry.
+		result.catch(() => {
+			const current = this.onlineCache.get(key);
+			if (current?.result === result) {
+				this.onlineCache.delete(key);
+			}
+		});
 		return result;
 	}
 

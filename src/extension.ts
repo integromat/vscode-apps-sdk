@@ -26,7 +26,10 @@ import {
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
-import { ComponentReferenceHoverProvider } from './providers/ComponentReferenceHoverProvider';
+import {
+	ComponentReferenceHoverProvider,
+	type OpenReferencedComponentTarget,
+} from './providers/ComponentReferenceHoverProvider';
 import Code from './tree/Code';
 import RpcCommands = require('./commands/RpcCommands');
 import { EndpointCommands } from './commands/EndpointCommands';
@@ -45,6 +48,7 @@ import { deleteLocalComponent } from './local-development/delete-local-component
 import { catchError } from './error-handling';
 import { camelToKebab } from './utils/camel-to-kebab';
 import { contextGuard, pathDeterminer } from './Core';
+import type { AppComponentSummary } from './libs/app-component-search';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -261,24 +265,24 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	// Hover-to-open for component references (rpc://Name and custom IML function calls) in app code.
-	// Captured as const so the values stay narrowed (non-undefined) inside the command closure below.
-	const environment = _environment;
+	const componentReferenceHoverProvider = new ComponentReferenceHoverProvider(_authorization, _environment);
 	vscode.languages.registerHoverProvider(
 		[
 			{ language: 'imljson', scheme: 'file' },
 			{ language: 'javascript', scheme: 'file' },
 		],
-		new ComponentReferenceHoverProvider(_authorization, environment),
+		componentReferenceHoverProvider,
 	);
 
 	vscode.commands.registerCommand(
 		'apps-sdk.open-referenced-component',
-		catchError('Open referenced component', async (target) => {
+		catchError('Open referenced component', async (target: OpenReferencedComponentTarget) => {
 			if (!target) {
 				return;
 			}
 
-			// Local-development mode: the code file is already resolved to an on-disk URI.
+			// Local-development mode: open the on-disk code file. Reveal in the *file explorer*
+			// (not the Custom apps tree) — local projects are not Custom apps tree nodes.
 			if (target.mode === 'local') {
 				const uri = vscode.Uri.parse(target.fileUri);
 				await vscode.window.showTextDocument(uri, { preview: true });
@@ -286,16 +290,40 @@ export async function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			// Online mode: rebuild the tree nodes, open the code via the shared loader, and reveal it.
-			const appNode = {
-				id: `${target.appName}@${target.appVersion}`,
-				name: target.appName,
-				version: target.appVersion,
-				parent: undefined,
-			};
-			const { components } = await appsProvider.getAppComponentsSummary(appNode);
-			const summary = components.find(
-				(component: any) => component.supertype === target.supertype && component.name === target.componentName,
+			// Online mode: fetch the live App tree node (same parent chain as search-components, so
+			// TreeView.reveal matches by identity/id against getChildren) and the app's component
+			// summary in parallel — they are independent requests. Show progress since the app-list
+			// fetch is not cached and can be slow on accounts with many apps.
+			const { apps, components } = await vscode.window.withProgress(
+				{ location: vscode.ProgressLocation.Notification, title: `Opening ${target.componentName}…` },
+				async () => {
+					const [apps, componentsResult] = await Promise.all([
+						appsProvider.getChildren(),
+						// Reuse the hover provider's cache so a click right after hover does not re-fetch.
+						componentReferenceHoverProvider.getComponentsForApp(target.appName, target.appVersion),
+					]);
+					return { apps: apps ?? [], components: componentsResult.components };
+				},
+			);
+
+			// Falls back to a minimal ancestor if the app list failed to load, or if the app is
+			// currently hidden by an active Custom apps search filter (getChildren() applies it).
+			// In that case the reveal below will likely fail silently (caught and logged) since the
+			// tree itself is not showing the app — the file still opens either way.
+			const appNode =
+				apps.find(
+					(app: { name?: string; version?: number }) =>
+						app.name === target.appName && app.version === target.appVersion,
+				) ?? {
+					id: `${target.appName}@${target.appVersion}`,
+					name: target.appName,
+					version: target.appVersion,
+					parent: undefined,
+					changes: [],
+				};
+
+			const summary: AppComponentSummary | undefined = components.find(
+				(component) => component.supertype === target.supertype && component.name === target.componentName,
 			);
 			if (!summary) {
 				vscode.window.showWarningMessage(`Component "${target.componentName}" was not found in the app.`);
@@ -304,13 +332,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			const item = appsProvider.buildComponentTreeItem(appNode, summary);
 			// RPC code lives in the "api" (imljson) file; function code in the "code" (js) file.
+			// (This is the online tree Code-node id, unrelated to the local-dev `codeFiles` key names
+			// — e.g. `REFERENCE_CODE_TYPE` in ComponentReferenceHoverProvider — which use `communication`.)
 			const codeName = target.supertype === 'rpc' ? 'api' : 'code';
 			const language = target.supertype === 'rpc' ? 'imljson' : 'js';
-			const apiPath = pathDeterminer(environment.version, target.supertype);
-			const codeNode = new (Code as any)(codeName, codeName, item, language, apiPath, false, null, undefined);
+			const apiPath = pathDeterminer(target.supertype);
+			const codeNode = new Code(codeName, codeName, item, language, apiPath, false, null, undefined);
 
 			await vscode.commands.executeCommand('apps-sdk.load-source', codeNode);
-			await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
+			try {
+				await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
+			} catch (err: unknown) {
+				// Opening the file already succeeded; reveal is best-effort (e.g. filtered tree).
+				const message = err instanceof Error ? err.message : String(err);
+				log('warn', `Open referenced component: tree reveal failed for ${target.componentName}: ${message}`);
+			}
 		}),
 	);
 
