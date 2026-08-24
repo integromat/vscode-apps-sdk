@@ -1,3 +1,5 @@
+import type { ComponentCodeType } from '../local-development/types/code-type.types';
+
 /**
  * Pure helpers for detecting references to other app components inside app code, and for
  * resolving the current app context from an online temp-file path.
@@ -35,6 +37,24 @@ export interface DetectedReference {
 	/** 0-based column just past the last character of the hover range (half-open: `[start, end)`). */
 	endColumn: number;
 }
+
+/**
+ * The single "main" code file each reference kind opens, in the two shapes this feature needs:
+ *  - `codeType`: the key under a component's `codeFiles` in `makecomapp.json` (local-development mode).
+ *  - `apiCodeType`/`language`: the online-mode tree `Code` node's id and VS Code language id, mirroring
+ *    the `rpc`/`function` cases hardcoded in `AppsProvider.js`'s `getChildren()`.
+ * Centralized here so the local-dev resolver and the online open command share one mapping instead of
+ * each encoding it separately. Note this only covers the 2 component types `rpc://` / IML-function
+ * references can point to — it does not attempt to unify with the per-component-type code definitions
+ * in `component-code-def.ts` / `AppsProvider.js`, which cover every component type and are out of scope.
+ */
+export const REFERENCE_CODE_DEF: Record<
+	ReferenceKind,
+	{ codeType: ComponentCodeType; apiCodeType: string; language: string }
+> = {
+	rpc: { codeType: 'communication', apiCodeType: 'api', language: 'imljson' },
+	function: { codeType: 'code', apiCodeType: 'code', language: 'js' },
+};
 
 // `rpc://Name` - Make RPC names use letters, digits, underscores and hyphens.
 const RPC_REFERENCE_REGEX = /rpc:\/\/([A-Za-z0-9_-]+)/g;

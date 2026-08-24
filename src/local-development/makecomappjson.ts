@@ -48,8 +48,15 @@ export function getMakecomappRootDir(anyProjectPath: vscode.Uri): vscode.Uri {
 
 /**
  * Gets makecomapp.json content from the nearest parent dir, where makecomapp.json is located.
+ *
+ * @param options.readOnly When `true`, skip writing a migrated file back to disk (see below).
+ *   Use this for read-only callers (e.g. a hover provider) where silently mutating a git-tracked
+ *   file as a side effect of, say, hovering the mouse over some code would be surprising.
  */
-export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<MakecomappJson> {
+export async function getMakecomappJson(
+	anyProjectPath: vscode.Uri,
+	options?: { readOnly?: boolean },
+): Promise<MakecomappJson> {
 	const makecomappRootdir = getMakecomappRootDir(anyProjectPath);
 	const makecomappJsonPath = vscode.Uri.joinPath(makecomappRootdir, MAKECOMAPP_FILENAME);
 	let makecomappJsonRaw: string;
@@ -79,7 +86,7 @@ export async function getMakecomappJson(anyProjectPath: vscode.Uri): Promise<Mak
 
 	// Finds all deprecated properties and upgrade it to valid
 	const upgraded = migrateMakecomappJsonFile(makecomappJson);
-	if (upgraded.changesApplied) {
+	if (upgraded.changesApplied && !options?.readOnly) {
 		// Save the upgrade back to the `makecomapps.json`
 		await updateMakecomappJson(anyProjectPath, upgraded.makecomappJson);
 	}

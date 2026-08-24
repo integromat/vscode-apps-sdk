@@ -30,6 +30,7 @@ import {
 	ComponentReferenceHoverProvider,
 	type OpenReferencedComponentTarget,
 } from './providers/ComponentReferenceHoverProvider';
+import { REFERENCE_CODE_DEF } from './libs/component-reference';
 import Code from './tree/Code';
 import RpcCommands = require('./commands/RpcCommands');
 import { EndpointCommands } from './commands/EndpointCommands';
@@ -43,6 +44,7 @@ import EnvironmentCommands = require('./commands/EnvironmentCommands');
 import PublicCommands = require('./commands/PublicCommands');
 import { telemetryReporter, sendTelemetry, startAppInsights } from './utils/telemetry';
 import { getMakecomappJson, getMakecomappRootDir } from './local-development/makecomappjson';
+import { MAKECOMAPP_FILENAME } from './local-development/consts';
 import { type AppComponentType, AppComponentTypes } from './types/app-component-type.types';
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
@@ -273,6 +275,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		],
 		componentReferenceHoverProvider,
 	);
+	// A directory hovered before a makecomapp.json existed there (e.g. before an app was cloned
+	// into it) is cached as "not a Make project". Clear that cache whenever one appears/disappears
+	// anywhere in the workspace, so hover does not stay dead until a window reload.
+	const makecomappJsonWatcher = vscode.workspace.createFileSystemWatcher(`**/${MAKECOMAPP_FILENAME}`);
+	makecomappJsonWatcher.onDidCreate(() => componentReferenceHoverProvider.clearLocalAppRootCache());
+	makecomappJsonWatcher.onDidDelete(() => componentReferenceHoverProvider.clearLocalAppRootCache());
+	context.subscriptions.push(makecomappJsonWatcher);
 
 	vscode.commands.registerCommand(
 		'apps-sdk.open-referenced-component',
@@ -339,10 +348,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			const item = appsProvider.buildComponentTreeItem(appNode, summary);
 			// RPC code lives in the "api" (imljson) file; function code in the "code" (js) file.
-			// (This is the online tree Code-node id, unrelated to the local-dev `codeFiles` key names
-			// — e.g. `REFERENCE_CODE_TYPE` in ComponentReferenceHoverProvider — which use `communication`.)
-			const codeName = target.supertype === 'rpc' ? 'api' : 'code';
-			const language = target.supertype === 'rpc' ? 'imljson' : 'js';
+			// Shared with ComponentReferenceHoverProvider's local-dev resolution so this mapping is
+			// defined in exactly one place for this feature (see REFERENCE_CODE_DEF's own doc comment
+			// for why it does not also unify with AppsProvider.js / component-code-def.ts).
+			const { apiCodeType: codeName, language } = REFERENCE_CODE_DEF[target.supertype];
 			const apiPath = pathDeterminer(target.supertype);
 			const codeNode = new Code(codeName, codeName, item, language, apiPath, false, null, undefined);
 

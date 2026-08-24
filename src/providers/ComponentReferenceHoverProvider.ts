@@ -1,20 +1,20 @@
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import {
 	fetchAppComponentsSummary,
 	type AppComponentsSummaryResult,
 } from '../libs/app-component-search';
-import { detectReferenceAt, parseOnlineAppContext, type DetectedReference } from '../libs/component-reference';
+import {
+	detectReferenceAt,
+	parseOnlineAppContext,
+	REFERENCE_CODE_DEF,
+	type DetectedReference,
+} from '../libs/component-reference';
 import { isFileBelongingToExtension } from '../temp-dir';
 import { getMakecomappJson, getMakecomappRootDir } from '../local-development/makecomappjson';
-import { MAKECOMAPP_FILENAME } from '../local-development/consts';
 import { ComponentIdMappingHelper } from '../local-development/helpers/component-id-mapping-helper';
 import type { Environment } from '../types/environment.types';
 import { log } from '../output-channel';
-
-/** The component reference type maps 1:1 to a local component type and an `Item.supertype`. */
-const REFERENCE_CODE_TYPE = { rpc: 'communication', function: 'code' } as const;
 
 /** Payload handed to `apps-sdk.open-referenced-component` when the hover link is clicked. */
 export type OpenReferencedComponentTarget =
@@ -34,17 +34,28 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 	private static readonly ONLINE_CACHE_TTL_MS = 30_000;
 
 	/**
-	 * Directory → local app root fsPath, or `null` when a prior walk proved this directory (and the
-	 * path upward from a failed resolve) is not under a `makecomapp.json`. Avoids re-walking the
-	 * filesystem on every hover over `foo(` in unrelated `.js` files.
+	 * Hovered-file directory → local app root fsPath, or `null` when a prior lookup proved this
+	 * directory is not under a `makecomapp.json`. Avoids re-walking the filesystem (via
+	 * `getMakecomappRootDir`) on every hover over `foo(` in unrelated `.js` files.
+	 *
+	 * Negative (`null`) entries never go stale on their own — call `clearLocalAppRootCache()`
+	 * when a `makecomapp.json` is created or deleted anywhere in the workspace (wired up in
+	 * `extension.ts` via a `FileSystemWatcher`), otherwise a directory hovered before an app was
+	 * cloned into it would stay "not a Make project" until the window reloads.
 	 */
 	private readonly localAppRootCache = new Map<string, string | null>();
 
 	constructor(private readonly authorization: string, private readonly environment: Environment) {}
 
+	/** Clears the local-app-root cache. Call when a `makecomapp.json` is created or deleted. */
+	clearLocalAppRootCache(): void {
+		this.localAppRootCache.clear();
+	}
+
 	async provideHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
+		token: vscode.CancellationToken,
 	): Promise<vscode.Hover | undefined> {
 		const isOnline = isFileBelongingToExtension(document.fileName);
 		// imljson: only treat `foo(` inside `{{ }}` as a function reference. javascript: whole file.
@@ -56,10 +67,10 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		}
 
 		const target = isOnline
-			? await this.resolveOnline(document, reference)
-			: await this.resolveLocal(document.uri, reference);
+			? await this.resolveOnline(document, reference, token)
+			: await this.resolveLocal(document.uri, reference, token);
 
-		if (!target) {
+		if (!target || token.isCancellationRequested) {
 			return undefined;
 		}
 
@@ -78,6 +89,7 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 	private async resolveOnline(
 		document: vscode.TextDocument,
 		reference: DetectedReference,
+		token: vscode.CancellationToken,
 	): Promise<OpenReferencedComponentTarget | undefined> {
 		const context = parseOnlineAppContext(document.fileName);
 		if (!context) {
@@ -90,6 +102,10 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 		} catch (err: unknown) {
 			const message = err instanceof Error ? err.message : String(err);
 			log('warn', `Component reference hover: failed to load components of ${context.appName}: ${message}`);
+			return undefined;
+		}
+		// The user may have moved the mouse away while the (possibly uncached) API call was in flight.
+		if (token.isCancellationRequested) {
 			return undefined;
 		}
 
@@ -113,21 +129,25 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 	private async resolveLocal(
 		documentUri: vscode.Uri,
 		reference: DetectedReference,
+		token: vscode.CancellationToken,
 	): Promise<OpenReferencedComponentTarget | undefined> {
-		const appRootFsPath = this.findLocalAppRoot(documentUri.fsPath);
+		const appRootFsPath = this.findLocalAppRoot(documentUri);
 		if (!appRootFsPath) {
 			return undefined;
 		}
 
-		let root: vscode.Uri;
 		let makecomappJson: Awaited<ReturnType<typeof getMakecomappJson>>;
 		try {
-			root = getMakecomappRootDir(documentUri);
-			makecomappJson = await getMakecomappJson(documentUri);
+			// Read-only: a hover must never have the side effect of migrating-and-saving
+			// makecomapp.json (that would silently dirty a git-tracked file on mouse-over).
+			makecomappJson = await getMakecomappJson(documentUri, { readOnly: true });
 		} catch {
 			// Treat as miss: either a race (cache said there is a root but the file became
 			// unreadable) or a genuine data problem (e.g. a malformed makecomapp.json). Either way
 			// there is nothing openable to hover, so fail silently rather than showing a hover error.
+			return undefined;
+		}
+		if (token.isCancellationRequested) {
 			return undefined;
 		}
 
@@ -154,56 +174,36 @@ export class ComponentReferenceHoverProvider implements vscode.HoverProvider {
 			return undefined;
 		}
 
-		const relativePath = components[localId]?.codeFiles?.[REFERENCE_CODE_TYPE[reference.kind]];
+		const relativePath = components[localId]?.codeFiles?.[REFERENCE_CODE_DEF[reference.kind].codeType];
 		if (!relativePath) {
 			return undefined;
 		}
 
+		const root = vscode.Uri.file(appRootFsPath);
 		return { mode: 'local', fileUri: vscode.Uri.joinPath(root, relativePath).toString() };
 	}
 
 	/**
-	 * Walks from the file's directory upward looking for `makecomapp.json`, caching hits and misses
-	 * per directory so unrelated workspace `.js` hovers do not repeat the walk.
+	 * Resolves the `makecomapp.json` root directory for the hovered file's directory, caching hits
+	 * and misses so unrelated workspace `.js` hovers do not repeat the walk. Delegates to
+	 * `getMakecomappRootDir` (the same helper every other local-dev flow uses) rather than
+	 * re-implementing the upward walk, so this also correctly stays within the workspace boundary.
 	 */
-	private findLocalAppRoot(fileFsPath: string): string | null {
-		let dir = path.dirname(fileFsPath);
-		const visited: string[] = [];
-
-		while (true) {
-			const cached = this.localAppRootCache.get(dir);
-			if (cached !== undefined) {
-				if (cached === null) {
-					for (const visitedDir of visited) {
-						this.localAppRootCache.set(visitedDir, null);
-					}
-					return null;
-				}
-				for (const visitedDir of visited) {
-					this.localAppRootCache.set(visitedDir, cached);
-				}
-				return cached;
-			}
-
-			visited.push(dir);
-			if (fs.existsSync(path.join(dir, MAKECOMAPP_FILENAME))) {
-				for (const visitedDir of visited) {
-					this.localAppRootCache.set(visitedDir, dir);
-				}
-				return dir;
-			}
-
-			const parent = path.dirname(dir);
-			if (parent === dir) {
-				break;
-			}
-			dir = parent;
+	private findLocalAppRoot(documentUri: vscode.Uri): string | null {
+		const cacheKey = path.dirname(documentUri.fsPath);
+		const cached = this.localAppRootCache.get(cacheKey);
+		if (cached !== undefined) {
+			return cached;
 		}
 
-		for (const visitedDir of visited) {
-			this.localAppRootCache.set(visitedDir, null);
+		let root: string | null;
+		try {
+			root = getMakecomappRootDir(documentUri).fsPath;
+		} catch {
+			root = null;
 		}
-		return null;
+		this.localAppRootCache.set(cacheKey, root);
+		return root;
 	}
 
 	private getOnlineComponents(appName: string, version: number): Promise<AppComponentsSummaryResult> {
