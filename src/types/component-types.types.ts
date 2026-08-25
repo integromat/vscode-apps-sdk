@@ -16,4 +16,9 @@ export interface EndpointAnnotations {
 	idempotentHint?: boolean;
 	/** If true, the endpoint may interact with an "open world" of external entities. */
 	openWorldHint?: boolean;
+	/**
+	 * If true, the endpoint is not scoped to a single route and accepts an arbitrary call
+	 * (method, path, query, headers, body) against the app's API.
+	 */
+	arbitraryCallHint?: boolean;
 }

@@ -38,7 +38,7 @@ suite('getApiBodyForComponentMetadataDeploy: endpoint', () => {
 		const metadata: AppComponentMetadata = {
 			label: 'Get Entity',
 			description: 'Retrieves the entity.',
-			annotations: { readOnlyHint: true, idempotentHint: true },
+			annotations: { readOnlyHint: true, idempotentHint: true, arbitraryCallHint: true },
 			attachedAccounts: ['connA', 'connB'],
 		} as AppComponentMetadata;
 
@@ -46,7 +46,11 @@ suite('getApiBodyForComponentMetadataDeploy: endpoint', () => {
 
 		assert.strictEqual(body.label, 'Get Entity');
 		assert.strictEqual(body.description, 'Retrieves the entity.');
-		assert.deepStrictEqual(body.annotations, { readOnlyHint: true, idempotentHint: true });
+		assert.deepStrictEqual(body.annotations, {
+			readOnlyHint: true,
+			idempotentHint: true,
+			arbitraryCallHint: true,
+		});
 		// Connection references are translated from local IDs to remote names.
 		assert.deepStrictEqual(body.attachedAccounts, ['remoteConnA', 'remoteConnB']);
 		// `context` is NOT a metadata field — it is a metadata-backed source code file (deployed separately).
