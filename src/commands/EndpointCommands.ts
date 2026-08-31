@@ -8,12 +8,17 @@ import type { EndpointAnnotations } from '../types/component-types.types';
 import { AppsProvider } from '../providers/AppsProvider';
 import * as QuickPick from '../QuickPick';
 
-/** The four MCP-inspired endpoint annotation hints, with human-readable descriptions for the picker. */
+/** The endpoint annotation hints, with human-readable descriptions for the picker. */
 const ENDPOINT_ANNOTATION_HINTS: { key: keyof EndpointAnnotations; description: string }[] = [
 	{ key: 'readOnlyHint', description: 'The endpoint does not modify its environment.' },
 	{ key: 'destructiveHint', description: 'The endpoint may perform destructive updates (not only additive).' },
 	{ key: 'idempotentHint', description: 'Repeated calls with the same arguments have no additional effect.' },
 	{ key: 'openWorldHint', description: 'The endpoint may interact with an "open world" of external entities.' },
+	{
+		key: 'arbitraryCallHint',
+		description:
+			'The endpoint is not scoped to a single route and accepts an arbitrary call (method, path, query, headers, body).',
+	},
 ];
 
 /**
@@ -144,7 +149,7 @@ export class EndpointCommands {
 		);
 
 		/**
-		 * Toggle endpoint annotations (the 4 MCP-inspired hints) via a multi-select.
+		 * Toggle endpoint annotations (see `ENDPOINT_ANNOTATION_HINTS`) via a multi-select.
 		 * The picker is pre-checked from the current state; the full selected set is PATCHed (the web API
 		 * writes `annotations` wholesale, so un-picking a hint clears it).
 		 */
