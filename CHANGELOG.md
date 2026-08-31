@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+## [2.9.0](https://github.com/integromat/vscode-apps-sdk/compare/2.8.0...2.9.0) (2026-08-07)
+
+
+### Features
+
+* add per-app component search ([#361](https://github.com/integromat/vscode-apps-sdk/issues/361)) ([619162d](https://github.com/integromat/vscode-apps-sdk/commit/619162d14cda52403c6afc026ce72ee7443f5e74))
+
+
+### Miscellaneous Chores
+
+* remove legacy Integromat support ([#366](https://github.com/integromat/vscode-apps-sdk/issues/366)) ([f96798f](https://github.com/integromat/vscode-apps-sdk/commit/f96798f41e3809fa9a926c8d8140e74ac2de37d6))
+
+
+### Continuous Integration
+
+* update release-please.yml [skip CI] ([440e266](https://github.com/integromat/vscode-apps-sdk/commit/440e266eed2df3cb79f7a0433ebf33eb28e9a242))
+* update validate-pr.yml [skip CI] ([8dae437](https://github.com/integromat/vscode-apps-sdk/commit/8dae4376b651cd9fc60e53886df86f56b6e60506))
+
 ## [2.8.0](https://github.com/integromat/vscode-apps-sdk/compare/2.7.0...2.8.0) (2026-07-20)
 
 
