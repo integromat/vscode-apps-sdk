@@ -217,6 +217,11 @@
 				"icon": "$(search)"
 			},
 			{
+				"command": "apps-sdk.open-referenced-component",
+				"title": "Open referenced component",
+				"category": "Make Apps"
+			},
+			{
 				"command": "apps-sdk.refresh",
 				"title": "Refresh",
 				"category": "Make Apps",
@@ -536,6 +541,12 @@
 			]
 		},
 		"menus": {
+			"commandPalette": [
+				{
+					"command": "apps-sdk.open-referenced-component",
+					"when": "false"
+				}
+			],
 			"editor/title": [
 				{
 					"when": "resourceFilename == interface.imljson",
