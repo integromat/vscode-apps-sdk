@@ -1,23 +1,15 @@
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 import type { VscodeLibWrapperWindowInterface } from '../types';
 
 export const vsCodeLibWrapperWindowImplementationForIDE: VscodeLibWrapperWindowInterface = {
-	showErrorMessage: (async () => {
-		throw new Error('showErrorMessage is not implemented in CLI yet');
-	}) as typeof vscode.window.showErrorMessage as any, // Because of multiple overloads. Only one overload is implemented in CLI variant.
-	showWarningMessage: (async () => {
-		throw new Error('showWarningMessage is not implemented in CLI yet');
-	}) as typeof vscode.window.showWarningMessage as any, // Because of multiple overloads. Only one overload is implemented in CLI variant.
-	showInformationMessage: (async () => {
-		throw new Error('showInformationMessage is not implemented in CLI yet');
-	}) as typeof vscode.window.showInformationMessage as any, // Because of multiple overloads. Only one overload is implemented in CLI variant.
-	showInputBox: (async () => {
-		throw new Error('showInputBox is not implemented in CLI yet');
-	}) as typeof vscode.window.showInputBox as any, // Because of multiple overloads. Only one overload is implemented in CLI variant.
-	showQuickPick: (async () => {
-		throw new Error('showQuickPick is not implemented in CLI yet');
-	}) as typeof vscode.window.showQuickPick as any, // Because of multiple overloads. Only one overload is implemented in CLI variant.
+	// Each of these forwards to the actual `vscode` implementation.
+	// The `as any` casts are needed because only one of the multiple `vscode` overloads is mirrored in the wrapper interface.
+	showErrorMessage: ((...args: any[]) => (vscode.window.showErrorMessage as any)(...args)) as any,
+	showWarningMessage: ((...args: any[]) => (vscode.window.showWarningMessage as any)(...args)) as any,
+	showInformationMessage: ((...args: any[]) => (vscode.window.showInformationMessage as any)(...args)) as any,
+	showInputBox: ((...args: any[]) => (vscode.window.showInputBox as any)(...args)) as any,
+	showQuickPick: ((...args: any[]) => (vscode.window.showQuickPick as any)(...args)) as any,
 	get activeTextEditor(): typeof vscode.window.activeTextEditor {
-		throw new Error('activeTextEditor is not implemented in CLI yet');
+		return vscode.window.activeTextEditor;
 	},
 };

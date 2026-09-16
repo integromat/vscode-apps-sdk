@@ -12,7 +12,6 @@ const vscode = vscodeLibWrapperFactory.lib;
 
 export function registerCreateModuleCommand(program: Command): void {
 
-	console.log("create-module");
 
 	program.command('create-module')
 		.description('Creates a new local module in the current Make app project.')

@@ -1,9 +1,9 @@
+import * as vscode from 'vscode';
 import type { VscodeLibWrapperWorkspaceInterface } from '../types';
 import { vsCodeLibWrapperFsImplementationForIDE } from './fs';
 
 export const vsCodeLibWrapperWorkspaceImplementationForIDE: VscodeLibWrapperWorkspaceInterface = {
-	asRelativePath: () => {
-		throw new Error('asRelativePath is not implemented in CLI yet');
-	},
+	// forward request to the actual `vscode` implementation
+	asRelativePath: ((...args: any[]) => (vscode.workspace.asRelativePath as any)(...args)) as any,
 	fs: vsCodeLibWrapperFsImplementationForIDE,
 };

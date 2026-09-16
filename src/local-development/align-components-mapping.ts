@@ -1,4 +1,5 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
+import { vscodeLibWrapperFactory } from '../services/vscode-lib-wraper';
 import type {
 	AppComponentMetadataRemoteIDs,
 	AppComponentMetadataWithCodeFiles,
@@ -192,7 +193,7 @@ export async function alignComponentsMapping(
 						);
 
 						// Ask user what to do
-						const userChoice = await vscode.window.showQuickPick(
+						const userChoice = await vscodeLibWrapperFactory.lib.window.showQuickPick(
 							[
 								{
 									label: 'Unlink from deleted remote and continue',
