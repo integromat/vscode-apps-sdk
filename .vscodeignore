@@ -1,7 +1,11 @@
 .vscode/**
+.claude/**
 .vscode-test/**
 .github/**
 out/test/**
+dist-cli/**
+scripts/**
+tsconfig-cli.json
 local
 .gitignore
 jsconfig.json

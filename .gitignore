@@ -4,6 +4,7 @@ node_modules
 # Build artifacts
 out/
 temp/
+dist-cli/
 
 # IDE
 .idea/
