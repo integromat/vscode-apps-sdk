@@ -1,6 +1,110 @@
 Change Log
 ==========
 
+## [2.9.0](https://github.com/integromat/vscode-apps-sdk/compare/2.8.0...2.9.0) (2026-08-07)
+
+
+### Features
+
+* add per-app component search ([#361](https://github.com/integromat/vscode-apps-sdk/issues/361)) ([619162d](https://github.com/integromat/vscode-apps-sdk/commit/619162d14cda52403c6afc026ce72ee7443f5e74))
+
+
+### Miscellaneous Chores
+
+* remove legacy Integromat support ([#366](https://github.com/integromat/vscode-apps-sdk/issues/366)) ([f96798f](https://github.com/integromat/vscode-apps-sdk/commit/f96798f41e3809fa9a926c8d8140e74ac2de37d6))
+
+
+### Continuous Integration
+
+* update release-please.yml [skip CI] ([440e266](https://github.com/integromat/vscode-apps-sdk/commit/440e266eed2df3cb79f7a0433ebf33eb28e9a242))
+* update validate-pr.yml [skip CI] ([8dae437](https://github.com/integromat/vscode-apps-sdk/commit/8dae4376b651cd9fc60e53886df86f56b6e60506))
+
+## [2.8.0](https://github.com/integromat/vscode-apps-sdk/compare/2.7.0...2.8.0) (2026-07-20)
+
+
+### Features
+
+* **schemas:** sync endpoint IMLJSON schemas with web zone ([#364](https://github.com/integromat/vscode-apps-sdk/issues/364)) ([54ebfff](https://github.com/integromat/vscode-apps-sdk/commit/54ebfff7b2b27048c5d26a6d967093e999283a2b))
+
+## [2.7.0](https://github.com/integromat/vscode-apps-sdk/compare/2.6.0...2.7.0) (2026-07-01)
+
+
+### Features
+
+* **endpoints:** add support for SDK endpoint type ([#362](https://github.com/integromat/vscode-apps-sdk/issues/362)) ([c8a2687](https://github.com/integromat/vscode-apps-sdk/commit/c8a26875c7ccaa174c429112e25a9a84a07a94df))
+
+## [2.6.0](https://github.com/integromat/vscode-apps-sdk/compare/2.5.0...2.6.0) (2026-06-23)
+
+
+### Features
+
+* add search field to filter custom apps ([#359](https://github.com/integromat/vscode-apps-sdk/issues/359)) ([f3eebc7](https://github.com/integromat/vscode-apps-sdk/commit/f3eebc784ed149d81e7c38915d6abbffc64fa7c5))
+* lazy background loading of app icons ([#360](https://github.com/integromat/vscode-apps-sdk/issues/360)) ([6d13b8d](https://github.com/integromat/vscode-apps-sdk/commit/6d13b8dcb020e9b1c0a8ea3c21f57250bc4f913c))
+
+
+### Bug Fixes
+
+* run IML function tests against draft code, not published code ([#338](https://github.com/integromat/vscode-apps-sdk/issues/338)) ([ba449d9](https://github.com/integromat/vscode-apps-sdk/commit/ba449d98e76f131d7ce055a5396c9ac00a5ba17d))
+
+
+### Build System
+
+* bump the devdeps-minor-update group with 2 updates ([#339](https://github.com/integromat/vscode-apps-sdk/issues/339)) ([7a395b3](https://github.com/integromat/vscode-apps-sdk/commit/7a395b3a903cda7c8b17be3637f9fcb48368a39b))
+* bump vscode-languageclient from 10.0.0-next.20 to 10.0.0-next.21 ([#340](https://github.com/integromat/vscode-apps-sdk/issues/340)) ([3af925d](https://github.com/integromat/vscode-apps-sdk/commit/3af925d14fa287723f3ed80665c28656a0ef0979))
+* bump vscode-languageserver from 10.0.0-next.16 to 10.0.0-next.17 ([#341](https://github.com/integromat/vscode-apps-sdk/issues/341)) ([163fab9](https://github.com/integromat/vscode-apps-sdk/commit/163fab9e91daf8f442c9ce401b1b051ed6656a5d))
+
+
+### Continuous Integration
+
+* update release-please.yml [skip CI] ([ecefb1c](https://github.com/integromat/vscode-apps-sdk/commit/ecefb1c0d0c6eb944c757f2b3cad1410da840868))
+* update validate-pr.yml ([3c1bff4](https://github.com/integromat/vscode-apps-sdk/commit/3c1bff4f10c8bdd61fda93c8f5fa67936dd11cb7))
+* update validate-pr.yml ([10857a5](https://github.com/integromat/vscode-apps-sdk/commit/10857a58ada1059aa0914cbc3a134176fea54a9a))
+* update validate-pr.yml [skip CI] ([b4152ce](https://github.com/integromat/vscode-apps-sdk/commit/b4152ceb1e361d79a1e9106f6d3d95d0fa0634be))
+
+## [2.5.0](https://github.com/integromat/vscode-apps-sdk/compare/2.4.1...2.5.0) (2026-03-16)
+
+
+### Features
+
+* pre-deploy validator of connection/webhook references ([54ed55e](https://github.com/integromat/vscode-apps-sdk/commit/54ed55e94921465e3505aad029e4764c061eb4d7))
+
+
+### Bug Fixes
+
+* detect and handle stale component mappings (deleted externally) ([#335](https://github.com/integromat/vscode-apps-sdk/issues/335)) ([54ed55e](https://github.com/integromat/vscode-apps-sdk/commit/54ed55e94921465e3505aad029e4764c061eb4d7))
+* use dynamic componentType instead of hardcoded 'module' in createRemoteAppComponent ([#333](https://github.com/integromat/vscode-apps-sdk/issues/333)) ([8f8a68f](https://github.com/integromat/vscode-apps-sdk/commit/8f8a68f33eb90abb98940c514ee42015c89b359c))
+
+
+### Build System
+
+* bump @vscode/extension-telemetry from 1.4.0 to 1.5.0 in the deps-minor-update group ([#329](https://github.com/integromat/vscode-apps-sdk/issues/329)) ([8e0592b](https://github.com/integromat/vscode-apps-sdk/commit/8e0592bf3868104fb7616a999b01307f1f503323))
+* bump eslint from 9.30.0 to 10.0.0 ([#327](https://github.com/integromat/vscode-apps-sdk/issues/327)) ([6d0ff99](https://github.com/integromat/vscode-apps-sdk/commit/6d0ff999f7e3720d8066e2cd54e2f5d54d997be3))
+* bump glob from 11.0.0 to 13.0.4 ([#330](https://github.com/integromat/vscode-apps-sdk/issues/330)) ([7b9ec75](https://github.com/integromat/vscode-apps-sdk/commit/7b9ec758dd9d821b771568ce8077a528ad1a20bd))
+* bump globals from 16.3.0 to 17.3.0 ([#332](https://github.com/integromat/vscode-apps-sdk/issues/332)) ([c9311f4](https://github.com/integromat/vscode-apps-sdk/commit/c9311f4e831a1466d0276b4865ab370ac8eb70d6))
+* bump the deps-minor-update group with 4 updates ([#325](https://github.com/integromat/vscode-apps-sdk/issues/325)) ([5fc7071](https://github.com/integromat/vscode-apps-sdk/commit/5fc707177d7a587d6f26d8e72aaed4dfd6d522fb))
+* bump the deps-minor-update group with 4 updates ([#336](https://github.com/integromat/vscode-apps-sdk/issues/336)) ([432e048](https://github.com/integromat/vscode-apps-sdk/commit/432e04899a5d5ae96a26fbed614f0dda355e486c))
+* bump the devdeps-minor-update group across 1 directory with 5 updates ([#337](https://github.com/integromat/vscode-apps-sdk/issues/337)) ([b295b6f](https://github.com/integromat/vscode-apps-sdk/commit/b295b6ff8d9163e908b363acc60e82f7ac77fd51))
+* bump the devdeps-minor-update group with 5 updates ([#324](https://github.com/integromat/vscode-apps-sdk/issues/324)) ([3efef01](https://github.com/integromat/vscode-apps-sdk/commit/3efef010e3b590f22417d5116a009ba8008a6268))
+* **deps:** uuid to node:crypto, vscode 1.95 to 1.109, language lib 9 to 10 next, typescript 5.5 to 5.9 ([#307](https://github.com/integromat/vscode-apps-sdk/issues/307)) ([03f05ef](https://github.com/integromat/vscode-apps-sdk/commit/03f05efae5ebc10b9d4fd0bfc22a922d7b180272))
+
+## [2.4.1](https://github.com/integromat/vscode-apps-sdk/compare/2.4.0...2.4.1) (2026-03-03)
+
+
+### Miscellaneous Chores
+
+* dependabot cooldown settings ([#314](https://github.com/integromat/vscode-apps-sdk/issues/314)) ([7846a47](https://github.com/integromat/vscode-apps-sdk/commit/7846a47d56b4e4a60127d6f00e217dde236984ec))
+* pin github action to a hash ([#308](https://github.com/integromat/vscode-apps-sdk/issues/308)) ([3786305](https://github.com/integromat/vscode-apps-sdk/commit/3786305c78df5ce51616f9969e2f936af4021db9))
+* tune HTTP response error logging ([#322](https://github.com/integromat/vscode-apps-sdk/issues/322)) ([cf7937c](https://github.com/integromat/vscode-apps-sdk/commit/cf7937cf7e5d126c68cc78532dbc9ae299afe307))
+
+
+### Build System
+
+* bump @vscode/extension-telemetry from 0.9.8 to 1.4.0 ([#317](https://github.com/integromat/vscode-apps-sdk/issues/317)) ([06db2d8](https://github.com/integromat/vscode-apps-sdk/commit/06db2d8938718cfe0097f15519976c1257a1a407))
+* bump applicationinsights from 3.8.0 to 3.9.0 in the deps-minor-update group ([#301](https://github.com/integromat/vscode-apps-sdk/issues/301)) ([78f29ca](https://github.com/integromat/vscode-apps-sdk/commit/78f29ca377d2ad020068cbb2ec4686664b334d79))
+* bump compressing from 1.10.3 to 2.1.0 ([#318](https://github.com/integromat/vscode-apps-sdk/issues/318)) ([dcc3835](https://github.com/integromat/vscode-apps-sdk/commit/dcc3835333e3f8ee6731a20e6422d2c13319d5f3))
+* bump the deps-minor-update group with 3 updates ([#306](https://github.com/integromat/vscode-apps-sdk/issues/306)) ([2c280f5](https://github.com/integromat/vscode-apps-sdk/commit/2c280f504c96a740de7a02a199dc9142199c1c84))
+* bump the devdeps-minor-update group with 2 updates ([#303](https://github.com/integromat/vscode-apps-sdk/issues/303)) ([04f3f0f](https://github.com/integromat/vscode-apps-sdk/commit/04f3f0fa0256e1208fd5afd9c9d8ce99e2dac602))
+
 ## [2.4.0](https://github.com/integromat/vscode-apps-sdk/compare/2.3.1...2.4.0) (2025-08-19)
 
 

@@ -79,6 +79,36 @@
 					},
 					"additionalProperties": false,
 					"required": ["store"]
+				},
+				{
+					"$comment": "Boolean two-group nesting",
+					"type": "object",
+					"properties": {
+						"true": {
+							"description": "Parameters shown when the boolean is checked.",
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$ref": "#/definitions/parameters"
+								}
+							]
+						},
+						"false": {
+							"description": "Parameters shown when the boolean is unchecked.",
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$ref": "#/definitions/parameters"
+								}
+							]
+						}
+					},
+					"additionalProperties": false,
+					"minProperties": 1
 				}
 			]
 		},
@@ -148,7 +178,8 @@
 								"url",
 								"uuid",
 								"banner",
-								"udt"
+								"udt",
+								"section"
 							]
 						},
 						{
@@ -216,6 +247,10 @@
 				},
 				"visible": {
 					"type": "string"
+				},
+				"sectionCollapsed": {
+					"type": "boolean",
+					"description": "Section parameters only. Initial collapse state; defaults to false (expanded)."
 				},
 				"convert": {
 					"description": "Allows you to specify how the parameter will look like in the module interface.",
@@ -301,10 +336,16 @@
 									"type": "string",
 									"minLength": 1,
 									"description": "Alternative help text which is shown only when the mapping is turned on. When this help is provided, the field is mappable automatically."
+								},
+								"label": {
+									"type": "string",
+									"minLength": 1,
+									"description": "Alternative label shown only when mapping is turned on. Falls back to the parameter's top-level `label`."
 								}
 							},
+							"$comment": "`minProperties` replaces the `help`-only `required`: accept `help` and/or `label`, reject empty.",
 							"additionalProperties": false,
-							"required": ["help"]
+							"minProperties": 1
 						}
 					]
 				},
@@ -373,6 +414,10 @@
 				"nested": {
 					"description": "Specifies an array of nested parameters.",
 					"$ref": "#/definitions/nested"
+				},
+				"reversedNested": {
+					"type": "boolean",
+					"description": "Boolean parameters only. Shows a string or array `nested` for `false` instead of `true`."
 				},
 				"options": {
 					"description": "Specifies options for the select.",

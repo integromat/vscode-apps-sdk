@@ -19,6 +19,7 @@ export async function downloadAndStoreAppIcon(
 	apiAuthorization: string,
 	environment: Environment,
 	_isAppOpensource: boolean,
+	forceRedownload = false,
 ): Promise<number> {
 	try {
 		let iconVersion = 0; // TODO Investigate usage of iconVersion. Remove if not needed.
@@ -28,7 +29,7 @@ export async function downloadAndStoreAppIcon(
 			iconLocalPath = getIconLocalPath(app.name, app.version, iconVersion, false);
 		} while (existsSync(`${iconLocalPath.dark}.old`)); // TODO Investigate the usage of `.old` files. Remove if not needed.
 
-		if (!existsSync(iconLocalPath.dark)) {
+		if (forceRedownload || !existsSync(iconLocalPath.dark)) {
 			// Download new icon from API to localdir
 			// TODO Do not wait for icon download. Load the tree without icons and download on the background.
 			try {
@@ -37,15 +38,7 @@ export async function downloadAndStoreAppIcon(
 						Authorization: apiAuthorization,
 						'imt-apps-sdk-version': Meta.version,
 					},
-					url: (() => {
-						switch (environment.version) {
-							case 2:
-								return `${apiBaseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`;
-							case 1:
-							default:
-								return `${apiBaseUrl}/app/${app.name}/${app.version}/icon/512`;
-						}
-					})(),
+					url: `${apiBaseUrl}/sdk/apps/${app.name}/${app.version}/icon/512`,
 					dest: iconLocalPath.dark,
 				});
 			} catch (_err: any) {

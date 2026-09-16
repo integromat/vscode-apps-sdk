@@ -1,4 +1,4 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable semi */
 const vscode = require('vscode')
 const axios = require('axios');
 
@@ -6,7 +6,7 @@ const Core = require('../Core')
 const QuickPick = require('../QuickPick')
 const Meta = require('../Meta')
 
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('node:crypto');
 
 class EnvironmentCommands {
 	static async register(envChanger, _configuration) {
@@ -70,13 +70,13 @@ class EnvironmentCommands {
 			let envs = JSON.parse(JSON.stringify(_configuration.environments))
 
 			// Add new env to environments object
-			const newEnvUuid = uuidv4();
+			const newEnvUuid = randomUUID();
 			envs.push({
 				uuid: newEnvUuid,
 				url: url,
 				name: name,
 				apikey: apikey,
-				version: 2, // 2 = Make, 1 = Integromat (deprecated). TODO remove `version`
+				version: 2, // 2 = Make, 1 = Integromat (deprecated, not supported by this extension anymore).
 			})
 
 			// Save all and reload the window

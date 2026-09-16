@@ -27,7 +27,7 @@ export async function createRemoteAppComponent(opt: {
 	origin: LocalAppOriginWithSecret;
 }): Promise<string> {
 	try {
-		const infoMessage = `Creating ${opt.componentName} "${
+		const infoMessage = `Creating ${opt.componentType} ${opt.componentName} "${
 			opt.componentMetadata.label ?? opt.componentName
 		}" in remote app ${opt.origin.appId}`;
 		log('debug', infoMessage);
@@ -47,7 +47,12 @@ export async function createRemoteAppComponent(opt: {
 			url: componentCreationUrl,
 			method: 'POST',
 			// Add all editable component metadata
-			data: getApiBodyForComponentMetadataDeploy('module', opt.componentMetadata, opt.makecomappJson, opt.origin),
+			data: getApiBodyForComponentMetadataDeploy(
+				opt.componentType,
+				opt.componentMetadata,
+				opt.makecomappJson,
+				opt.origin,
+			),
 		};
 
 		// Add metadata, which are not covered by `getComponentRemoteMetadataToDeploy`,
@@ -100,10 +105,17 @@ export async function createRemoteAppComponent(opt: {
 				}
 				axiosConfig.data.type = opt.componentMetadata.webhookType;
 				break;
+
+			case 'endpoint':
+				// Endpoint creation accepts only { name, label, description?, attachedAccounts? }.
+				// `annotations` is applied later by the metadata PATCH (deployComponentMetadata).
+				// (`context` is not a metadata prop — it is a metadata-backed source code file.)
+				delete axiosConfig.data.annotations;
+				break;
 		}
 
-		// For Module, RPC, function: add `name` (ID)
-		if (['module', 'rpc', 'function'].includes(opt.componentType)) {
+		// For Module, RPC, function, endpoint: add `name` (ID)
+		if (['module', 'rpc', 'function', 'endpoint'].includes(opt.componentType)) {
 			axiosConfig.data.name = opt.componentName;
 		}
 
@@ -123,6 +135,8 @@ export async function createRemoteAppComponent(opt: {
 			case 'rpc':
 				return opt.componentName;
 			case 'function':
+				return opt.componentName;
+			case 'endpoint':
 				return opt.componentName;
 			default:
 				throw new Error(

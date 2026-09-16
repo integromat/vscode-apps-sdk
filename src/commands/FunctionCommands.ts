@@ -38,7 +38,7 @@ export class FunctionCommands {
 			if (!Core.isFilled('name', 'function', name)) { return }
 
 			// Add the new entity. Refresh the tree or show the error
-			await Core.addEntity(_authorization, { name: name }, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, 'function')}`)
+			await Core.addEntity(_authorization, { name: name }, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/${Core.pathDeterminer('function')}`)
 			appsProvider.refresh()
 		}));
 
@@ -80,14 +80,14 @@ export class FunctionCommands {
 					return
 				}
 				// If all checks passed, set URN
-				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${crumbs[4]}/${crumbs[3]}/${Core.pathDeterminer(_environment.version, 'function')}`
+				urn = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${crumbs[4]}/${crumbs[3]}/${Core.pathDeterminer('function')}`
 				functionName = `${crumbs[1]}`
 			}
 
 			// Else parse from context
 			else {
 				// Set correct URN (if called from function or core or test)
-				urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.getApp(context).name}/${Core.getApp(context).version}/${Core.pathDeterminer(_environment.version, 'function')}`
+				urn = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.getApp(context).name}/${Core.getApp(context).version}/${Core.pathDeterminer('function')}`
 				if (context.supertype === 'function') {
 					functionName = `${context.name}`
 				}
@@ -98,16 +98,21 @@ export class FunctionCommands {
 				}
 			}
 
-			// Get current test code
-			const test = await Core.rpGet(`${urn}/${functionName}/test`, _authorization)
+			// Get current test code and the list of all function names
+			const [test, functionListResponse] = await Promise.all([
+				Core.rpGet(`${urn}/${functionName}/test`, _authorization),
+				Core.rpGet(`${urn}`, _authorization, { cols: ['name'] }),
+			]);
 
-			// Get all custom IML functions (includes the tested one)
-			let userFunctions: CustomImlFunction[] = await Core.rpGet(`${urn}`, _authorization, { code: true, cols: ['name', 'code'] })
-			if (_environment.version === 2) {
-				userFunctions = (<any>userFunctions).appFunctions;
-			}
+			const functionList: { name: string }[] = (functionListResponse as any).appFunctions;
 
-			// Merge codes
+			// Fetch each function's draft code via its direct endpoint
+			const userFunctions: CustomImlFunction[] = await Promise.all(
+				functionList.map(async (fn): Promise<CustomImlFunction> => ({
+					name: fn.name,
+					code: await Core.rpGet(`${urn}/${fn.name}/code`, _authorization),
+				})),
+			);
 
 			await executeCustomFunctionTest(functionName, test, userFunctions, outputChannel, _timezone);
 

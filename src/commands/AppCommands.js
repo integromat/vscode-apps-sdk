@@ -22,6 +22,29 @@ const AdmZip = require('adm-zip');
 const { showError, catchError } = require('../error-handling');
 const { promisify2 } = require('../utils');
 const { getModuleDefFromId, getModuleDefFromType } = require('../services/module-types-naming');
+const { downloadAndStoreAppIcon, getIconLocalPath } = require('../libs/app-icon');
+
+/**
+ * Returns a self-contained HTML page with a centered spinner, shown in the icon webview
+ * while the app icon is being fetched on demand.
+ */
+function getIconLoadingHtml() {
+	return `<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+		body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: var(--vscode-font-family); color: var(--vscode-foreground); }
+		.spinner { width: 40px; height: 40px; border: 4px solid var(--vscode-foreground); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; opacity: 0.8; }
+		@keyframes spin { to { transform: rotate(360deg); } }
+	</style>
+</head>
+<body>
+	<div class="spinner"></div>
+	<div>Loading app icon…</div>
+</body>
+</html>`;
+}
 
 class AppCommands {
 	static async register(appsProvider, _authorization, _environment, _admin) {
@@ -83,30 +106,16 @@ class AppCommands {
 
 				let changes = false;
 
-				if (_environment.version === 2) {
-					// If there are some apps to be added
-					if (appsToAdd.length > 0) {
-						await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment.baseUrl}/admin/sdk/apps/favorites`);
-						changes = true;
-					}
+				// If there are some apps to be added
+				if (appsToAdd.length > 0) {
+					await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment.baseUrl}/admin/sdk/apps/favorites`);
+					changes = true;
+				}
 
-					// If there are some apps to be removed
-					if (appsToRemove.length > 0) {
-						await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment.baseUrl}/admin/sdk/apps/favorites`);
-						changes = true;
-					}
-				} else {
-					// If there are some apps to be added
-					if (appsToAdd.length > 0) {
-						await Core.addEntity(_authorization, { name: appsToAdd }, `${_environment.baseUrl}/favorite`);
-						changes = true;
-					}
-
-					// If there are some apps to be removed
-					if (appsToRemove.length > 0) {
-						await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment.baseUrl}/favorite`);
-						changes = true;
-					}
+				// If there are some apps to be removed
+				if (appsToRemove.length > 0) {
+					await Core.deleteEntity(_authorization, { name: appsToRemove }, `${_environment.baseUrl}/admin/sdk/apps/favorites`);
+					changes = true;
 				}
 
 				// If there were some changes, refresh the app tree
@@ -140,20 +149,18 @@ class AppCommands {
 				}
 
 				let version = 1;
-				if ([2].includes(_environment.version)) {
-					let response = await Core.rpGet(`${_environment.baseUrl}/users/me`, _authorization);
+				let response = await Core.rpGet(`${_environment.baseUrl}/users/me`, _authorization);
 
-					//check if a user have "Can create Apps without ID suffix" feature on admin
-					if (response && response.authUser && response.authUser.features && response.authUser.features.allow_apps) {
-						// Version Propmpt
-						version = await vscode.window.showInputBox({
-							prompt: 'Enter app version, if you\'re not creating a new version of an existing app, keep 1',
-							value: version
-						});
-					}
-					if (!Core.isFilled('version', 'app', version, 'A')) {
-						return;
-					}
+				//check if a user have "Can create Apps without ID suffix" feature on admin
+				if (response && response.authUser && response.authUser.features && response.authUser.features.allow_apps) {
+					// Version Propmpt
+					version = await vscode.window.showInputBox({
+						prompt: 'Enter app version, if you\'re not creating a new version of an existing app, keep 1',
+						value: version
+					});
+				}
+				if (!Core.isFilled('version', 'app', version, 'A')) {
+					return;
 				}
 
 				// Description propmpt
@@ -194,35 +201,23 @@ class AppCommands {
 				}
 
 				// Build URI and prepare countries list
-				const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`;
+				const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}`;
 				countries = countries.map(item => {
 					return item.description;
 				});
 
 				// Send the request
-				if (_environment.version === 2) {
-					// TODO : Language not sent, formula tweak needed
-					await Core.addEntity(_authorization, {
-						'name': id,
-						'label': label,
-						'version': parseInt(version) || 1,
-						'description': description,
-						'theme': theme,
-						'language': language.description,
-						'audience': countries.length === 0 ? 'global' : 'countries',
-						'countries': countries.length === 0 ? undefined : countries
-					}, uri);
-				} else {
-					await Core.addEntity(_authorization, {
-						'name': id,
-						'label': label,
-						'description': description,
-						'theme': theme,
-						'language': language.description,
-						'private': true,
-						'countries': countries
-					}, uri);
-				}
+				// TODO : Language not sent, formula tweak needed
+				await Core.addEntity(_authorization, {
+					'name': id,
+					'label': label,
+					'version': parseInt(version) || 1,
+					'description': description,
+					'theme': theme,
+					'language': language.description,
+					'audience': countries.length === 0 ? 'global' : 'countries',
+					'countries': countries.length === 0 ? undefined : countries
+				}, uri);
 				appsProvider.refresh();
 
 			}));
@@ -297,31 +292,21 @@ class AppCommands {
 			}
 
 			// Build URI and prepare countries list
-			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}`;
 			countries = countries.map(country => {
 				return country.description;
 			});
 			countries = countries.length > 0 ? countries : undefined;
 
 			// Send the request
-			if (_environment.version === 2) {
-				await Core.patchEntity(_authorization, {
-					label: label,
-					theme: theme,
-					description: description,
-					language: language.description,
-					audience: countries === undefined ? 'global' : 'countries',
-					countries: countries
-				}, uri);
-			} else {
-				await Core.editEntity(_authorization, {
-					label: label,
-					theme: theme,
-					description: description,
-					language: language.description,
-					countries: countries
-				}, uri);
-			}
+			await Core.patchEntity(_authorization, {
+				label: label,
+				theme: theme,
+				description: description,
+				language: language.description,
+				audience: countries === undefined ? 'global' : 'countries',
+				countries: countries
+			}, uri);
 			appsProvider.refresh();
 		}));
 
@@ -349,7 +334,7 @@ class AppCommands {
 					return;
 				case 'Yes': {
 					// Set URI and send the request
-					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}`;
 					await axios({
 						method: 'DELETE',
 						url: uri,
@@ -385,19 +370,48 @@ class AppCommands {
 				}
 			);
 
+			// Track disposal so we never touch the webview after the user closes the panel (that throws).
+			let panelDisposed = false;
+			panel.onDidDispose(() => { panelDisposed = true; });
+
+			// Show a loading indicator while the current icon is fetched on demand.
+			panel.webview.html = getIconLoadingHtml();
+
+			// Fetch this app's current icon on demand (do not wait for the background icon loader),
+			// forcing a fresh download so the user always edits the up-to-date icon.
+			// On failure, fall back to a blank icon so the user can still upload a new one.
+			let iconVersion = 0;
+			try {
+				iconVersion = await vscode.window.withProgress(
+					{ location: vscode.ProgressLocation.Notification, title: `Loading icon of ${app.label}…` },
+					() => downloadAndStoreAppIcon(app, _environment.baseUrl, _authorization, _environment, false, true)
+				);
+			} catch (err) {
+				showError(err, 'Get/change icon');
+			}
+
+			// If the user closed the panel while the icon was downloading, stop here -
+			// writing to a disposed webview (or registering its listeners) would throw.
+			if (panelDisposed) {
+				return;
+			}
+
+			// Resolve the local path of the freshly downloaded icon (version may differ from the tree node).
+			const rawIcon = getIconLocalPath(app.name, app.version, iconVersion, false);
+
 			// Prepare variable for storing the base64
 			let buff;
 
 			// If the icon exists on the disc -> get its BASE64
-			if (fs.existsSync(app.rawIcon.dark)) {
-				buff = Buffer.from(fs.readFileSync(app.rawIcon.dark)).toString('base64');
+			if (iconVersion > 0 && fs.existsSync(rawIcon.dark)) {
+				buff = Buffer.from(fs.readFileSync(rawIcon.dark)).toString('base64');
 			} else {
 				// If not, use the BASE64 of blank 512*512 png square
 				// eslint-disable-next-line max-len
 				buff = 'iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADZJREFUeJztwQEBAAAAgiD/r25IQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBuCAAAB0niJ8AAAAABJRU5ErkJggg==';
 			}
 
-			// Inject the theme color and the icon to the generated HTML
+			// Inject the theme color and the icon to the generated HTML (replaces the loading spinner).
 			panel.webview.html = Core.getIconHtml(buff, app.theme, path.join(__dirname, '..', '..'));
 
 			panel.webview.onDidReceiveMessage(catchError('Icon change', async (message) => {
@@ -427,7 +441,7 @@ class AppCommands {
 
 					// Prepare request options
 					const options = {
-						url: `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/icon`,
+						url: `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/icon`,
 						method: 'PUT',
 						headers: {
 							Authorization: _authorization,
@@ -442,12 +456,18 @@ class AppCommands {
 						data: fs.createReadStream(uri[0].fsPath),
 					});
 
-					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded)
-					if (await asyncfile.exists(app.rawIcon.dark)) {
-						await asyncfile.rename(app.rawIcon.dark, `${app.rawIcon.dark}.old`);
-					}
-					if (await asyncfile.exists(app.rawIcon.light)) {
-						await asyncfile.rename(app.rawIcon.light, `${app.rawIcon.light}.old`);
+					// If everything has gone well, close the webview panel and refresh the tree (the new icon will be loaded).
+					// Invalidate every locally cached icon path so the background loader re-downloads the fresh one:
+					//  - `rawIcon.*`: the just-resolved path (may not exist if the on-demand fetch failed and version stayed 0)
+					//  - `app.rawIcon.*`: the tree node's current cached path (e.g. from an earlier session/background load)
+					const stalePaths = new Set([
+						rawIcon.dark, rawIcon.light,
+						app.rawIcon?.dark, app.rawIcon?.light,
+					].filter(Boolean));
+					for (const stalePath of stalePaths) {
+						if (await asyncfile.exists(stalePath)) {
+							await asyncfile.rename(stalePath, `${stalePath}.old`);
+						}
 					}
 
 					vscode.commands.executeCommand('apps-sdk.refresh');
@@ -468,13 +488,8 @@ class AppCommands {
 				return;
 			}
 
-			const urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
-			let app = await Core.rpGet(`${urn}`, _authorization);
-
-			// ApiFlip
-			if (_environment.version === 2) {
-				app = app.app;
-			}
+			const urn = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}`;
+			const app = (await Core.rpGet(`${urn}`, _authorization)).app;
 
 			const languages = await QuickPick.languages(_environment, _authorization);
 			app.language = languages.find(language => language.description === app.language);
@@ -502,13 +517,8 @@ class AppCommands {
 				}
 			);
 
-			if (_environment.version === 2) {
-				app.modules = (await Core.rpGet(`${urn}/modules`, _authorization)).appModules.map(m => m.approved);
-				app.rpcsCount = (await Core.rpGet(`${urn}/rpcs`, _authorization)).appRpcs.length;
-			} else {
-				app.modules = (await Core.rpGet(`${urn}/module`, _authorization)).map(m => m.approved);
-				app.rpcsCount = (await Core.rpGet(`${urn}/rpc`, _authorization)).length;
-			}
+			app.modules = (await Core.rpGet(`${urn}/modules`, _authorization)).appModules.map(m => m.approved);
+			app.rpcsCount = (await Core.rpGet(`${urn}/rpcs`, _authorization)).appRpcs.length;
 
 			panel.webview.html = Core.getAppDetailHtml(path.join(__dirname, '..', '..'));
 
@@ -549,7 +559,7 @@ class AppCommands {
 					break;
 				case 'Yes': {
 					// Set URI and send the request
-					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/private`;
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/private`;
 					try {
 						await Core.executePlain(_authorization, '', uri);
 						appsProvider.refresh();
@@ -587,7 +597,7 @@ class AppCommands {
 					break;
 				case 'Yes': {
 					// Set URI and send the request
-					const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/public`;
+					const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/public`;
 					try {
 						await Core.executePlain(_authorization, '', uri);
 						appsProvider.refresh();
@@ -638,9 +648,9 @@ class AppCommands {
 
 				const archive = path.join(DIR, app.name);
 				await asyncfile.mkdir(archive);
-				const urnNoVersion = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}`;
-				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}${_environment.version !== 2 ? `/${context.name}` : ''}`;
-				const urn = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}`;
+				const urnNoVersion = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}`;
+				const urnNoApp = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}`;
+				const urn = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}`;
 
 				try {
 					/**
@@ -650,8 +660,7 @@ class AppCommands {
 						return;
 					}
 					progress.report({ increment: 2, message: `${app.label} - Gathering Metadata` });
-					let a = await Core.rpGet(`${urn}`, _authorization);
-					if (_environment.version === 2) { a = a.app }
+					const a = (await Core.rpGet(`${urn}`, _authorization)).app;
 					await asyncfile.writeFile(path.join(archive, `metadata.json`), JSON.stringify(pick(a, ['name', 'label', 'version', 'theme', 'language', 'countries']), null, 4));
 
 					/**
@@ -678,8 +687,7 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					let connections = await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'connection')}`, _authorization);
-					if (_environment.version === 2) { connections = connections.appConnections }
+					const connections = (await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer('connection')}`, _authorization)).appConnections
 					if (connections.length === 0) {
 						progress.report({ increment: 7, message: `${app.label} - No Connections (skipping)` });
 					} else {
@@ -697,8 +705,7 @@ class AppCommands {
 						progress.report({
 							increment: 0.125 * progressPercentage, message: `${app.label} - Exporting Connection ${connection.label} (metadata)`
 						});
-						let c = (await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}`, _authorization));
-						if (_environment.version === 2) { c = c.appConnection }
+						const c = (await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer('connection')}/${connection.name}`, _authorization)).appConnection
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(c, ['name', 'label', 'type']), null, 4));
 
 						// Get Corresponding Sources
@@ -707,7 +714,7 @@ class AppCommands {
 								increment: (0.875 * progressPercentage) * (0.25), message: `${app.label} - Exporting Connection ${connection.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'connection')}/${connection.name}/${key}`, _authorization), key));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer('connection')}/${connection.name}/${key}`, _authorization), key));
 						}
 					}
 
@@ -717,8 +724,7 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					let rpcs = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}`, _authorization);
-					if (_environment.version === 2) { rpcs = rpcs.appRpcs }
+					const rpcs = (await Core.rpGet(`${urn}/${Core.pathDeterminer('rpc')}`, _authorization)).appRpcs
 					if (rpcs.length === 0) {
 						progress.report({ increment: 17, message: `${app.label} - No RPCs (skipping)` });
 					} else {
@@ -734,8 +740,7 @@ class AppCommands {
 
 						// Get RPC Metadata
 						progress.report({ increment: (0.25 * progressPercentage), message: `${app.label} - Exporting RPC ${rpc.label} (metadata)` });
-						let r = (await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}`, _authorization));
-						if (_environment.version === 2) { r = r.appRpc }
+						const r = (await Core.rpGet(`${urn}/${Core.pathDeterminer('rpc')}/${rpc.name}`, _authorization)).appRpc
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
 							JSON.stringify(pick(r, ['name', 'label', 'connection']), null, 4));
 
@@ -743,7 +748,7 @@ class AppCommands {
 						for (const key of [`api`, `parameters`]) {
 							progress.report({ increment: (0.75 * progressPercentage) * (0.5), message: `${app.label} - Exporting RPC ${rpc.label} (${key})` });
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.name}/${key}`, _authorization), key));
+								Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer('rpc')}/${rpc.name}/${key}`, _authorization), key));
 						}
 					}
 
@@ -753,8 +758,7 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					let webhooks = await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer(_environment.version, 'webhook')}`, _authorization);
-					if (_environment.version === 2) { webhooks = webhooks.appWebhooks }
+					const webhooks = (await Core.rpGet(`${urnNoVersion}/${Core.pathDeterminer('webhook')}`, _authorization)).appWebhooks
 					if (webhooks.length === 0) {
 						progress.report({ increment: 12, message: `${app.label} - No Webhooks (skipping)` });
 					} else {
@@ -770,17 +774,16 @@ class AppCommands {
 
 						// Get Webhook Metadata
 						progress.report({ increment: 0.1 * progressPercentage, message: `${app.label} - Exporting Webhook ${webhook.label} (metadata)` });
-						let w = await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}`, _authorization)
-						if (_environment.version === 2) { w = w.appWebhook }
+						const w = (await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer('webhook')}/${webhook.name}`, _authorization)).appWebhook
 						await asyncfile.writeFile(path.join(archivePath, `metadata.json`), JSON.stringify(pick(w, ['name', 'label', 'connection', 'type']), null, 4));
 
 						// Get Corresponding Sources
-						for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])) {
+						for (const key of [`api`, `parameters`, `attach`, `detach`, `scope`].concat([`update`])) {
 							progress.report({
 								increment: (0.9 * progressPercentage) * (0.2), message: `${app.label} - Exporting Webhook ${webhook.label} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer(_environment.version, 'webhook')}/${webhook.name}/${key}`, _authorization), key));
+								Core.jsonString(await Core.rpGet(`${urnNoApp}/${Core.pathDeterminer('webhook')}/${webhook.name}/${key}`, _authorization), key));
 						}
 					}
 
@@ -790,8 +793,7 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					let modules = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}`, _authorization);
-					if (_environment.version === 2) { modules = modules.appModules }
+					const modules = (await Core.rpGet(`${urn}/${Core.pathDeterminer('module')}`, _authorization)).appModules
 					if (modules.length === 0) {
 						progress.report({ increment: 41, message: `${app.label} - No Modules (skipping)` });
 					} else {
@@ -802,14 +804,13 @@ class AppCommands {
 						if (canceled) {
 							return;
 						}
-						if (_environment.version === 2) { module.type_id = module.typeId; delete module.typeId; }
+						module.type_id = module.typeId; delete module.typeId;
 						const archivePath = path.join(archive, 'modules', module.name);
 						await asyncfile.mkdir(archivePath);
 
 						// Get Module Metadata
 						progress.report({ increment: 0.07 * progressPercentage, message: `${app.label} - Exporting Module ${module.label} (metadata)` });
-						let m = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}`, _authorization)
-						if (_environment.version === 2) { m = m.appModule; m.type_id = m.typeId; delete m.typeId }
+						const m = (await Core.rpGet(`${urn}/${Core.pathDeterminer('module')}/${module.name}`, _authorization)).appModule; m.type_id = m.typeId; delete m.typeId
 						const metadata = pick(m, ['name', 'label', 'description', 'type_id', 'connection', 'webhook']);
 						metadata.type = getModuleDefFromId(metadata.type_id).type;
 						delete metadata.type_id;
@@ -827,7 +828,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer('module')}/${module.name}/${key}`, _authorization), key));
 								}
 								break;
 							// Trigger
@@ -837,7 +838,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.16), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer('module')}/${module.name}/${key}`, _authorization), key));
 								}
 								break;
 							// Instant trigger
@@ -847,7 +848,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.25), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer('module')}/${module.name}/${key}`, _authorization), key));
 								}
 								break;
 							// Responder
@@ -857,7 +858,7 @@ class AppCommands {
 										increment: (0.93 * progressPercentage) * (0.33), message: `${app.label} - Exporting Module ${module.label} (${key})`
 									});
 									await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
-										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'module')}/${module.name}/${key}`, _authorization), key));
+										Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer('module')}/${module.name}/${key}`, _authorization), key));
 								}
 								break;
 						}
@@ -869,8 +870,7 @@ class AppCommands {
 					if (canceled) {
 						return;
 					}
-					let functions = await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'function')}`, _authorization);
-					if (_environment.version === 2) { functions = functions.appFunctions }
+					const functions = (await Core.rpGet(`${urn}/${Core.pathDeterminer('function')}`, _authorization)).appFunctions
 					if (functions.length === 0) {
 						progress.report({ increment: 7, message: `${app.label} - No Functions (skipping)` });
 					} else {
@@ -890,12 +890,53 @@ class AppCommands {
 								increment: progressPercentage * 0.5, message: `${app.label} - Exporting Function ${fun.name}${fun.args} (${key})`
 							});
 							await asyncfile.writeFile(path.join(archivePath, `${key}.js`),
-								(await Core.rpGet(`${urn}/${Core.pathDeterminer(_environment.version, 'function')}/${fun.name}/${key}`, _authorization)) || '');
+								(await Core.rpGet(`${urn}/${Core.pathDeterminer('function')}/${fun.name}/${key}`, _authorization)) || '');
 						}
 					}
 
 					/**
-					 * 9 - Get Icon
+					 * 9 - Get Endpoints (feature may be disabled → skip defensively)
+					 */
+					if (canceled) {
+						return;
+					}
+					let endpoints = [];
+					try {
+						// Suppress the error dialog: the feature may be disabled on the environment — the
+						// catch below skips endpoints instead of surfacing an error and aborting the export.
+						endpoints = (await Core.rpGet(`${urn}/${Core.pathDeterminer('endpoint')}`, _authorization, undefined, true)).appEndpoints || [];
+					} catch {
+						// Endpoints feature may be disabled on the server (or unsupported). Skip without aborting the export.
+						endpoints = [];
+					}
+					if (endpoints.length === 0) {
+						progress.report({ increment: 5, message: `${app.label} - No Endpoints (skipping)` });
+					} else {
+						await asyncfile.mkdir(path.join(archive, 'endpoints'));
+						const endpointProgress = 5 / endpoints.length;
+						for (const endpoint of endpoints) {
+							if (canceled) {
+								return;
+							}
+							const archivePath = path.join(archive, 'endpoints', endpoint.name);
+							await asyncfile.mkdir(archivePath);
+
+							// Get Endpoint Metadata (incl. `context` and `annotations` — these are metadata fields)
+							const e = (await Core.rpGet(`${urn}/${Core.pathDeterminer('endpoint')}/${endpoint.name}`, _authorization)).appEndpoint;
+							await asyncfile.writeFile(path.join(archivePath, `metadata.json`),
+								JSON.stringify(pick(e, ['name', 'label', 'description', 'context', 'annotations', 'attachedAccounts']), null, 4));
+
+							// Get Corresponding Sources
+							for (const key of [`api`, `scope`, `inputParameters`, `outputParameters`]) {
+								progress.report({ increment: endpointProgress * 0.25, message: `${app.label} - Exporting Endpoint ${endpoint.label} (${key})` });
+								await asyncfile.writeFile(path.join(archivePath, `${key}.imljson`),
+									Core.jsonString(await Core.rpGet(`${urn}/${Core.pathDeterminer('endpoint')}/${endpoint.name}/${key}`, _authorization), key));
+							}
+						}
+					}
+
+					/**
+					 * 10 - Get Icon
 					 */
 					if (canceled) {
 						return;
@@ -916,17 +957,14 @@ class AppCommands {
 					}
 
 					/**
-					 * 10 - Note the format
+					 * 11 - Note the format
 					 */
-					if (canceled) {
-						return
-					}
 					await asyncfile.writeFile(path.join(archive, `.sdk`), JSON.stringify({
 						version: 2
 					}, null, 4));
 
 					/**
-					 * 11 - Compress and save
+					 * 12 - Compress and save
 					 */
 					if (canceled) {
 						return;
@@ -1028,7 +1066,7 @@ class AppCommands {
 				return promisify2(entry.getDataAsync)();
 			};
 
-			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined) => {
+			const makeRequestProto = (_label, endpoint, method, contentType, body, _store = undefined, _replaceInBody = undefined, _replaceArrayInBody = undefined) => {
 				return {
 					endpoint: endpoint,
 					method: method,
@@ -1036,6 +1074,7 @@ class AppCommands {
 					body: body,
 					_store: _store,
 					_replaceInBody: _replaceInBody,
+					_replaceArrayInBody: _replaceArrayInBody,
 					_label: _label
 				};
 			};
@@ -1079,7 +1118,6 @@ class AppCommands {
 				/** JSON content of `metadata.json` file */
 				app.metadata = JSON.parse(data.toString());
 
-
 				// Get .sdk metadata raw directly
 				const _sdk = JSON.parse((await new Promise(resolve => {
 					const f = entries.find(entry => entry.entryName.match(`${app.metadata.name}/.sdk`));
@@ -1094,6 +1132,9 @@ class AppCommands {
 						}));
 					}
 				})));
+				if (_sdk.version !== 2) {
+					throw new Error(`This ZIP archive was exported from API v${_sdk.version} (legacy Integromat format), which is no longer supported. Please re-export the app from a current Make environment.`);
+				}
 
 				app.base = (await getData(validator, entries, `${app.metadata.name}/base.imljson`)).toString();
 				app.readme = (await getData(validator, entries, `${app.metadata.name}/readme.md`)).toString();
@@ -1102,10 +1143,10 @@ class AppCommands {
 				} catch (e) {
 					app.icon = undefined;
 				}
-				app.connections = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'connection'), [`api`, `scope`, `scopes`, `parameters`], 'imljson');
-				app.rpcs = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'rpc'), [`api`, `parameters`], 'imljson');
-				app.webhooks = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'webhook'), [`api`, `parameters`, `attach`, `detach`, `scope`, `update`], 'imljson');
-				app.modules = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'module'), {
+				app.connections = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer('connection'), [`api`, `scope`, `scopes`, `parameters`], 'imljson');
+				app.rpcs = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer('rpc'), [`api`, `parameters`], 'imljson');
+				app.webhooks = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer('webhook'), [`api`, `parameters`, `attach`, `detach`, `scope`, `update`], 'imljson');
+				app.modules = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer('module'), {
 					action: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
 					search: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
 					universal: [`api`, `parameters`, `expect`, `interface`, `samples`, `scope`],
@@ -1113,7 +1154,8 @@ class AppCommands {
 					instant_trigger: [`api`, `parameters`, `interface`, `samples`],
 					responder: [`api`, `parameters`, `expect`],
 				}, 'imljson');
-				app.functions = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer(_sdk.version, 'function'), ['code', 'test'], 'js', false);
+				app.functions = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer('function'), ['code', 'test'], 'js', false);
+				app.endpoints = await parseComponent(validator, entries, app.metadata, Core.pathDeterminer('endpoint'), [`api`, `scope`, `inputParameters`, `outputParameters`], 'imljson');
 				return app;
 
 				// validator.count should equal entries.length;
@@ -1137,7 +1179,7 @@ class AppCommands {
 				// Create and upload connections
 				app.connections.forEach((connection) => {
 					// Create connection component in Make
-					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'connection')}`, 'POST', 'application/json',
+					requests.push(makeRequestProto(`Connection ${connection.metadata.label}`, `${remoteApp.name}/${Core.pathDeterminer('connection')}`, 'POST', 'application/json',
 						JSON.stringify(extract(connection.metadata, ['label', 'type'])),
 						[
 							{
@@ -1152,18 +1194,18 @@ class AppCommands {
 					// Upload connection's codes
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
-							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+							`${Core.pathDeterminer('connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 					[`scope`, `scopes`].forEach(code => {
 						requests.push(makeRequestProto(`Connection ${connection.metadata.label} - ${code}`,
-							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
+							`${Core.pathDeterminer('connection')}/#CONN_NAME#/${code}`, 'PUT', 'application/jsonc', connection[code]));
 					});
 				});
 				// Create and Upload RPCs
 				app.rpcs.forEach((rpc) => {
 					// Create new RPC in Make
 					requests.push(makeRequestProto(`RPC ${rpc.metadata.label}`,
-						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('rpc')}`, 'POST', 'application/json', JSON.stringify(rpc.metadata), undefined,
 						[
 							{
 								key: 'connection',
@@ -1173,14 +1215,14 @@ class AppCommands {
 					// Upload RPC's codes
 					[`api`, `parameters`].forEach(code => {
 						requests.push(makeRequestProto(`RPC ${rpc.metadata.label} - ${code}`,
-							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('rpc')}/${rpc.metadata.name}/${code}`, 'PUT', 'application/jsonc', rpc[code]));
 					});
 				});
 				// Create and Upload Webhooks to Make
 				app.webhooks.forEach((webhook) => {
 					// Create new webhook in Make
 					requests.push(makeRequestProto(`Webhook ${webhook.metadata.label}`,
-						`${remoteApp.name}/${Core.pathDeterminer(_environment.version, 'webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
+						`${remoteApp.name}/${Core.pathDeterminer('webhook')}`, 'POST', 'application/json', JSON.stringify(extract(webhook.metadata,
 							['label', 'type', 'connection'])),
 						[
 							{
@@ -1199,9 +1241,9 @@ class AppCommands {
 							}
 						]));
 					// Upload webhooks's codes
-					([`api`, `parameters`, `attach`, `detach`, `scope`].concat(_environment.version === 2 ? [`update`] : [])).forEach(code => {
+					([`api`, `parameters`, `attach`, `detach`, `scope`].concat([`update`])).forEach(code => {
 						requests.push(makeRequestProto(`Webhook ${webhook.metadata.label} - ${code}`,
-							`${_environment.version !== 2 ? `${remoteApp.name}/` : ''}${Core.pathDeterminer(_environment.version, 'webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
+							`${Core.pathDeterminer('webhook')}/#WEBHOOK_NAME#/${code}`, 'PUT', 'application/jsonc', webhook[code]));
 					});
 				});
 				// Create and Upload Modules
@@ -1212,7 +1254,7 @@ class AppCommands {
 
 					// Create module in Make
 					requests.push(makeRequestProto(`Module ${appModule.metadata.label}`,
-						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('module')}`, 'POST', 'application/json', JSON.stringify(body), undefined,
 						[
 							{
 								key: 'connection',
@@ -1243,7 +1285,7 @@ class AppCommands {
 					}
 					codes.forEach(code => {
 						requests.push(makeRequestProto(`Module ${appModule.metadata.label} - ${code}`,
-							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'module')}/${appModule.metadata.name}/${code}`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('module')}/${appModule.metadata.name}/${code}`,
 							'PUT', 'application/jsonc', appModule[code]));
 					});
 				});
@@ -1251,14 +1293,43 @@ class AppCommands {
 				app.functions.forEach(appFunction => {
 					const functionName = /(?:function )(.+)(?:\()/.exec(appFunction.code)[1];
 					requests.push(makeRequestProto(`Function ${functionName}`,
-						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}`, 'POST', 'application/json', JSON.stringify({
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('function')}`, 'POST', 'application/json', JSON.stringify({
 							name: functionName
 						})));
 					[`code`, `test`].forEach(code => {
 						requests.push(makeRequestProto(`Function ${functionName} - ${code}`,
-							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer(_environment.version, 'function')}/${functionName}/${code}`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('function')}/${functionName}/${code}`,
 							'PUT', 'application/javascript', appFunction[code]));
 					});
+				});
+				// Create & upload endpoints. Endpoint name is client-specified (stable), so it is
+				// referenced directly; only `attachedAccounts` (connection refs) may be remapped on import.
+				(app.endpoints || []).forEach((endpoint) => {
+					const name = endpoint.metadata.name;
+					// Create endpoint in Make
+					requests.push(makeRequestProto(`Endpoint ${endpoint.metadata.label}`,
+						`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('endpoint')}`,
+						'POST', 'application/json', JSON.stringify(extract(endpoint.metadata, ['name', 'label', 'description']))));
+					// Upload endpoint's sections
+					[`api`, `scope`, `inputParameters`, `outputParameters`].forEach(code => {
+						requests.push(makeRequestProto(`Endpoint ${endpoint.metadata.label} - ${code}`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('endpoint')}/${name}/${code}`,
+							'PUT', 'application/jsonc', endpoint[code]));
+					});
+					// PATCH the metadata-only fields: context, annotations, attachedAccounts (connection refs).
+					const patchBody = {};
+					if (typeof endpoint.metadata.context === 'string') { patchBody.context = endpoint.metadata.context; }
+					if (endpoint.metadata.annotations && typeof endpoint.metadata.annotations === 'object') { patchBody.annotations = endpoint.metadata.annotations; }
+					const attachedAccounts = Array.isArray(endpoint.metadata.attachedAccounts) ? endpoint.metadata.attachedAccounts : [];
+					if (attachedAccounts.length > 0) { patchBody.attachedAccounts = attachedAccounts; }
+					if (Object.keys(patchBody).length > 0) {
+						requests.push(makeRequestProto(`Endpoint ${endpoint.metadata.label} - metadata`,
+							`${remoteApp.name}/${remoteApp.version}/${Core.pathDeterminer('endpoint')}/${name}`,
+							'PATCH', 'application/json', JSON.stringify(patchBody), undefined, undefined,
+							attachedAccounts.length > 0
+								? [{ key: 'attachedAccounts', slugs: attachedAccounts.map(connName => `connection-${connName}`) }]
+								: undefined));
+					}
 				});
 				return requests;
 
@@ -1281,15 +1352,13 @@ class AppCommands {
 			const entries = zip.getEntries();
 			const app = await parseApp(entries);
 
-			if (_environment.version === 2) {
-				app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
-				if (app.metadata.audience === 'global') {
-					delete app.metadata.countries;
-				}
-				delete app.metadata.version;
-				if (!app.metadata.description) {
-					app.metadata.description = `Imported app ${app.metadata.label}.`
-				}
+			app.metadata.audience = ((!Array.isArray(app.metadata.countries) || app.metadata.countries.length === 0) ? 'global' : 'countries')
+			if (app.metadata.audience === 'global') {
+				delete app.metadata.countries;
+			}
+			delete app.metadata.version;
+			if (!app.metadata.description) {
+				app.metadata.description = `Imported app ${app.metadata.label}.`
 			}
 
 			// App ID (Name) prompt
@@ -1303,11 +1372,11 @@ class AppCommands {
 			}
 
 			// Create new app in Make cloud
-			let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}`);
+			let remoteApp = await Core.addEntity(_authorization, app.metadata, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}`);
 			if (!remoteApp) {
 				return;
 			}
-			if (_environment.version === 2) { remoteApp = remoteApp.app }
+			remoteApp = remoteApp.app
 
 			/** API requests list to push all app parts to Make */
 			const requests = buildRequestQueue(app, remoteApp);
@@ -1334,7 +1403,7 @@ class AppCommands {
 					if (shouldStop) {
 						return;
 					}
-					const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${r.endpoint}`);
+					const uri = replaceSlugs(store, `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${r.endpoint}`);
 					progress.report({
 						increment: (100 / requests.length),
 						message: r._label
@@ -1342,11 +1411,19 @@ class AppCommands {
 
 					let bodyProto = r.body;
 					// Fill all dynamic variables defined in request body by it's current values (stored in `store`)
-					if (r._replaceInBody !== undefined) {
+					if (r._replaceInBody !== undefined || r._replaceArrayInBody !== undefined) {
 						bodyProto = JSON.parse(bodyProto);
-						r._replaceInBody.forEach(replacement => {
+						(r._replaceInBody || []).forEach(replacement => {
 							if (bodyProto[replacement.key]) {
 								bodyProto[replacement.key] = store[replacement.slug];
+							}
+						});
+						// Array refs (e.g. endpoint `attachedAccounts`): map each slug to its stored (possibly renamed) value.
+						(r._replaceArrayInBody || []).forEach(replacement => {
+							if (Array.isArray(bodyProto[replacement.key])) {
+								bodyProto[replacement.key] = replacement.slugs
+									.map(slug => store[slug])
+									.filter(value => value !== undefined && value !== null);
 							}
 						});
 						bodyProto = JSON.stringify(bodyProto);
@@ -1365,7 +1442,7 @@ class AppCommands {
 						transformResponse: (data) => (data),
 					};
 
-					if (_environment.version === 2 && requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
+					if (requestConfig.method === 'POST' && requestConfig.headers['content-type'] === 'application/json') {
 						// TODO Check, if it is ok to send data to Axios stringified
 						const j = JSON.parse(requestConfig.data);
 						requestConfig.data = JSON.stringify(Object.keys(j).reduce((p, c) => {
@@ -1382,7 +1459,7 @@ class AppCommands {
 							let parsed = JSON.parse(axiosResponse.data);
 
 							// Autoparse the nested object
-							if (_environment.version === 2 && Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
+							if (Object.keys(parsed).length === 1 && Object.keys(parsed)[0].startsWith('app')) {
 								parsed = parsed[Object.keys(parsed)[0]];
 							}
 
@@ -1399,7 +1476,7 @@ class AppCommands {
 		 * Clone app
 		 */
 		vscode.commands.registerCommand('apps-sdk.app.clone', async (context) => {
-			if (!Core.envGuard(_environment, [2]) || !Core.contextGuard(context)) { return; }
+			if (!Core.contextGuard(context)) { return; }
 
 			// Form Data
 
@@ -1451,7 +1528,7 @@ class AppCommands {
 				return;
 			}
 
-			const uri = `${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${context.name}/${context.version}/clone`;
+			const uri = `${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${context.name}/${context.version}/clone`;
 			try {
 				await Core.addEntity(_authorization, form, uri);
 				appsProvider.refresh();

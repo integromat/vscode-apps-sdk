@@ -192,6 +192,24 @@ export async function upsertComponentInMakecomappjson(
 			}
 		}
 
+		// Validate `attachedAccounts` connection references (endpoints) are defined as local IDs in "idMapping"
+		if (componentType === 'endpoint' && Array.isArray(componentMetadata.attachedAccounts)) {
+			for (const attachedConnectionLocalId of componentMetadata.attachedAccounts) {
+				const connectionExists = makecomappJson.content.origins.some((origin) =>
+					origin?.idMapping?.connection.some(
+						(idMappingItem) => idMappingItem.local === attachedConnectionLocalId,
+					),
+				);
+				if (origin && !connectionExists) {
+					throw new Error(
+						`Cannot save ${componentType} "${componentLocalId}" in "makecomapp.json", because the "attachedAccounts" reference "${attachedConnectionLocalId}" is not defined in "idMapping" in origin "${
+							origin?.label ?? origin?.appId
+						}".`,
+					);
+				}
+			}
+		}
+
 		makecomappJson.content.components[componentType][componentLocalId] = componentMetadata;
 
 		// Add origin->idMapping to { local: internalComponentId: remote: remoteComponentName }

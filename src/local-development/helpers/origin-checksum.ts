@@ -108,6 +108,8 @@ export function getComponentChecksumArray(
 			return checksums.modules;
 		case 'rpc':
 			return checksums.rpcs;
+		case 'endpoint':
+			return checksums.endpoints ?? [];
 		case 'app':
 			return checksums.app;
 		default:
@@ -199,14 +201,18 @@ export function findOriginChecksum(
 		return outChecksums;
 	}
 
+	// The checksum object key can differ from `apiCodeType` (e.g. endpoint sections use camelCase URL
+	// segments, but the checksum is keyed by the snake_case DB column). `checksumKey` bridges that.
+	const checksumKey = codeDef.checksumKey ?? codeDef.apiCodeType;
+
 	// Add the checksum for the API code type JSONC variant if it exists
-	if (checksum[`${codeDef.apiCodeType}_jsonc`]) {
-		outChecksums.push(checksum[`${codeDef.apiCodeType}_jsonc`] || '');
+	if (checksum[`${checksumKey}_jsonc`]) {
+		outChecksums.push(checksum[`${checksumKey}_jsonc`] || '');
 	}
 
 	// Add the checksum for the API code type if it exists
-	if (checksum[codeDef.apiCodeType]) {
-		outChecksums.push(checksum[codeDef.apiCodeType] || '');
+	if (checksum[checksumKey]) {
+		outChecksums.push(checksum[checksumKey] || '');
 	}
 
 	if (outChecksums.length === 0) {
@@ -249,6 +255,11 @@ export function compareChecksumDeep(
 		crud: 'crud',
 		connection: 'account_name',
 		altConnection: 'alt_account_name',
+		// Endpoint-specific. `annotations`/`attachedAccounts` are complex values whose String() form never
+		// matches the DB column MD5, so they always force a PATCH (safe) without logging a "no mapping" warning.
+		// (`context` is not here — it is a metadata-backed code file, compared via `findOriginChecksum`.)
+		annotations: 'annotations',
+		attachedAccounts: 'attached_accounts',
 	};
 
 	// Iterate over the keys in the local componentMetadataToUpdate

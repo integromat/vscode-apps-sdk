@@ -1,10 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import axios from 'axios';
+import camelCase from 'lodash/camelCase';
 import * as vscode from 'vscode';
 import * as Core from '../Core';
 import * as coreUtils from '../utils/core-utils';
 import * as Meta from '../Meta';
+import { getMetadataBackedCodeDef, getMetadataBackedCodes } from '../services/component-code-def';
 import { RpcProvider } from '../providers/RpcProvider';
 import { ImlProvider } from '../providers/ImlProvider';
 import { ParametersProvider } from '../providers/ParametersProvider';
@@ -80,14 +82,24 @@ export class CoreCommands {
 			url = urlSplitted.join('/');
 		}
 
+		// Metadata-backed codes (e.g. endpoint `context`) have no section route — they are a component
+		// metadata field. Detect them generically (driven by `CodeDef.metadataBacked`) and save by PATCH-ing
+		// the component with `{ [apiCodeType]: file }` instead of PUT-ing to a `/{apiCodeType}` section URL.
+		const metadataBackedCode = getMetadataBackedCodes().find(({ componentType, apiCodeType }) =>
+			new RegExp(`/${Core.pathDeterminer(componentType)}/[^/]+/${apiCodeType}$`).test(url),
+		);
+		if (metadataBackedCode) {
+			url = url.replace(new RegExp(`/${metadataBackedCode.apiCodeType}$`), '');
+		}
+
 		// And compose the URI
 		const uri = this._environment.baseUrl + url;
 
 		// Prepare request options
 		const options = {
 			url: uri,
-			method: 'PUT',
-			data: file,
+			method: metadataBackedCode ? 'PATCH' : 'PUT',
+			data: metadataBackedCode ? JSON.stringify({ [metadataBackedCode.apiCodeType]: file }) : file,
 			headers: {
 				'Content-Type': 'application/jsonc',
 				Authorization: this._authorization,
@@ -108,6 +120,10 @@ export class CoreCommands {
 		}
 		if (path.basename(right) === 'common.imljson') {
 			// Comments are not allowd in encrypted common data, so only JSON is accepted
+			options.headers['Content-Type'] = 'application/json';
+		}
+		if (metadataBackedCode) {
+			// Metadata-backed code is PATCHed as a JSON body `{ [apiCodeType]: file }`.
 			options.headers['Content-Type'] = 'application/json';
 		}
 
@@ -278,17 +294,12 @@ export class CoreCommands {
 			}
 
 			// RPC list url
-			const url = `${this._environment.baseUrl}/${Core.pathDeterminer(
-				this._environment.version,
-				'__sdk',
-			)}${Core.pathDeterminer(this._environment.version, 'app')}/${app}/${version}/${Core.pathDeterminer(
-				this._environment.version,
-				'rpc',
-			)}`;
+			const url = `${this._environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer(
+				'app',
+			)}/${app}/${version}/${Core.pathDeterminer('rpc')}`;
 
 			// Get list of RPCs
-			const response = await Core.rpGet(url, this._authorization);
-			const items: { name: string }[] = this._environment.version === 1 ? response : response.appRpcs;
+			const items: { name: string }[] = (await Core.rpGet(url, this._authorization)).appRpcs;
 			const rpcs = items.map((rpc) => {
 				return `rpc://${rpc.name}`;
 			});
@@ -328,17 +339,12 @@ export class CoreCommands {
 			}
 
 			// IML functions list url
-			const url = `${this._environment.baseUrl}/${Core.pathDeterminer(
-				this._environment.version,
-				'__sdk',
-			)}${Core.pathDeterminer(this._environment.version, 'app')}/${app}/${version}/${Core.pathDeterminer(
-				this._environment.version,
-				'function',
-			)}`;
+			const url = `${this._environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer(
+				'app',
+			)}/${app}/${version}/${Core.pathDeterminer('function')}`;
 
 			// Get list of existing app's custom IML functions
-			const response = await Core.rpGet(url, this._authorization);
-			const items: { name: string }[] = this._environment.version === 1 ? response : response.appFunctions;
+			const items: { name: string }[] = (await Core.rpGet(url, this._authorization)).appFunctions;
 			const imls = items.map((iml) => {
 				return `${iml.name}()`;
 			});
@@ -470,15 +476,10 @@ export class CoreCommands {
 				this.currentGroupsProvider.dispose();
 			}
 
-			const url = `${this._environment.baseUrl}/${Core.pathDeterminer(
-				this._environment.version,
-				'__sdk',
-			)}${Core.pathDeterminer(this._environment.version, 'app')}/${app}/${version}/${Core.pathDeterminer(
-				this._environment.version,
-				'module',
-			)}`;
-			const response = await Core.rpGet(url, this._authorization);
-			const modules = this._environment.version === 1 ? response : response.appModules;
+			const url = `${this._environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer(
+				'app',
+			)}/${app}/${version}/${Core.pathDeterminer('module')}`;
+			const modules = (await Core.rpGet(url, this._authorization)).appModules;
 			const groupsProvider = new GroupsProvider(modules);
 			groupsProvider.buildCompletionItems();
 			this.currentGroupsProvider = vscode.languages.registerCompletionItemProvider(
@@ -514,86 +515,44 @@ export class CoreCommands {
 			switch (apiPath) {
 				case 'rpc':
 				case 'rpcs':
-					if (this._environment.version === 1) {
-						connection = (
-							await Core.rpGet(
-								`${this._environment.baseUrl}/app/${app}/${version}/rpc/${crumbs[4]}`,
-								this._authorization,
-							)
-						).connection;
-					} else {
-						connection = (
-							await Core.rpGet(
-								`${this._environment.baseUrl}/sdk/apps/${app}/${version}/rpcs/${crumbs[4]}`,
-								this._authorization,
-							)
-						).appRpc.connection;
-					}
+					connection = (
+						await Core.rpGet(
+							`${this._environment.baseUrl}/sdk/apps/${app}/${version}/rpcs/${crumbs[4]}`,
+							this._authorization,
+						)
+					).appRpc.connection;
 					break;
 				case 'module':
 				case 'modules':
-					if (this._environment.version === 1) {
-						connection = (
-							await Core.rpGet(
-								`${this._environment.baseUrl}/app/${app}/${version}/module/${crumbs[4]}`,
-								this._authorization,
-							)
-						).connection;
-					} else {
-						connection = (
-							await Core.rpGet(
-								`${this._environment.baseUrl}/sdk/apps/${app}/${version}/modules/${crumbs[4]}`,
-								this._authorization,
-							)
-						).appModule.connection;
-					}
+					connection = (
+						await Core.rpGet(
+							`${this._environment.baseUrl}/sdk/apps/${app}/${version}/modules/${crumbs[4]}`,
+							this._authorization,
+						)
+					).appModule.connection;
 					break;
 				case 'webhook':
 				case 'webhooks':
-					if (this._environment.version === 1) {
-						connection = (
-							await Core.rpGet(
-								`${this._environment.baseUrl}/app/${app}/webhook/${crumbs[4]}`,
-								this._authorization,
-							)
-						).connection;
-					} else {
-						connection = (
-							await Core.rpGet(
-								`${this._environment.baseUrl}/sdk/apps/webhooks/${crumbs[4]}`,
-								this._authorization,
-							)
-						).appWebhook.connection;
-					}
+					connection = (
+						await Core.rpGet(
+							`${this._environment.baseUrl}/sdk/apps/webhooks/${crumbs[4]}`,
+							this._authorization,
+						)
+					).appWebhook.connection;
 					break;
 			}
 
 			if (connection) {
-				let connectionType;
-				let connectionSource;
-				if (this._environment.version === 1) {
-					connectionType = (
-						await Core.rpGet(
-							`${this._environment.baseUrl}/app/${app}/connection/${connection}`,
-							this._authorization,
-						)
-					).type;
-					connectionSource = await Core.rpGet(
-						`${this._environment.baseUrl}/app/${app}/connection/${connection}/api`,
+				const connectionType = (
+					await Core.rpGet(
+						`${this._environment.baseUrl}/sdk/apps/connections/${connection}`,
 						this._authorization,
-					);
-				} else {
-					connectionType = (
-						await Core.rpGet(
-							`${this._environment.baseUrl}/sdk/apps/connections/${connection}`,
-							this._authorization,
-						)
-					).appConnection.type;
-					connectionSource = await Core.rpGet(
-						`${this._environment.baseUrl}/sdk/apps/connections/${connection}/api`,
-						this._authorization,
-					);
-				}
+					)
+				).appConnection.type;
+				const connectionSource = await Core.rpGet(
+					`${this._environment.baseUrl}/sdk/apps/connections/${connection}/api`,
+					this._authorization,
+				);
 				const dataProvider = new DataProvider(connectionSource, connectionType);
 				dataProvider.getAvailableVariables();
 				this.currentDataProvider = vscode.languages.registerCompletionItemProvider(
@@ -624,22 +583,20 @@ export class CoreCommands {
 			'apps-sdk.load-open-source',
 			catchError('Example code load from API', async (item) => {
 				// Compose directory structure
-				let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(
-					_environment.version,
-					'app',
-				)}${_environment.version !== 2 ? `/${Core.getApp(item).name}` : ''}`;
-				let urnForFile = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(
-					_environment.version,
-					'app',
-				)}/${Core.getApp(item).name}`;
+				let urn = `/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}`;
+				let urnForFile = `/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${
+					Core.getApp(item).name
+				}`;
 
 				// Add version to URN for versionable items
 				if (coreUtils.isVersionable(item.apiPath)) {
-					urn += `${_environment.version === 2 ? `/${Core.getApp(item).name}` : ''}/${
-						Core.getApp(item).version
-					}`;
+					urn += `/${Core.getApp(item).name}/${Core.getApp(item).version}`;
 					urnForFile += `/${Core.getApp(item).version}`;
 				}
+
+				// Metadata-backed codes (e.g. endpoint `context`) have no section route — they are read from a
+				// component metadata field. Detect generically via `CodeDef.metadataBacked` (same flag as Local dev).
+				const metadataBackedDef = getMetadataBackedCodeDef(item.parent?.supertype, item.name);
 
 				// Complete the URN by the type of item
 				switch (item.apiPath) {
@@ -653,7 +610,10 @@ export class CoreCommands {
 					case 'connections':
 					case 'webhook':
 					case 'webhooks':
-						urn += `/${item.apiPath}/${item.parent.name}/${item.name}`;
+					case 'endpoint':
+					case 'endpoints':
+						// Metadata-backed → fetch the component DETAIL (no `/{name}` section); extract the field below.
+						urn += `/${item.apiPath}/${item.parent.name}${metadataBackedDef ? '' : `/${item.name}`}`;
 						urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`;
 						break;
 					case 'app':
@@ -689,17 +649,26 @@ export class CoreCommands {
 				 * GET THE SOURCE CODE
 				 * Those lines are responsible straight for the download of code
 				 */
-				const axiosResponse = await axios({
-					url: url,
-					headers: {
-						Authorization: _authorization,
-						'imt-apps-sdk-version': Meta.version,
-					},
-					transformResponse: (res) => res, // Do not parse the response into JSON
-				});
+				let exampleContent: string;
+				if (metadataBackedDef) {
+					// Read the metadata field from the component detail (JSON), not a raw section body.
+					const componentDetail = await Core.rpGet(url, _authorization);
+					exampleContent =
+						componentDetail?.[camelCase(`app_${item.parent.supertype}`)]?.[metadataBackedDef.apiCodeType] ?? '';
+				} else {
+					const axiosResponse = await axios({
+						url: url,
+						headers: {
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version,
+						},
+						transformResponse: (res) => res, // Do not parse the response into JSON
+					});
+					exampleContent = axiosResponse.data;
+				}
 
 				// Save the received code to the temp directory
-				await writeFile(path.join(_DIR, 'opensource', filepath), axiosResponse.data, { mode: 440 });
+				await writeFile(path.join(_DIR, 'opensource', filepath), exampleContent, { mode: 440 });
 
 				// Open the downloaded code in the editor
 				vscode.window.showTextDocument(
@@ -720,22 +689,20 @@ export class CoreCommands {
 				// TODO Refactor this to use `pullComponentCode()` function.
 
 				// Compose directory structure
-				let urn = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(
-					_environment.version,
-					'app',
-				)}${_environment.version !== 2 ? `/${Core.getApp(item).name}` : ''}`;
-				let urnForFile = `/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(
-					_environment.version,
-					'app',
-				)}/${Core.getApp(item).name}`;
+				let urn = `/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}`;
+				let urnForFile = `/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${
+					Core.getApp(item).name
+				}`;
 
 				// Add version to URN for versionable items
 				if (coreUtils.isVersionable(item.apiPath)) {
-					urn += `${_environment.version === 2 ? `/${Core.getApp(item).name}` : ''}/${
-						Core.getApp(item).version
-					}`;
+					urn += `/${Core.getApp(item).name}/${Core.getApp(item).version}`;
 					urnForFile += `/${Core.getApp(item).version}`;
 				}
+
+				// Metadata-backed codes (e.g. endpoint `context`) have no section route — they are read from a
+				// component metadata field. Detect generically via `CodeDef.metadataBacked` (same flag as Local dev).
+				const metadataBackedDef = getMetadataBackedCodeDef(item.parent?.supertype, item.name);
 
 				// Complete the URN by the type of item
 				switch (item.apiPath) {
@@ -749,7 +716,11 @@ export class CoreCommands {
 					case 'connections':
 					case 'webhook':
 					case 'webhooks':
-						urn += `/${item.apiPath}/${item.parent.name}/${item.name}`;
+					case 'endpoint':
+					case 'endpoints':
+						// Metadata-backed → fetch the component DETAIL (no `/{name}` section); extract the field below.
+						// The local file is still named `…/{name}.{ext}`.
+						urn += `/${item.apiPath}/${item.parent.name}${metadataBackedDef ? '' : `/${item.name}`}`;
 						urnForFile += `/${item.apiPath}/${item.parent.name}/${item.name}`;
 						break;
 					case 'app':
@@ -792,19 +763,27 @@ export class CoreCommands {
 				 * GET THE SOURCE CODE
 				 * Those lines are responsible straight for the download of code
 				 */
-				const axiosResponse = await axios({
-					url: url,
-					headers: {
-						Authorization: _authorization,
-						'imt-apps-sdk-version': Meta.version,
-					},
-					transformResponse: (res) => {
-						return res;
-					}, // Do not parse the response into JSON
-				});
+				let write: string;
+				if (metadataBackedDef) {
+					// Read the metadata field from the component detail (JSON), not a raw section body.
+					const componentDetail = await Core.rpGet(url, _authorization);
+					write =
+						componentDetail?.[camelCase(`app_${item.parent.supertype}`)]?.[metadataBackedDef.apiCodeType] ?? '';
+				} else {
+					const axiosResponse = await axios({
+						url: url,
+						headers: {
+							Authorization: _authorization,
+							'imt-apps-sdk-version': Meta.version,
+						},
+						transformResponse: (res) => {
+							return res;
+						}, // Do not parse the response into JSON
+					});
 
-				// Prepare a stream to be saved
-				let write = axiosResponse.data;
+					// Prepare a stream to be saved
+					write = axiosResponse.data;
+				}
 
 				// Fix null value -- DON'T FORGET TO CHANGE IN IMPORT WHEN CHANGING THIS
 				// Happends on legacy Integromat only, where DB null value is directly returned without filling the default value "{}"|"[]"

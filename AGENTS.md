@@ -1,94 +1,147 @@
-# AGENT.md - AI Coding Agent Instructions
+# Make Apps Editor - VSCode Extension
 
-This document provides comprehensive guidance for AI coding agents working on the Make Apps SDK VS Code Extension project.
+VSCode extension for developing, managing, and deploying custom apps on the [Make](https://make.com) no-code integration platform.
 
-## Project Overview
+Tech stack: Mix of JavaScript (older code) and TypeScript, VSCode Extension API, Axios for Make REST API communication.
 
-**Project Name:** Make Apps Editor for VS Code
-**Type:** VS Code Extension, Command Line Interface (CLI)
-**Language:** TypeScript (with some JavaScript legacy files)
-**Purpose:** Development and management tool for Custom Applications (formerly named as SDK apps) on the Make.com visual automation platform
+## Project Purpose
 
-### VS Code Extension
+Provides two modes of working with Make custom apps:
 
-#### Key Features
+1. **Online Mode** - Direct CRUD operations on Make cloud apps via sidebar tree view. Commands in `src/commands/`, tree providers in `src/providers/`, API helpers in `src/Core.ts`.
+2. **Local Development Mode** - Clone Make apps as local files, work offline with git versioning, deploy back. All code in `src/local-development/`.
 
-- Online and offline source code editor with syntax highlighting for IML (Integromat Markup Language)
-- App component management (modules, RPCs, connections, webhooks, IML functions)
-- Icon editor and metadata management
-- Version control integration
-- Data structure generator (UDT)
-- Local Development for Apps (clone, edit, deploy workflow)
-  - Note: The most of logclearic/libs/functions for local development is implemented in `/src/local-development` directory
+## Architecture Overview
 
-#### Error Handling in all parts related to VS Code Extension
+### Extension Activation
 
-```typescript
-import { catchError } from './error-handling';
+Entry point: `src/extension.ts`. Activates when workspace contains `makecomapp.json`. Registers commands, tree views, language features, and telemetry.
 
-// Wrap async command handlers
-export async function someCommand() {
-  return catchError(async () => {
-    // Command implementation
-  });
-}
-```
+### API Communication
 
-#### Logging in all parts related to VS Code Extension
+- `src/utils/request-api-make.ts` - Central HTTP client wrapping Axios. Rate-limits to 2 concurrent requests (via `throat`), auto-retries on 429. Adds extension version header.
+- `src/Core.ts` - Higher-level API helpers (`rpGet`, `addEntity`, `editEntity`, `patchEntity`, `deleteEntity`). Supports both API v1 (legacy Integromat) and v2 (Make) via `pathDeterminer()`.
+- Authentication:
+  - **Online Mode**: API key is stored in VSCode settings as part of the configured Make environments and sent as `Authorization: Token <key>`.
+  - **Local Development Mode**: API key is read from each origin’s `apikeyFile` defined in `makecomapp.json` (typically pointing to a `.secrets/...` file). The extension can prompt to create/update this secret file. The same `Authorization: Token <key>` header is used for requests.
 
-```typescript
-import { log } from './output-channel';
+Note: API v1 (legacy Integromat) is deprecated - do NOT implement new features using v1 endpoints. Use v2 endpoints exclusively.
 
-log('debug', 'Debug message');
-log('info', 'Info message');
-log('error', 'Error message', error);
-```
+### Error Handling
 
-### Setup
+`src/error-handling.ts`:
+- `errorToString()` - Extracts structured error info from AxiosError responses (detail, suberrors, message fields).
+- `showAndLogError()` - Displays errors in VSCode UI + logs to output channel.
+- `catchError()` - Wrapper used on all command registrations for consistent error handling.
+- `improveSomeErrors()` - Maps known generic API errors to user-friendly messages.
 
-```bash
-npm ci                    # Install dependencies
-npm run compile           # Compile whole project from TypeScript to JavaScript
-```
+### Multi-Environment Support
 
-### Testing
+Users can configure multiple Make environments (different instances/regions). Config structure in `src/providers/configuration.ts`. Each environment has: URL, API key, API version (1 or 2), optional flags (unsafe, admin).
 
-```bash
-npm run test              # Run Mocha tests (includes also npm run compile - no need to test compilation separately)
-npm run eslint            # Lint TypeScript files
-```
+## Local Development for Apps
 
-#### Key Components Deep Dive
+This is the most complex subsystem. It enables bidirectional sync between Make cloud apps and local filesystem.
 
-##### 1. Extension Activation
+### Core Concept
 
-**File**: `src/extension.ts`
+A Make app consists of **components** (connections, webhooks, modules, RPCs, functions) each containing **code files** (communication, parameters, interface, etc.). Local Development clones these into a filesystem structure managed by `makecomapp.json`.
 
-- Activates on: `workspaceContains:**/makecomapp.json`
-- Starts IMLJSON language server
-- Registers all commands and providers
-- Handles backward compatibility for config migration
-- Sets up telemetry
+### makecomapp.json - The Manifest
 
-##### 2. Local Development of Make Apps
+Central manifest file. Defines:
+- `components` - Local component definitions keyed by local ID, with metadata (label, type, code file paths, references to other components)
+- `origins` - One or more remote Make instances the app syncs with
+- `origins[].idMapping` - Maps local component IDs to remote component names
 
-**Files**: `src/local-development/*` works as the core library for local development features. They are share between VS Code Extension and CLI.
+Types defined in `src/local-development/types/makecomapp.types.ts` (interface `MakecomappJson`).
 
-- Is the key new feature for managing Make apps locally (similarly as clonning a Git repo)
+### Component ID Mapping System
 
-#### Final Notes for Agents (for VS Code Extension part)
+Each component has a **local ID** (chosen by developer) and a **remote name** (assigned by Make API or matching local). The `idMapping` in each origin tracks these pairs:
+- `{local: "myConn", remote: "myConn"}` - paired
+- `{local: "myConn", remote: null}` - local only, not yet deployed
+- `{local: null, remote: "oldConn"}` - remote only, ignored locally
+- `{localDeleted: true, ...}` - marked for remote deletion. Purspose: allows tracking deleted components to remove them from Make on next deploy.
+- `{nonOwnedByApp: true, ...}` - remote component that belongs to a different app version (typically connections/webhooks from another major version). No local code files are created; code deployment is skipped. These components are placed in `makecomapp.json` so they can be referenced by other components (e.g., a module referencing a non-owned connection).
 
-1. **Always run ESLint** before committing: `npm run eslint`
-2. **Test & compilation**: `npm run test` must succeed
-3. **Respect tabs**: This project uses tabs, not spaces
-4. **Update schemas**: Run `npm run schema:makecomapp` after type changes
-5. **Check package.json**: Commands, menus, settings must stay in sync
-6. **Use `catchError`** wrapper for all command handlers
+Helper class: `src/local-development/helpers/component-id-mapping-helper.ts` (`ComponentIdMappingHelper`).
 
-### Command Line Interface
+### Component Types and Dependencies
 
-CLI client for local development.
+| Type | API name | Can reference |
+|------|----------|--------------|
+| connection | accounts | - |
+| webhook | hooks | connection |
+| module | modules | connection, altConnection, webhook |
+| rpc | rpcs | connection |
+| function | functions | - |
 
-The CLI wrapper is implemented in `src/cli`. See `AGENTS.md` in that directory for details.
+**Critical:** Components have cross-references. A module can reference a connection and webhook. These references use **local IDs** in `makecomapp.json` but must be translated to **remote names** when calling the API.
 
-It is the wrapper around already implemented functionality in the `/src/local-development` directory.
+### Deploy Flow
+
+`src/local-development/deploy.ts` (`bulkDeploy`):
+1. Find affected codes via `findCodesByFilePath()`
+2. Align mappings via `alignComponentsMapping()` - resolves unmapped components (ask user to deploy as new, map to existing, or ignore)
+3. Deploy code files - MD5 checksum comparison skips unchanged files
+4. Deploy metadata - PATCH component properties (label, type, connection references)
+
+**Deploy ordering** (defined in `src/services/component-types-order.ts`): app(0) -> connection(1) -> rpc(2) -> webhook(3) -> module(4) -> function(5). This ensures dependencies exist before dependents.
+
+### Creating Remote Components
+
+`src/local-development/create-remote-component.ts`:
+- Called during deploy when a local component has no remote counterpart
+- POSTs to Make API to create component skeleton
+- Must translate component reference IDs (e.g., module's connection reference) from local to remote names using `ComponentIdMappingHelper`
+- Different component types require different API body shapes (`getApiBodyForComponentMetadataDeploy()` in `src/local-development/deploy-metadata.ts`)
+
+### Pulling and Cloning
+
+- `src/local-development/clone.ts` - Full app clone from Make to local workspace
+- `src/local-development/pull.ts` - Pull specific or all components, updating local files and checksums
+- `src/local-development/code-pull-deploy.ts` - Individual code file pull/deploy operations
+
+### Checksums
+
+Source of truth for change detection. API returns MD5 checksums per code file per component. Compared against local file hashes to skip unchanged deployments. Types in `src/local-development/types/checksum.types.ts`.
+
+## Custom Languages
+
+The extension provides syntax support for Make-specific formats:
+- **IML** (Integromat Markup Language) - Template language injected into JSON strings. Grammar: `syntaxes/iml/`
+- **IMLJSON** - JSON with embedded IML expressions. Grammar + schemas + snippets: `syntaxes/imljson/`
+- **Language Server** - Full LSP implementation in `syntaxes/imljson-language-features/server/` providing validation, completion, hover, formatting against JSON schemas.
+
+File types are validated against schemas in `syntaxes/imljson/schemas/` (parameters, api, common, base, scopes, etc.). Not all schema associations are static files, though: `src/services/imljson-schema-associations.ts` also derives the Endpoint Input/Output Parameters schemas at runtime from `parameters.json`, and in online mode (API v2) dynamically enriches `api.json` per app+version with that app's real Endpoint names and Input Parameter suggestions (fetched and cached with a 60s TTL). Local development always gets the static/derived schemas only (free-string endpoint name).
+
+## Build and Test
+
+- **Build:** `npm run compile` (runs `tsc` for both main extension and language server)
+- **Test:** `npm run test` (compile + Mocha via `@vscode/test-electron`)
+- **Test pattern:** `*.test.ts` files co-located with source. TDD-style (`suite`/`test`). Uses Node `assert`.
+- **Lint:** `npm run eslint` (ESLint with TypeScript)
+- **Schema generation:** `npm run schema:makecomapp` generates JSON schema from TypeScript types
+- **Package:** `npm run vsceBuild` / `npm run vscePublish` (with pre-release flag mechanism)
+- **CI:** GitHub Actions in `.github/workflows/ci.yaml` - runs tests on Ubuntu with xvfb
+
+## Key Conventions
+
+- Online-mode commands are in `src/commands/` as JS files with static `register()` methods. Local-dev commands are registered in `src/local-development/index.ts`.
+- All async command handlers are wrapped with `catchError()` for consistent error display.
+- Progress dialogs use `AsyncLocalStorage` pattern - see `src/utils/vscode-progress-dialog.ts`.
+- Component code types map between user-friendly names and API names. Definitions in `src/services/component-code-def.ts`.
+- File paths for local components follow: `{componentType}s/{localId}/{kebab-id}.{codeType}.{ext}`. Path logic in `src/local-development/local-file-paths.ts`.
+
+## Known Gotchas
+
+- API uses different names for component types than the extension: `accounts` (not connections), `hooks` (not webhooks).
+- Checksum API returns component types under these API names, not local names.
+- When creating remote components during deploy, all referenced components (connections, webhooks) must already exist in remote. The deploy ordering handles this, but the ID translation from local to remote must be correct.
+- Some components may be "non-owned" - belonging to a different app version. In checksums they have `external: true`, in idMapping they have `nonOwnedByApp: true`. Applies only to connections and webhooks. Their code is not deployed and no local files are created, but they can be referenced by other components.
+
+## When in Plan Mode
+- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
+- Interview user in detail (for Claude: use the AskUserQuestionTool) about literally anything: technical implementation, UI & UX, concerns, tradeoffs, etc. but make sure the questions are not obvious. Be very in-depth and continue interviewing the user continually until it's complete. Use the answers to create a detailed spec.
+- Make assumptions explicit: When you must proceed under uncertainty, list assumptions up front and continue.

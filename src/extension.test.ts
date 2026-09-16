@@ -1,4 +1,6 @@
 import * as assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { after, before, suite } from 'mocha';
 import * as tempy from 'tempy';
 import * as vscode from 'vscode';
@@ -217,6 +219,91 @@ suite('App online file edit validations', () => {
 	// Close all forgotly opened files (but all should be already closed)
 	after(async () => {
 		await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+	});
+});
+
+suite('Endpoint api.imljson combined schema validation (online mode)', () => {
+	let documentUri: vscode.Uri;
+	let textDocument: vscode.TextDocument;
+	let e: vscode.TextEditor;
+
+	before(async () => {
+		const endpointDir = path.join(tempy.directory(), 'endpoints', 'list-things');
+		fs.mkdirSync(endpointDir, { recursive: true });
+		documentUri = vscode.Uri.file(path.join(endpointDir, 'api.imljson'));
+		await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(''));
+		textDocument = await vscode.workspace.openTextDocument(documentUri);
+		e = await vscode.window.showTextDocument(textDocument, 1, false);
+	});
+
+	after(async () => {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor', documentUri);
+		await vscode.workspace.fs.delete(documentUri);
+	});
+
+	test('Endpoint api.imljson flags the `endpoint` directive (combined with endpoint-api.json)', async () => {
+		await setEditorContentAndWaitForDiagnosticsChange(e, '{"endpoint":"x"}');
+
+		const problems = vscode.languages.getDiagnostics(documentUri);
+		assert.ok(
+			problems.some((problem) => problem.message === 'Matches a schema that is not allowed.'),
+			`Expected a "not allowed" diagnostic, got: ${problems.map((problem) => problem.message).join('; ')}`,
+		);
+	});
+});
+
+suite('base.imljson timeout directive (online mode)', () => {
+	let documentUri: vscode.Uri;
+	let textDocument: vscode.TextDocument;
+	let e: vscode.TextEditor;
+
+	before(async () => {
+		documentUri = vscode.Uri.parse(tempy.file({ name: 'base.imljson' }));
+		await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(''));
+		textDocument = await vscode.workspace.openTextDocument(documentUri);
+		e = await vscode.window.showTextDocument(textDocument, 1, false);
+	});
+
+	after(async () => {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor', documentUri);
+		await vscode.workspace.fs.delete(documentUri);
+	});
+
+	test('Accepts a timeout within bounds, flags one over the maximum', async () => {
+		await setEditorContentAndWaitForDiagnosticsChange(e, '{"timeout":400000}');
+		assert.deepStrictEqual(
+			vscode.languages.getDiagnostics(documentUri).map((problem) => problem.message),
+			['Value is above the maximum of 300000.'],
+		);
+
+		await setEditorContentAndWaitForDiagnosticsChange(e, '{"timeout":30000}');
+		assert.deepStrictEqual(vscode.languages.getDiagnostics(documentUri), []);
+	});
+});
+
+suite('inputParameters.imljson derived schema validation (online mode)', () => {
+	let documentUri: vscode.Uri;
+	let textDocument: vscode.TextDocument;
+	let e: vscode.TextEditor;
+
+	before(async () => {
+		documentUri = vscode.Uri.parse(tempy.file({ name: 'inputParameters.imljson' }));
+		await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(''));
+		textDocument = await vscode.workspace.openTextDocument(documentUri);
+		e = await vscode.window.showTextDocument(textDocument, 1, false);
+	});
+
+	after(async () => {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor', documentUri);
+		await vscode.workspace.fs.delete(documentUri);
+	});
+
+	test('Flags a parameter missing `help`', async () => {
+		await setEditorContentAndWaitForDiagnosticsChange(e, '[{"name":"foo","type":"text"}]');
+		assert.deepStrictEqual(
+			vscode.languages.getDiagnostics(documentUri).map((problem) => problem.message),
+			['Missing property "help".'],
+		);
 	});
 });
 

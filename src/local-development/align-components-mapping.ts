@@ -11,6 +11,7 @@ import { ComponentIdMappingHelper } from './helpers/component-id-mapping-helper'
 import { createLocalEmptyComponent } from './create-local-empty-component';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { entries } from '../utils/typed-object';
+import { log } from '../logging';
 import { progresDialogReport } from '../utils/vscode-progress-dialog';
 import { deleteOriginComponent } from './delete-origin-component';
 import type { Checksum } from './types/checksum.types';
@@ -96,7 +97,7 @@ export async function alignComponentsMapping(
 	}[] = [];
 
 	// Fill `remoteOnly`
-	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	const allComponentTypes: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function', 'endpoint'];
 	for (const componentType of allComponentTypes) {
 		const checksums = getComponentChecksumArray(originChecksums, componentType);
 		const originNames = checksums.map((checksum) => {
@@ -148,14 +149,120 @@ export async function alignComponentsMapping(
 		}
 	}
 
+	// Detect stale mappings: mapping says remote exists, but checksums say it doesn't.
+	// This happens when a remote component was deleted externally (e.g., via Make UI).
+	for (const componentType of allComponentTypes) {
+		const checksumEntries = getComponentChecksumArray(originChecksums, componentType);
+		const remoteNamesInChecksums = new Set(checksumEntries.map((c) => c.name));
+		const idMappingItems = [...(origin.idMapping?.[componentType] ?? [])]; // snapshot before mutation
+
+		for (const mappingItem of idMappingItems) {
+			// If remote is defined in mapping
+			if (mappingItem.remote !== null && mappingItem.remote !== undefined) {
+				// Remote is missing in checksums → the remote component was deleted externally.
+				if (!remoteNamesInChecksums.has(mappingItem.remote)) {
+					if (mappingItem.localDeleted) {
+						// Mapping has localDeleted=true AND remote is already gone.
+						// Both sides agree the component should not exist → silently clean up the orphan mapping.
+						log(
+							'info',
+							`Component ${componentType} "${mappingItem.remote}" was deleted locally and` +
+								` also no longer exists in Make. Cleaning up orphan mapping.`,
+						);
+						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
+						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
+						await makecomappJsonFile.saveChanges();
+					} else if (mappingItem.local === null) {
+						// Mapping has local=null (deliberately ignored remote) AND remote is now gone.
+						// No local component to re-create, no user action needed → silently clean up.
+						log(
+							'info',
+							`Deliberately ignored remote ${componentType} "${mappingItem.remote}" no longer exists` +
+								` in Make. Cleaning up stale mapping.`,
+						);
+						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
+						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
+						await makecomappJsonFile.saveChanges();
+					} else {
+						// Stale mapping: remote was deleted externally, but local still references it.
+						log(
+							'warn',
+							`Component ${componentType} mapping to remote "${mappingItem.remote}" is stale` +
+								` (remote component no longer exists in Make).`,
+						);
+
+						// Ask user what to do
+						const userChoice = await vscode.window.showQuickPick(
+							[
+								{
+									label: 'Unlink from deleted remote and continue',
+									description: `Remove the outdated mapping for ${componentType} "${mappingItem.local ?? mappingItem.remote}"`,
+									action: 'unlink' as const,
+								},
+								{
+									label: 'Cancel operation with no fix',
+									description: 'Stop the current operation. Resolve the issue manually.',
+									action: 'cancel' as const,
+								},
+							],
+							{
+								ignoreFocusOut: true,
+								title: `Remote ${componentType} "${mappingItem.remote}" no longer exists in Make, but local mapping still references it`,
+							},
+						);
+
+						if (!userChoice || userChoice.action === 'cancel') {
+							throw new Error(
+								`Operation cancelled. Remote ${componentType} "${mappingItem.remote}" no longer exists.` +
+									` Remove or fix the mapping in makecomapp.json manually.`,
+							);
+						}
+
+						// action === 'unlink'
+						const mappingHelper = makecomappJsonFile.getComponentIdMappingHelper(origin);
+						mappingHelper.removeByRemoteName(componentType, mappingItem.remote);
+						await makecomappJsonFile.saveChanges();
+
+						// If local component exists, add to `localOnly` so existing flow handles re-creation
+						if (mappingItem.local !== null) {
+							const componentMetadata =
+								makecomappJsonFile.content.components[componentType]?.[mappingItem.local];
+							if (
+								componentMetadata &&
+								!localOnly.some(
+									(c) =>
+										c.componentType === componentType && c.componentLocalId === mappingItem.local,
+								)
+							) {
+								localOnly.push({
+									componentType,
+									componentLocalId: mappingItem.local,
+									componentMetadata,
+								});
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	/*
 	 * Whole list of `localOnly` + `remoteOnly` will be processed (aligned) now.
 	 *
 	 * Note: The order is important here.
-	 *       Connections and webhooks must be created first, because modules and RPCs can references on them,
+	 *       Connections and webhooks must be created first, because modules, endpoints and RPCs can reference them,
 	 *       and it means that referenced webhooks/connections must already exists in time of referencing component creation.
+	 *       Additionally, endpoints can be referenced from Modules and RPCs.
 	 */
-	const componentsProcessingOrder: AppComponentType[] = ['connection', 'webhook', 'module', 'rpc', 'function'];
+	const componentsProcessingOrder: AppComponentType[] = [
+		'connection',
+		'webhook',
+		'endpoint',
+		'module',
+		'rpc',
+		'function',
+	];
 	/** Stores the user's preference for case of answer "apply for all". */
 	let userPreferedResolutionOfUnmappedLocal: symbol | undefined = undefined;
 	/** Stores the user's preference for case of answer "apply for all". */

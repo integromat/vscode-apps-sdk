@@ -140,6 +140,7 @@ export async function cloneAppToWorkspace(
 			function: [],
 			rpc: [],
 			webhook: [],
+			endpoint: [],
 		},
 		apikeyFile: path.posix.relative(localAppRootdir.path, apikeyFileUri.path),
 		apikey: apikey,
@@ -162,6 +163,7 @@ export async function cloneAppToWorkspace(
 			function: {},
 			rpc: {},
 			webhook: {},
+			endpoint: {},
 		},
 		origins: [originWithoutApiKey],
 	};

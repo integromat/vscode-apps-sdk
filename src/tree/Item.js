@@ -1,4 +1,4 @@
-/* eslint-disable semi,@typescript-eslint/no-var-requires */
+/* eslint-disable semi */
 const EnhancedTreeItem = require('./EnhancedTreeItem');
 const { translateModuleTypeId } = require('../services/module-types-naming');
 
@@ -47,7 +47,6 @@ class Item extends EnhancedTreeItem {
 	 *         False for regular user's app.
 	 */
 	get isAppOpensource()/*:boolean */ {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let app/*:EnhancedTreeItem*/ = this;
 		while (app.parent) { app = app.parent; }
 		return app.isOpensource ;

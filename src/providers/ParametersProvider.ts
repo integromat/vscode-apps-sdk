@@ -28,7 +28,7 @@ export class ParametersProvider {
 	async loadParameters(crumbs: string[], version: string) {
 
 		// Preparing api route
-		let urn = `/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}`;
+		let urn = `/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}`;
 		if (coreUtils.isVersionable(crumbs[3])) {
 			urn += `/${crumbs[2]}/${version}`;
 		}
@@ -52,6 +52,26 @@ export class ParametersProvider {
 				showAndLogError(err, 'loadParameters');
 			}
 
+		}
+
+		/*
+		 * ENDPOINT INPUT PARAMETERS
+		 * Endpoints store their mappable parameters under the `inputParameters` section (not `parameters`).
+		 */
+		if (crumbs[3] === 'endpoint' || crumbs[3] === 'endpoints') {
+			const url = `${this._environment.baseUrl}${urn}/inputParameters`;
+			try {
+				const parameters = await requestMakeApi({
+					url: url,
+					headers: {
+						Authorization: this._authorization,
+					},
+					transformResponse: (res: AxiosResponse) => { return res; },  // Do not parse the response into JSON
+				});
+				this.availableParameters = this.availableParameters.concat(this.generateParametersMap(jsoncParser.parse(parameters), 'parameters'));
+			} catch (err: any) {
+				showAndLogError(err, 'loadParameters');
+			}
 		}
 
 		/*

@@ -1,4 +1,4 @@
-import type { ConnectionType, WebhookType } from './component-types.types';
+import type { ConnectionType, EndpointAnnotations, WebhookType } from './component-types.types';
 import type { Crud } from '../local-development/types/crud.types';
 
 /**
@@ -96,15 +96,41 @@ export interface ComponentsApiResponseFunctionItem {
 	args: string;
 }
 
+/**
+ * Item of array `appEndpoints` of API response:
+ * /api/v2/sdk/apps/[appId]/[appVersion]/endpoints
+ */
+export interface ComponentsApiResponseEndpointItem {
+	name: string;
+	label: string;
+	description: string | null;
+	public: boolean;
+	approved: boolean;
+}
+
+/**
+ * Item `appEndpoint` of API response:
+ * /api/v2/sdk/apps/[appId]/[appVersion]/endpoints/[endpointName]
+ */
+export interface EndpointComponentDetailsApiResponseItem extends ComponentsApiResponseEndpointItem {
+	/** Context for AI agents how to use the endpoint. */
+	context: string | null;
+	annotations: EndpointAnnotations;
+	/** Remote connection names attached to the endpoint. */
+	attachedAccounts: string[];
+}
+
 export type ComponentsApiResponseItem = Partial<ComponentsApiResponseModuleItem> &
 	Partial<ComponentsApiResponseConnectionItem> &
 	Partial<ComponentsApiResponseWebhookItem> &
 	Partial<ComponentsApiResponseRpcItem> &
-	Partial<ComponentsApiResponseFunctionItem> & {
+	Partial<ComponentsApiResponseFunctionItem> &
+	Partial<ComponentsApiResponseEndpointItem> & {
 		name: string;
 	};
 
 export type ComponentDetailsApiResponseItem = Partial<ModuleComponentDetailsApiResponseItem> &
 	Partial<ConnectionComponentDetailsApiResponseItem> &
 	Partial<WebhookComponentDetailsApiResponseItem> &
-	Partial<RpcComponentDetailsApiResponseItem>;
+	Partial<RpcComponentDetailsApiResponseItem> &
+	Partial<EndpointComponentDetailsApiResponseItem>;

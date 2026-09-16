@@ -6,7 +6,8 @@ const Item = require('../tree/Item')
 const Code = require('../tree/Code')
 const Core = require('../Core');
 const camelCase = require('lodash/camelCase');
-const { downloadAndStoreAppIcon } = require('../libs/app-icon');
+const { BackgroundIconLoader } = require('../libs/background-icon-loader');
+const { fetchAppComponentsSummary, buildComponentTreeItem } = require('../libs/app-component-search');
 
 class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 	constructor(_authorization, _environment, _DIR, _admin) {
@@ -17,10 +18,83 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		this._baseUrl = _environment.baseUrl;
 		this._DIR = _DIR
 		this._admin = _admin;
+		this._iconLoader = new BackgroundIconLoader({
+			baseUrl: this._baseUrl,
+			authorization: this._authorization,
+			environment: this._environment,
+			isOpensource: false,
+			logLabel: 'Background app',
+			onLoaded: () => this._onDidChangeTreeData.fire(),
+		});
+		this._searchFilter = '';
+	}
+
+	get searchFilter() {
+		return this._searchFilter;
+	}
+
+	setSearchFilter(term) {
+		this._searchFilter = (term || '').trim();
+		// Only re-render the tree to apply the filter. Intentionally NOT calling refresh():
+		// a full refresh reloads everything and (with background icon loading) invalidates the icon cache,
+		// which would re-download all icons on every search change.
+		this._onDidChangeTreeData.fire();
+	}
+
+	clearSearchFilter() {
+		this._searchFilter = '';
+		// See note in setSearchFilter: re-render only, do not invalidate caches.
+		this._onDidChangeTreeData.fire();
 	}
 
 	refresh() {
+		// Invalidate any in-flight background icon load and reset state so icons are reloaded.
+		this._iconLoader.reset();
 		this._onDidChangeTreeData.fire();
+	}
+
+	/**
+	 * Fetches a flat summary of all components (connections, webhooks, modules, rpcs, functions)
+	 * of the given app, used by the per-app component search Quick Pick.
+	 * @param {object} appNode The App tree node.
+	 * @returns {Promise<{ components: Array, failedGroups: string[] }>} Component summaries plus
+	 *          the API plural names of any component groups whose fetch failed.
+	 */
+	getAppComponentsSummary(appNode) {
+		return fetchAppComponentsSummary({
+			baseUrl: this._baseUrl,
+			authorization: this._authorization,
+			appName: appNode.name,
+			appVersion: appNode.version,
+		});
+	}
+
+	/**
+	 * Rebuilds the tree node for a component summary so it can be passed to `TreeView.reveal`.
+	 * @param {object} appNode The App tree node (ancestor).
+	 * @param {object} summary A component summary from `getAppComponentsSummary`.
+	 * @returns {object} An Item tree node with reveal-compatible ids.
+	 */
+	buildComponentTreeItem(appNode, summary) {
+		return buildComponentTreeItem(appNode, summary);
+	}
+
+	/**
+	 * Filters the given apps by the active search term, matching (case-insensitive)
+	 * against the app's label, name (id), or description.
+	 * @param {Array} apps Apps to filter.
+	 * @returns {Array} The matching apps, or all apps when no filter is active.
+	 */
+	_applySearchFilter(apps) {
+		if (!this._searchFilter) {
+			return apps;
+		}
+		const needle = this._searchFilter.toLowerCase();
+		return apps.filter(app =>
+			app.bareLabel.toLowerCase().includes(needle) ||
+			app.name.toLowerCase().includes(needle) ||
+			(app.description && app.description.toLowerCase().includes(needle))
+		);
 	}
 
 	getParent(element /* : Dependency */) {
@@ -37,28 +111,26 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 		 */
 		if (element === undefined) {
 			//#region Get apps list
-			let response;
-			switch (this._environment.version) {
-				case 2:
-					response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
-						'cols[]': [
-							'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
-						]
-					})).apps
-					break;
-				case 1:
-				default:
-					response = await Core.rpGet(`${this._baseUrl}/app`, this._authorization)
-					break;
-			}
+			const response = (await Core.rpGet(`${this._environment.baseUrl}/sdk/apps`, this._authorization, {
+				'cols[]': [
+					'name', 'label', 'description', 'version', 'beta', 'theme', 'public', 'approved', 'changes'
+				]
+			})).apps
 			if (response === undefined) { return }
 			//#endregion Get apps list
 
-			const apps = await Promise.all(response.map(async (app) => {
-				const iconVersion = await downloadAndStoreAppIcon(app, this._baseUrl, this._authorization, this._environment, false);
+			let apps = response.map((app) => {
+				const iconVersion = this._iconLoader.getIconVersion(app.name, app.version);
 				return new App(app.name, app.label, app.description, app.version, app.public, app.approved, app.theme, app.changes, iconVersion)
-			}));
+			});
 			apps.sort(Core.compareApps)
+
+			if (!this._iconLoader.isLoaded) {
+				this._iconLoader.start(response);
+			}
+
+			apps = this._applySearchFilter(apps)
+
 			return apps
 		}
 		/*
@@ -74,6 +146,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 				[`modules`, "Modules"],
 				[`rpcs`, "Remote procedures"],
 				[`functions`, "Functions"],
+				[`endpoints`, "Endpoints"],
 				[`docs`, "Docs"]
 			].map(group => {
 
@@ -108,7 +181,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 					return change
 				}
 			})
-			output.push(new Code('groups', 'Groups', element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), false, groupChange ? groupChange.id : null));
+			output.push(new Code('groups', 'Groups', element, "imljson", Core.pathDeterminer('app'), false, groupChange ? groupChange.id : null));
 			return output;
 		}
 		/*
@@ -127,29 +200,39 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 							return change
 						}
 					})
-					return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'app'), false, change ? change.id : null, code[2])
+					return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('app'), false, change ? change.id : null, code[2])
 				})
 			}
 
 			// Docs
 			else if (element.contextValue === "docs") {
 				return [
-					new Code(`readme`, "Readme", element, "md", Core.pathDeterminer(this._environment.version, 'app')),
+					new Code(`readme`, "Readme", element, "md", Core.pathDeterminer('app')),
 					//new Code(`images`, "Images", element, "img")
 				]
 			}
 
 			// REST
 			else {
-				for (const needle of ["connections", "webhooks", "modules", "rpcs", "functions"]) {
+				for (const needle of ["connections", "webhooks", "modules", "rpcs", "functions", "endpoints"]) {
 					// TODO Convert to `getAppEntitySummary`
 					if (element.id.includes(`_${needle}`)) {
 						const componentType = needle.slice(0, -1);
 						const uri = ["connection", "webhook"].includes(componentType) ?
-							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${Core.pathDeterminer(this._environment.version, componentType)}` :
-							`${this._baseUrl}/${Core.pathDeterminer(this._environment.version, '__sdk')}${Core.pathDeterminer(this._environment.version, 'app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(this._environment.version, componentType)}`
-						const response = await Core.rpGet(uri, this._authorization)
-						const items = this._environment.version === 1 ? response : response[camelCase(`app_${needle}`)];
+							`${this._baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${element.parent.name}/${Core.pathDeterminer(componentType)}` :
+							`${this._baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${element.parent.name}/${element.parent.version}/${Core.pathDeterminer(componentType)}`
+						let response
+						try {
+							// For endpoints, suppress the error dialog: the feature may be disabled on the
+							// environment — we fall back to an empty list below instead of surfacing an error.
+							response = await Core.rpGet(uri, this._authorization, undefined, componentType === "endpoint")
+						} catch (err) {
+							if (componentType === "endpoint") {
+								return []
+							}
+							throw err
+						}
+						const items = response[camelCase(`app_${needle}`)];
 						return items.map(item => {
 							const changes = element.changes.filter(change => {
 								if (change.item === item.name) {
@@ -183,7 +266,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'connection'), false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('connection'), false, change ? change.id : null, code[2])
 					})
 				case "webhook":
 					return [
@@ -194,7 +277,6 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 						[`update`, "Update", "Describes the API call to be performed when the webhook is updated. Leave empty when there's no such call. This specification does inherit from base."],
 						[`scope`, "Required scope", "Scope required by this webhook. Array of strings."]
 					].flatMap(code => {
-						if (code[0] === 'update' && this._environment.version === 1) return [];
 						let change
 						if (element.changes) {
 							change = element.changes.find(change => {
@@ -203,7 +285,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'webhook'), false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('webhook'), false, change ? change.id : null, code[2])
 					})
 				case "module":
 					switch (element.type) {
@@ -227,7 +309,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('module'), false, change ? change.id : null, code[2])
 							})
 						// Trigger
 						case 1:
@@ -247,7 +329,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('module'), false, change ? change.id : null, code[2])
 							})
 						// Instant trigger
 						case 10:
@@ -265,7 +347,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('module'), false, change ? change.id : null, code[2])
 							})
 						// Responder
 						case 11:
@@ -282,7 +364,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 										}
 									})
 								}
-								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'module'), false, change ? change.id : null, code[2])
+								return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('module'), false, change ? change.id : null, code[2])
 							})
 						default:
 							throw new Error(`Unknown or unsupported module type "${element.type}".`);
@@ -300,7 +382,7 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer(this._environment.version, 'rpc'), false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('rpc'), false, change ? change.id : null, code[2])
 					})
 				case "function":
 					return [
@@ -315,8 +397,24 @@ class AppsProvider /* implements vscode.TreeDataProvider<Dependency> */ {
 								}
 							})
 						}
-						return new Code(code[0], code[1], element, "js", Core.pathDeterminer(this._environment.version, 'function'), false, change ? change.id : null, code[2])
+						return new Code(code[0], code[1], element, "js", Core.pathDeterminer('function'), false, change ? change.id : null, code[2])
 					})
+				case "endpoint": {
+					const findChange = (codeName) => (element.changes ? element.changes.find(change => change.code == codeName) : undefined);
+					const endpointCodes = [
+						[`api`, "Communication", "Specification of the third-party API call this endpoint performs."],
+						[`inputParameters`, "Input parameters", "Array of input parameters the endpoint accepts."],
+						[`outputParameters`, "Output parameters", "Array of output parameters the endpoint returns."],
+						[`scope`, "Required scope", "Scope required by this endpoint. Array of strings."]
+					].map(code => {
+						const change = findChange(code[0]);
+						return new Code(code[0], code[1], element, "imljson", Core.pathDeterminer('endpoint'), false, change ? change.id : null, code[2])
+					});
+					// `context` is editable as a markdown source (metadata-backed; see component-code-def.ts).
+					const contextChange = findChange('context');
+					endpointCodes.push(new Code(`context`, "Context", element, "md", Core.pathDeterminer('endpoint'), false, contextChange ? contextChange.id : null, "Context for AI agents on how to use this endpoint. Editable as a markdown source."));
+					return endpointCodes;
+				}
 			}
 		}
 	}
