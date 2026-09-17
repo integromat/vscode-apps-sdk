@@ -18,10 +18,9 @@ const json = {
 /**
  * Resolves the file extension to be used for a code file.
  *
- * IMLJSON codes are JSON with comments, but they are historically stored as `*.iml.json`, which tools
- * outside of VS Code report as invalid JSON. Users can opt into the `*.iml.jsonc` naming by the
- * `apps-sdk.localDev.defaultJsoncFileExtension` setting. Plain-JSON codes (`common.json`, `groups.json`),
- * Markdown and JavaScript codes are never affected.
+ * IMLJSON codes are JSON with comments, so they are stored as `*.iml.jsonc` by default. Users can opt
+ * back into the legacy `*.iml.json` naming by the `apps-sdk.localDev.defaultJsoncFileExtension` setting.
+ * Plain-JSON codes (`common.json`, `groups.json`), Markdown and JavaScript codes are never affected.
  */
 export function resolveCodeFileExtension(codeDef: CodeDef, jsoncFileExtension: JsoncFileExtension): string {
 	return codeDef.mimetype === imljsonc.mimetype && jsoncFileExtension === 'jsonc'

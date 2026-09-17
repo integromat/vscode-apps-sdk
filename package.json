@@ -1055,9 +1055,9 @@
 						"Creates `*.iml.json` files.",
 						"Creates `*.iml.jsonc` files."
 					],
-					"default": "json",
+					"default": "jsonc",
 					"scope": "resource",
-					"markdownDescription": "Overrides the file extension of JSONC code files created by Local Development. IMLJSON code files are JSON with comments, so the `jsonc` value makes them recognizable as such by editors and tools outside of VS Code. Affects newly created files only — already cloned apps keep the file paths stored in their `makecomapp.json`."
+					"markdownDescription": "File extension of the JSONC code files created by Local Development. IMLJSON code files are JSON with comments, so the default `jsonc` makes them recognizable as such by editors and tools outside of VS Code. Choose `json` to get the legacy `*.iml.json` naming instead. Affects newly created files only — already cloned apps keep the file paths stored in their `makecomapp.json`."
 				}
 			}
 		}

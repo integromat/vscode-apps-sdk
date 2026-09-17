@@ -44,12 +44,12 @@ suite('component-code-def: endpoint', () => {
 suite('component-code-def: resolveCodeFileExtension', () => {
 	const imljsonCodeDef = getAppComponentCodeDefinition('module', 'communication');
 
-	test('IMLJSON codes keep `iml.json` by default', () => {
-		assert.strictEqual(resolveCodeFileExtension(imljsonCodeDef, 'json'), 'iml.json');
+	test('IMLJSON codes use `iml.jsonc`', () => {
+		assert.strictEqual(resolveCodeFileExtension(imljsonCodeDef, 'jsonc'), 'iml.jsonc');
 	});
 
-	test('IMLJSON codes switch to `iml.jsonc` when the user opted in', () => {
-		assert.strictEqual(resolveCodeFileExtension(imljsonCodeDef, 'jsonc'), 'iml.jsonc');
+	test('IMLJSON codes fall back to the legacy `iml.json` when explicitly requested', () => {
+		assert.strictEqual(resolveCodeFileExtension(imljsonCodeDef, 'json'), 'iml.json');
 	});
 
 	test('non-IMLJSON codes are never affected', () => {
