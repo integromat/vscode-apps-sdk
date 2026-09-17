@@ -96,12 +96,12 @@ export function getStaticAndDerivedSchemaAssociations(): SchemaConfiguration[] {
 		...LanguageServersSettings.getJsonSchemas(),
 		{
 			uri: schemaFileUri('endpoint-input-parameters.json'),
-			fileMatch: ['inputParameters.imljson', '*.input.iml.json'],
+			fileMatch: ['inputParameters.imljson', '*.input.iml.{json,jsonc}'],
 			schema: buildEndpointParametersSchema(parametersSchema, 'inputSchema'),
 		},
 		{
 			uri: schemaFileUri('endpoint-output-parameters.json'),
-			fileMatch: ['outputParameters.imljson', '*.output.iml.json'],
+			fileMatch: ['outputParameters.imljson', '*.output.iml.{json,jsonc}'],
 			schema: buildEndpointParametersSchema(parametersSchema, 'outputSchema'),
 		},
 	];

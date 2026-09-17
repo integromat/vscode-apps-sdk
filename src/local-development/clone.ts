@@ -153,6 +153,7 @@ async function cloneAppToWorkspace(context: App): Promise<void> {
 				undefined,
 				undefined,
 				undefined,
+				localAppRootdir,
 			);
 			// Add to makecomapp.json
 			makecomappJson.generalCodeFiles[codeType] =

@@ -32,21 +32,21 @@
 			{
 				"fileMatch": [
 					"parameters.imljson",
-					"*.params.iml.json"
+					"*.params.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
 				"fileMatch": [
 					"expect.imljson",
-					"*.mappable-params.iml.json"
+					"*.mappable-params.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
 				"fileMatch": [
 					"interface.imljson",
-					"*.interface.iml.json"
+					"*.interface.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
@@ -60,78 +60,78 @@
 			{
 				"fileMatch": [
 					"api.imljson",
-					"*.communication.iml.json"
+					"*.communication.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"**/endpoints/*/api.imljson",
-					"**/endpoints/*/*.communication.iml.json"
+					"**/endpoints/*/*.communication.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/endpoint-api.json"
 			},
 			{
 				"fileMatch": [
 					"samples.imljson",
-					"*.samples.iml.json"
+					"*.samples.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/samples.json"
 			},
 			{
 				"fileMatch": [
 					"scopes.imljson",
-					"*.scope-list.iml.json"
+					"*.scope-list.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/scopes.json"
 			},
 			{
 				"fileMatch": [
 					"scope.imljson",
-					"*.default-scope.iml.json",
-					"*.required-scope.iml.json"
+					"*.default-scope.iml.{json,jsonc}",
+					"*.required-scope.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/scope.json"
 			},
 			{
 				"fileMatch": [
 					"epoch.imljson",
-					"*.epoch.iml.json"
+					"*.epoch.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/epoch.json"
 			},
 			{
 				"fileMatch": [
 					"attach.imljson",
-					"*.attach.iml.json"
+					"*.attach.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"detach.imljson",
-					"*.detach.iml.json"
+					"*.detach.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"publish.imljson",
-					"*.publish.iml.json"
+					"*.publish.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"base.imljson",
-					"base.iml.json"
+					"base.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
 				"fileMatch": [
 					"api-oauth.imljson",
-					"*.oauth-communication.iml.json"
+					"*.oauth-communication.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
@@ -153,7 +153,8 @@
 				"id": "imljson",
 				"extensions": [
 					".imljson",
-					".iml.json"
+					".iml.json",
+					".iml.jsonc"
 				],
 				"aliases": [
 					"JSON with IML",
@@ -961,7 +962,7 @@
 				{
 					"command": "apps-sdk.local-dev.file-compare",
 					"group": "7_modification",
-					"when": "resourceFilename =~ /^((README\\.md)|(base\\.iml\\.json)|(common\\.json)|(groups\\.json)|(.*\\.common\\.json)|(.*\\.(communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples)\\.iml.json))|(.*\\.(code|test)\\.js)$/"
+					"when": "resourceFilename =~ /^((README\\.md)|(.*\\.context\\.md)|(base\\.iml\\.jsonc?)|(common\\.json)|(groups\\.json)|(.*\\.common\\.json)|(.*\\.(communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required-scope|scope|epoch|static-params|mappable-params|interface|samples|input|output)\\.iml\\.jsonc?)|(.*\\.(code|test)\\.js))$/"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-connection",
@@ -1043,6 +1044,20 @@
 					"type": "string",
 					"description": "Timezone which is used for IML functions which work with date and time. Eg: Europe/Prague",
 					"default": "UTC"
+				},
+				"apps-sdk.localDev.defaultJsoncFileExtension": {
+					"type": "string",
+					"enum": [
+						"json",
+						"jsonc"
+					],
+					"enumDescriptions": [
+						"Creates `*.iml.json` files.",
+						"Creates `*.iml.jsonc` files."
+					],
+					"default": "jsonc",
+					"scope": "resource",
+					"markdownDescription": "File extension of the JSONC code files created by Local Development. IMLJSON code files are JSON with comments, so the default `jsonc` makes them recognizable as such by editors and tools outside of VS Code. Choose `json` to get the legacy `*.iml.json` naming instead. Affects newly created files only — already cloned apps keep the file paths stored in their `makecomapp.json`."
 				}
 			}
 		}

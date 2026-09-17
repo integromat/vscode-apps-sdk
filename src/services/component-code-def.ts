@@ -2,6 +2,7 @@ import type { AppComponentType } from '../types/app-component-type.types';
 import type { CodeDef } from '../local-development/types/code-def.types';
 import { componentTypesDeployOrder } from './component-types-order';
 import type { CodeType, ComponentCodeType, GeneralCodeType } from '../local-development/types/code-type.types';
+import type { JsoncFileExtension } from '../providers/configuration';
 import { keys } from '../utils/typed-object';
 
 const imljsonc = {
@@ -13,6 +14,19 @@ const json = {
 	fileext: 'json',
 	mimetype: 'application/json',
 };
+
+/**
+ * Resolves the file extension to be used for a code file.
+ *
+ * IMLJSON codes are JSON with comments, so they are stored as `*.iml.jsonc` by default. Users can opt
+ * back into the legacy `*.iml.json` naming by the `apps-sdk.localDev.defaultJsoncFileExtension` setting.
+ * Plain-JSON codes (`common.json`, `groups.json`), Markdown and JavaScript codes are never affected.
+ */
+export function resolveCodeFileExtension(codeDef: CodeDef, jsoncFileExtension: JsoncFileExtension): string {
+	return codeDef.mimetype === imljsonc.mimetype && jsoncFileExtension === 'jsonc'
+		? codeDef.fileext.replace(/json$/, 'jsonc')
+		: codeDef.fileext;
+}
 
 export const generalCodesDefinition: Record<GeneralCodeType, CodeDef> = {
 	base: {

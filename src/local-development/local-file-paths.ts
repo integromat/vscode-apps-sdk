@@ -5,7 +5,8 @@ import { reserveComponentCodeFilesDirectory } from './reserve-component-dir';
 import type { CodeDef } from './types/code-def.types';
 import type { CodeType } from './types/code-type.types';
 import type { AppComponentMetadata, ComponentCodeFilesMetadata } from './types/makecomapp.types';
-import { getAppComponentCodesDefinition } from '../services/component-code-def';
+import { getAppComponentCodesDefinition, resolveCodeFileExtension } from '../services/component-code-def';
+import { getDefaultJsoncFileExtension } from '../providers/configuration';
 import type { AppComponentType } from '../types/app-component-type.types';
 import { camelToKebab } from '../utils/camel-to-kebab';
 import { entries } from '../utils/typed-object';
@@ -18,6 +19,8 @@ import { entries } from '../utils/typed-object';
  *                        For components it uses sanitized component ID, example `getSomething`.
  *                        In this case the output filename starts with sanitizes kebab-case version of this prefix (example: `get-something).
  * @param componentMetadata  Note: `undefined` for general codes (Base, Common, Readme)
+ * @param scope  The local app root dir, used to resolve the workspace-folder-specific
+ *               `apps-sdk.localDev.defaultJsoncFileExtension` setting.
  */
 export async function generateDefaultLocalFilename(
 	codeDef: CodeDef,
@@ -25,6 +28,7 @@ export async function generateDefaultLocalFilename(
 	componentType: AppComponentType | undefined,
 	filenamePrefix: string | undefined,
 	componentMetadata: AppComponentMetadata | undefined,
+	scope?: vscode.Uri,
 ): Promise<string> {
 	let filename: string;
 	switch (typeof codeDef.filename) {
@@ -48,7 +52,7 @@ export async function generateDefaultLocalFilename(
 		filename +
 		// file extension
 		'.' +
-		codeDef.fileext;
+		resolveCodeFileExtension(codeDef, getDefaultJsoncFileExtension(scope));
 
 	return fileNameExt;
 }
@@ -87,6 +91,7 @@ export async function generateComponentDefaultCodeFilesPaths(
 				componentType,
 				componentLocalId,
 				componentMetadata,
+				localAppRootdir,
 			);
 			componentCodeMetadata[codeType] =
 				path.posix.relative(localAppRootdir.path, componentDir.path) + '/' + codeFilename;
