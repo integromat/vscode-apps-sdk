@@ -7,6 +7,7 @@ import {
 	getLanguageService,
 	TextDocument,
 	type LanguageService,
+	type MarkupContent,
 	type SchemaConfiguration,
 } from 'vscode-json-languageservice';
 import { enrichApiSchemaWithEndpoints, extractEndpointInputParameters } from './endpoint-api-enrichment';
@@ -45,6 +46,17 @@ function buildLanguageService(schemas: SchemaConfiguration[]): LanguageService {
 	return languageService;
 }
 
+/**
+ * `Diagnostic.message` is `string` in vscode-languageserver-types 3.17.x, but widened to
+ * `string | MarkupContent` in 3.18.x. Which one is installed depends on npm hoisting of
+ * `vscode-languageserver-types` (shared by `vscode-json-languageservice` and
+ * `vscode-languageserver`), so it can flip on an unrelated dependency bump. The explicitly
+ * typed parameter keeps this file compiling against both.
+ */
+function diagnosticMessageToString(message: string | MarkupContent): string {
+	return typeof message === 'string' ? message : message.value;
+}
+
 async function validate(languageService: LanguageService, uri: string, content: string): Promise<string[]> {
 	const document = TextDocument.create(uri, 'imljson', 1, content);
 	const jsonDocument = languageService.parseJSONDocument(document);
@@ -52,7 +64,7 @@ async function validate(languageService: LanguageService, uri: string, content: 
 		comments: 'ignore',
 		trailingCommas: 'warning',
 	});
-	return diagnostics.map((diagnostic) => diagnostic.message);
+	return diagnostics.map((diagnostic) => diagnosticMessageToString(diagnostic.message));
 }
 
 suite('Endpoint IMLJSON schema validation (fixtures)', () => {
