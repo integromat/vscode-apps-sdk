@@ -21,6 +21,12 @@ import { getStaticAndDerivedSchemaAssociations } from './imljson-schema-associat
 const MODULE_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/modules/get-things/api.imljson';
 const ENDPOINT_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/endpoints/list-things/api.imljson';
 const LOCAL_ENDPOINT_URI = 'file:///w/src/endpoints/list-things/list-things.communication.iml.json';
+// The `jsonc` variant of the local-dev filenames, created when the user opts into
+// `apps-sdk.localDev.defaultJsoncFileExtension: "jsonc"`.
+const LOCAL_ENDPOINT_JSONC_URI = 'file:///w/src/endpoints/list-things/list-things.communication.iml.jsonc';
+const LOCAL_INPUT_PARAMS_JSONC_URI = 'file:///w/src/endpoints/list-things/list-things.input.iml.jsonc';
+const LOCAL_OUTPUT_PARAMS_JSONC_URI = 'file:///w/src/endpoints/list-things/list-things.output.iml.jsonc';
+const LOCAL_BASE_JSONC_URI = 'file:///w/src/general/base.iml.jsonc';
 const BASE_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/base.imljson';
 const INPUT_PARAMS_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/endpoints/list-things/inputParameters.imljson';
 const OUTPUT_PARAMS_URI = 'file:///t/apps-sdk/sdk/apps/demo-app/2/endpoints/list-things/outputParameters.imljson';
@@ -193,6 +199,32 @@ suite('Endpoint IMLJSON schema validation (fixtures)', () => {
 
 		const errorMessages = await validate(languageService, BASE_URI, '{"timeout":400000}');
 		assert.deepStrictEqual(errorMessages, ['Value is above the maximum of 300000.']);
+	});
+
+	test('19. local-dev `.iml.jsonc` files bind the same schemas as `.iml.json`', async () => {
+		// Note: A valid document alone would pass even with no schema bound at all, so each case is
+		//       paired with an invalid one that only the expected schema is able to reject.
+		assert.deepStrictEqual(
+			await validate(languageService, LOCAL_ENDPOINT_JSONC_URI, '{"url":"/things","method":"GET"}'),
+			[],
+		);
+		assert.ok(
+			(await validate(languageService, LOCAL_ENDPOINT_JSONC_URI, '{"endpoint":"x"}')).length > 0,
+			'Expected the endpoint-api schema to reject a nested `endpoint` directive.',
+		);
+
+		assert.deepStrictEqual(
+			await validate(languageService, LOCAL_INPUT_PARAMS_JSONC_URI, '[{"name":"foo","type":"text"}]'),
+			['Missing property "help".'],
+		);
+		assert.deepStrictEqual(
+			await validate(languageService, LOCAL_OUTPUT_PARAMS_JSONC_URI, '[{"name":"foo","type":"text"}]'),
+			['Missing property "help".'],
+		);
+
+		assert.deepStrictEqual(await validate(languageService, LOCAL_BASE_JSONC_URI, '{"timeout":400000}'), [
+			'Value is above the maximum of 300000.',
+		]);
 	});
 });
 

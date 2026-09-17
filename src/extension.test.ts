@@ -23,6 +23,17 @@ suite('Extension Intialization Tests', () => {
 		assert.ok(languages.includes('imljson'), `Languages are only: ${languages.join(', ')}`);
 	});
 
+	test('IMLJSON language covers both the `json` and the `jsonc` local dev file extension', () => {
+		// Both variants must be registered, otherwise files created with
+		// `apps-sdk.localDev.defaultJsoncFileExtension: "jsonc"` would fall back to the built-in
+		// `jsonc` language and lose IML highlighting, hover and schema validation.
+		const languages: { id: string; extensions?: string[] }[] =
+			vscode.extensions.getExtension('Integromat.apps-sdk')?.packageJSON?.contributes?.languages ?? [];
+		const imljsonExtensions = languages.find((language) => language.id === 'imljson')?.extensions ?? [];
+		assert.ok(imljsonExtensions.includes('.iml.json'), `Registered extensions: ${imljsonExtensions.join(', ')}`);
+		assert.ok(imljsonExtensions.includes('.iml.jsonc'), `Registered extensions: ${imljsonExtensions.join(', ')}`);
+	});
+
 	test('IMLJSON language server is running', () => {
 		const imljsonLanguageClient = testsOnly_getImljsonLanguageClient();
 		assert.equal(imljsonLanguageClient?.name, 'IMLJSON language server', 'Unexpected IMLJSON language server name');

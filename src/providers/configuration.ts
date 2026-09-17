@@ -10,6 +10,26 @@ export function getConfiguration(): AppsSdkConfiguration {
 
 
 /**
+ * Extension of the code files, which contain the JSONC (JSON with comments) content.
+ */
+export type JsoncFileExtension = 'json' | 'jsonc';
+
+/**
+ * Gets the file extension to be used for newly created JSONC (IMLJSON) code files in Local Development.
+ *
+ * Note: The default `json` keeps the historical `*.iml.json` naming. Users can opt into `jsonc`
+ *       to make the files recognized as JSON-with-comments by tools outside of VS Code.
+ *
+ * @param scope Resource used to resolve the workspace-folder-specific value (the setting is `resource` scoped).
+ */
+export function getDefaultJsoncFileExtension(scope?: vscode.Uri): JsoncFileExtension {
+	const configured = vscode.workspace
+		.getConfiguration('apps-sdk', scope)
+		.get<string>('localDev.defaultJsoncFileExtension');
+	return configured === 'jsonc' ? 'jsonc' : 'json';
+}
+
+/**
  * Describes the configuration structure of key `apps-sdk` in the VS Code configuration file.
  */
 export interface AppsSdkConfiguration extends vscode.WorkspaceConfiguration {

@@ -1,6 +1,11 @@
 import * as assert from 'node:assert';
 import { suite, test } from 'mocha';
-import { getAppComponentCodeDefinition, getAppComponentTypes } from './component-code-def';
+import {
+	getAppComponentCodeDefinition,
+	getAppComponentTypes,
+	getGeneralCodeDefinition,
+	resolveCodeFileExtension,
+} from './component-code-def';
 
 suite('component-code-def: endpoint', () => {
 	test('endpoint defines the 4 sections with the correct API code types', () => {
@@ -33,5 +38,30 @@ suite('component-code-def: endpoint', () => {
 		assert.strictEqual(contextDef.checksumKey, 'context', 'compared against the `context` checksum column');
 		assert.strictEqual(contextDef.fileext, 'md', 'editable as a markdown source file');
 		assert.strictEqual(contextDef.mimetype, 'text/markdown');
+	});
+});
+
+suite('component-code-def: resolveCodeFileExtension', () => {
+	const imljsonCodeDef = getAppComponentCodeDefinition('module', 'communication');
+
+	test('IMLJSON codes keep `iml.json` by default', () => {
+		assert.strictEqual(resolveCodeFileExtension(imljsonCodeDef, 'json'), 'iml.json');
+	});
+
+	test('IMLJSON codes switch to `iml.jsonc` when the user opted in', () => {
+		assert.strictEqual(resolveCodeFileExtension(imljsonCodeDef, 'jsonc'), 'iml.jsonc');
+	});
+
+	test('non-IMLJSON codes are never affected', () => {
+		// Plain JSON data files must stay strict JSON — the API rejects comments in them.
+		const plainJsonDef = getGeneralCodeDefinition('groups');
+		const markdownDef = getGeneralCodeDefinition('readme');
+		const javascriptDef = getAppComponentCodeDefinition('function', 'code');
+
+		for (const jsoncFileExtension of ['json', 'jsonc'] as const) {
+			assert.strictEqual(resolveCodeFileExtension(plainJsonDef, jsoncFileExtension), 'json');
+			assert.strictEqual(resolveCodeFileExtension(markdownDef, jsoncFileExtension), 'md');
+			assert.strictEqual(resolveCodeFileExtension(javascriptDef, jsoncFileExtension), 'js');
+		}
 	});
 });

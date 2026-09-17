@@ -58,6 +58,22 @@ When the Custom App is cloned into local files, it is created in some subdirecto
 
 Many actions can also be executed on a sub-part of the project only. For this case, the right-click can be used on any component's subdirectory or on any component code file.
 
+#### File extension of IMLJSON code files
+
+Most of the code files (communication, parameters, interface, ...) are written in IMLJSON, which is JSON with comments. By default, they are created with the `*.iml.json` extension. Tools outside of VS Code (Git hosting diffs, other editors, linters) then report them as invalid JSON, because plain JSON does not allow comments.
+
+To create these files with the `*.iml.jsonc` extension instead, add the following to your `settings.json` (a workspace `.vscode/settings.json` can be committed, so the whole team shares it):
+
+```jsonc
+// Overrides the default extension of created JSONC files (default is `json`).
+// Value can be `jsonc`.
+"apps-sdk.localDev.defaultJsoncFileExtension": "jsonc",
+```
+
+Both extensions are fully supported by this extension (syntax highlighting, JSON schema validation, hover, formatting) and both are deployed to Make identically.
+
+Note: The setting affects newly created files only. Already cloned apps keep the file paths stored in their `makecomapp.json`, so an existing project is never broken by changing this setting — but it may end up with a mix of both extensions.
+
 ### Deploy local changes to Make
 
 The Custom App (including all changes) can be deployed back to Make (referred to here as `remote origin`). To do this, right-click on the `makecomapp.json` file and select `Deploy to Make`.
