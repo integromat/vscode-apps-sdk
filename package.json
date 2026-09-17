@@ -2,7 +2,7 @@
 	"name": "apps-sdk",
 	"displayName": "Make Apps Editor",
 	"description": "Helps to create, develop, download and deploy apps of the Make no-code visual integration and automation platform.",
-	"version": "2.6.0",
+	"version": "2.9.0",
 	"icon": "resources/make.png",
 	"repository": {
 		"type": "git",
@@ -32,21 +32,21 @@
 			{
 				"fileMatch": [
 					"parameters.imljson",
-					"*.params.iml.json"
+					"*.params.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
 				"fileMatch": [
 					"expect.imljson",
-					"*.mappable-params.iml.json"
+					"*.mappable-params.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
 			{
 				"fileMatch": [
 					"interface.imljson",
-					"*.interface.iml.json"
+					"*.interface.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/parameters.json"
 			},
@@ -60,71 +60,78 @@
 			{
 				"fileMatch": [
 					"api.imljson",
-					"*.communication.iml.json"
+					"*.communication.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
+					"**/endpoints/*/api.imljson",
+					"**/endpoints/*/*.communication.iml.{json,jsonc}"
+				],
+				"url": "./syntaxes/imljson/schemas/endpoint-api.json"
+			},
+			{
+				"fileMatch": [
 					"samples.imljson",
-					"*.samples.iml.json"
+					"*.samples.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/samples.json"
 			},
 			{
 				"fileMatch": [
 					"scopes.imljson",
-					"*.scope-list.iml.json"
+					"*.scope-list.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/scopes.json"
 			},
 			{
 				"fileMatch": [
 					"scope.imljson",
-					"*.default-scope.iml.json",
-					"*.required-scope.iml.json"
+					"*.default-scope.iml.{json,jsonc}",
+					"*.required-scope.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/scope.json"
 			},
 			{
 				"fileMatch": [
 					"epoch.imljson",
-					"*.epoch.iml.json"
+					"*.epoch.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/epoch.json"
 			},
 			{
 				"fileMatch": [
 					"attach.imljson",
-					"*.attach.iml.json"
+					"*.attach.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"detach.imljson",
-					"*.detach.iml.json"
+					"*.detach.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"publish.imljson",
-					"*.publish.iml.json"
+					"*.publish.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api.json"
 			},
 			{
 				"fileMatch": [
 					"base.imljson",
-					"base.iml.json"
+					"base.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/base.json"
 			},
 			{
 				"fileMatch": [
 					"api-oauth.imljson",
-					"*.oauth-communication.iml.json"
+					"*.oauth-communication.iml.{json,jsonc}"
 				],
 				"url": "./syntaxes/imljson/schemas/api-oauth.json"
 			},
@@ -146,7 +153,8 @@
 				"id": "imljson",
 				"extensions": [
 					".imljson",
-					".iml.json"
+					".iml.json",
+					".iml.jsonc"
 				],
 				"aliases": [
 					"JSON with IML",
@@ -204,6 +212,12 @@
 				"icon": "$(close)"
 			},
 			{
+				"command": "apps-sdk.app.search-components",
+				"title": "Search components...",
+				"category": "Make Apps",
+				"icon": "$(search)"
+			},
+			{
 				"command": "apps-sdk.refresh",
 				"title": "Refresh",
 				"category": "Make Apps",
@@ -234,6 +248,36 @@
 			{
 				"command": "apps-sdk.rpc.new",
 				"title": "New RPC",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.new",
+				"title": "New endpoint",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.edit-metadata",
+				"title": "Edit endpoint metadata",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.edit-annotations",
+				"title": "Edit endpoint annotations",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.edit-connections",
+				"title": "Edit endpoint connections",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.visibility.public",
+				"title": "Mark endpoint as public",
+				"category": "Make Apps"
+			},
+			{
+				"command": "apps-sdk.endpoint.visibility.private",
+				"title": "Mark endpoint as private",
 				"category": "Make Apps"
 			},
 			{
@@ -448,6 +492,11 @@
 				"category": "Make Apps"
 			},
 			{
+				"command": "apps-sdk.local-dev.create-local-endpoint",
+				"title": "New Local Component: Endpoint",
+				"category": "Make Apps"
+			},
+			{
 				"command": "apps-sdk.local-dev.create-local-imlfunction",
 				"title": "New Local Component: Custom IML Function",
 				"category": "Make Apps"
@@ -534,6 +583,11 @@
 			],
 			"view/item/context": [
 				{
+					"command": "apps-sdk.app.search-components",
+					"group": "7_modification_online",
+					"when": "viewItem =~ /^app/ && view == apps"
+				},
+				{
 					"command": "apps-sdk.function.new",
 					"group": "7_modification_online",
 					"when": "viewItem == functions && view == apps"
@@ -557,6 +611,11 @@
 					"command": "apps-sdk.rpc.new",
 					"group": "7_modification_online",
 					"when": "viewItem == rpcs && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.new",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoints && view == apps"
 				},
 				{
 					"command": "apps-sdk.module.new",
@@ -607,6 +666,76 @@
 					"command": "apps-sdk.delete",
 					"group": "7_modification_online",
 					"when": "viewItem == connection && view == apps"
+				},
+				{
+					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.delete",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-metadata",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-metadata",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-metadata",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-annotations",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-annotations",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-annotations",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-connections",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-connections",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.edit-connections",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_approved && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.visibility.public",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint && view == apps"
+				},
+				{
+					"command": "apps-sdk.endpoint.visibility.private",
+					"group": "7_modification_online",
+					"when": "viewItem == endpoint_public && view == apps"
 				},
 				{
 					"command": "apps-sdk.connection.edit-metadata",
@@ -812,6 +941,11 @@
 					"command": "apps-sdk.local-dev.clone-to-workspace",
 					"group": "z_commands",
 					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
+				},
+				{
+					"command": "apps-sdk.local-dev.clone-to-workspace",
+					"group": "z_commands",
+					"when": "viewItem =~ /^app/ && view == opensource"
 				}
 			],
 			"explorer/context": [
@@ -828,7 +962,7 @@
 				{
 					"command": "apps-sdk.local-dev.file-compare",
 					"group": "7_modification",
-					"when": "resourceFilename =~ /^((README\\.md)|(base\\.iml\\.json)|(common\\.json)|(groups\\.json)|(.*\\.common\\.json)|(.*\\.(communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required|scope|epoch|static-params|mappable-params|interface|samples)\\.iml.json))|(.*\\.(code|test)\\.js)$/"
+					"when": "resourceFilename =~ /^((README\\.md)|(.*\\.context\\.md)|(base\\.iml\\.jsonc?)|(common\\.json)|(groups\\.json)|(.*\\.common\\.json)|(.*\\.(communication|oauth-communication|params|scope-list|default-scope|install-spec|install-directives|attach|detach|update|required-scope|scope|epoch|static-params|mappable-params|interface|samples|input|output)\\.iml\\.jsonc?)|(.*\\.(code|test)\\.js))$/"
 				},
 				{
 					"command": "apps-sdk.local-dev.create-local-connection",
@@ -851,6 +985,11 @@
 					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'rpc'"
 				},
 				{
+					"command": "apps-sdk.local-dev.create-local-endpoint",
+					"group": "7_modification",
+					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'endpoints'"
+				},
+				{
 					"command": "apps-sdk.local-dev.create-local-imlfunction",
 					"group": "7_modification",
 					"when": "resourceFilename == 'makecomapp.json' || resourceFilename == 'functions'"
@@ -858,7 +997,7 @@
 				{
 					"command": "apps-sdk.local-dev.delete-local-component",
 					"group": "7_modification",
-					"when": "resourcePath =~ /^.*[\\\\/](modules|connections|rpcs|webhooks|functions)[\\\\/][^\\\\/]+$/ && resourceExtname == ''"
+					"when": "resourcePath =~ /^.*[\\\\/](modules|connections|rpcs|webhooks|functions|endpoints)[\\\\/][^\\\\/]+$/ && resourceExtname == ''"
 				}
 			]
 		},
@@ -905,6 +1044,20 @@
 					"type": "string",
 					"description": "Timezone which is used for IML functions which work with date and time. Eg: Europe/Prague",
 					"default": "UTC"
+				},
+				"apps-sdk.localDev.defaultJsoncFileExtension": {
+					"type": "string",
+					"enum": [
+						"json",
+						"jsonc"
+					],
+					"enumDescriptions": [
+						"Creates `*.iml.json` files.",
+						"Creates `*.iml.jsonc` files."
+					],
+					"default": "jsonc",
+					"scope": "resource",
+					"markdownDescription": "File extension of the JSONC code files created by Local Development. IMLJSON code files are JSON with comments, so the default `jsonc` makes them recognizable as such by editors and tools outside of VS Code. Choose `json` to get the legacy `*.iml.json` naming instead. Affects newly created files only — already cloned apps keep the file paths stored in their `makecomapp.json`."
 				}
 			}
 		}
@@ -948,6 +1101,7 @@
 	"dependencies": {
 		"@integromat/iml": "^3.4.0",
 		"@integromat/udt": "^1.2.2",
+		"@makehq/forman-schema": "^1.15.0",
 		"@vscode/extension-telemetry": "^1.5.1",
 		"adm-zip": "^0.5.16",
 		"applicationinsights": "^3.14.0",

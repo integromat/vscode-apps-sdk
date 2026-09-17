@@ -2,6 +2,7 @@ import type { AppComponentType } from '../types/app-component-type.types';
 import type { CodeDef } from '../local-development/types/code-def.types';
 import { componentTypesDeployOrder } from './component-types-order';
 import type { CodeType, ComponentCodeType, GeneralCodeType } from '../local-development/types/code-type.types';
+import type { JsoncFileExtension } from '../providers/configuration';
 import { keys } from '../utils/typed-object';
 
 const imljsonc = {
@@ -13,6 +14,19 @@ const json = {
 	fileext: 'json',
 	mimetype: 'application/json',
 };
+
+/**
+ * Resolves the file extension to be used for a code file.
+ *
+ * IMLJSON codes are JSON with comments, so they are stored as `*.iml.jsonc` by default. Users can opt
+ * back into the legacy `*.iml.json` naming by the `apps-sdk.localDev.defaultJsoncFileExtension` setting.
+ * Plain-JSON codes (`common.json`, `groups.json`), Markdown and JavaScript codes are never affected.
+ */
+export function resolveCodeFileExtension(codeDef: CodeDef, jsoncFileExtension: JsoncFileExtension): string {
+	return codeDef.mimetype === imljsonc.mimetype && jsoncFileExtension === 'jsonc'
+		? codeDef.fileext.replace(/json$/, 'jsonc')
+		: codeDef.fileext;
+}
 
 export const generalCodesDefinition: Record<GeneralCodeType, CodeDef> = {
 	base: {
@@ -110,6 +124,27 @@ export const componentsCodesDefinition: Record<AppComponentType, Partial<Record<
 		code: { apiCodeType: 'code', fileext: 'js', mimetype: 'application/javascript' },
 		test: { apiCodeType: 'test', fileext: 'js', mimetype: 'application/javascript' },
 	},
+	endpoint: {
+		communication: { ...imljsonc, apiCodeType: 'api', filename: 'communication' },
+		scope: { ...imljsonc, apiCodeType: 'scope', filename: 'required-scope' },
+		inputParameters: { ...imljsonc, apiCodeType: 'inputParameters', checksumKey: 'input_parameters', filename: 'input' },
+		outputParameters: {
+			...imljsonc,
+			apiCodeType: 'outputParameters',
+			checksumKey: 'output_parameters',
+			filename: 'output',
+		},
+		// `context` is editable as a markdown source file, but the API has no `/context` section route —
+		// it is an endpoint metadata field. `metadataBacked` routes pull/deploy through GET-detail / PATCH.
+		context: {
+			apiCodeType: 'context',
+			metadataBacked: true,
+			checksumKey: 'context',
+			filename: 'context',
+			fileext: 'md',
+			mimetype: 'text/markdown',
+		},
+	},
 };
 
 export function getAppComponentCodesDefinition(appComponentType: AppComponentType) {
@@ -151,6 +186,41 @@ export function getCodeDef(componentType: AppComponentType | 'app', codeType: Co
 	return componentType === 'app'
 		? getGeneralCodeDefinition(codeType as GeneralCodeType)
 		: getAppComponentCodeDefinition(componentType, codeType as ComponentCodeType);
+}
+
+/**
+ * Finds the metadata-backed code definition for a component matching the given API code type (the URL/section
+ * name used in Online mode, e.g. `context`). Returns `undefined` if no such metadata-backed code exists.
+ *
+ * Note: `metadataBacked` codes are not real API sections — they are read from / written to a component
+ *       metadata field. This lets Online mode handle them generically, driven by the same flag as Local dev.
+ */
+export function getMetadataBackedCodeDef(
+	componentType: AppComponentType | undefined,
+	apiCodeType: string,
+): CodeDef | undefined {
+	if (!componentType || !componentsCodesDefinition[componentType]) {
+		return undefined;
+	}
+	return Object.values(componentsCodesDefinition[componentType]).find(
+		(codeDef): codeDef is CodeDef => Boolean(codeDef?.metadataBacked && codeDef.apiCodeType === apiCodeType),
+	);
+}
+
+/**
+ * Returns all metadata-backed codes across all component types as `{ componentType, apiCodeType }` pairs.
+ * Used to detect metadata-backed codes from a file path (Online mode save), without a tree item.
+ */
+export function getMetadataBackedCodes(): { componentType: AppComponentType; apiCodeType: string }[] {
+	const result: { componentType: AppComponentType; apiCodeType: string }[] = [];
+	for (const componentType of keys(componentsCodesDefinition)) {
+		for (const codeDef of Object.values(componentsCodesDefinition[componentType])) {
+			if (codeDef?.metadataBacked) {
+				result.push({ componentType, apiCodeType: codeDef.apiCodeType });
+			}
+		}
+	}
+	return result;
 }
 
 /**

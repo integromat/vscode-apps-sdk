@@ -10,6 +10,26 @@ export function getConfiguration(): AppsSdkConfiguration {
 
 
 /**
+ * Extension of the code files, which contain the JSONC (JSON with comments) content.
+ */
+export type JsoncFileExtension = 'json' | 'jsonc';
+
+/**
+ * Gets the file extension to be used for newly created JSONC (IMLJSON) code files in Local Development.
+ *
+ * Note: The default `jsonc` makes the files recognized as JSON-with-comments by tools outside of
+ *       VS Code. Users can explicitly choose `json` to get the legacy `*.iml.json` naming.
+ *
+ * @param scope Resource used to resolve the workspace-folder-specific value (the setting is `resource` scoped).
+ */
+export function getDefaultJsoncFileExtension(scope?: vscode.Uri): JsoncFileExtension {
+	const configured = vscode.workspace
+		.getConfiguration('apps-sdk', scope)
+		.get<string>('localDev.defaultJsoncFileExtension');
+	return configured === 'json' ? 'json' : 'jsonc';
+}
+
+/**
  * Describes the configuration structure of key `apps-sdk` in the VS Code configuration file.
  */
 export interface AppsSdkConfiguration extends vscode.WorkspaceConfiguration {
@@ -35,7 +55,8 @@ export interface AppsSdkConfigurationEnvironment {
  * User can define multiple environmnents.
  * Function returns the one that is currently selected by user.
  *
- * @throws {Error} If no environment is selected or if selected environment is not found in the configuration.
+ * @throws {Error} If no environment is selected, if selected environment is not found in the configuration,
+ *                 or if the selected environment is not using API v2.
  */
 export function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
 	const _configuration = getConfiguration();
@@ -48,6 +69,12 @@ export function getCurrentEnvironment(): AppsSdkConfigurationEnvironment {
 	const selectedEnvironment = environments.find((e: any) => e.uuid === _configuration.environment);
 	if (!selectedEnvironment) {
 		throw new Error("Selected environment ('apps-sdk.environment') not found in 'apps-sdk.environments'. Check your configuration.");
+	}
+	if (selectedEnvironment.version !== 2) {
+		throw new Error(
+			`Environment "${selectedEnvironment.name}" uses unsupported API v${selectedEnvironment.version ?? '(not set)'}. ` +
+				'Only Make API v2 is supported — please update this environment\'s version, or add a new one.',
+		);
 	}
 	return selectedEnvironment;
 }

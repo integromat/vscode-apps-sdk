@@ -10,6 +10,7 @@ import { getModuleDefFromId } from '../services/module-types-naming';
 import type { AppComponentType } from '../types/app-component-type.types';
 import {
 	ConnectionComponentDetailsApiResponseItem,
+	EndpointComponentDetailsApiResponseItem,
 	ModuleComponentDetailsApiResponseItem,
 	WebhookComponentDetailsApiResponseItem,
 } from '../types/get-component-api-response.types';
@@ -69,6 +70,16 @@ export async function getRemoteComponent(
 				componentMetadata.actionCrud = (componentDetail as ModuleComponentDetailsApiResponseItem).crud;
 			}
 			break;
+		case 'endpoint': {
+			const endpointDetail = componentDetail as EndpointComponentDetailsApiResponseItem;
+			componentMetadata.description = endpointDetail.description ?? undefined;
+			// Note: `context` is intentionally NOT stored in metadata — it is pulled/deployed as a
+			//       metadata-backed source code file (see `componentsCodesDefinition.endpoint.context`).
+			componentMetadata.annotations = endpointDetail.annotations;
+			// Array of remote connection names. Converted to local IDs in `convertComponentMetadataRemoteNamesToLocalIds()`.
+			componentMetadata.attachedAccounts = endpointDetail.attachedAccounts ?? [];
+			break;
+		}
 	}
 
 	// Load additional/specific properties
@@ -148,6 +159,18 @@ export async function convertComponentMetadataRemoteNamesToLocalIds(
 			// Explanation: Covers the special case, where `ignore this component` is defined in ID mapping.
 			//   For this case, do not store (and manage) this reference.
 		}
+	}
+	if (componentMetadata.attachedAccounts) {
+		// Endpoints reference connections as an array. Translate each remote connection name to a local ID.
+		const localIds: string[] = [];
+		for (const remoteConnectionName of componentMetadata.attachedAccounts) {
+			const localId = await makecomappJsonFile.getLocalIdOrCreateNew('connection', origin, remoteConnectionName);
+			// `null` means the referenced connection is marked "ignore" in ID mapping → drop it from the local list.
+			if (localId !== null) {
+				localIds.push(localId);
+			}
+		}
+		updatedComponentMedatada.attachedAccounts = localIds;
 	}
 	return updatedComponentMedatada;
 }

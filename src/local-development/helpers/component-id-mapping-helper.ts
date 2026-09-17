@@ -18,7 +18,7 @@ export class ComponentIdMappingHelper {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
 		const matchedMappings =
-			originInMakecomappJson.idMapping?.[componentType].filter((mapping) => mapping.local === localId) ?? [];
+			originInMakecomappJson.idMapping?.[componentType]?.filter((mapping) => mapping.local === localId) ?? [];
 
 		if (matchedMappings.length === 0) {
 			return undefined;
@@ -82,7 +82,7 @@ export class ComponentIdMappingHelper {
 		const originInMakecomappJson = getOriginObject(this.makecomappJson, this.origin);
 
 		const matchedMappings =
-			originInMakecomappJson.idMapping?.[componentType].filter((mapping) => mapping.remote === remoteName) ?? [];
+			originInMakecomappJson.idMapping?.[componentType]?.filter((mapping) => mapping.remote === remoteName) ?? [];
 
 		if (matchedMappings.length === 0) {
 			return undefined;
@@ -215,6 +215,7 @@ export class ComponentIdMappingHelper {
 						function: [],
 						rpc: [],
 						webhook: [],
+						endpoint: [],
 					};
 				}
 				// Update `this.content.origins[someOrigin]` in memory

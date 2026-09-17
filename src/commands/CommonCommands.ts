@@ -34,8 +34,8 @@ export class CommonCommands {
 			// Set URI and send the request
 			context.apiPath = context.apiPath === undefined ? context.supertype : context.apiPath;
 			const url = Core.isVersionable(context.apiPath) ?
-				`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${app.name}/${app.version}/${Core.pathDeterminer(_environment.version, context.apiPath)}/${context.name}` :
-				`${_environment.baseUrl}/${Core.pathDeterminer(_environment.version, '__sdk')}${Core.pathDeterminer(_environment.version, 'app')}/${Core.pathDeterminer(_environment.version, context.apiPath)}/${context.name}`;
+				`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${app.name}/${app.version}/${Core.pathDeterminer(context.apiPath)}/${context.name}` :
+				`${_environment.baseUrl}/${Core.pathDeterminer('__sdk')}${Core.pathDeterminer('app')}/${Core.pathDeterminer(context.apiPath)}/${context.name}`;
 			try {
 				// Delete the entity
 				await requestMakeApi({

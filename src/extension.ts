@@ -18,10 +18,16 @@ import {
 } from './providers/configuration';
 import { registerCommandForLocalDevelopment } from './local-development';
 import * as LanguageServersSettings from './LanguageServersSettings';
+import {
+	getStaticAndDerivedSchemaAssociations,
+	ImljsonSchemaAssociations,
+	schemaAssociationsNotificationType,
+} from './services/imljson-schema-associations';
 import { AppsProvider } from './providers/AppsProvider';
 import { OpensourceProvider } from './providers/OpensourceProvider';
 import ImljsonHoverProvider = require('./providers/ImljsonHoverProvider');
 import RpcCommands = require('./commands/RpcCommands');
+import { EndpointCommands } from './commands/EndpointCommands';
 import ModuleCommands = require('./commands/ModuleCommands');
 import WebhookCommands = require('./commands/WebhookCommands');
 import ConnectionCommands = require('./commands/ConnectionCommands');
@@ -36,6 +42,7 @@ import { type AppComponentType, AppComponentTypes } from './types/app-component-
 import { deleteLocalComponent } from './local-development/delete-local-component';
 import { catchError } from './error-handling';
 import { camelToKebab } from './utils/camel-to-kebab';
+import { contextGuard } from './Core';
 
 let client: vscodeLanguageclient.LanguageClient;
 
@@ -94,10 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await client.start();
 
 	// Register all JSON schemas for IMLJSON language
-	await client.sendNotification(
-		new vscodeLanguageclient.NotificationType('imljson/schemaAssociations'),
-		LanguageServersSettings.getJsonSchemas(),
-	);
+	await client.sendNotification(schemaAssociationsNotificationType, getStaticAndDerivedSchemaAssociations());
 
 	// Environment commands and envChanger
 	const envChanger = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10);
@@ -152,23 +156,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		// Else -> the environment is set and it contains API key -> set (pseudo)global variables and continue
 		else {
 			_authorization = 'Token ' + currentEnvironment.apikey;
-			// If API version not set or it's 1
-			if (!currentEnvironment.version || currentEnvironment.version === 1) {
-				_environment = {
-					baseUrl: `https://${currentEnvironment.url}/v1`,
-					version: 1,
-				};
-			} else {
-				// API V2 and development purposes
-				// configuration.unsafe removes https
-				// configuration.noVersionPath removes vX in path
-				_environment = {
-					baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
-						currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
-					}${currentEnvironment.admin === true ? '/admin' : ''}`,
-					version: currentEnvironment.version,
-				};
-			}
+			// configuration.unsafe removes https
+			// configuration.noVersionPath removes vX in path
+			_environment = {
+				baseUrl: `http${currentEnvironment.unsafe === true ? '' : 's'}://${currentEnvironment.url}${
+					currentEnvironment.noVersionPath === true ? '' : `/v${currentEnvironment.version}`
+				}${currentEnvironment.admin === true ? '/admin' : ''}`,
+			};
 			_admin = currentEnvironment.admin === true;
 		}
 	}
@@ -221,6 +215,49 @@ export async function activate(context: vscode.ExtensionContext) {
 		updateSearchContext();
 	}));
 
+	vscode.commands.registerCommand('apps-sdk.app.search-components', catchError('Search app components', async (app) => {
+		if (!contextGuard(app)) {
+			return;
+		}
+
+		const { components, failedGroups } = await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: `Loading components of ${app.bareLabel}…` },
+			() => appsProvider.getAppComponentsSummary(app),
+		);
+
+		if (components.length === 0) {
+			// Only claim the app is empty when nothing failed; a failed fetch already surfaced an
+			// error dialog (via rpGet), so showing "No components found" on top would be misleading.
+			if (failedGroups.length === 0) {
+				vscode.window.showInformationMessage('No components found in this app.');
+			}
+			return;
+		}
+
+		const items = components.map((summary: any) => ({
+			label: summary.label,
+			// `description` (the raw name/id) and `detail` are matched on too, so a name that
+			// differs from the label is still searchable.
+			description: summary.name,
+			detail: summary.supertype + (summary.description ? ` — ${summary.description}` : ''),
+			summary,
+		}));
+
+		const picked = await vscode.window.showQuickPick(items, {
+			matchOnDescription: true,
+			matchOnDetail: true,
+			placeHolder: 'Search components by name or label',
+		});
+		if (picked === undefined) {
+			return;
+		}
+
+		// Rebuild the component's tree node and reveal it. Deliberately NOT calling refresh()
+		// (that would clear the icon cache and restart background loading).
+		const item = appsProvider.buildComponentTreeItem(app, picked.summary);
+		await appsTreeView.reveal(item, { select: true, focus: true, expand: true });
+	}));
+
 	/**
 	 * Registering commands
 	 */
@@ -231,6 +268,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await WebhookCommands.register(appsProvider, _authorization, _environment);
 	await ModuleCommands.register(appsProvider, _authorization, _environment);
 	await RpcCommands.register(appsProvider, _authorization, _environment);
+	await EndpointCommands.register(appsProvider, _authorization, _environment);
 	await FunctionCommands.register(appsProvider, _authorization, _environment, _configuration.timezone);
 	await CommonCommands.register(appsProvider, _authorization, _environment);
 	await ChangesCommands.register(appsProvider, _authorization, _environment);
@@ -241,6 +279,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	 */
 	vscode.workspace.onWillSaveTextDocument((event) => coreCommands.sourceUpload(event));
 	vscode.window.onDidChangeActiveTextEditor((editor) => coreCommands.keepProviders(editor));
+
+	// Online-mode Endpoint schema enrichment (app endpoint names + input suggestions in api.imljson etc.).
+	const imljsonSchemaAssociations = new ImljsonSchemaAssociations({
+		client,
+		authorization: _authorization,
+		environment: _environment,
+	});
+	vscode.window.onDidChangeActiveTextEditor((editor) => imljsonSchemaAssociations.handleActiveEditorChange(editor));
+	// Fire-and-forget: never throws, and activation shouldn't block on this API round-trip.
+	void imljsonSchemaAssociations.handleActiveEditorChange(vscode.window.activeTextEditor);
 
 	/**
 	 * Registering JSONC formatter
@@ -338,7 +386,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// ensure it gets properly disposed. Upon disposal the events will be flushed
 	context.subscriptions.push(telemetryReporter);
-	sendTelemetry('activated', { version: _environment.version });
+	sendTelemetry('activated', { version: 2 });
 
 	log('info', 'Extension fully activated with environment ' + _environment.baseUrl);
 }

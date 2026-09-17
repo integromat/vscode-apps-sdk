@@ -105,10 +105,17 @@ export async function createRemoteAppComponent(opt: {
 				}
 				axiosConfig.data.type = opt.componentMetadata.webhookType;
 				break;
+
+			case 'endpoint':
+				// Endpoint creation accepts only { name, label, description?, attachedAccounts? }.
+				// `annotations` is applied later by the metadata PATCH (deployComponentMetadata).
+				// (`context` is not a metadata prop — it is a metadata-backed source code file.)
+				delete axiosConfig.data.annotations;
+				break;
 		}
 
-		// For Module, RPC, function: add `name` (ID)
-		if (['module', 'rpc', 'function'].includes(opt.componentType)) {
+		// For Module, RPC, function, endpoint: add `name` (ID)
+		if (['module', 'rpc', 'function', 'endpoint'].includes(opt.componentType)) {
 			axiosConfig.data.name = opt.componentName;
 		}
 
@@ -128,6 +135,8 @@ export async function createRemoteAppComponent(opt: {
 			case 'rpc':
 				return opt.componentName;
 			case 'function':
+				return opt.componentName;
+			case 'endpoint':
 				return opt.componentName;
 			default:
 				throw new Error(

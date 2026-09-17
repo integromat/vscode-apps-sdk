@@ -10,7 +10,7 @@ import App from '../tree/App';
  * search feature without requiring a live Make environment.
  */
 suite('AppsProvider search filter', () => {
-	const environment = { baseUrl: 'https://example.com', version: 2 } as any;
+	const environment = { baseUrl: 'https://example.com' } as any;
 
 	function createProvider() {
 		return new (AppsProvider as any)('Token abc', environment, '/tmp/apps-sdk-test', false);
@@ -72,7 +72,7 @@ suite('AppsProvider search filter', () => {
  * matching against label, name (id), and description case-insensitively.
  */
 suite('AppsProvider _applySearchFilter()', () => {
-	const environment = { baseUrl: 'https://example.com', version: 2 } as any;
+	const environment = { baseUrl: 'https://example.com' } as any;
 
 	// Real App instances so the test also guards the App shape (bareLabel/name/description)
 	// that the filter depends on. Note: App defaults a missing description to '' (see src/tree/App.js).

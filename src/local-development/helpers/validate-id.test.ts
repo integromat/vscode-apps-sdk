@@ -30,6 +30,10 @@ suite('isComponentLocalIdValid()', () => {
 			valid: ['mycomponent123', 'myComponent', 'MyComponent', 'my-component-123'],
 			invalid: ['my', '0mycomponent', 'mycomponent-', '-component'],
 		},
+		endpoint: {
+			valid: ['mycomponent123', 'myComponent', 'MyComponent', 'getEntity'],
+			invalid: ['my', '0mycomponent', 'mycomponent-', '-component', 'my-component-123'],
+		},
 	};
 
 	for (const [componentType, testingValues] of entries(testingSet)) {
