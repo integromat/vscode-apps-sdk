@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument } from 'vscode-languageserver';
+// `vscode-languageserver` re-exports the legacy `TextDocument` from `vscode-languageserver-types`,
+// while the language service (and `new TextDocuments(TextDocument)` in `jsonServer.ts`) operates on the
+// one from `vscode-languageserver-textdocument`. Import the same source as `jsonServer.ts` and
+// `utils/validation.ts` do, so the two do not drift apart when either package adds members.
+import { TextDocument } from 'vscode-json-languageservice';
 
 export interface LanguageModelCache<T> {
 	get(document: TextDocument): T;
@@ -45,7 +49,7 @@ export function getLanguageModelCache<T>(maxEntries: number, cleanupIntervalTime
 				nModels++;
 			}
 
-			if (nModels === maxEntries) {
+			if (nModels > maxEntries) {
 				let oldestTime = Number.MAX_VALUE;
 				let oldestUri = null;
 				for (const uri in languageModels) {
