@@ -286,6 +286,10 @@
 				"condition": {
 					"description": "This directive specifies whether to execute the pagination request or not.",
 					"type": ["boolean", "string"]
+				},
+				"delay": {
+					"description": "Delay in milliseconds between paginated requests. Clamped to 0-30000.",
+					"type": ["number", "string"]
 				}
 			}
 		},
