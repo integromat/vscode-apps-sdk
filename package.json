@@ -941,6 +941,11 @@
 					"command": "apps-sdk.local-dev.clone-to-workspace",
 					"group": "z_commands",
 					"when": "(viewItem == app || viewItem == app_public || viewItem == app_approved || viewItem == app_approved_changed) && view == apps"
+				},
+				{
+					"command": "apps-sdk.local-dev.clone-to-workspace",
+					"group": "z_commands",
+					"when": "viewItem =~ /^app/ && view == opensource"
 				}
 			],
 			"explorer/context": [
