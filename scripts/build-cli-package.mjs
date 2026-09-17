@@ -10,7 +10,7 @@
  */
 
 import { createRequire } from 'node:module';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -150,6 +150,11 @@ const cliManifest = {
 };
 
 writeFileSync(path.join(outputDir, 'package.json'), JSON.stringify(cliManifest, null, '\t') + '\n');
+
+// `tsc` emits plain files, so the entrypoint carries the shebang but not the executable bit.
+// `npm install` would set it when unpacking a tarball, but a locally linked package
+// (`npm link ./dist-cli`) runs the file directly and fails with EACCES without this.
+chmodSync(path.join(outputDir, 'out', 'cli', 'index.js'), 0o755);
 
 for (const file of ['LICENSE.md', 'README.md']) {
 	if (existsSync(path.join(repoRoot, file))) {
