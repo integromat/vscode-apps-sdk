@@ -1103,6 +1103,7 @@
 		"@integromat/udt": "^1.2.2",
 		"@makehq/forman-schema": "^1.15.0",
 		"@vscode/extension-telemetry": "^1.5.2",
+		"@vscode/l10n": "^0.0.18",
 		"adm-zip": "^0.6.0",
 		"applicationinsights": "^3.16.0",
 		"async-file": "^2.0.2",
@@ -1118,7 +1119,8 @@
 		"throat": "^6.0.2",
 		"vscode-json-languageservice": "^5.7.2",
 		"vscode-languageclient": "10.1.1",
-		"vscode-languageserver": "10.1.1"
+		"vscode-languageserver": "10.1.1",
+		"vscode-uri": "^3.1.0"
 	},
 	"overrides": {
 		"parse-bmfont-xml": {
