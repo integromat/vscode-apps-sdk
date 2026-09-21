@@ -1101,7 +1101,7 @@
 	"dependencies": {
 		"@integromat/iml": "^3.4.0",
 		"@integromat/udt": "^1.2.2",
-		"@makehq/forman-schema": "^1.15.0",
+		"@makehq/forman-schema": "^2.0.1",
 		"@vscode/extension-telemetry": "^1.5.2",
 		"@vscode/l10n": "^0.0.18",
 		"adm-zip": "^0.6.0",
