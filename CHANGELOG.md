@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+## [3.0.0](https://github.com/integromat/vscode-apps-sdk/compare/2.9.0...3.0.0) (2026-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **local-dev:** create IMLJSON code files as .iml.jsonc ([#373](https://github.com/integromat/vscode-apps-sdk/issues/373))
+
+### Features
+
+* add Clone to Local Folder action to Examples view ([#371](https://github.com/integromat/vscode-apps-sdk/issues/371)) ([4efaf68](https://github.com/integromat/vscode-apps-sdk/commit/4efaf68b48a2e64f67c3e787a73c113a3883b644))
+* add delay property to pagination JSON schema ([#353](https://github.com/integromat/vscode-apps-sdk/issues/353)) ([a9f603d](https://github.com/integromat/vscode-apps-sdk/commit/a9f603d31371e04ae8fc7bac16328b4dc23dc220))
+* hover-to-open navigation for RPC and function references ([#369](https://github.com/integromat/vscode-apps-sdk/issues/369)) ([6ff5f3d](https://github.com/integromat/vscode-apps-sdk/commit/6ff5f3dd9960ccbeb24de3beb1cca935de89eaa0))
+* **local-dev:** create IMLJSON code files as .iml.jsonc ([#373](https://github.com/integromat/vscode-apps-sdk/issues/373)) ([3b74889](https://github.com/integromat/vscode-apps-sdk/commit/3b74889adba4d338c8e7361a728e54bd2efd07af))
+
+
+### Build System
+
+* bump the deps-minor-update group across 1 directory with 10 updates ([#372](https://github.com/integromat/vscode-apps-sdk/issues/372)) ([94a0cd0](https://github.com/integromat/vscode-apps-sdk/commit/94a0cd0906d86e0b4aaabe3ae0bb99c9ef6d86c9))
+* bump the devdeps-minor-update group across 1 directory with 5 updates ([#357](https://github.com/integromat/vscode-apps-sdk/issues/357)) ([b19adc9](https://github.com/integromat/vscode-apps-sdk/commit/b19adc916584eb8e3d47f0329e982cd0eafa02b2))
+
 ## [2.9.0](https://github.com/integromat/vscode-apps-sdk/compare/2.8.0...2.9.0) (2026-08-07)
 
 
