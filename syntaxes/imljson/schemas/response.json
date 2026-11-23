@@ -68,6 +68,16 @@
 						"type": {
 							"description": "An expression that specifies the error type.",
 							"$ref": "enums.json#/definitions/error-type"
+						},
+						"data": {
+							"description": "Custom data to pass through the error handling path."
+						},
+						"statusCode": {
+							"description": "HTTP status code or custom status code.",
+							"type": ["number", "string"]
+						},
+						"headers": {
+							"description": "Response headers to pass through the error handling path."
 						}
 					},
 					"patternProperties": {
@@ -83,6 +93,16 @@
 								"type": {
 									"description": "An expression that specifies the error type.",
 									"$ref": "enums.json#/definitions/error-type"
+								},
+								"data": {
+									"description": "Custom data to pass through the error handling path."
+								},
+								"statusCode": {
+									"description": "HTTP status code or custom status code.",
+									"type": ["number", "string"]
+								},
+								"headers": {
+									"description": "Response headers to pass through the error handling path."
 								}
 							},
 							"required": ["message"],
